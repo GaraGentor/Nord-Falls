@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="288" height="288" viewBox="0 0 96 96">
+  <!-- Leuchtkrabben Leuchtturm: Sandstein-Turm auf einem Stück Krabbenpanzer. Licht von oben links -->
+  <!-- Lichtschein -->
+  <path d="M48 19 L8 9 V29 Z" fill="#ffe27a"/>
+  <path d="M48 19 L88 9 V29 Z" fill="#ffd257"/>
+  <!-- Panzerstück -->
+  <path d="M10 90 C10 72 26 66 48 66 C70 66 86 72 86 90 Z" fill="#c9452f"/>
+  <path d="M10 90 C10 72 26 66 48 66 C42 72 30 78 26 90 Z" fill="#ec6b4c"/>
+  <path d="M70 90 C69 80 63 72 56 67 C72 68 86 73 86 90 Z" fill="#96301f"/>
+  <!-- Turm -->
+  <path d="M38 34 H58 L63 74 H33 Z" fill="#cfae6e"/>
+  <path d="M38 34 H46 L44 74 H33 Z" fill="#ecd59c"/>
+  <path d="M53 34 H58 L63 74 H55 Z" fill="#9b7c45"/>
+  <path d="M36 50 H60 M35 62 H61" fill="none" stroke="#6e5530" stroke-width="2.5"/>
+  <path d="M44 41 H52 V49 H44 Z M43 54 H53 V61 H43 Z" fill="#2c3440" stroke="#06080c" stroke-width="2"/>
+  <!-- Galerie, Laterne, Dach -->
+  <path d="M33 30 H63 V36 H33 Z" fill="#8c6a39"/>
+  <path d="M40 16 H56 V30 H40 Z" fill="#fff0a8"/>
+  <path d="M40 16 H46 V30 H40 Z" fill="#ffffff"/>
+  <path d="M36 16 L48 4 L60 16 Z" fill="#a34a2c"/>
+  <path d="M36 16 L48 4 V16 Z" fill="#d06a3c"/>
+  <!-- Kanten -->
+  <path d="M38 36 L33 74 H63 L58 36 M33 30 H63 V36 H33 Z M40 16 V30 M56 16 V30 M48 16 V30 M36 16 L48 4 L60 16 Z" fill="none" stroke="#06080c" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M10 90 C10 72 26 66 33 66 M63 66 C70 66 86 72 86 90 M10 90 H86" fill="none" stroke="#06080c" stroke-width="4" stroke-linejoin="round"/>
+</svg>

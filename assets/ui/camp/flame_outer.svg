@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="170" height="230" viewBox="0 0 170 230">
+  <!-- Äußere Flamme, wächst vom unteren Rand aus -->
+  <path d="M86 6 C98 42 132 66 146 112 C150 128 150 134 146 150 C160 142 162 128 160 116 C170 150 164 196 124 226 H46 C10 200 0 158 14 118 C18 136 24 144 34 148 C26 112 44 92 58 72 C64 92 70 100 80 104 C92 74 94 40 86 6 Z" fill="#e0451b" stroke="#06080c" stroke-width="6" stroke-linejoin="bevel"/>
+  <path d="M84 62 C96 92 122 112 130 150 C136 182 120 208 104 224 H62 C38 206 26 178 36 148 C44 156 52 158 58 154 C54 128 70 118 76 102 C82 92 86 78 84 62 Z" fill="#ff8a24"/>
+</svg>

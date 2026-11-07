@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+  <!-- Schlüssel: alter Bartschlüssel aus Messing, Griff oben links, Bart unten rechts -->
+  <g transform="rotate(-45 48 48)">
+    <!-- Umriss: alle Teile zuerst dick in Schwarz, die Füllungen liegen darüber -->
+    <g fill="#04060a" stroke="#04060a" stroke-width="5" stroke-linejoin="round">
+      <path fill-rule="evenodd" d="M48 3 A19 19 0 1 1 48 41 A19 19 0 1 1 48 3 Z M48 15 A7 7 0 1 0 48 29 A7 7 0 1 0 48 15 Z"/>
+      <path d="M37 39 H59 V46 H54 V60 H71 V68 H63 V73 H71 V85 H59 L53 91 H42 V46 H37 Z"/>
+    </g>
+    <!-- Griff -->
+    <path fill="#d8a93c" fill-rule="evenodd" d="M48 3 A19 19 0 1 1 48 41 A19 19 0 1 1 48 3 Z M48 15 A7 7 0 1 0 48 29 A7 7 0 1 0 48 15 Z"/>
+    <!-- Schaft, Kragen und Bart -->
+    <path fill="#d8a93c" d="M37 39 H59 V46 H54 V60 H71 V68 H63 V73 H71 V85 H59 L53 91 H42 V46 H37 Z"/>
+    <!-- Schattenseite -->
+    <path fill="#8f6417" d="M48 3 A19 19 0 0 1 48 41 L48 34 A12 12 0 0 0 48 10 Z"/>
+    <path fill="#8f6417" d="M49 46 H54 V60 H71 V68 H54 V73 H71 V85 H59 L53 91 H49 Z"/>
+    <path fill="#8f6417" d="M48 39 H59 V46 H48 Z"/>
+    <!-- Glanzlichter -->
+    <path fill="#ffe79a" d="M36 10 A16 16 0 0 0 33 29 L38 26 A11 11 0 0 1 40 14 Z"/>
+    <path fill="#ffe79a" d="M44 47 H47 V86 H44 Z"/>
+    <path fill="#ffe79a" d="M39 41 H47 V43 H39 Z"/>
+  </g>
+</svg>

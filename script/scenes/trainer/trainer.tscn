@@ -1,0 +1,79 @@
+[gd_scene format=3 uid="uid://bc56refqd7yk6"]
+
+[ext_resource type="Script" uid="uid://b81c1yee0h8tn" path="res://script/scenes/trainer/trainer.gd" id="1_tmap4"]
+[ext_resource type="Shader" uid="uid://cau5s73rgu3v3" path="res://script/scenes/world_map/map_background.gdshader" id="2_bg"]
+[ext_resource type="Shader" uid="uid://be467lblpkpfs" path="res://script/ui/shader/living_pixels.gdshader" id="3_tpo3p"]
+[ext_resource type="Texture2D" uid="uid://ctjvadifd3wwv" path="res://assets/npcs/trainer_cutout.png" id="4_r2jx2"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_v63o5"]
+shader = ExtResource("2_bg")
+shader_parameter/bottom_color = Color(0, 0, 0, 1)
+shader_parameter/top_color = Color(0.1504148, 0.59721714, 0.7760066, 1)
+shader_parameter/wave_amp = 0.115
+shader_parameter/wave_size = 1.0
+shader_parameter/wave_time_mul = 0.933
+shader_parameter/total_phases = 8
+shader_parameter/living_pixels = true
+shader_parameter/pixel_size = 4.0
+shader_parameter/amplitude = 0.0
+shader_parameter/loop_seconds = 19.365
+shader_parameter/particle_min_size = 1.0
+shader_parameter/particle_max_size = 1.2
+shader_parameter/flicker = 0.15
+shader_parameter/color_levels = 8.0
+shader_parameter/dither_strength = 1.0
+shader_parameter/dither_scale = 2.0
+shader_parameter/dither_fps = 10.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_dh2pi"]
+shader = ExtResource("3_tpo3p")
+shader_parameter/pixel_size = 6.0
+shader_parameter/min_cells = 32.0
+shader_parameter/amplitude = 0.0
+shader_parameter/twitch = 0.0
+shader_parameter/twitch_chance = 0.0
+shader_parameter/loop_seconds = 30.0
+shader_parameter/particle_min_size = 1.0
+shader_parameter/particle_max_size = 1.20000004768372
+shader_parameter/flicker = 0.20800000988
+shader_parameter/color_levels = 4.0
+shader_parameter/dither_strength = 1.0
+shader_parameter/dither_scale = 2.0
+shader_parameter/dither_fps = 10.0
+shader_parameter/alpha_cutoff = 0.35
+shader_parameter/reveal = 1.0
+shader_parameter/outline_color = Color(1, 1, 0, 0)
+shader_parameter/outline_thickness = 4.0
+shader_parameter/tint_color = Color(1, 1, 1, 0)
+
+[node name="Trainer" type="Control" unique_id=891182577 node_paths=PackedStringArray("background", "trainer_image")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_tmap4")
+background = NodePath("Background")
+trainer_image = NodePath("TrainerImage")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1585597675]
+material = SubResource("ShaderMaterial_v63o5")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TrainerImage" type="TextureRect" parent="." unique_id=168240700]
+material = SubResource("ShaderMaterial_dh2pi")
+layout_mode = 0
+offset_left = 726.6667
+offset_top = 10.0
+offset_right = 1193.3334
+offset_bottom = 710.0
+mouse_filter = 2
+texture = ExtResource("4_r2jx2")
+expand_mode = 1

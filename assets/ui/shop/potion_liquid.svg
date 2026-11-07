@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="112" viewBox="0 0 96 112">
+  <!-- Flüssigkeit in Graustufen, die Farbe des Elements kommt per tint_color aus dem Shader -->
+  <path d="M28 52 H68 L77 62 V86 L63 100 H33 L19 86 V62 Z" fill="#c4c4c4"/>
+  <path d="M28 52 H68 L71 56 H25 Z" fill="#ffffff"/>
+  <path d="M58 56 H71 L77 62 V86 L63 100 H50 Z" fill="#8e8e8e"/>
+  <path d="M26 64 H32 V84 H26 Z M38 90 H46 V94 H38 Z" fill="#ffffff"/>
+  <path d="M42 66 H48 V72 H42 Z M60 72 H64 V76 H60 Z M50 82 H54 V86 H50 Z" fill="#e6e6e6"/>
+</svg>

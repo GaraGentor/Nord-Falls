@@ -1,0 +1,188 @@
+[gd_scene format=3 uid="uid://drhymvpv6slla"]
+
+[ext_resource type="Script" uid="uid://bmr41hppqtifw" path="res://script/scenes/level_up/level_up.gd" id="1_j6ocv"]
+[ext_resource type="Shader" uid="uid://cau5s73rgu3v3" path="res://script/scenes/world_map/map_background.gdshader" id="2_c4w1u"]
+[ext_resource type="PackedScene" uid="uid://caffuo82lusm" path="res://script/scenes/level_up/monster_scene.tscn" id="2_ciiwp"]
+[ext_resource type="Theme" uid="uid://b5pomesyumr6n" path="res://script/scenes/battle/flat_button_theme.tres" id="2_qh7ft"]
+[ext_resource type="Script" uid="uid://o0lwh6vlyh25" path="res://script/ui/shader/iron_plate.gd" id="3_plate"]
+[ext_resource type="Shader" uid="uid://ccbeivjvvisdp" path="res://script/scenes/level_up/imagination_cloud.gdshader" id="4_cloud"]
+[ext_resource type="Texture2D" uid="uid://dim42aoql8rpb" path="res://assets/ui/level_up/battlefield.jpg" id="5_field"]
+[ext_resource type="Theme" uid="uid://s3xpo0m4ka8" path="res://script/ui/materials/pixel_font_theme.tres" id="6_font"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_7ldmi"]
+shader = ExtResource("2_c4w1u")
+shader_parameter/bottom_color = Color(0, 0, 0, 1)
+shader_parameter/top_color = Color(0.361529, 0.769848, 0.955851, 1)
+shader_parameter/wave_amp = 0.115
+shader_parameter/wave_size = 1.0
+shader_parameter/wave_time_mul = 0.933
+shader_parameter/total_phases = 8
+shader_parameter/living_pixels = true
+shader_parameter/pixel_size = 4.0
+shader_parameter/amplitude = 0.0
+shader_parameter/loop_seconds = 19.365
+shader_parameter/particle_min_size = 1.0
+shader_parameter/particle_max_size = 1.2
+shader_parameter/flicker = 0.15
+shader_parameter/color_levels = 8.0
+shader_parameter/dither_strength = 1.0
+shader_parameter/dither_scale = 2.0
+shader_parameter/dither_fps = 10.0
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_eutdi"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t6nt1"]
+bg_color = Color(0, 0, 0, 0)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_button"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cloud"]
+shader = ExtResource("4_cloud")
+shader_parameter/rect_size = Vector2(600, 700)
+shader_parameter/pixel_size = 5.0
+shader_parameter/amplitude = 0.0
+shader_parameter/twitch = 0.0
+shader_parameter/twitch_chance = 0.12
+shader_parameter/loop_seconds = 30.0
+shader_parameter/particle_min_size = 1.0
+shader_parameter/particle_max_size = 1.20000004768372
+shader_parameter/gap_brightness = 1.0
+shader_parameter/flicker = 0.530000025175
+shader_parameter/corner_radius = 102.3810048630975
+shader_parameter/cloud_depth = 34.000001615
+shader_parameter/cloud_softness = 4.53600016796
+shader_parameter/cloud_scale = 32.6550010761125
+shader_parameter/cloud_speed = 0.8030000381425
+shader_parameter/mist_color = Color(0.78, 0.88, 0.95, 0.85)
+shader_parameter/stretch_pixels = 40.0
+shader_parameter/stretch_width = 200.0
+shader_parameter/wave_count = 12.0
+shader_parameter/wave_speed = 1.1
+shader_parameter/color_levels = 2.0
+shader_parameter/dither_strength = 1.0
+shader_parameter/dither_scale = 2.0
+shader_parameter/dither_fps = 10.0
+
+[node name="LevelUp" type="Control" unique_id=361091429 node_paths=PackedStringArray("monster_scene1", "monster_scene2", "empty_slot", "go_button", "battlefield", "battlefield_image")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("6_font")
+script = ExtResource("1_j6ocv")
+monster_scene1 = NodePath("Panel/MarginContainer/Columns/Monsters/MonsterScene")
+monster_scene2 = NodePath("Panel/MarginContainer/Columns/Monsters/MonsterScene2")
+empty_slot = NodePath("Panel/MarginContainer/Columns/Monsters/EmptySlot")
+go_button = NodePath("Panel/MarginContainer/Columns/Monsters/Button")
+battlefield = NodePath("Panel/MarginContainer/Columns/Battlefield")
+battlefield_image = NodePath("Panel/MarginContainer/Columns/Battlefield/Image")
+
+[node name="ColorRect" type="TextureRect" parent="." unique_id=1870270446]
+material = SubResource("ShaderMaterial_7ldmi")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+texture = SubResource("ViewportTexture_eutdi")
+
+[node name="Panel" type="Panel" parent="." unique_id=1771545272]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_t6nt1")
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel" unique_id=391764954]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="Columns" type="HBoxContainer" parent="Panel/MarginContainer" unique_id=1683344983]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Monsters" type="VBoxContainer" parent="Panel/MarginContainer/Columns" unique_id=2126928935]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="MonsterScene" parent="Panel/MarginContainer/Columns/Monsters" unique_id=1280137441 instance=ExtResource("2_ciiwp")]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MonsterScene2" parent="Panel/MarginContainer/Columns/Monsters" unique_id=899194568 instance=ExtResource("2_ciiwp")]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="EmptySlot" type="Control" parent="Panel/MarginContainer/Columns/Monsters" unique_id=809940424]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="Button" type="Button" parent="Panel/MarginContainer/Columns/Monsters" unique_id=265971211]
+custom_minimum_size = Vector2(220, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("2_qh7ft")
+theme_override_colors/font_color = Color(0.86, 0.83, 0.72, 1)
+theme_override_colors/font_pressed_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_colors/font_hover_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_button")
+disabled = true
+text = "COMMON_OK"
+
+[node name="Plate" type="ColorRect" parent="Panel/MarginContainer/Columns/Monsters/Button" unique_id=685950440]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_plate")
+
+[node name="Battlefield" type="Control" parent="Panel/MarginContainer/Columns" unique_id=2132294936]
+clip_contents = true
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="Image" type="TextureRect" parent="Panel/MarginContainer/Columns/Battlefield" unique_id=1842454131]
+material = SubResource("ShaderMaterial_cloud")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("5_field")
+expand_mode = 1
+stretch_mode = 6
+
+[connection signal="pressed" from="Panel/MarginContainer/Columns/Monsters/Button" to="." method="_on_button_pressed"]

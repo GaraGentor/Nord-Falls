@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="64" viewBox="0 0 280 64" preserveAspectRatio="none">
+  <!-- Schieferblock wie der Sockel unter dem Kerkermeister -->
+  <path d="M26 2 H254 L274 22 H6 Z" fill="#3a525c" stroke="#06080c" stroke-width="3" stroke-linejoin="bevel"/>
+  <path d="M26 2 H120 L96 22 H6 Z" fill="#48666f"/>
+  <path d="M190 2 H254 L274 22 H214 Z" fill="#2c414a"/>
+  <path d="M26 3 H254" stroke="#6da3a6" stroke-width="2.5"/>
+  <path d="M4 22 H276 V62 H4 Z" fill="#1a262d" stroke="#06080c" stroke-width="3"/>
+  <path d="M6 24 H70 L54 60 H6 Z" fill="#243540"/>
+  <path d="M96 24 H176 L196 60 H82 Z" fill="#202f37"/>
+  <path d="M214 24 H274 V60 H232 Z" fill="#121b21"/>
+  <path d="M6 24 H274" stroke="#4d7178" stroke-width="2"/>
+  <path d="M70 24 L54 60 M176 24 L196 60 M124 42 H190 M214 24 L232 60" fill="none" stroke="#0a1014" stroke-width="3"/>
+</svg>

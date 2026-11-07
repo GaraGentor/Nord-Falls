@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="128" viewBox="0 0 256 128">
+<g fill="#fff">
+<g opacity=".22"><circle cx="86" cy="74" r="34"/><circle cx="136" cy="70" r="42"/><rect x="50" y="80" width="150" height="28" rx="14"/></g>
+<g opacity=".45" transform="translate(128 70) scale(.9) translate(-128 -70)"><circle cx="86" cy="74" r="34"/><circle cx="136" cy="70" r="42"/><rect x="50" y="80" width="150" height="28" rx="14"/></g>
+<g opacity=".85" transform="translate(128 70) scale(.78) translate(-128 -70)"><circle cx="86" cy="74" r="34"/><circle cx="136" cy="70" r="42"/><rect x="50" y="80" width="150" height="28" rx="14"/></g>
+</g>
+</svg>

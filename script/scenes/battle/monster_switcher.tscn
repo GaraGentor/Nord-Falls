@@ -1,0 +1,89 @@
+[gd_scene load_steps=7 format=3 uid="uid://m3rvs4wik3f2"]
+
+[ext_resource type="Script" path="res://script/scenes/battle/monster_switcher.gd" id="1_salwc"]
+[ext_resource type="Texture2D" uid="uid://b8kd22g0nyrrs" path="res://assets/mons/1/1_front.png" id="2_0n7dk"]
+[ext_resource type="Texture2D" uid="uid://bbeul2cormhdr" path="res://assets/ui/types/game-buttons/x128/ChatGPT Image 3. Nov. 2025, 18_46_43 (1).png" id="2_dkxte"]
+[ext_resource type="Theme" uid="uid://b5pomesyumr6n" path="res://script/scenes/battle/flat_button_theme.tres" id="2_k2ek7"]
+[ext_resource type="Theme" uid="uid://bqwc2gott07le" path="res://script/ui/materials/battle_labels.tres" id="3_uq3f0"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8lk44"]
+
+[node name="NewMonsterSwitcher" type="Control" node_paths=PackedStringArray("mon1", "mon2", "btn")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_salwc")
+mon1 = NodePath("HBoxContainer/Panel/Mon1")
+mon2 = NodePath("HBoxContainer/Panel/Mon2")
+btn = NodePath("HBoxContainer/Button")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="Button" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("2_k2ek7")
+icon = ExtResource("2_dkxte")
+flat = true
+icon_alignment = 1
+expand_icon = true
+
+[node name="Label" type="Label" parent="HBoxContainer/Button"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -43.5
+offset_top = -16.0
+offset_right = 43.5
+offset_bottom = 16.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("3_uq3f0")
+text = "BATTLE_SWITCH"
+horizontal_alignment = 1
+
+[node name="Panel" type="Panel" parent="HBoxContainer"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxEmpty_8lk44")
+
+[node name="Mon2" type="TextureRect" parent="HBoxContainer/Panel"]
+visible = false
+modulate = Color(0, 0, 0, 1)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("2_0n7dk")
+expand_mode = 4
+stretch_mode = 5
+
+[node name="Mon1" type="TextureRect" parent="HBoxContainer/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_0n7dk")
+expand_mode = 4
+stretch_mode = 5
+
+[connection signal="pressed" from="HBoxContainer/Button" to="." method="_on_button_pressed"]

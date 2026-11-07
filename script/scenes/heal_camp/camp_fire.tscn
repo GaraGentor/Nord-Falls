@@ -1,0 +1,156 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://script/scenes/heal_camp/camp_fire.gd" id="1_fire"]
+[ext_resource type="Material" path="res://script/scenes/jailer/jailer_props_material.tres" id="2_props"]
+[ext_resource type="Texture2D" path="res://assets/ui/camp/flame_outer.svg" id="3_outer"]
+[ext_resource type="Texture2D" path="res://assets/ui/camp/flame_inner.svg" id="4_inner"]
+[ext_resource type="Texture2D" path="res://assets/ui/camp/campfire_logs.svg" id="5_logs"]
+[ext_resource type="Texture2D" path="res://assets/ui/camp/flame_eye.svg" id="6_eye"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_glow"]
+blend_mode = 1
+
+[sub_resource type="Gradient" id="Gradient_glow"]
+colors = PackedColorArray(1, 0.55, 0.15, 0.6, 1, 0.45, 0.1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_glow"]
+gradient = SubResource("Gradient_glow")
+width = 256
+height = 256
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="Gradient" id="Gradient_embers"]
+colors = PackedColorArray(1, 0.75, 0.25, 1, 1, 0.3, 0.05, 0)
+
+[node name="CampFire" type="Control" node_paths=PackedStringArray("outer_flame", "inner_flame", "glow", "embers", "eyes")]
+custom_minimum_size = Vector2(300, 408)
+layout_mode = 3
+anchors_preset = 0
+size_flags_vertical = 4
+mouse_filter = 2
+script = ExtResource("1_fire")
+outer_flame = NodePath("OuterFlame")
+inner_flame = NodePath("InnerFlame")
+glow = NodePath("Glow")
+embers = NodePath("EmberOrigin/Embers")
+eyes = NodePath("InnerFlame/Eyes")
+
+[node name="Glow" type="TextureRect" parent="."]
+material = SubResource("CanvasItemMaterial_glow")
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -150.0
+offset_top = -290.0
+offset_right = 150.0
+offset_bottom = 10.0
+mouse_filter = 2
+texture = SubResource("GradientTexture2D_glow")
+expand_mode = 1
+
+[node name="OuterFlame" type="TextureRect" parent="."]
+material = ExtResource("2_props")
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -85.0
+offset_top = -270.0
+offset_right = 85.0
+offset_bottom = -40.0
+pivot_offset = Vector2(85, 230)
+mouse_filter = 2
+texture = ExtResource("3_outer")
+expand_mode = 1
+
+[node name="InnerFlame" type="TextureRect" parent="."]
+material = ExtResource("2_props")
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -48.0
+offset_top = -170.0
+offset_right = 48.0
+offset_bottom = -40.0
+pivot_offset = Vector2(48, 130)
+mouse_filter = 2
+texture = ExtResource("4_inner")
+expand_mode = 1
+
+[node name="Eyes" type="Control" parent="InnerFlame"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 22.0
+offset_top = 50.0
+offset_right = 78.0
+offset_bottom = 80.0
+pivot_offset = Vector2(28, 15)
+mouse_filter = 2
+
+[node name="LeftEye" type="TextureRect" parent="InnerFlame/Eyes"]
+material = ExtResource("2_props")
+layout_mode = 0
+offset_right = 24.0
+offset_bottom = 30.0
+mouse_filter = 2
+texture = ExtResource("6_eye")
+expand_mode = 1
+
+[node name="RightEye" type="TextureRect" parent="InnerFlame/Eyes"]
+material = ExtResource("2_props")
+layout_mode = 0
+offset_left = 32.0
+offset_right = 56.0
+offset_bottom = 30.0
+mouse_filter = 2
+texture = ExtResource("6_eye")
+expand_mode = 1
+
+[node name="Logs" type="TextureRect" parent="."]
+material = ExtResource("2_props")
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -120.0
+offset_top = -100.0
+offset_right = 120.0
+mouse_filter = 2
+texture = ExtResource("5_logs")
+expand_mode = 1
+
+[node name="EmberOrigin" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Embers" type="CPUParticles2D" parent="EmberOrigin"]
+position = Vector2(0, -90)
+amount = 14
+lifetime = 1.6
+emission_shape = 3
+emission_rect_extents = Vector2(40, 8)
+direction = Vector2(0, -1)
+spread = 14.0
+gravity = Vector2(0, -20)
+initial_velocity_min = 30.0
+initial_velocity_max = 70.0
+scale_amount_min = 2.0
+scale_amount_max = 4.0
+color_ramp = SubResource("Gradient_embers")

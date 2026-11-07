@@ -1,0 +1,120 @@
+Ich habe die Kern-Systeme gelesen (Kampf, Stats, Skills, Map, Fangen und Opfern, Kerkermeister, Relics). Gespielt habe ich das Spiel nicht. Meine Einschätzung beruht also auf dem │
+  Code und nicht auf dem Spielgefühl.                                                                                                                                                │
+                                                                                                                                                                                     │
+  Kurzfazit                                                                                                                                                                          │
+                                                                                                                                                                                     │
+  Das Konzept kann Spaß machen. Die Meta-Ebene ist schon gut ausgedacht: Ei-Attacken pro Art, Meilensteine, Kopfgelder, Opfern zum Freischalten und der Kerkermeister. Die schwächste│
+  Stelle ist gerade der Kampf selbst, also genau das, was man in einem Run am häufigsten macht.                                                                                      │
+                                                                                                                                                                                     │
+  Was stark ist                                                                                                                                                                      │
+                                                                                                                                                                                     │
+  - Elemente über das Biom: Wilde Monster nehmen das Element des Bioms an (Luft im Feuer-Biom ergibt Blitz), und Skills mit mehreren Elementen werden erst mit den passenden Monstern│
+    spielbar. Das ist die eigenständigste Idee im Spiel und ein guter Grund zu fangen statt nur zu kämpfen.                                                                          │
+  - Fangen oder kämpfen: Wer fängt, bekommt keine Stufen. Das ist eine echte Entscheidung, gut so.                                                                                   │
+  - Fortschritt pro Art: Er gibt einen Grund, verschiedene Starter zu spielen.                                                                                                       │
+                                                                                                                                                                                     │
+  Kernproblem: Im Kampf gibt es wenig zu entscheiden                                                                                                                                 │
+                                                                                                                                                                                     │
+  - Ohne Verbesserung hat ein Monster 1 Aktion pro Zug (_initial_moves = 1), und fast jeder Skill kostet 1. Der beste Zug ist dann fast immer „stärkster Skill mit Element-Vorteil   │
+    auf das schwächste Ziel“. Es gibt eine Kartenhand, aber kein echtes Kartenspiel dahinter.                                                                                        │
+  - Die Gegner-KI wählt Skill und Ziel zufällig (battle.gd _ki_turn). Weil man nicht weiß, wen der Gegner angreift, lohnt sich Blocken oder Schilden kaum.                           │
+  - Fast alle Skills sind reiner Schaden, nur mit anderer Zahl. Auch die freischaltbaren Skills sind meistens „dasselbe, nur stärker“ (28 → 42 → 55 → 75). Das ist reines Wachstum   │
+    der Zahlen, aber kein neuer Spielstil.                                                                                                                                           │
+                                                                                                                                                                                     │
+  Was ich als Erstes einbauen würde, nach Wirkung sortiert:                                                                                                                          │
+  1. Gegner zeigen ihre Absicht an (wie in Slay the Spire): „greift X mit 30 an“ oder „schildet sich“. Damit werden Block, Ziel-Priorität und Tempo sofort zu Entscheidungen. Das    │
+     kostet wenig Aufwand und bringt viel.                                                                                                                                           │
+  2. Mehr Aktionen pro Zug, dafür verschiedene Kosten: zum Beispiel 3 Aktionen pro Zug und Skills, die 0 bis 3 kosten. Dann gibt es eine Abwägung zwischen „zwei kleine Skills“ und  │
+     „ein großer“.                                                                                                                                                                   │
+  3. Status-Effekte und Schlagworte (steht schon in deiner Liste und in skill_system_idee.txt): Brennen, Gift, Betäuben, „bei K.O.“, „gegen Ziele unter 50 % HP“. Erst damit         │
+     entstehen Synergien, und die sind der eigentliche Reiz eines Roguelites.                                                                                                        │
+  4. Relics, die auf Ereignisse reagieren („wenn X, dann Y“). Die drei bisherigen sind reine Prozent-Boni.                                                                           │
+                                                                                                                                                                                     │
+  Die Pokémon-Werte                                                                                                                                                                  │
+                                                                                                                                                                                     │                                No changes this session
+  Sechs Werte sind an sich nicht das Problem. Problematisch ist, wie sie hier verteilt werden.                                                                                       │
+                                                                                                                                                                                     │
+  - Die Verteilung ist pro Run komplett zufällig (growth.gd). Pro Wert gibt es mindestens 5 %, der Rest wird zufällig verteilt. Dadurch kann der Lavagolem in einem Run ein          │
+    schneller, zerbrechlicher Angreifer sein und im nächsten ein Panzer. Die Arten haben dadurch keinen Charakter, und der Spieler kann nichts über sie lernen. Bei Pokémon legen die│
+    Basiswerte die Art fest, und nur die IVs schwanken ein wenig.                                                                                                                    │
+    → Mein Vorschlag: Jede Art bekommt ein festes Werteprofil in monmap.gd, und pro Run schwankt es nur um etwa ±10–15 %.                                                            │
+  - Physisch und Spezial sind getrennt, aber zufällig verteilt. Ob ein Skill physisch oder Spezial ist, legt der Skill fest. Die Angriffswerte des Monsters sind aber zufällig. Oft  │
+    passen die Skills deshalb nicht zum stärkeren Angriffswert. Das ist Rauschen und keine Entscheidung, und Edelsteine für den unpassenden Wert sind praktisch wertlos. Für ein Team│
+    aus 2 Monstern würde ich entweder auf HP / Angriff / Verteidigung / Initiative reduzieren oder die Aufteilung fest an die Art binden.                                            │
+  - Initiative ist zufällig und vermutlich der stärkste Wert. Über das Initiative-Rad kann ein Monster mit 40 % Anteil auf Initiative mehrere Züge machen, bevor eines mit 5 % einmal│
+    dran ist. Das würde ich gezielt testen.                                                                                                                                          │
+  - Alles wächst linear mit der Stufe. Stufe 4 gegen Stufe 2 heißt damit rund doppelt so stark, Stufe 32 gegen 30 nur etwa 7 % stärker. Am Anfang können Kämpfe dadurch stark von    │
+    Glück abhängen, später machen Stufenunterschiede kaum noch etwas aus.                                                                                                            │
+                                                                                                                                                                                     │
+  Konkrete Balance-Auffälligkeiten                                                                                                                                                   │
+                                                                                                                                                                                     │
+  - Die Basis-Blocks geben feste Schilde von 1–4, während der Schaden mit der Stufe wächst. Spätestens im zweiten Biom sind sie nutzlos. Dasselbe gilt für SKILL_LIFE_SPRING mit     │
+    festen +5 HP.                                                                                                                                                                    │
+  - +1 Aktion ist riesig: Kerkermeister-Verbesserung und das Relic extra_move verdoppeln jeweils, was ein Monster pro Zug anrichtet. Als dauerhafte Meta-Verbesserung bedeutet das:  │
+    Neue Spieler und Spieler mit vielen Verbesserungen spielen praktisch zwei verschiedene Spiele. Mit 3 Basis-Aktionen (siehe oben) wäre +1 nur noch rund +33 %, das lässt sich viel│
+    besser ausbalancieren.                                                                                                                                                           │
+  - 2 eigene gegen 3 Gegner im letzten Biom, bei je 1 Aktion. Ohne Verbesserungen wird das vermutlich sehr hart. Das sollte man prüfen.                                              │
+                                                                                                                                                                                     │
+  Was ich nicht vorrangig machen würde                                                                                                                                               │
+                                                                                                                                                                                     │
+  Mehr Monster oder mehr Skills mit denselben Mechaniken. Solange die Skills nur aus Schaden-mal-Zahl bestehen, bringt jede neue Art wenig. Zuerst würde ich das Effekt-System bauen,│
+  dann den Inhalt.                                                                                                                                                                   │
+                                                                                                                                                                                     │
+  Ich kann auch eine kleine Simulation schreiben, die die Wertverteilung pro Run und die Zahl der Züge bis zum K.O. über die Biom-Stufen durchrechnet. Dann sieht man mit Zahlen, wie│
+  stark Zufall und Stufenunterschiede wirklich ins Gewicht fallen.
+
+
+
+Jeder Gegner entscheidet sich im Voraus, welchen Skill er auf welches Ziel einsetzt, und das wird angezeigt. In seinem Zug führt er genau diesen Plan aus, statt zufällig zu wählen.
+
+      Umsetzung
+
+      1. Plan am Monster speichern (mon.gd):
+      gdscript
+      # Geplanter Zug eines Gegners: {"skill": Dictionary, "target": Monster}, leer = noch nicht geplant
+      var _intent: Dictionary = {}
+
+      2. Planen statt würfeln (battle.gd), den Zufall aus _ki_turn herauslösen:
+      gdscript
+      ## Gegner legt seinen nächsten Zug fest (wird angezeigt, bevor er dran ist)
+      func _plan_intent(emon: Monster) -> void:
+              var usable = emon._skills.filter(func(skill): return Skills.is_playable(emon, skill))
+              if usable.is_empty() or _opponents_of(emon).is_empty():
+                      emon._intent = {}
+                      return
+              var skill = usable.pick_random()
+              var side = _allies_of(emon) if Skills.targets_friends(skill) else _opponents_of(emon)
+              emon._intent = {"skill": skill, "target": side.pick_random()}
+              Events.monster_intent_changed.emit(emon)
+
+      func _ki_turn(emon: Monster) -> void:
+              if not emon.is_alive():
+                      return
+              var intent = emon._intent
+              # Ziel inzwischen K.O. oder Skill nicht mehr spielbar: neu planen
+              if intent.is_empty() or not intent.target.is_alive() or not Skills.is_playable(emon, intent.skill):
+                      _plan_intent(emon)
+                      intent = emon._intent
+              if intent.is_empty():
+                      return
+              _use_skill(emon, intent.skill, intent.target)
+              intent.skill.scouted = true
+              # direkt den nächsten Zug planen, damit der Spieler reagieren kann
+              _plan_intent(emon)
+
+      3. Zeitpunkt: In _ready() nach reset_battle_state() für alle Gegner einmal _plan_intent aufrufen. Wenn ein eigenes Monster K.O. geht oder gefangen wird (_check_game_over), alle Gegner neu planen, deren Ziel weg ist.
+
+      4. Anzeige (neues Signal monster_intent_changed in events.gd, Darstellung in monster_scene.gd):
+      - Über dem Gegner ein kleines Symbol mit Text, je nach Art des Skills:
+        - Angriff: Schwert, Skillname und geschätzter Schaden, berechnet mit Skills.calc_damage(emon, target, skill) (bei Flächen-Skills pro Ziel)
+        - Schild: Schild-Symbol und Wert
+        - Buff: Pfeil nach oben und betroffener Wert
+      - Am Ziel eine Markierung, zum Beispiel ein rot pulsierender Rahmen oder ein kleines Gegner-Portrait mit dem Zielsymbol. Der rote Rahmen ist für Angriffe, ein grüner oder blauer für Schild und Buff auf einen Verbündeten. Mehrere Gegner auf demselben Ziel ergeben
+        gestapelte Portraits, damit man sieht: „Monster A bekommt 2 Angriffe ab“.
+      - Optional im Initiative-Rad beim Portrait des Gegners ein Mini-Symbol der Absicht, dann sieht man auch die Reihenfolge.
+
+      5. Bonus, der sofort Tiefe bringt: Die Schadensschätzung sollte Schilde einrechnen („12 → 4 nach Schild“). So sieht man direkt, dass sich Blocken lohnt.
+
+      Folge für das Balancing
+
+      Mit sichtbaren Absichten werden die Basis-Blocks deutlich wertvoller, aber nur, wenn sie mitskalieren. Darum würde ich gleichzeitig add_flat_shield auf einen Prozentwert der Verteidigung umstellen, wie es die anderen Schild-Skills schon machen.

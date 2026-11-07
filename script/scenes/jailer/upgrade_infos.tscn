@@ -1,0 +1,66 @@
+[gd_scene format=3 uid="uid://bjesvsa1s6x4w"]
+
+[ext_resource type="Script" path="res://script/scenes/jailer/upgrade_infos.gd" id="1_nqjj4"]
+[ext_resource type="Texture2D" uid="uid://clfj4a2tkwr85" path="res://assets/ui/jailer/boss_tear.svg" id="2_rryuf"]
+[ext_resource type="Theme" uid="uid://bqwc2gott07le" path="res://script/ui/materials/battle_labels.tres" id="3_lpoxy"]
+
+[node name="UpgradeInfos" type="Control" unique_id=655394698 node_paths=PackedStringArray("shard_label", "cost_label", "current_upgrades_label", "max_upgrades_label")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_nqjj4")
+shard_label = NodePath("VBoxContainer/HBoxContainer/Label2")
+cost_label = NodePath("VBoxContainer/HBoxContainer/CostLabel")
+current_upgrades_label = NodePath("VBoxContainer/Label2")
+max_upgrades_label = NodePath("VBoxContainer/Label")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1428643017]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="VBoxContainer" unique_id=1962366248]
+layout_mode = 2
+theme = ExtResource("3_lpoxy")
+text = "Max Upgrades:"
+
+[node name="Label2" type="Label" parent="VBoxContainer" unique_id=67226640]
+layout_mode = 2
+theme = ExtResource("3_lpoxy")
+text = "Current Upgrades:"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=915443746]
+layout_mode = 2
+
+[node name="TextureRect" type="TextureRect" parent="VBoxContainer/HBoxContainer" unique_id=1186669304]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+texture = ExtResource("2_rryuf")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="CostLabel" type="Label" parent="VBoxContainer/HBoxContainer" unique_id=1605110251]
+layout_mode = 2
+theme = ExtResource("3_lpoxy")
+text = "x2"
+
+[node name="Label2" type="Label" parent="VBoxContainer/HBoxContainer" unique_id=531353317]
+layout_mode = 2
+theme = ExtResource("3_lpoxy")
+text = "(4)"
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer" unique_id=638766525]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer2" unique_id=583763264]
+layout_mode = 2
+theme = ExtResource("3_lpoxy")
+text = "JAILER_MOVES_UPGRADE"

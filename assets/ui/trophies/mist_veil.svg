@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="288" height="288" viewBox="0 0 96 96">
+  <!-- Nebelspuk Schleier: wehendes Tuch aus Dunst mit violettem Schimmer. Deckend, weil der Shader Halbtransparentes wegschneidet -->
+  <!-- Rückseite des Tuchs -->
+  <path d="M26 30 C14 42 14 66 6 80 C18 80 22 70 30 72 L52 40 Z" fill="#6d6894"/>
+  <path d="M70 30 C82 42 82 66 90 80 C78 80 74 70 66 72 L44 40 Z" fill="#59557f"/>
+  <!-- Haube und Bahn -->
+  <path d="M48 6 C30 6 22 20 22 36 C22 54 18 70 12 88 C20 88 24 78 32 78 C38 78 38 90 46 90 C54 90 54 78 62 78 C70 78 74 88 84 88 C78 70 74 54 74 36 C74 20 66 6 48 6 Z" fill="#a9a7cc"/>
+  <path d="M48 6 C30 6 22 20 22 36 C22 54 18 70 12 88 C20 88 24 78 32 78 C30 60 32 34 48 6 Z" fill="#d7d6ee"/>
+  <path d="M74 36 C74 20 66 6 48 6 C60 18 64 50 62 78 C70 78 74 88 84 88 C78 70 74 54 74 36 Z" fill="#7f7cab"/>
+  <!-- Falten -->
+  <path d="M38 52 C36 62 36 70 38 80 M56 54 C58 64 57 72 56 80" fill="none" stroke="#5a5688" stroke-width="3" stroke-linecap="round"/>
+  <!-- Öffnung mit violettem Leuchten -->
+  <path d="M34 34 C34 22 62 22 62 34 C62 46 34 46 34 34 Z" fill="#2a2148" stroke="#06080c" stroke-width="3"/>
+  <path d="M40 34 C40 29 56 29 56 34 C56 39 40 39 40 34 Z" fill="#a155f0"/>
+  <path d="M44 34 C44 32 52 32 52 34 C52 36 44 36 44 34 Z" fill="#e9c8ff"/>
+  <!-- Kanten -->
+  <path d="M48 6 C30 6 22 20 22 36 C22 54 18 70 12 88 C20 88 24 78 32 78 C38 78 38 90 46 90 C54 90 54 78 62 78 C70 78 74 88 84 88 C78 70 74 54 74 36 C74 20 66 6 48 6 Z" fill="none" stroke="#06080c" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M22 44 C14 54 14 68 6 80 C12 80 16 77 19 75 M74 44 C82 54 82 68 90 80 C84 80 80 77 77 75" fill="none" stroke="#06080c" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+</svg>

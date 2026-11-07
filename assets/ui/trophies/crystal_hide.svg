@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="288" height="288" viewBox="0 0 96 96">
+  <!-- Kristallwühler Haut: Felsplatte vom Rücken mit Bernsteinkristallen. Licht von oben links -->
+  <!-- Kristalle hinter der Platte -->
+  <path d="M28 52 L22 28 L32 18 L40 30 L42 52 Z" fill="#e9a52a"/>
+  <path d="M22 28 L32 18 L33 52 H28 Z" fill="#ffd971"/>
+  <path d="M40 54 L42 16 L50 4 L60 16 L60 54 Z" fill="#f0ad2e"/>
+  <path d="M42 16 L50 4 L50 54 H40 Z" fill="#ffe692"/>
+  <path d="M55 54 V16 L60 16 L60 54 Z" fill="#b97713"/>
+  <path d="M60 52 L64 26 L74 20 L78 32 L72 52 Z" fill="#c98519"/>
+  <path d="M64 26 L74 20 L70 52 H60 Z" fill="#f4b93d"/>
+  <path d="M46 14 L46 34 M26 30 L29 40" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  <path d="M28 52 L22 28 L32 18 L40 30 M32 18 L33 50 M40 54 L42 16 L50 4 L60 16 L60 54 M42 16 H60 M50 4 V50 M60 52 L64 26 L74 20 L78 32 L72 52 M64 26 L70 50" fill="none" stroke="#06080c" stroke-width="3" stroke-linejoin="round"/>
+  <!-- Felsplatte -->
+  <path d="M6 66 L16 48 L36 44 L60 46 L80 46 L90 64 L82 84 L58 92 L30 90 L12 82 Z" fill="#6a553a"/>
+  <path d="M6 66 L16 48 L36 44 L60 46 L44 60 L26 64 L18 80 L12 82 Z" fill="#8e7650"/>
+  <path d="M90 64 L82 84 L58 92 L62 76 L76 66 L80 46 Z" fill="#4a3a26"/>
+  <!-- Plattenfugen und Einschlüsse -->
+  <path d="M26 64 L44 60 L62 76 L58 92 M44 60 L60 46 M26 64 L30 90 M76 66 L62 76" fill="none" stroke="#2e2316" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M38 70 L46 68 L50 76 L42 80 Z M70 54 L76 56 L72 62 Z" fill="#ffc53f" stroke="#06080c" stroke-width="2" stroke-linejoin="round"/>
+  <!-- Kanten -->
+  <path d="M6 66 L16 48 L36 44 L60 46 L80 46 L90 64 L82 84 L58 92 L30 90 L12 82 Z" fill="none" stroke="#06080c" stroke-width="4" stroke-linejoin="round"/>
+</svg>

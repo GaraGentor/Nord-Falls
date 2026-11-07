@@ -1,0 +1,64 @@
+MAP-SYSTEM IDEE: Hex-Map mit Giftwolke
+=======================================
+
+Frage: Bei der jetzigen Pfad-Map bleiben (feste Pfade, Knoten wählen) oder umbauen auf
+eine Hex-Map, auf der man selbst läuft (Start in der Mitte, Biome in N/O/S/W, Giftwolke
+macht Schaden bei Rückkehr -> man muss immer weiter in eine Richtung)?
+
+
+1. JETZIGE PFAD-MAP
+-------------------
+Vorteile:
+- Jeder Schritt ist eine echte Entscheidung (Shop, Heal Camp, Trainer, Treasure, Kampf).
+- Risiko/Belohnung auf einen Blick lesbar, man plant 3-4 Knoten voraus.
+- Tempo und Balancing gut steuerbar (ungefähre Anzahl Kämpfe/Shops/Camps pro Run).
+- Ist schon fertig, alle Szenen hängen daran.
+
+Nachteil:
+- Bekanntes Genre-Muster, fühlt sich eher wie ein Menü an als wie eine Reise.
+
+
+2. HEX-MAP MIT GIFTWOLKE
+------------------------
+Vorteile:
+- Mehr Erkunden, mehr Reisegefühl -> passt sehr gut zum Titel "To the North".
+- Giftwolke = starker Zeitdruck (ähnlich der verfolgenden Flotte in FTL), verhindert Grinden.
+- Kein hartes Verbot, sondern "Zurück kostet HP" -> der Spieler wägt ab, bessere Entscheidung.
+
+Risiken:
+- Leere Schritte: Felder ohne Inhalt = nur klicken, nicht entscheiden.
+  -> Lösung: jedes Feld hat Inhalt, oder wenige Felder, die dicht befüllt sind.
+- Strukturell trotzdem ein Graph: "Nie umkehren" auf Hex ist fast dasselbe wie die Pfad-Map,
+  nur mit mehr Seitwärtsbewegung. Freiheit ist kleiner, als sie sich anfühlt
+  -> muss sich nach Freiheit ANFÜHLEN (Fog of War, Sichtweite).
+- Balancing schwerer: Kämpfe umgehen, 5 Shops hintereinander usw.
+  -> braucht Regeln für die Verteilung der Felder.
+- Content-Kosten: 4 Biome in 4 Richtungen = pro Run sieht man nur eins -> 4x Content
+  für einen Durchlauf.
+
+
+3. VORSCHLAG: HYBRID
+--------------------
+- Richtung = Fortschritt: Ziel ist der Norden, die Giftwolke kommt von Süden und rückt
+  pro Zug / pro X Schritte nach.
+- Osten/Westen = seitliche Entscheidungen (Biom-Varianten, Abkürzung vs. Umweg).
+- Biome als Bänder nach Distanz statt nach Himmelsrichtung: je weiter nördlich, desto
+  schwerer. Jeder Run spielt alle Biome.
+- Sichtweite 1-2 Ringe: man sieht, was in der Nähe liegt, und plant kurz voraus
+  -> Erkunden ohne Blindflug.
+- Jedes Hex ist ein Knoten (Kampf, Event, Shop, ...). Ein paar leere Felder sind okay,
+  aber nur als bewusste "Atempausen".
+
+
+4. TECHNISCH
+------------
+- Bestehende Knoten-Szenen weiterverwenden (shop, heal_camp, trainer, treasure, jailer,
+  judgment, ...).
+- Neu gebaut werden müsste nur: world_map-Szene + Logik zur Map-Erzeugung in
+  script/globals/map.gd.
+
+
+5. NÄCHSTER SCHRITT
+-------------------
+- Vor dem Umbau 2-3 Runs auf Papier spielen: kleines Hex-Raster, Würfel für den Inhalt
+  der Felder. Testen, ob die Wolke Spannung erzeugt oder nur nervt.

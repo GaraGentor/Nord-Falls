@@ -1,0 +1,15 @@
+Neue Relics:
+	> Key finder 50% increased (gewöhnlich)
+	> Der Langsamste wird der schnellste in Runde 1 (selten)
+	> Alle Stats im Kapmf sind immer sichtbar (selten)
+	> Level Up zählt doppelt (selten)
+	> Trophäen haben ein Bonus von +2 (gewöhnlich)
+		> Gilt auch rückwirkend für die anderen Trophäen
+	> Schlüssel Ring (gewöhnlich)
+		> gibt 2 schlüssel
+	> Enloses Feuer (gewöhnlich)
+		> Unbegrenzte kostenlose Heilung im Lager
+		> Ersetzt die Tasche mit dem Relikt, das man unendlich ins feuer werfen kann 
+	> Fliegender Teppich (selten)
+		> Ihm ist egal auf welcher Lane du dich befindest, du kannst auf der map überall hin (außer natürlich zurück)
+Nutze erst noch die vorhanden icons (auch doppelt) Bei Unklarheiten Frag mich, bevor du anfängst

@@ -1,0 +1,67 @@
+[gd_scene format=3 uid="uid://ckihn5boo5krt"]
+
+[ext_resource type="Script" path="res://script/scenes/battle/turn_wheel.gd" id="1_npk5q"]
+[ext_resource type="Script" path="res://script/scenes/battle/wheel.gd" id="2_nf206"]
+[ext_resource type="FontFile" uid="uid://cbavibkhidesl" path="res://script/ui/fonts/pxelfont/PixelifySans-VariableFont_wght.ttf" id="3_font"]
+[ext_resource type="Shader" path="res://script/scenes/battle/wheel_ring.gdshader" id="4_ring"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ring"]
+shader = ExtResource("4_ring")
+
+[node name="TurnWheel" type="Control" node_paths=PackedStringArray("wheel", "round_label", "debug_button")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_npk5q")
+wheel = NodePath("Wheel")
+round_label = NodePath("RoundLabel")
+debug_button = NodePath("Button")
+
+[node name="Ring" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_ring")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Wheel" type="Control" parent="." node_paths=PackedStringArray("ring")]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_nf206")
+ring = NodePath("../Ring")
+
+[node name="RoundLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_colors/font_color = Color(0.86, 0.83, 0.72, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Button" type="Button" parent="."]
+visible = false
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
+text = "BATTLE_NEXT"
+
+[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]

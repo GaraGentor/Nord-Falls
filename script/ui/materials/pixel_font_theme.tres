@@ -1,0 +1,6 @@
+[gd_resource type="Theme" format=3 uid="uid://s3xpo0m4ka8"]
+
+[ext_resource type="FontFile" uid="uid://cbavibkhidesl" path="res://script/ui/fonts/pxelfont/PixelifySans-VariableFont_wght.ttf" id="1_font"]
+
+[resource]
+default_font = ExtResource("1_font")

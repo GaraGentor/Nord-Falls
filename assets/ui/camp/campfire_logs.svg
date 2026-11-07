@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="100" viewBox="0 0 240 100">
+  <!-- Gekreuzte Scheite im Steinkreis, liegen vor den Flammen -->
+  <path d="M44 66 L188 18 L206 40 L60 90 Z" fill="#46301f" stroke="#06080c" stroke-width="5" stroke-linejoin="bevel"/>
+  <path d="M50 70 L190 24" stroke="#6b4a30" stroke-width="4" fill="none"/>
+  <path d="M188 18 L206 40 L196 44 L178 22 Z" fill="#8d7446" stroke="#06080c" stroke-width="3" stroke-linejoin="bevel"/>
+  <path d="M196 66 L52 18 L34 40 L180 90 Z" fill="#33211a" stroke="#06080c" stroke-width="5" stroke-linejoin="bevel"/>
+  <path d="M190 70 L50 24" stroke="#59462c" stroke-width="4" fill="none"/>
+  <path d="M52 18 L34 40 L44 44 L62 22 Z" fill="#8d7446" stroke="#06080c" stroke-width="3" stroke-linejoin="bevel"/>
+  <!-- Glut, wo sich die Scheite kreuzen -->
+  <path d="M96 52 L120 44 L144 52 L132 64 H108 Z" fill="#ff8a24" stroke="#06080c" stroke-width="3" stroke-linejoin="bevel"/>
+  <!-- Steine -->
+  <path d="M4 82 L18 66 L44 70 L52 88 L38 98 H12 Z" fill="#4f6264" stroke="#06080c" stroke-width="4" stroke-linejoin="bevel"/>
+  <path d="M60 86 L76 74 L100 78 L106 92 L92 98 H66 Z" fill="#3b4a4c" stroke="#06080c" stroke-width="4" stroke-linejoin="bevel"/>
+  <path d="M110 88 L126 76 L148 80 L154 92 L142 98 H116 Z" fill="#4f6264" stroke="#06080c" stroke-width="4" stroke-linejoin="bevel"/>
+  <path d="M158 86 L176 72 L200 74 L208 90 L194 98 H166 Z" fill="#3b4a4c" stroke="#06080c" stroke-width="4" stroke-linejoin="bevel"/>
+  <path d="M204 72 L224 66 L236 82 L228 98 H208 L198 88 Z" fill="#4f6264" stroke="#06080c" stroke-width="4" stroke-linejoin="bevel"/>
+</svg>

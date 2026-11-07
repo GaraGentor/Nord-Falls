@@ -1,0 +1,32 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://script/ui/moves_badge/moves_particles_view.gd" id="1_view"]
+[ext_resource type="Material" path="res://script/ui/moves_badge/moves_particles.tres" id="2_particles"]
+[ext_resource type="Material" uid="uid://blo3dbj5wps64" path="res://script/ui/shader/living_pixels_material.tres" id="3_living"]
+
+[node name="MovesParticlesView" type="TextureRect" node_paths=PackedStringArray("viewport", "particles")]
+material = ExtResource("3_living")
+offset_right = 256.0
+offset_bottom = 256.0
+mouse_filter = 2
+expand_mode = 1
+script = ExtResource("1_view")
+viewport = NodePath("Viewport")
+particles = NodePath("Viewport/Particles")
+
+[node name="Viewport" type="SubViewport" parent="."]
+disable_3d = true
+transparent_bg = true
+gui_disable_input = true
+size = Vector2i(256, 256)
+render_target_update_mode = 3
+
+[node name="Particles" type="GPUParticles2D" parent="Viewport"]
+position = Vector2(128, 128)
+emitting = false
+amount = 26
+trail_enabled = true
+trail_lifetime = 0.55
+trail_sections = 6
+trail_section_subdivisions = 2
+process_material = ExtResource("2_particles")

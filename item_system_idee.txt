@@ -1,0 +1,83 @@
+Einweg-Items für "To the North"
+
+Fazit: Ja, einbauen. Eigene Monster haben meist nur 1 Aktion pro Zug, und Items bringen
+dort zusätzliche Entscheidungen. Außerdem hat EP damit einen weiteren Nutzen. Am besten
+passen Items, die Fangen und die angekündigten Gegnerzüge verändern, statt nur Werte zu
+erhöhen.
+
+
+# Die drei Ausgangsideen
+
+Heiltrank: gut, aber zurückhaltend
+- HP bleiben zwischen Kämpfen erhalten und das Lager heilt 50 %. Das Item sollte das
+  Lager nicht ersetzen, also etwa 35-40 % heilen und nur im Kampf nutzbar sein.
+- "Trank" ist schon durch die Elementtränke belegt, daher besser "Heilsalbe".
+
++1 Aktion: gut, aber selten
+- Verdoppelt den Zug bei 1 Aktion und wäre mit dem Relic oder einer gesprengten Kette
+  noch stärker. Es sollte also teuer und selten sein.
+- Lässt sich nicht mit dem Fangen kombinieren, weil das nach einem gespielten Skill
+  gesperrt ist.
+
++50 % Fangrate: gut, wenn klar definiert
+- Als +50 Prozentpunkte wäre es fast ein sicherer Fang.
+- Als Faktor x1,5 wird aus 10 % nur 15 %, also wenig bei seltenen Zielen.
+- Empfehlung: x1,5 für den nächsten Versuch, damit es ein Risiko bleibt.
+
+
+# Weitere Ideen
+
+Wurfnetz
+- Effekt: Fangen ist auch nach einem gespielten Skill erlaubt.
+- Warum: Hebt einmalig die wichtigste Fangregel auf: erst angreifen, dann fangen.
+
+Zweiter Wurf
+- Effekt: Ein Fehlversuch beendet den Zug nicht.
+- Warum: Nimmt das Risiko, ohne die Chance zu erhöhen.
+
+Schonschlag
+- Effekt: Der nächste Treffer lässt das Ziel mit mindestens 1 HP überleben.
+- Warum: Verhindert den versehentlichen K.O. und führt in den "Letzte Not"-Bonus von
+  +25 Punkten. Bei Bossen und Kopfgeld-Monstern gilt der Bonus aber nicht.
+
+Rauchbombe
+- Effekt: Streicht die nächste angekündigte Aktion eines Gegners.
+- Warum: Macht die Ankündigungen wertvoller, weil man gezielt die gefährlichste Aktion
+  abwendet.
+
+Lockpfeife
+- Effekt: Lenkt eine angekündigte Aktion auf das andere eigene Monster um.
+- Warum: Rettet ein angeschlagenes Monster, kostet aber HP beim anderen.
+
+Wetzstein
+- Effekt: Setzt die Abklingzeiten eines Monsters zurück.
+- Warum: Stark, aber nur, wenn das Monster starke Skills mit Abklingzeit hat.
+
+Jagdzeichen
+- Effekt: Der nächste K.O. zählt doppelt für den Stufenaufstieg.
+- Warum: Schafft ein Gegengewicht zum Fangen, weil 2 K.O.s eine Stufe geben.
+
+
+# Empfohlene Regeln
+
+- Maximal 3 Items gleichzeitig: Sonst horten Spieler sie und das Ablegen oder Benutzen
+  wird keine echte Entscheidung.
+- Keine Aktionskosten, aber 1 Item pro Zug: Bei nur 1 Aktion würde sonst kaum jemand ein
+  Item nutzen. Das Limit verhindert trotzdem, dass man alles auf einmal zündet.
+- Fangen bleibt danach möglich: Das Benutzen eines Items darf den Fang-Button nicht
+  sperren.
+- Items gibt es im Shop, in Schätzen und als Beute von K.O.s, nicht von Fängen: Das passt
+  zur Essenz, die auch nur Kills bringen, und verschärft den Zielkonflikt.
+- Preise von etwa 30-80 EP: Ein Kampf bringt 10-30 EP und ein Schlüssel kostet 75. Die
+  genauen Werte müsste man im Spiel testen.
+
+
+# Erster Stand
+
+Start mit Heilsalbe, Wurfnetz, Schonschlag und Rauchbombe. Damit sind Überleben, Fangen
+und Gegnerzüge abgedeckt, und man sieht schnell, ob sich das System lohnt. +1 Aktion
+erst danach ergänzen, weil es am schwersten zu balancieren ist.
+
+Der Aufwand dürfte überschaubar sein: Für Beute und Kauf kann man sich an den Schlüsseln
+und Gutscheinen orientieren. Neu wären vor allem die Item-Leiste im Kampf und die
+Effekte, die nur einmal wirken.

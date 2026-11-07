@@ -1,0 +1,608 @@
+keys,en,de
+COMMON_OK,OK...,OK...
+COMMON_CANCEL,Cancel,Abbrechen
+SELECTION_TITLE_START,A new adventure begins...,Ein neues Abenteuer beginnt...
+SELECTION_DRAW_EGG,Draw Egg...,Ei ziehen...
+SELECTION_BEGIN_JOURNEY,Begin journey...,Reise beginnen...
+SELECTION_PICK_WARRIOR,Now select your preferred warrior...,Wähle jetzt deinen Krieger...
+SELECTION_TIME_TO_GO,... it's time to go ...,... es ist Zeit aufzubrechen ...
+SELECTION_NO_MORE_EGGS,... no more eggs... Go! ...,... keine Eier mehr... Los! ...
+SELECTION_REROLL_EGGS,Rotten Eggs,Faule Eier
+BIOME_DEPTH,Depth {depth},Tiefe {depth}
+CONFIGURATOR_GO,Set off...,Aufbrechen...
+CONFIGURATOR_COUNTER,{count}/{max} selected,{count}/{max} gewählt
+CONFIGURATOR_SKILL_STATS,Cost {cost} · CD {cooldown} ·,Kosten {cost} · CD {cooldown} ·
+CONFIGURATOR_TIER,Tier {tier},Stufe {tier}
+CONFIGURATOR_LOCKED,Locked (catch & sacrifice),Gesperrt (fangen & opfern)
+CONFIGURATOR_LOCKED_MILESTONE,Locked (milestone),Gesperrt (Meilenstein)
+CONFIGURATOR_PICK_HINT,Tap a move to see its card,Tippe auf eine Attacke für ihre Karte
+EGG_SKILL_TAG,{skill} (Egg),{skill} (Ei)
+EGG_SKILL_HINT,"Egg move: catch this monster and sacrifice it to unlock this move permanently","Ei-Attacke: Fange dieses Monster und opfere es, um die Attacke dauerhaft freizuschalten"
+EGG_SKILL_UNLOCKED,{skill} unlocked for {mon}!,{skill} für {mon} freigeschaltet!
+RARITY_COMMON,Common,Gewöhnlich
+RARITY_UNCOMMON,Uncommon,Ungewöhnlich
+RARITY_RARE,Rare,Selten
+RARITY_EPIC,Epic,Episch
+RARITY_LEGENDARY,Legendary,Legendär
+BATTLE_PHASE,Battle Phase,Kampfphase
+BATTLE_HYPNOSIS,"
+
+Hypnosis","
+
+Hypnose"
+BATTLE_INSPECT,"
+
+Inspect","
+
+Ansehen"
+BATTLE_END_TURN,"
+
+End Turn","
+
+Zugende"
+BATTLE_CATCH_NOT_ON_SIDE,is not on your side!,ist nicht auf deiner Seite!
+BATTLE_CATCH_SUCCESS,Will now fight for you!,Kämpft jetzt für dich!
+BATTLE_CATCH_FAILED,Hypnosis failed!,Hypnose fehlgeschlagen!
+BATTLE_MON_LEVEL,Lv,Lv
+BATTLE_MON_CATCH,Catch,Fang
+BATTLE_MON_MOVES,Moves,Züge
+BATTLE_MON_TYPE,Type,Typ
+BATTLE_SWITCH,Switch,Wechseln
+BATTLE_NEXT,next,weiter
+MONSTER_CLOSE_INFO,Close Info,Info schließen
+MONSTER_STATUS_EFFECTS,Status effects.,Statuseffekte.
+BOSS_REWARD_OK,OKE!,OKE!
+BOSS_REWARD_SHARD_DESC,"Boss tear, needed to upgrade your monsters permanently","Boss Träne, damit verbesserst du deine Monster dauerhaft"
+BOSS_REWARD_THANKS,Thanks for playing,Danke fürs Spielen
+BOSS_REWARD_NEW_RUN,Start a new run!,Neuen Lauf starten!
+JAILER_REROLL,Other prisoners for {cost} ME ({money}),Andere Gefangene für {cost} ME ({money})
+JAILER_FINISH,Finish,Fertig
+JAILER_BUY,Buy for Boss Tears,Für Boss Tränen kaufen
+JAILER_SOLD,SOLD!,VERKAUFT!
+JAILER_MAX_UPGRADE,Max Upgrade,Max. Stufe
+JAILER_MOVES_UPGRADE,Moves 1 -> 2,Attacken 1 -> 2
+JAILER_CURRENT_UPGRADE_LEVEL,Current Upgrade Level: {level},Aktuelle Stufe: {level}
+JAILER_MAX_UPGRADE_LEVEL,Maximum Upgrade Level: {level},Maximale Stufe: {level}
+JUDGEMENT_LEARN_KNOWN,Already knows it,Kennt es schon
+JUDGEMENT_NEW_CATCHES,New catches {i}/{n},Neue Fänge {i}/{n}
+JUDGEMENT_NO_CATCHES_LEFT,No open catches left,Keine offenen Fänge mehr
+JUDGEMENT_CURRENT_TEAM,Current team,Aktuelles Team
+JUDGEMENT_FREE_SLOT,"Free slot
+Drag a monster here","Freier Platz
+Ziehe ein Monster hierher"
+JUDGEMENT_HINT_IDLE,Drag monsters onto a team slot or a box below. Or click a monster and then its target.,"Ziehe Monster auf einen Team-Platz oder eine Ablage unten. Oder klicke ein Monster an und dann das Ziel."
+JUDGEMENT_HINT_HELD,{mon} selected: click a target. (Esc: cancel),{mon} ausgewählt: Klicke auf ein Ziel. (Esc: abbrechen)
+JUDGEMENT_BADGE_NEW,NEW,NEU
+JUDGEMENT_BADGE_STARTER,Starter,Start-Monster
+JUDGEMENT_BADGE_BENCHED,From your team,Aus deinem Team
+JUDGEMENT_BADGE_SLOT,Slot {slot},Platz {slot}
+JUDGEMENT_ZONE_TEACH,Teach a move,Attacke lehren
+JUDGEMENT_ZONE_SACRIFICE,Sacrifice,Opfern
+JUDGEMENT_ZONE_RELEASE,Release,Freilassen
+JUDGEMENT_ZONE_TEACH_IDLE,A monster passes one move on to your team and leaves afterwards.,Ein Monster gibt eine Attacke an dein Team weiter und geht danach.
+JUDGEMENT_ZONE_SACRIFICE_IDLE,Sacrifice new catches with an egg move to unlock it permanently.,"Neue Fänge mit Ei-Attacke opfern, um sie dauerhaft freizuschalten."
+JUDGEMENT_ZONE_RELEASE_IDLE,Let a monster go without a reward.,Ein Monster ohne Belohnung gehen lassen.
+JUDGEMENT_ZONE_TEACH_EFFECT,{mon} passes one move on and leaves afterwards.,{mon} gibt eine Attacke weiter und geht danach.
+JUDGEMENT_ZONE_SACRIFICE_EFFECT,Permanently unlocks {skill}. {mon} leaves afterwards.,Schaltet {skill} dauerhaft frei. {mon} geht danach.
+JUDGEMENT_ZONE_RELEASE_EFFECT,{mon} leaves without a reward.,{mon} geht ohne Belohnung.
+JUDGEMENT_REASON_LAST,Your team needs at least one monster.,Dein Team braucht mindestens ein Monster.
+JUDGEMENT_REASON_OWN,Your own monsters can't be sacrificed.,Eigene Monster können nicht geopfert werden.
+JUDGEMENT_REASON_NO_EGG,{mon} carries no egg move that can be unlocked.,"{mon} trägt keine Ei-Attacke, die sich freischalten lässt."
+JUDGEMENT_REASON_NOTHING_TO_TEACH,Your team already knows all of {mon}'s moves.,Dein Team kennt schon alle Attacken von {mon}.
+JUDGEMENT_DROP_SWAP,"{mon} joins the team
+{old} goes to the catches","{mon} kommt ins Team
+{old} geht zu den Fängen"
+JUDGEMENT_DROP_FILL,{mon} joins the team,{mon} kommt ins Team
+JUDGEMENT_DROP_REORDER,Swap places,Plätze tauschen
+JUDGEMENT_CONFIRM_KEEP,Keep current team,Jetzige Teamaufstellung behalten
+JUDGEMENT_CONFIRM_CHANGED,Take new team,Neue Teamaufstellung übernehmen
+JUDGEMENT_CONFIRM_RELEASES,Will be released: {mons},Werden freigelassen: {mons}
+JUDGEMENT_CONFIRM_NOTHING_LEFT,All catches are taken care of.,Alle Fänge sind versorgt.
+JUDGEMENT_RELEASE_STARTER_TITLE,Release your starter?,Start-Monster freilassen?
+JUDGEMENT_TEACH_PICK_SKILL,Which move should {mon} pass on?,Welche Attacke soll {mon} weitergeben?
+JUDGEMENT_TEACH_PICK_TARGET,Who should learn {skill}?,Wer soll {skill} lernen?
+JUDGEMENT_TEACH_PICK_REPLACE,{mon} already knows {max} moves. Which one should {skill} replace?,{mon} kennt schon {max} Attacken. Welche soll {skill} ersetzen?
+JUDGEMENT_TEACH_KNOWN_ALL,Your team already knows it,Dein Team kennt sie schon
+JUDGEMENT_TEACH_SKILL_COUNT,{count}/{max} moves,{count}/{max} Attacken
+JUDGEMENT_LEARNED,{mon} learned {skill}!,{mon} hat {skill} gelernt!
+JUDGEMENT_BACK,Back,Zurück
+REVIVE_TITLE,Who gives their life for {mon}?,Wer gibt sein Leben für {mon}?
+REVIVE_INTRO,"{mon} has fallen. A new catch can give its life: {mon} returns with {hp}% HP. Each monster can only be revived once per run.","{mon} ist gefallen. Ein neuer Fang kann sein Leben geben: {mon} kehrt mit {hp} % KP zurück. Jedes Monster kann pro Run nur einmal wiederbelebt werden."
+REVIVE_CARD_NOTE,Will be lost,Geht dafür verloren
+REVIVE_SKIP,Skip,Überspringen
+REVIVE_DONE,{mon} is back with {hp}% HP!,{mon} ist mit {hp} % KP zurück!
+LAST_WILL_INTRO,"{mon} has fallen. Pass on one thing, the rest is lost.","{mon} ist gefallen. Gib eine Sache weiter, der Rest geht verloren."
+LAST_WILL_PICK_GIFT,What should {mon} leave behind?,Was soll {mon} hinterlassen?
+LAST_WILL_PICK_HEIR,Who should inherit {gift}?,Wer soll {gift} erben?
+LAST_WILL_GEMS,Trophies,Trophäen
+LAST_WILL_ELEMENT_DESC,Adds this element to the heir.,Gibt dem Erben dieses Element dazu.
+LAST_WILL_HAS_ELEMENT,Already has it,Hat es schon
+LAST_WILL_ALL_HAVE_ELEMENT,All heirs already have it,Alle Erben haben es schon
+LAST_WILL_HEIR_CATCH,New catch: must join team,Neuer Fang: muss ins Team
+LAST_WILL_DECLINE,Leave nothing,Nichts hinterlassen
+LAST_WILL_DECLINE_TITLE,Leave nothing behind?,Wirklich nichts hinterlassen?
+LAST_WILL_DECLINE_TEXT,Everything {mon} gathered will be lost.,"Alles, was {mon} gesammelt hat, geht verloren."
+LAST_WILL_INHERITED,{mon} inherited {gift}!,{mon} hat {gift} geerbt!
+SKILL_NEEDS_ELEMENTS,Needs: {elements},Benötigt: {elements}
+CONFIGURATOR_NEED_USABLE,Pick at least one move your monster can use!,"Wähle mindestens eine Attacke, die dein Monster einsetzen kann!"
+JUDGEMENT_REPLACE_TITLE,All {max} slots are full. Which move should be forgotten?,Alle {max} Plätze sind belegt. Welche Attacke soll vergessen werden?
+JUDGEMENT_REPLACE,Forget {skill},{skill} vergessen
+BATTLE_UNKNOWN_SKILL,? (Tier {tier}),? (Stufe {tier})
+BATTLE_UNKNOWN_SKILL_HINT,Element and tier are known. The details are revealed once the enemy uses this move or you catch it.,"Element und Stufe sind bekannt. Die Details zeigen sich, sobald der Gegner die Attacke einsetzt oder du ihn fängst."
+LEVEL_UP_TITLE,Level Up!,Level Up!
+LEVEL_UP_LOOT_HINT,"Drag your loot into the bag, or it stays behind.","Zieh die Beute in die Tasche, sonst bleibt sie liegen."
+KEY_NAME,Key,Schlüssel
+KEY_DESC,An old key. It opens one treasure chest.,Ein alter Schlüssel. Er öffnet eine Schatzkiste.
+KEY_LOOT_AMOUNT,+{amount} Key,+{amount} Schlüssel
+GEM_LOOT_AMOUNT,+{amount} Trophy,+{amount} Trophäe
+COUPON_LOOT_AMOUNT,+{amount} Coupon,+{amount} Gutschein
+COUPON_DESC,Drag onto the self-checkout or the trainer for 25% off your next purchase. Lost if you leave without buying.,Zieh ihn auf die Selbstzahler-Kasse oder den Trainer: 25% Rabatt auf deinen nächsten Kauf. Verfällt beim Gehen ohne Kauf.
+COUPON_ALREADY_ACTIVE,A coupon is already active.,Es gilt schon ein Gutschein.
+SHOP_SAY_COUPON,Beep! Coupon scanned. Your next purchase is 25% off.,Piep! Gutschein gescannt. Ihr nächster Einkauf ist 25% günstiger.
+TRAINER_SAY_COUPON,"A coupon? Fine, your next skill is 25% off.","Ein Gutschein? Na gut, dein nächster Skill kostet 25% weniger."
+SKILL_ENVELOPE_LOOT,Envelope,Couvert
+RELIC_CHEST_LOOT,Relic Box,Relikt-Kiste
+EGG_LOOT,Egg,Ei
+EGG_LOOT_DESC,One of your current monsters appears as an egg in new runs,Eines deiner aktuellen Monster erscheint in neuen Läufen als Ei
+SHOP_CHANGES_TO,Changes to,Wird zu
+SHOP_DRAG_HINT,"Drag an Element Potion
+or a Trophy onto
+your Monster","Zieh einen Element-Trank
+oder Trophäe auf
+dein Monster"
+SHOP_FINISH,Finish Shopping!,Einkauf beenden!
+SHOP_NOT_ENOUGH_MONEY,"Nope, not enough Monster Essence!","Nö, nicht genug Monster Essenz!"
+SKILL_CAN_LEARN,Can learn,Kann lernen
+SKILL_CAN_USE,Can use it,Kann es nutzen
+TRAINER_DECIDE_TITLE,"Gratz!
+Which monster should learn the skill?","Glückwunsch!
+Welches Monster soll die Fähigkeit lernen?"
+TRAINER_WHICH_MONSTER,"Which monster
+should learn the skill?","Welches Monster soll
+die Fähigkeit lernen?"
+TRAINER_RECOMMENDED,<Recommended>,<Empfohlen>
+TRAINER_MONSTER_1,Monster 1,Monster 1
+TRAINER_MONSTER_2,Monster 2,Monster 2
+TREASURE_CHOOSE,The chest is open!,Die Kiste ist offen!
+TREASURE_LOCKED,A locked chest,Eine verschlossene Kiste
+TREASURE_KEY_HINT,A key fits. Do you want to use it?,Ein Schlüssel passt. Willst du ihn benutzen?
+TREASURE_NO_KEY,You need a key to open it.,Du brauchst einen Schlüssel.
+TREASURE_OPEN,Open ({keys} left),Öffnen ({keys} übrig)
+TREASURE_LEAVE,Move on,Weiterziehen
+TREASURE_GOLD,Monster Essence,Monster Essenz
+TREASURE_POTION,{element} Potion,{element}-Trank
+TREASURE_POTION_DESC,Adds the element {element} to one of your monsters.,Fügt einem deiner Monster das Element {element} hinzu.
+TREASURE_POTION_CHOOSE_MON,Which monster drinks the potion?,Welches Monster trinkt den Trank?
+WORLDMAP_BOSS,BOSS,BOSS
+WORLDMAP_BOSS_SHARDS,Boss Tears: {amount},Boss Tränen: {amount}
+WORLDMAP_MONEY,ME: {amount},ME: {amount}
+SKILL_HEADER_SKILL,Skill,Fähigkeit
+SKILL_HEADER_COST,Cost,Kosten
+SKILL_HEADER_CD,CD,CD
+SKILL_HEADER_POWER,Power,Stärke
+SKILL_BASIC_ATTACK_EARTH,Earth Strike,Erdschlag
+SKILL_BASIC_ATTACK_FIRE,Fire Strike,Feuerschlag
+SKILL_BASIC_ATTACK_WATER,Water Strike,Wasserschlag
+SKILL_BASIC_ATTACK_AIR,Air Strike,Luftschlag
+SKILL_BASIC_ATTACK_DESC,Deals {value}% physical damage,Verursacht {value}% physischen Schaden
+SKILL_BASIC_BLOCK_EARTH,Stone Wall,Steinwall
+SKILL_BASIC_BLOCK_FIRE,Ember Guard,Glutschild
+SKILL_BASIC_BLOCK_WATER,Water Shield,Wasserschild
+SKILL_BASIC_BLOCK_AIR,Wind Shield,Windschild
+SKILL_BASIC_BLOCK_DESC,Shields an ally with {value}% of its DEF against physical damage until its next turn,Schützt ein eigenes Monster mit {value}% seiner VER vor physischem Schaden bis zu seinem nächsten Zug
+SKILL_DAMAGE_PHYSICAL_DESC,Deals {value}% physical damage,Verursacht {value}% physischen Schaden
+SKILL_DAMAGE_ABILITY_DESC,Deals {value}% magical damage,Verursacht {value}% magischen Schaden
+SKILL_STONE_GUARD,Stone Guard,Felsenpanzer
+SKILL_MIST_VEIL,Mist Veil,Nebelschleier
+SKILL_SHIELD_PHYSICAL_DESC,Shields an ally with {value}% of its DEF against physical damage until its next turn,Schützt ein eigenes Monster mit {value}% seiner VER vor physischem Schaden bis zu seinem nächsten Zug
+SKILL_SHIELD_ABILITY_DESC,Shields an ally with {value}% of its SPD against magical damage until its next turn,Schützt ein eigenes Monster mit {value}% seiner SVE vor magischem Schaden bis zu seinem nächsten Zug
+SKILL_TEMPERED_HIDE,Tempered Hide,Gehärtete Haut
+SKILL_BUFF_DEF_DESC,+{value}% DEF for an ally for {buff_turns} turns,+{value}% VER für ein eigenes Monster für {buff_turns} Züge
+SKILL_LIFE_SPRING,Life Spring,Lebensquell
+SKILL_PASSIVE_HP_DESC,Passive: +{value} HP for every monster in the team,Passiv: +{value} KP für jedes Monster im Team
+SKILL_SQUALL,Squall,Sturmböe
+SKILL_FIRESTORM,Firestorm,Feuersturm
+SKILL_AREA_ABILITY_DESC,Deals {value}% magical damage to all enemies,Verursacht {value}% magischen Schaden an allen Gegnern
+SKILL_GUST,gust,Windstoß
+SKILL_SPLASH,splash,Platscher
+SKILL_EMBER,ember,Glut
+SKILL_PEBBLE_THROW,pebble throw,Kieselwurf
+SKILL_WIND_BLADE,wind blade,Windklinge
+SKILL_TIDAL_SLAM,tidal slam,Flutschlag
+SKILL_FLAME_CLAW,flame claw,Flammenklaue
+SKILL_ROCK_CRUSH,rock crush,Felsbrecher
+SKILL_THUNDER_STRIKE,thunder strike,Donnerschlag
+SKILL_ICE_SPEAR,ice spear,Eisspeer
+SKILL_MAGMA_BURST,magma burst,Magmaausbruch
+SKILL_CHAOS_NOVA,chaos nova,Chaosnova
+SKILL_TAILWIND_STRIKE,tailwind strike,Rückenwindhieb
+SKILL_CYCLONE,cyclone,Zyklon
+SKILL_NORTHERN_GALE,northern gale,Nordwind
+SKILL_UNDERTOW,undertow,Sog
+SKILL_MAELSTROM,maelstrom,Mahlstrom
+SKILL_NORTHERN_TIDE,northern tide,Nordmeerflut
+MILESTONE_UNLOCKED,New egg move for {mon}: {skills},Neue Ei-Attacke für {mon}: {skills}
+MILESTONE_HINT_BOSS_1,"Milestone egg move: defeat a biome boss with this monster as your starter (it has to still be in your team)","Meilenstein-Ei-Attacke: Besiege einen Biom-Boss mit diesem Monster als Start-Monster (es muss noch im Team sein)"
+MILESTONE_HINT_BOSS_5,"Milestone egg move: defeat 5 biome bosses with this monster as your starter (it has to still be in your team)","Meilenstein-Ei-Attacke: Besiege 5 Biom-Bosse mit diesem Monster als Start-Monster (es muss noch im Team sein)"
+MILESTONE_HINT_GAME_WIN,"Milestone egg move: finish the game with this monster as your starter (it has to still be in your team)","Meilenstein-Ei-Attacke: Beende das Spiel mit diesem Monster als Start-Monster (es muss noch im Team sein)"
+ELEMENT_AIR,Air,Luft
+ELEMENT_WATER,Water,Wasser
+ELEMENT_FIRE,Fire,Feuer
+ELEMENT_EARTH,Earth,Erde
+ELEMENT_ICE,Ice,Eis
+ELEMENT_STEAM,Steam,Dampf
+ELEMENT_LIGHTNING,Lightning,Blitz
+ELEMENT_MAGMA,Magma,Magma
+ELEMENT_MUD,Mud,Schlamm
+ELEMENT_DUST,Dust,Staub
+ELEMENT_THUNDERSTORM,Thunderstorm,Gewitter
+ELEMENT_VOLCANO,Volcano,Vulkan
+ELEMENT_ASH_STORM,Ash Storm,Aschesturm
+ELEMENT_SWAMP,Swamp,Sumpf
+ELEMENT_CHAOS,Chaos,Chaos
+ELEMENT_EMPTY,Empty,Leer
+ELEMENT_UNKNOWN,Unknown,Unbekannt
+STAT_HP,HP:,KP:
+STAT_ATK,ATK:,ANG:
+STAT_DEF,DEF:,VER:
+STAT_SPA,SPA:,SAN:
+STAT_SPD,SPD:,SVE:
+STAT_SPE,SPE:,INI:
+STAT_BST,BST:,GES:
+MAP_NODE_COMBAT,COMBAT,KAMPF
+MAP_NODE_BOSS,BOSS,BOSS
+MAP_NODE_CAMP,CAMP,LAGER
+MAP_NODE_SHOP,SHOP,LADEN
+MAP_NODE_TRAINER,TRAINER,TRAINER
+MAP_NODE_JAILER,JAILER,KERKERMEISTER
+MAP_NODE_EVENT,EVENT,EREIGNIS
+MAP_NODE_TREASURE,TREASURE,SCHATZ
+MONSTER_1,Gustmane,Böenmähne
+MONSTER_2,Beaconclaw,Leuchtkrabbe
+MONSTER_3,Shadeplume,Schattflaum
+MONSTER_4,Axescale,Hackschupp
+MONSTER_5,Gogglefly,Glotzlibelle
+MONSTER_6,Barkcleaver,Borkenhieb
+MONSTER_7,Grovesisters,Hainschwestern
+MONSTER_8,Cindernewt,Glutmolch
+MONSTER_9,Jellylotl,Quallolotl
+MONSTER_10,Magmacolossus,Glutkoloss
+MONSTER_11,Puffowl,Wolkenkauz
+MONSTER_12,Stormgryph,Sturmgreif
+MONSTER_13,Crystalback,Kristallwühler
+MONSTER_14,Frostvixen,Frostfähe
+MONSTER_15,Mistwraith,Nebelspuk
+MONSTER_16,Sparkhog,Funkenigel
+TURN_WHEEL_ROUND,Round {round},Runde {round}
+SKILL_RAPTOR_DIVE,raptor dive,Raubvogelsturz
+SKILL_HUNTERS_GALE,hunter's gale,Jägerböe
+SKILL_TROPHY_TEMPEST,trophy tempest,Trophäensturm
+SKILL_SHARK_BITE,shark bite,Haibiss
+SKILL_HUNTERS_TIDE,hunter's tide,Jägerflut
+SKILL_TROPHY_TSUNAMI,trophy tsunami,Trophäentsunami
+SKILL_PLUME_FLURRY,plume flurry,Federwirbel
+SKILL_PHANTOM_DRAFT,phantom draft,Phantomzug
+SKILL_SHADOW_SQUALL,shadow squall,Schattenbö
+SKILL_SCORCHING_CHOP,scorching chop,Sengender Hieb
+SKILL_BLAZING_CLEAVE,blazing cleave,Lodernder Spalter
+SKILL_INFERNO_EXECUTION,inferno execution,Infernohinrichtung
+SKILL_DUST_WHIRR,dust whirr,Staubschwirren
+SKILL_STARING_GAZE,staring gaze,Glotzblick
+SKILL_MUDWING_DIVE,mudwing dive,Schlammflügelsturz
+SKILL_ROOT_LASH,root lash,Wurzelpeitsche
+SKILL_TWIN_AXE_SWEEP,twin axe sweep,Doppelaxtschwung
+SKILL_ANCIENT_TIMBER,ancient timber,Uraltes Gehölz
+SKILL_POLLEN_DRIFT,pollen drift,Pollenflug
+SKILL_BLOSSOM_CHORUS,blossom chorus,Blütenchor
+SKILL_FOURFOLD_BLOOM,fourfold bloom,Vierfache Blüte
+SKILL_SPARK_SPIT,spark spit,Funkenspucke
+SKILL_LAVA_TAIL,lava tail,Lavaschweif
+SKILL_EMBER_SPIRAL,ember spiral,Glutspirale
+SKILL_BUBBLE_SPRAY,bubble spray,Blasenschauer
+SKILL_TENTACLE_LASH,tentacle lash,Tentakelpeitsche
+SKILL_TIDE_HEART,tide heart,Gezeitenherz
+SKILL_MAGMA_FIST,magma fist,Magmafaust
+SKILL_SMOLDER_STOMP,smolder stomp,Schwelstampfer
+SKILL_CORE_BLAST,core blast,Kernglut
+SKILL_FEATHER_PUFF,feather puff,Federpuff
+SKILL_CLOUD_BURST,cloud burst,Wolkenbruch
+SKILL_SKY_TWISTER,sky twister,Himmelswirbel
+SKILL_STATIC_TALON,static talon,Statikkralle
+SKILL_THUNDER_WINGS,thunder wings,Donnerschwingen
+SKILL_SKYFALL_STORM,skyfall storm,Himmelssturz
+SKILL_SHARD_SWIPE,shard swipe,Splitterhieb
+SKILL_CRYSTAL_SPIKES,crystal spikes,Kristallstacheln
+SKILL_GEODE_CRASH,geode crash,Geodenschlag
+SKILL_SNOW_FLURRY,snow flurry,Schneegestöber
+SKILL_FROST_TAILS,frost tails,Frostschweife
+SKILL_GLACIAL_GRACE,glacial grace,Gletscheranmut
+SKILL_MIST_TOUCH,mist touch,Nebelhauch
+SKILL_VAPOR_COIL,vapor coil,Dunstschlinge
+SKILL_PHANTOM_FOG,phantom fog,Phantomnebel
+SKILL_STATIC_ROLL,static roll,Statikrolle
+SKILL_VOLT_QUILLS,volt quills,Voltstacheln
+SKILL_BALL_LIGHTNING,ball lightning,Kugelblitz
+SKILL_SILENT_SWOOP,silent swoop,Lautloser Sturzflug
+SKILL_HUNTERS_HAUNT,hunter's haunt,Jägerspuk
+SKILL_TROPHY_PHANTASM,trophy phantasm,Trophäenphantasma
+SKILL_HOT_HATCHET,hot hatchet,Glühendes Beil
+SKILL_HUNTERS_BLAZE,hunter's blaze,Jägerlohe
+SKILL_TROPHY_PYRE,trophy pyre,Trophäenscheiterhaufen
+SKILL_STINGER_DART,stinger dart,Stachelpfeil
+SKILL_HUNTERS_GAZE,hunter's gaze,Jägerblick
+SKILL_TROPHY_SWARM,trophy swarm,Trophäenschwarm
+SKILL_SAP_CLEAVER,sap cleaver,Harzspalter
+SKILL_HUNTERS_GROVE,hunter's grove,Jägerhain
+SKILL_TROPHY_TIMBERFALL,trophy timberfall,Trophäenbaumfall
+SKILL_THORN_EMBRACE,thorn embrace,Dornenumarmung
+SKILL_HUNTERS_BLOOM,hunter's bloom,Jägerblüte
+SKILL_TROPHY_WILDWOOD,trophy wildwood,Trophäenwildwald
+SKILL_CINDER_BITE,cinder bite,Glutbiss
+SKILL_HUNTERS_FLAME,hunter's flame,Jägerflamme
+SKILL_TROPHY_ERUPTION,trophy eruption,Trophäeneruption
+SKILL_JELLY_STING,jelly sting,Gallertstich
+SKILL_HUNTERS_CURRENT,hunter's current,Jägerströmung
+SKILL_TROPHY_TORRENT,trophy torrent,Trophäensturzflut
+SKILL_BOULDER_PUNCH,boulder punch,Felsenhieb
+SKILL_HUNTERS_EMBER,hunter's ember,Jägerglut
+SKILL_TROPHY_CALDERA,trophy caldera,Trophäencaldera
+SKILL_DOWNDRAFT,downdraft,Fallwind
+SKILL_HUNTERS_BREEZE,hunter's breeze,Jägerbrise
+SKILL_TROPHY_TYPHOON,trophy typhoon,Trophäentaifun
+SKILL_GRYPH_STRIKE,gryph strike,Greifenhieb
+SKILL_HUNTERS_THUNDER,hunter's thunder,Jägerdonner
+SKILL_TROPHY_HURRICANE,trophy hurricane,Trophäenorkan
+SKILL_QUARRY_CLAW,quarry claw,Steinbruchklaue
+SKILL_HUNTERS_BOULDER,hunter's boulder,Jägerfels
+SKILL_TROPHY_AVALANCHE,trophy avalanche,Trophäenlawine
+SKILL_ICICLE_FANG,icicle fang,Eiszapfenbiss
+SKILL_HUNTERS_FROST,hunter's frost,Jägerfrost
+SKILL_TROPHY_BLIZZARD,trophy blizzard,Trophäenblizzard
+SKILL_WISP_GRASP,wisp grasp,Irrlichtgriff
+SKILL_HUNTERS_MIST,hunter's mist,Jägernebel
+SKILL_TROPHY_DELUGE,trophy deluge,Trophäensintflut
+SKILL_SHOCK_NIP,shock nip,Schockbiss
+SKILL_HUNTERS_SPARK,hunter's spark,Jägerfunke
+SKILL_TROPHY_SURGE,trophy surge,Trophäenentladung
+CONFIGURATOR_LOCKED_BOUNTY,Locked (bounty hunter),Gesperrt (Bounty Hunter)
+BOUNTY_ALPHA,Alpha {mon},Alpha {mon}
+BOUNTY_NORTHERN_WARDEN,Northern Warden {mon},Nordwächter {mon}
+BOUNTY_UNLOCKED,Bounty claimed! New egg move for {mon}: {skill},Kopfgeld kassiert! Neue Ei-Attacke für {mon}: {skill}
+BOUNTY_HINT_ALPHA_1,"Bounty hunter: defeat Alpha Gustmane with this monster (last hit). Catching it or a knockout by a teammate does not count","Bounty Hunter: Besiege Alpha Böenmähne mit diesem Monster (letzter Treffer). Fangen oder ein K.O. durch ein Team-Mitglied zählt nicht"
+BOUNTY_HINT_ALPHA_2,"Bounty hunter: defeat Alpha Beaconclaw (from biome 2) with this monster (last hit). Catching it or a knockout by a teammate does not count","Bounty Hunter: Besiege Alpha Leuchtkrabbe (ab Biom 2) mit diesem Monster (letzter Treffer). Fangen oder ein K.O. durch ein Team-Mitglied zählt nicht"
+BOUNTY_HINT_NORTHERN_WARDEN,"Bounty hunter: defeat the Northern Warden (from biome 4) with this monster (last hit). Catching it or a knockout by a teammate does not count","Bounty Hunter: Besiege den Nordwächter (ab Biom 4) mit diesem Monster (letzter Treffer). Fangen oder ein K.O. durch ein Team-Mitglied zählt nicht"
+JUDGEMENT_RELEASE_CONFIRM,Release anyway,Trotzdem freilassen
+JUDGEMENT_STARTER_WARNING,"If you release {mon}, your starter won't collect any milestone progress for the rest of this run.","Wenn du {mon} freilässt, sammelt dein Start-Monster in diesem Run keinen Meilenstein-Fortschritt mehr."
+JUDGEMENT_STARTER_MILESTONE_LINE,{skill}: {stat} {progress}/{count},{skill}: {stat} {progress}/{count}
+MILESTONE_STAT_BIOME_BOSS_KILLS,Biome bosses,Biom-Bosse
+MILESTONE_STAT_GAME_WINS,Wins,Siege
+RUN_END_WIN,Victory!,Sieg!
+RUN_END_LOSE,Defeat,Niederlage
+RUN_END_WIN_SUB,You made it all the way north. Thanks for playing!,Du hast es bis in den Norden geschafft. Danke fürs Spielen!
+RUN_END_LOSE_SUB,Your whole team has fallen.,Dein ganzes Team ist gefallen.
+RUN_END_DEPTH,Biome reached,Erreichtes Biom
+RUN_END_FIGHTS,Fights won,Gewonnene Kämpfe
+RUN_END_KILLS,Monsters defeated,Besiegte Monster
+RUN_END_CATCHES,Monsters caught,Gefangene Monster
+RUN_END_EP,ME earned,Verdiente ME
+RUN_END_TEAM,Team: {team},Team: {team}
+RELIC_EXTRA_MOVE,Battle Drum,Kriegstrommel
+RELIC_EXTRA_MOVE_DESC,Your monsters get +1 move each turn.,Deine Monster haben jeden Zug +1 Aktion.
+RELIC_LUCKY_CHARM,Lucky Charm,Glücksbringer
+RELIC_LUCKY_CHARM_DESC,Catch chance +25%.,Fangchance +25 %.
+RELIC_GOLDEN_IDOL,Golden Idol,Goldener Götze
+RELIC_GOLDEN_IDOL_DESC,+30% ME from won battles.,+30 % ME aus gewonnenen Kämpfen.
+RELIC_SPYGLASS,Spyglass,Fernrohr
+RELIC_SPYGLASS_DESC,The map shows how many enemies await in each fight.,"Die Karte zeigt, wie viele Gegner in jedem Kampf warten."
+RELIC_SUPER_CATCHER,Super Catcher,Super Catcher
+RELIC_SUPER_CATCHER_DESC,A ? on the map marks fights with species you do not own yet. Hover over a fight to see which monsters live there.,"Ein ? auf der Karte markiert Kämpfe mit Arten, die du noch nicht besitzt. Fahre über einen Kampf, um zu sehen, welche Monster dort leben."
+RELIC_KEY_FINDER,Key Finder,Schlüsselfinder
+RELIC_KEY_FINDER_DESC,Keys drop 50% more often.,Schlüssel fallen 50 % häufiger.
+RELIC_SLOW_START,Slow Start,Langsamer Start
+RELIC_SLOW_START_DESC,Your slowest monster acts first in round 1 of every battle.,Dein langsamstes Monster ist in Runde 1 jedes Kampfes als Erstes dran.
+RELIC_ALL_STATS,All-Seeing Eye,Allsehendes Auge
+RELIC_ALL_STATS_DESC,All enemy stats are always visible in battle.,Im Kampf sind alle Werte der Gegner immer sichtbar.
+RELIC_ALL_SKILLS,Battle Codex,Kampf-Kodex
+RELIC_ALL_SKILLS_DESC,All enemy attacks are visible from the start of battle.,Alle Attacken der Gegner sind ab Kampfbeginn sichtbar.
+RELIC_DOUBLE_LEVEL,Double Growth,Doppeltes Wachstum
+RELIC_DOUBLE_LEVEL_DESC,Every level-up grants 2 levels.,Jedes Level-Up bringt 2 Stufen.
+RELIC_TROPHY_BONUS,Trophy Polish,Trophäenpolitur
+RELIC_TROPHY_BONUS_DESC,"Every trophy gives +2 extra, including the ones you already have.","Jede Trophäe gibt +2 zusätzlich, auch die, die du schon hast."
+RELIC_KEY_RING,Key Ring,Schlüsselring
+RELIC_KEY_RING_DESC,Gives you 2 keys when you pick it up.,Gibt dir beim Einsammeln 2 Schlüssel.
+RELIC_ENDLESS_FIRE,Endless Fire,Endloses Feuer
+RELIC_ENDLESS_FIRE_DESC,"Free, unlimited healing at camp: throw this relic into the fire as often as you like.","Kostenlose, unbegrenzte Heilung im Lager: Wirf dieses Relikt so oft du willst ins Feuer."
+RELIC_FLYING_CARPET,Flying Carpet,Fliegender Teppich
+RELIC_FLYING_CARPET_DESC,"On the map you can move to any field in the next row, no matter which lane you are on.","Auf der Karte kannst du zu jedem Feld der nächsten Reihe, egal auf welcher Lane du bist."
+CAMP_FIRE_ASK_ENDLESS,"Throw the Endless Fire in as often as you like, it always comes back! {hp} HP for each monster per throw.","Wirf das Endlose Feuer hinein, so oft du willst, es kommt immer zurück! {hp} KP für jedes Monster pro Wurf."
+RELIC_REWARD_CHOOSE,Choose a relic,Wähle ein Relikt
+MAP_NODE_GEM,TROPHIES,TROPHÄEN
+GEM_CHOOSE,Choose a trophy,Wähle eine Trophäe
+GEM_CHOOSE_MON,Which monster gets the trophy?,Welches Monster bekommt die Trophäe?
+GEM_DESC,{stat} +{value} for the rest of the run,{stat} +{value} für den restlichen Lauf
+GEM_CURRENT,Trophies so far: +{value},Bisherige Trophäen: +{value}
+REWARD_BAG,Bag,Tasche
+REWARD_BAG_HEADER,Into the bag!,Ab in die Tasche!
+GEM_HP,Beaconclaw Lighthouse,Leuchtkrabben Leuchtturm
+GEM_HP_DESC,Its light has never gone out. Whoever carries it holds out longer.,"Sein Licht ist nie erloschen. Wer ihn trägt, hält länger durch."
+GEM_ATK,Barkcleaver Branch Club,Borkenhieb Astknüppel
+GEM_ATK_DESC,Cut from the hardest branch. Every blow lands heavier.,Aus dem härtesten Ast geschlagen. Jeder Hieb sitzt schwerer.
+GEM_DEF,Crystalback Hide,Kristallwühler Haut
+GEM_DEF_DESC,"Rock and amber, packed tight. Blows simply glance off.","Fels und Bernstein, dicht an dicht. Schläge prallen einfach ab."
+GEM_S_ATK,Sparkhog Tail,Funkenigel Schwanz
+GEM_S_ATK_DESC,Still crackling with charge. Every special attack hits harder.,Knistert noch immer vor Spannung. Jede Spezial-Attacke trifft härter.
+GEM_S_DEF,Mistwraith Veil,Nebelspuk Schleier
+GEM_S_DEF_DESC,Barely there. Magic gets lost in its folds.,Kaum zu greifen. Magie verliert sich in seinen Falten.
+GEM_SPEED,Stormgryph Feather,Sturmgreif Feder
+GEM_SPEED_DESC,Weighs almost nothing and carries the storm within.,Wiegt fast nichts und trägt den Sturm in sich.
+SHOP_BOUGHT,{item} bought!,{item} gekauft!
+SHOP_SAY_WELCOME,Welcome to self-checkout! There are no staff here. You serve yourself.,Willkommen an der Selbstzahler-Kasse! Personal gibt es hier nicht. Sie bedienen sich selbst.
+SHOP_SAY_POTIONS,"Potions are on the top shelves. Drag one onto a monster: it gains the element and can use more skills.","Tränke stehen oben im Regal. Auf ein Monster gezogen, bekommt es das Element dazu und kann mehr Skills einsetzen."
+SHOP_SAY_GEMS,Trophies are on the lower left. Drag one onto a monster to raise a stat for the rest of the run.,"Trophäen liegen links unten. Auf ein Monster gezogen, erhöhen sie einen Wert für den restlichen Lauf."
+SHOP_SAY_RELICS,Relics and keys are on the lower right. Please place them in the bag below.,Relikte und Schlüssel finden Sie rechts unten. Legen Sie diese bitte in die Tasche unter mir.
+SHOP_SAY_CLICK,Click an item for details. Payment is automatic once you put it down.,"Klicken Sie eine Ware für Details an. Bezahlt wird automatisch, sobald Sie sie ablegen."
+SHOP_SAY_THANKS_0,Thank you for your purchase! Enjoy your {item}.,Vielen Dank für Ihren Einkauf! Viel Freude mit: {item}.
+SHOP_SAY_THANKS_1,Beep! {item} scanned successfully. Thank you!,Piep! {item} erfolgreich gescannt. Danke!
+SHOP_SAY_THANKS_2,"Thanks! {item} is yours. Unexpected item in bagging area? Not my problem.","Danke! {item} gehört jetzt Ihnen. Unerwarteter Artikel im Einpackbereich? Nicht mein Problem."
+SHOP_DETAIL_MON,Drag it onto a monster to buy it.,"Zum Kaufen auf ein Monster ziehen."
+SHOP_DETAIL_BAG,Drag it into the bag to buy it.,Zum Kaufen in die Tasche ziehen.
+REWARD_NO_TARGET,None of your monsters can use this.,Keins deiner Monster kann das gebrauchen.
+BATTLE_SUPER_EFFECTIVE,Super effective!,Sehr effektiv!
+BATTLE_NOT_EFFECTIVE,Not very effective...,Nicht sehr effektiv...
+BATTLE_CARD_COOLDOWN,Ready in {turns} turns,Bereit in {turns} Zügen
+BATTLE_BLOCKED,{value} blocked,{value} geblockt
+BATTLE_STATUS_SHIELD,Shield {value},Schild {value}
+BATTLE_STATUS_S_SHIELD,Sp. Shield {value},Sp.-Schild {value}
+BATTLE_STATUS_BUFF,Buff,Buff
+BATTLE_INTENT_ATTACK,Attack {damage} -> {target},Angriff {damage} -> {target}
+BATTLE_INTENT_AREA,Area {damage} -> all,Fläche {damage} -> alle
+BATTLE_INTENT_SHIELD,Shield -> {target},Schild -> {target}
+BATTLE_INTENT_BUFF,Buff -> {target},Buff -> {target}
+BATTLE_INTENT_SELF,itself,sich selbst
+BATTLE_INCOMING,Incoming: {full},Eingehend: {full}
+BATTLE_INCOMING_BLOCKED,Incoming: {full} -> {after} after shield,Eingehend: {full} -> {after} nach Schild
+TRAINER_HINT,Drag a skill onto a monster to teach it.,"Zieh einen Skill auf ein Monster, um ihn ihm beizubringen."
+TRAINER_CHOOSE_MON,Who should learn it?,Wer soll ihn lernen?
+TRAINER_ELEMENT,Element: {element},Element: {element}
+SKILL_KIND_ACTIVE,Active,Aktiv
+SKILL_INFO_COOLDOWN,Cooldown,Abklingzeit
+TRAINER_FITS,Fits: {mons},Passt zu: {mons}
+TRAINER_FITS_NONE,None of your monsters can use it yet,Noch kann keins deiner Monster ihn einsetzen
+TRAINER_CAN_USE,Can use it right away,Kann ihn sofort einsetzen
+TRAINER_REPLACES,Has to forget another skill for it,Muss dafür einen anderen Skill vergessen
+TRAINER_ALL_KNOW,Your monsters already know this skill.,Deine Monster kennen diesen Skill schon.
+TRAINER_ALREADY_KNOWS,Already knows this skill,Kennt diesen Skill schon
+TRAINER_FINISH_CHOICE,First choose which skill to forget.,"Wähle erst, welcher Skill vergessen wird."
+JAILER_SHARD,Boss Tear,Boss Träne
+JAILER_NOT_ENOUGH_SHARDS,Not enough Boss Tears!,Nicht genug Boss Tränen!
+JAILER_CANCEL,Never mind,Doch nicht
+JAILER_PLACE_0,on the Storm Cliffs,in den Sturmklippen
+JAILER_PLACE_1,by the Frozen Sea,am Eismeer
+JAILER_PLACE_2,in the Misty Woods,im Nebelwald
+JAILER_PLACE_3,in the Ember Desert,in der Glutwüste
+JAILER_PLACE_4,beyond the Northern Wall,hinter dem Nordwall
+JAILER_SAY_WHO,Now choose a monster. Maybe then I'll give you the keys to it.,Nun wähle ein Monster. Vielleicht gebe ich dir dann die Schlüssel dazu.
+JAILER_SAY_CHAIN,"Clank! One chain less for {mon}. {moves} actions per turn now, but the cage stays shut.","Klirr! Eine Kette weniger für {mon}. Jetzt {moves} Aktionen pro Zug, aber der Käfig bleibt zu."
+JAILER_SAY_FREED,The cage is open. {mon} is free! Make something of it.,Der Käfig ist offen. {mon} ist frei! Mach was draus.
+JAILER_SAY_CANCEL,Changed your mind? Keep your tear then.,"Doch nicht? Dann behalt deine Boss Träne."
+JAILER_SAY_POOR,"No Boss Tears, no keys. That's how it works down here.","Ohne Boss Tränen keine Schlüssel. So läuft das hier unten."
+JAILER_SAY_EMPTY,All my prisoners are free. Bad for business.,Alle meine Gefangenen sind frei. Schlecht fürs Geschäft.
+JAILER_ORIGIN,Origin: {place},Herkunft: {place}
+JAILER_PRICE,Price: {cost},Preis: {cost}
+JAILER_EFFECT,Effect: actions per turn {now} -> {next},Wirkung: Aktionen pro Zug {now} -> {next}
+JAILER_ORIGIN_0,Storm Cliffs,Sturmklippen
+JAILER_ORIGIN_1,Frozen Sea,Eismeer
+JAILER_ORIGIN_2,Misty Woods,Nebelwald
+JAILER_ORIGIN_3,Ember Desert,Glutwüste
+JAILER_ORIGIN_4,Northern Wall,Nordwall
+JAILER_SAY_INTRO_FIRST,"Have a look: {mon}. Caught {place}, yours for {cost}.","Schau her: {mon}. Gefangen {place}, zu haben für {cost}."
+JAILER_SAY_INTRO_NEXT,"Next to it, {mon}, freshly caught {place}. That makes {cost}.","Daneben {mon}, frisch {place} eingefangen. Macht {cost}."
+JAILER_SAY_INTRO_LAST,"And finally {mon}. Caught {place}, costs {cost}.","Und zuletzt {mon}. Gefangen {place}, kostet {cost}."
+JAILER_SAY_HOWTO,I see Boss Tears in your bag. Drag them to me to strengthen one of your monsters.,"Ich sehe da Boss Tränen in deiner Tasche. Zieh sie zu mir, um eines deiner Monster zu verstärken."
+RUN_END_KILLED_BY,Killing blow:,Tödlicher Treffer:
+RUN_END_FALLEN,Fallen along the way:,Unterwegs gefallen:
+RUN_END_DEATH_LINE,"{killer} (Lv. {killer_level}) took out {victim} (Lv. {victim_level}) with {skill}: -{damage} HP ({hp_left}/{max_hp} HP left)","{killer} (Lv. {killer_level}) besiegte {victim} (Lv. {victim_level}) mit {skill}: -{damage} KP ({hp_left}/{max_hp} KP übrig)"
+RUN_END_ELEMENT,[Element x{mult}],[Element x{mult}]
+RUN_END_SEARCH_TITLE,Monster search per biome,Monster-Suche pro Biom
+RUN_END_SEARCH_PLACEHOLDER,Search monster...,Monster suchen...
+RUN_END_SEARCH_KILLS,"Knocked out {count} of your monsters, hardest hit: {skill} (-{damage} HP)","Hat {count} deiner Monster besiegt, härtester Treffer: {skill} (-{damage} KP)"
+RUN_END_SEARCH_ALL,All,Alle
+RUN_END_SEARCH_BIOME,Biome {n}: {element},Biom {n}: {element}
+RUN_END_SEARCH_LOCKED,"Not in your collection yet. Keep it as an egg after a biome boss to see its stats.","Noch nicht in deinem Besitz. Sichere es dir nach einem Biom-Boss als Ei, um seine Werte zu sehen."
+RUN_END_SEARCH_BASE,Base,Basis
+RUN_END_SEARCH_IN_TEAM,In your team: Lv. {level},In deinem Team: Lv. {level}
+RUN_END_SEARCH_LAST_SEEN,Last seen: Lv. {level} in biome {n} ({count}x encountered),Zuletzt gesehen: Lv. {level} in Biom {n} ({count}x getroffen)
+RUN_END_SEARCH_NOT_SEEN,Not encountered as an enemy this run.,In diesem Run nicht als Gegner getroffen.
+RUN_END_VIEW_STATS,Stats,Werte
+RUN_END_VIEW_SKILLS,Skills,Fähigkeiten
+RUN_END_SKILLS_SEEN,Last seen with (Lv. {level} in biome {n}):,Zuletzt gesehen mit (Lv. {level} in Biom {n}):
+RUN_END_SKILLS_EGG,(egg move),(Ei-Attacke)
+RUN_END_EGG_DEFAULT,Egg moves:,Ei-Attacken:
+RUN_END_EGG_UNLOCKABLE,Sacrifice:,Opfern:
+RUN_END_EGG_MILESTONE,Milestones:,Meilensteine:
+RUN_END_EGG_BOUNTY,Bounties:,Kopfgelder:
+EVENT_WHEEL_TITLE,Wheel of Fortune,Glücksrad
+EVENT_WHEEL_DESC,"Spin the wheel: win or lose {amount} ME, half of your Monster Essence.","Dreh am Rad: gewinne oder verliere {amount} ME, die Hälfte deiner Monster Essenz."
+EVENT_WHEEL_SPIN,Spin!,Drehen!
+EVENT_WHEEL_WIN,You win {amount} ME!,Du gewinnst {amount} ME!
+EVENT_WHEEL_LOSE,You lose {amount} ME...,Du verlierst {amount} ME...
+EVENT_VOID_TITLE,The Void,Der Void
+EVENT_VOID_HINT,Throw a relic into the void and receive a different one of the same rarity.,Wirf ein Relikt in den Void und erhalte ein anderes gleicher Seltenheit.
+EVENT_VOID_DRAG_HEADER,Into the void!,Hinein in den Void!
+EVENT_VOID_TAKE_HINT,Drag your new relic into the bag.,Zieh dein neues Relikt in die Tasche.
+EVENT_VOID_NO_MATCH,There is no other relic of this rarity.,Es gibt kein anderes Relikt dieser Seltenheit.
+EVENT_VOID_SKIP,Move on,Weiterziehen
+MAP_HEADER_BIOME,{biome} · Depth {depth},{biome} · Tiefe {depth}
+MAP_HEADER_NO_RELICS,No relics yet,Noch keine Relikte
+MAP_TEAM_ENTRY,{name}  Lv {level},{name}  Lv {level}
+MAP_TEAM_HP,{hp} / {max} HP,{hp} / {max} KP
+MAP_LEGEND,Legend,Legende
+MAP_LEGEND_HINT,Click an entry for details.,Klicke auf einen Eintrag für Details.
+MAP_NODE_COMBAT_DESC,"A fight against wild monsters of the current biome. Wins pay Monster Essence and experience, and weakened enemies can be caught. Every fight in a biome makes the next enemies a bit stronger.","Ein Kampf gegen wilde Monster aus dem aktuellen Biom. Siege bringen Monster Essenz und Erfahrung, geschwächte Gegner kannst du fangen. Mit jedem Kampf im Biom werden die nächsten Gegner etwas stärker."
+MAP_NODE_BOSS_DESC,"A fight with boss strength in the middle of the map: more and tougher enemies than usual. It does not end the biome, that only happens with the boss at the top.","Ein Kampf in Boss-Stärke mitten auf der Karte: mehr und zähere Gegner als sonst. Er beendet das Biom nicht, das passiert erst beim Boss ganz oben."
+MAP_NODE_CAMP_DESC,"A place to rest: feed Monster Essence to the fire and it heals your monsters.","Ein Rastplatz: füttere das Feuer mit Monster Essenz und es heilt deine Monster."
+MAP_NODE_SHOP_DESC,"Spend your Monster Essence: element potions give a monster an additional element (so it can use more skills), trophies raise a stat for the rest of the run, relics give passive bonuses.","Hier gibst du Monster Essenz aus: Element-Tränke geben einem Monster ein zusätzliches Element (damit kann es mehr Skills einsetzen), Trophäen erhöhen einen Wert für den restlichen Run, Relikte geben passive Boni."
+MAP_NODE_TRAINER_DESC,"Teaches your monsters rare skills, half of them with several elements. A monster can only use a skill if it has all of its elements, the pictures on each card show who fits. Without a free slot you replace an old skill. You only pay once the skill is learned.","Bringt deinen Monstern seltene Skills bei, die Hälfte davon mit mehreren Elementen. Ein Monster kann einen Skill nur einsetzen, wenn es alle seine Elemente hat, die Bilder auf jeder Karte zeigen, wer passt. Ohne freien Platz ersetzt du einen alten Skill. Bezahlt wird erst, wenn der Skill gelernt ist."
+MAP_NODE_JAILER_DESC,"The jailer keeps up to three monster species in chains. Every chain is a missing upgrade (+1 action per turn). Hand him a boss tear to break a chain, once the last one is gone the species is free and fully upgraded, permanently, also for future runs. Showing other prisoners costs Monster Essence.","Der Kerkermeister hält bis zu drei Monster-Arten in Ketten. Jede Kette ist eine fehlende Verbesserung (+1 Aktion pro Zug). Gib ihm eine Boss Träne, um eine Kette zu sprengen, ist die letzte weg, ist die Art frei und voll verbessert, dauerhaft, auch für spätere Runs. Andere Gefangene zeigen kostet Monster Essenz."
+MAP_NODE_EVENT_DESC,"A random event: a camp that heals your monsters, the wheel of fortune where you win or lose half of your Monster Essence, or the void that swaps a relic for another one of the same rarity.","Ein Zufallsereignis: ein Lager, das deine Monster heilt, das Glücksrad, bei dem du die Hälfte deiner Monster Essenz gewinnst oder verlierst, oder der Void, der ein Relikt gegen ein anderes gleicher Seltenheit tauscht."
+MAP_NODE_TREASURE_DESC,"A chest full of Monster Essence, you need a key to open it.","Eine Kiste voller Monster Essenz, zum Öffnen brauchst du einen Schlüssel."
+MAP_NODE_GEM_DESC,"Pick one of three trophies. It raises one stat of a monster (e.g. attack or HP) for the rest of the run. The deeper you are, the stronger the trophies.","Wähle eine von drei Trophäen. Sie erhöht einen Wert eines Monsters (z. B. Angriff oder KP) für den restlichen Run. Je tiefer du bist, desto stärker die Trophäen."
+MAP_NODE_HUB,OUTPOST,RASTLAGER
+MAP_NODE_HUB_DESC,"The last stop of every path, right before the boss. Here you can rest (Monster Essence in the fire heals), visit the shop and the trainer, each once. Prepare your team for the boss fight!","Das letzte Feld jedes Pfads, direkt vor dem Boss. Hier kannst du dich ausruhen (Monster Essenz im Feuer heilt), den Laden und den Trainer besuchen, jedes einmal. Mach dein Team bereit für den Bosskampf!"
+CAMP_FIRE_ASK,"Feed me Monster Essence, and in return I'll credit it to you as health! 1 ME = {hp} HP for each monster.","Füttere mich mit Monster Essenzen, im Gegenzug schreibe ich euch das als Leben gut! 1 ME = {hp} KP für jedes Monster."
+CAMP_FIRE_EATING,"Omnomnom nom nom nomnom, yummy!","Omnomnom nom nom nomnom, lecker!"
+CAMP_FEED_POOR,"You don't have enough essence for that.","Dafür hast du nicht genug Essenz."
+SKILL_REWARD_CHOOSE,Choose a skill,Wähle einen Skill
+SKILL_REWARD_HINT,Drag a skill onto a monster to teach it. Only one!,"Zieh einen Skill auf ein Monster, um ihn ihm beizubringen. Nur einen!"
+SKILL_REWARD_SKIP,Take no skill,Keinen Skill nehmen
+SKILL_QUAKE_HAMMER,Quake Hammer,Bebenhammer
+SKILL_LANDSLIDE,Landslide,Erdrutsch
+SKILL_BEDROCK_WARD,Bedrock Ward,Felsgrundwacht
+SKILL_DEEP_ROOTS,Deep Roots,Tiefe Wurzeln
+SKILL_SUNFORGE_BLOW,Sunforge Blow,Sonnenschmiede
+SKILL_ASH_RAIN,Ash Rain,Aschenregen
+SKILL_KILN_HIDE,Kiln Hide,Ofenhaut
+SKILL_HEARTH_SOUL,Hearth Soul,Herdseele
+SKILL_ABYSS_LANCE,Abyss Lance,Abgrundlanze
+SKILL_RIPTIDE_WAVE,Riptide Wave,Sogwelle
+SKILL_PEARL_WARD,Pearl Ward,Perlenwacht
+SKILL_WELLSPRING,Wellspring,Urquell
+SKILL_SKY_RENDER,Sky Render,Himmelsriss
+SKILL_GALE_SWEEP,Gale Sweep,Orkanfeger
+SKILL_ZEPHYR_MANTLE,Zephyr Mantle,Zephirmantel
+SKILL_STORM_HEART,Storm Heart,Sturmherz
+HUB_TITLE,Outpost,Rastlager
+HUB_DESC,"Last rest before the boss. Every station can be used once.","Letzte Rast vor dem Boss. Jede Station kannst du einmal nutzen."
+HUB_REST,REST,AUSRUHEN
+HUB_DONE,{station} (done),{station} (erledigt)
+HUB_CONTINUE,Move on,Weiterziehen
+MAP_HEADER_ROUTE,Route:,Route:
+EGG_OVERVIEW_TITLE,Egg moves unlocked,Ei-Attacken freigeschaltet
+EGG_OVERVIEW_UNLOCKED,Unlocked,Freigeschaltet
+EGG_OVERVIEW_LOCKED,Locked,Gesperrt
+EGG_DETAIL_ELEMENT,Element: {element},Element: {element}
+EGG_CATEGORY_PHYSICAL,Physical,Physisch
+EGG_CATEGORY_MAGIC,Magical,Magisch
+EGG_CATEGORY_SHIELD,Shield,Schild
+EGG_CATEGORY_BUFF,Buff,Buff
+EGG_CATEGORY_PASSIVE,Passive,Passiv
+EGG_SOURCE_DEFAULT,Unlocked (from the start),Freigeschaltet (von Anfang an)
+EGG_SOURCE_DEFAULT_HINT,"Standard egg move: this species knows it from the start","Standard-Ei-Attacke: Diese Art beherrscht sie von Anfang an"
+EGG_SOURCE_SACRIFICE,Unlocked (caught & sacrificed),Freigeschaltet (gefangen & geopfert)
+EGG_SOURCE_SACRIFICE_HINT,"Egg move: you caught this monster and sacrificed it","Ei-Attacke: Du hast dieses Monster gefangen und geopfert"
+EGG_SOURCE_MILESTONE,Unlocked (milestone),Freigeschaltet (Meilenstein)
+EGG_SOURCE_BOUNTY,Unlocked (bounty hunter),Freigeschaltet (Bounty Hunter)
+MILESTONE_SOURCE_BOSS_1,"Milestone egg move: you defeated a biome boss with this monster as your starter","Meilenstein-Ei-Attacke: Du hast einen Biom-Boss mit diesem Monster als Start-Monster besiegt"
+MILESTONE_SOURCE_BOSS_5,"Milestone egg move: you defeated 5 biome bosses with this monster as your starter","Meilenstein-Ei-Attacke: Du hast 5 Biom-Bosse mit diesem Monster als Start-Monster besiegt"
+MILESTONE_SOURCE_GAME_WIN,"Milestone egg move: you finished the game with this monster as your starter","Meilenstein-Ei-Attacke: Du hast das Spiel mit diesem Monster als Start-Monster beendet"
+BOUNTY_SOURCE_ALPHA_1,"Bounty hunter: you defeated Alpha Gustmane with this monster (last hit)","Bounty Hunter: Du hast Alpha Böenmähne mit diesem Monster besiegt (letzter Treffer)"
+BOUNTY_SOURCE_ALPHA_2,"Bounty hunter: you defeated Alpha Beaconclaw with this monster (last hit)","Bounty Hunter: Du hast Alpha Leuchtkrabbe mit diesem Monster besiegt (letzter Treffer)"
+BOUNTY_SOURCE_NORTHERN_WARDEN,"Bounty hunter: you defeated the Northern Warden with this monster (last hit)","Bounty Hunter: Du hast den Nordwächter mit diesem Monster besiegt (letzter Treffer)"
+JAILER_TEAR_COUNT_ONE,{amount} Boss Tear,{amount} Boss Träne
+JAILER_TEAR_COUNT_MANY,{amount} Boss Tears,{amount} Boss Tränen
+TREASURE_HINT,Drag all the essence into the bag.,Zieh die ganze Essenz in die Tasche.
+GEM_HINT,Drag a trophy onto one of your monsters.,Zieh eine Trophäe auf eines deiner Monster.
+RELIC_REWARD_HINT,Drag a relic into the bag.,Zieh ein Relikt in die Tasche.
+BATTLE_CATCH_CALL_1,Come...,Komm...
+BATTLE_CATCH_CALL_2,Follow me...,Folge mir...
+MONSTER_INFO_BACK,Back,Zurück

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="130" viewBox="0 0 96 130">
+  <!-- Heißer Kern der Flamme -->
+  <path d="M50 4 C58 30 78 46 84 76 C90 102 74 120 64 128 H32 C16 116 4 96 12 72 C18 80 24 82 28 78 C24 58 38 46 44 34 C48 26 52 16 50 4 Z" fill="#ffc83d"/>
+  <path d="M50 50 C56 66 68 76 68 94 C68 110 60 120 54 128 H40 C30 120 24 106 30 92 C36 94 40 92 42 86 C42 74 50 66 50 50 Z" fill="#fff3b0"/>
+</svg>

@@ -1,0 +1,49 @@
+Tasks:
+	> Battle Speed initiative einbauen
+	> Nach Boss Battle einabuen
+		> Finalisieren mit animationen
+	> (Monster Seen Screen einbauen)
+	> (Skills Seen Screen einbauen)
+	> Unique skills
+	> Monster sternen Logik
+	> Monster Scaling per Ebene einbauen
+	> Final Boss kann nicht gefangen werden
+	> Trainer gibt nur die skills zurück, die verwendet werden können
+		> Reroll?
+	> Pfade kenntlich machen
+	> Kleine Steine für den Shop die die Stats permannent verbessern
+	> Wenn ich ein Donner monster kille, kann es eines der Elemente die dazu bringen droppen
+	> Relic Drops
+	> Kleine Steine für Perma Stats auch als Loot anbieten
+	> Skills anbieten
+
+	> Mehr Monster
+		> Rückansichten für Monster 10-16 generieren (aktuell ist <n>_back*.png nur eine Kopie der Frontansicht)
+	> Mehr Skills
+		> Skill-System mit Effekt-Bausteinen, Synergien und Passiven (siehe skill_system_idee.txt)
+	> KI ist noch zu blöd
+	> EI Attacke für das erste mal Chaos erreicht
+	> Direkte Wirkung anzeigen der Skills z.B.: 20% von 100 atk = 20 damage.
+	> Auswahl anpassen, statt Züge, den Kreis, sowie die Skills überarbeiten weil macht weniger sinn durch die EI Attacken
+	> Alle 5 Runden soll es die möglichkeit geben sein Favorit Monster selber auszu suchen
+	> Wenn man "Werbung schaut" wird man mit seinem Favorit Monster belohnt, dass man spielen darf
+	> Status Effekte
+
+	> Relics
+		> Key finder 50% increased (gewöhnlich)
+		> Der Langsamste wird der schnellste in Runde 1 (selten)
+		> Alle Stats im Kapmf sind immer sichtbar (selten)
+		> Level Up zählt doppelt (selten)
+		> Trophäen haben ein Bonus von +2 (gewöhnlich)
+			> Gilt auch rückwirkend für die anderen Trophäen
+		> Schlüssel Ring (gewöhnlich)
+			> gibt 2 schlüssel
+		> Enloses Feuer (gewöhnlich)
+			> Unbegrenzte kostenlose Heilung im Lager
+			> Ersetzt die Tasche mit dem Relikt, das man unendlich ins feuer werfen kann 
+		> Fliegender Teppich (selten)
+			> Ihm ist egal auf welcher Lane du dich befindest, du kannst auf der map überall hin (außer natürlich zurück)
+	
+	> Schwarze Tür dropped beim Endboss als loot, beim aufheben wird direkt ein neuer Endboss kampf getriggert mit dem Clue, dass dort der Endboss gefangen werden kann und der Run beendet wird ohne loot.
+	> Passive
+		> Stat Switcher

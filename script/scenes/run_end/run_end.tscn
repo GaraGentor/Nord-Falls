@@ -1,0 +1,304 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://script/scenes/run_end/run_end.gd" id="1_run"]
+[ext_resource type="Shader" path="res://script/scenes/world_map/map_background.gdshader" id="2_bg"]
+[ext_resource type="Theme" uid="uid://bqwc2gott07le" path="res://script/ui/materials/battle_labels.tres" id="3_lbl"]
+[ext_resource type="Script" path="res://script/ui/shader/iron_plate.gd" id="4_plate"]
+[ext_resource type="StyleBox" path="res://script/ui/materials/iron_inset_box.tres" id="4_inset"]
+[ext_resource type="Theme" uid="uid://b5pomesyumr6n" path="res://script/scenes/battle/flat_button_theme.tres" id="5_btn"]
+[ext_resource type="Script" path="res://script/scenes/selection/biome_path.gd" id="6_biome"]
+[ext_resource type="FontFile" uid="uid://cbavibkhidesl" path="res://script/ui/fonts/pxelfont/PixelifySans-VariableFont_wght.ttf" id="7_font"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bg"]
+resource_local_to_scene = true
+shader = ExtResource("2_bg")
+shader_parameter/bottom_color = Color(0, 0, 0, 1)
+shader_parameter/top_color = Color(0.858824, 0.717647, 0.45098, 1)
+shader_parameter/wave_amp = 0.115
+shader_parameter/wave_size = 1.0
+shader_parameter/wave_time_mul = 0.933
+shader_parameter/total_phases = 8
+shader_parameter/living_pixels = true
+shader_parameter/pixel_size = 4.0
+shader_parameter/amplitude = 0.0
+shader_parameter/loop_seconds = 19.365
+shader_parameter/particle_min_size = 1.0
+shader_parameter/particle_max_size = 1.2
+shader_parameter/flicker = 0.15
+shader_parameter/color_levels = 8.0
+shader_parameter/dither_strength = 1.0
+shader_parameter/dither_scale = 2.0
+shader_parameter/dither_fps = 10.0
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_bg"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_plate"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_button"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_focus"]
+draw_center = false
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.858824, 0.717647, 0.45098, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_selected"]
+bg_color = Color(0.858824, 0.717647, 0.45098, 0.18)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.858824, 0.717647, 0.45098, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hovered"]
+bg_color = Color(0.858824, 0.717647, 0.45098, 0.1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_none"]
+
+[node name="RunEnd" type="Control" node_paths=PackedStringArray("background", "title_label", "subtitle_label", "biome_path", "stats_grid", "team_label", "unlock_label", "killer_label", "fallen_label", "search_edit", "mon_list", "detail_box", "biome_tabs")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("3_lbl")
+script = ExtResource("1_run")
+background = NodePath("Background")
+title_label = NodePath("MarginContainer/VBoxContainer/Title")
+subtitle_label = NodePath("MarginContainer/VBoxContainer/Subtitle")
+biome_path = NodePath("MarginContainer/VBoxContainer/BiomePath")
+stats_grid = NodePath("MarginContainer/VBoxContainer/Panels/StatsPanel/MarginContainer/VBoxContainer/StatsGrid")
+team_label = NodePath("MarginContainer/VBoxContainer/Panels/StatsPanel/MarginContainer/VBoxContainer/TeamLabel")
+unlock_label = NodePath("MarginContainer/VBoxContainer/UnlockLabel")
+killer_label = NodePath("MarginContainer/VBoxContainer/Panels/StatsPanel/MarginContainer/VBoxContainer/DeathScroll/DeathLog/KillerLabel")
+fallen_label = NodePath("MarginContainer/VBoxContainer/Panels/StatsPanel/MarginContainer/VBoxContainer/DeathScroll/DeathLog/FallenLabel")
+search_edit = NodePath("MarginContainer/VBoxContainer/Panels/SearchPanel/MarginContainer/VBoxContainer/SearchEdit")
+mon_list = NodePath("MarginContainer/VBoxContainer/Panels/SearchPanel/MarginContainer/VBoxContainer/HBoxContainer/MonList")
+detail_box = NodePath("MarginContainer/VBoxContainer/Panels/SearchPanel/MarginContainer/VBoxContainer/HBoxContainer/DetailScroll/Detail")
+biome_tabs = NodePath("MarginContainer/VBoxContainer/Panels/SearchPanel/MarginContainer/VBoxContainer/BiomeTabs")
+
+[node name="Background" type="TextureRect" parent="."]
+material = SubResource("ShaderMaterial_bg")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("ViewportTexture_bg")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 40
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="Title" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 48
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="BiomePath" type="Control" parent="MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("6_biome")
+font = ExtResource("7_font")
+
+[node name="Panels" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="StatsPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer/Panels"]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_plate")
+
+[node name="Plate" type="ColorRect" parent="MarginContainer/VBoxContainer/Panels/StatsPanel"]
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("4_plate")
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/VBoxContainer/Panels/StatsPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/Panels/StatsPanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="StatsGrid" type="GridContainer" parent="MarginContainer/VBoxContainer/Panels/StatsPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/h_separation = 32
+theme_override_constants/v_separation = 6
+columns = 2
+
+[node name="TeamLabel" type="Label" parent="MarginContainer/VBoxContainer/Panels/StatsPanel/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.86, 0.83, 0.72, 1)
+theme_override_font_sizes/font_size = 18
+autowrap_mode = 2
+
+[node name="DeathScroll" type="ScrollContainer" parent="MarginContainer/VBoxContainer/Panels/StatsPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="DeathLog" type="VBoxContainer" parent="MarginContainer/VBoxContainer/Panels/StatsPanel/MarginContainer/VBoxContainer/DeathScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="KillerLabel" type="Label" parent="MarginContainer/VBoxContainer/Panels/StatsPanel/MarginContainer/VBoxContainer/DeathScroll/DeathLog"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.55, 0.5, 1)
+theme_override_font_sizes/font_size = 16
+autowrap_mode = 2
+
+[node name="FallenLabel" type="Label" parent="MarginContainer/VBoxContainer/Panels/StatsPanel/MarginContainer/VBoxContainer/DeathScroll/DeathLog"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.86, 0.83, 0.72, 1)
+theme_override_font_sizes/font_size = 14
+autowrap_mode = 2
+
+[node name="SearchPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer/Panels"]
+custom_minimum_size = Vector2(600, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_plate")
+
+[node name="Plate" type="ColorRect" parent="MarginContainer/VBoxContainer/Panels/SearchPanel"]
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("4_plate")
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/VBoxContainer/Panels/SearchPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/Panels/SearchPanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SearchTitle" type="Label" parent="MarginContainer/VBoxContainer/Panels/SearchPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.858824, 0.717647, 0.45098, 1)
+text = "RUN_END_SEARCH_TITLE"
+
+[node name="SearchEdit" type="LineEdit" parent="MarginContainer/VBoxContainer/Panels/SearchPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.86, 0.83, 0.72, 1)
+theme_override_colors/font_placeholder_color = Color(0.86, 0.83, 0.72, 0.5)
+theme_override_colors/caret_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_styles/normal = ExtResource("4_inset")
+theme_override_styles/focus = SubResource("StyleBoxFlat_focus")
+placeholder_text = "RUN_END_SEARCH_PLACEHOLDER"
+clear_button_enabled = true
+
+[node name="BiomeTabs" type="HBoxContainer" parent="MarginContainer/VBoxContainer/Panels/SearchPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/Panels/SearchPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="MonList" type="ItemList" parent="MarginContainer/VBoxContainer/Panels/SearchPanel/MarginContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(220, 200)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.86, 0.83, 0.72, 1)
+theme_override_colors/font_hovered_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_colors/font_selected_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_colors/font_hovered_selected_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_styles/panel = ExtResource("4_inset")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_none")
+theme_override_styles/hovered = SubResource("StyleBoxFlat_hovered")
+theme_override_styles/selected = SubResource("StyleBoxFlat_selected")
+theme_override_styles/selected_focus = SubResource("StyleBoxFlat_selected")
+theme_override_styles/hovered_selected = SubResource("StyleBoxFlat_selected")
+theme_override_styles/hovered_selected_focus = SubResource("StyleBoxFlat_selected")
+theme_override_styles/cursor = SubResource("StyleBoxEmpty_none")
+theme_override_styles/cursor_unfocused = SubResource("StyleBoxEmpty_none")
+fixed_icon_size = Vector2i(28, 28)
+
+[node name="DetailScroll" type="ScrollContainer" parent="MarginContainer/VBoxContainer/Panels/SearchPanel/MarginContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_scroll_mode = 0
+
+[node name="Detail" type="VBoxContainer" parent="MarginContainer/VBoxContainer/Panels/SearchPanel/MarginContainer/VBoxContainer/HBoxContainer/DetailScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="UnlockLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.858824, 0.717647, 0.45098, 1)
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="CenterContainer2" type="CenterContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="NewRunButton" type="Button" parent="MarginContainer/VBoxContainer/CenterContainer2"]
+custom_minimum_size = Vector2(240, 0)
+layout_mode = 2
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme = ExtResource("5_btn")
+theme_override_colors/font_color = Color(0.86, 0.83, 0.72, 1)
+theme_override_colors/font_hover_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_colors/font_pressed_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
+text = "BOSS_REWARD_NEW_RUN"
+
+[node name="Plate" type="ColorRect" parent="MarginContainer/VBoxContainer/CenterContainer2/NewRunButton"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("4_plate")
+
+[connection signal="pressed" from="MarginContainer/VBoxContainer/CenterContainer2/NewRunButton" to="." method="_on_new_run_pressed"]

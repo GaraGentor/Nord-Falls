@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="56" viewBox="0 0 96 56">
+  <!-- zwei Glieder von vorne, kaltes Eisen -->
+  <g fill="none">
+    <rect x="7" y="11" width="36" height="34" rx="11" stroke="#06080c" stroke-width="14"/>
+    <rect x="53" y="11" width="36" height="34" rx="11" stroke="#06080c" stroke-width="14"/>
+    <rect x="7" y="11" width="36" height="34" rx="11" stroke="#6d7f82" stroke-width="8"/>
+    <rect x="53" y="11" width="36" height="34" rx="11" stroke="#6d7f82" stroke-width="8"/>
+    <path d="M14 10 H32 M60 10 H78" stroke="#b6cac6" stroke-width="3"/>
+    <path d="M14 46 H34 M60 46 H80" stroke="#37454a" stroke-width="3"/>
+  </g>
+  <!-- verbindendes Glied von der Seite -->
+  <rect x="31" y="20" width="34" height="16" rx="4" fill="#8a9c9c" stroke="#06080c" stroke-width="4"/>
+  <path d="M37 25 H59" fill="none" stroke="#c6d6d2" stroke-width="3"/>
+</svg>

@@ -1,0 +1,191 @@
+[gd_scene format=3 uid="uid://caffuo82lusm"]
+
+[ext_resource type="Theme" uid="uid://bqwc2gott07le" path="res://script/ui/materials/battle_labels.tres" id="1_08c52"]
+[ext_resource type="Script" path="res://script/scenes/level_up/level_up_monster_scene.gd" id="1_055lq"]
+[ext_resource type="Script" path="res://script/ui/shader/iron_plate.gd" id="1_plate"]
+[ext_resource type="Material" path="res://script/ui/shader/living_pixels_material.tres" id="1_living"]
+[ext_resource type="Texture2D" uid="uid://8stqwlamb4k5" path="res://assets/mons/2/2_front.png" id="2_hngs5"]
+[ext_resource type="Script" path="res://script/scenes/battle/stats_grid_container.gd" id="4_kwyv7"]
+[ext_resource type="FontFile" uid="uid://cbavibkhidesl" path="res://script/ui/fonts/pxelfont/PixelifySans-VariableFont_wght.ttf" id="5_u1j1l"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0gv6h"]
+bg_color = Color(0.05, 0.07, 0.085, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.31, 0.415, 0.424, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ajh4y"]
+bg_color = Color(0.858824, 0.717647, 0.45098, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.31, 0.415, 0.424, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_2d7mg"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_name"]
+content_margin_top = 14.0
+
+[node name="MonsterScene" type="Control" node_paths=PackedStringArray("grid", "monster_texture", "name_label", "level_label", "pg1", "pg2")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_055lq")
+grid = NodePath("MarginContainer/Panel/VBoxContainer/HBoxContainer/VBoxContainer2/MarginContainer/GridContainer")
+monster_texture = NodePath("MarginContainer/Panel/VBoxContainer/HBoxContainer/VBoxContainer/TextureRect")
+name_label = NodePath("MarginContainer/Panel/VBoxContainer/HBoxContainer/VBoxContainer/NameLabel")
+level_label = NodePath("Level_Anim/Label")
+pg1 = NodePath("MarginContainer/Panel/VBoxContainer/MarginContainer/HBoxContainer/ProgressBar")
+pg2 = NodePath("MarginContainer/Panel/VBoxContainer/MarginContainer/HBoxContainer/ProgressBar2")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="Panel" parent="MarginContainer"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_2d7mg")
+
+[node name="Plate" type="ColorRect" parent="MarginContainer/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_plate")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/Panel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NameLabel" type="Label" parent="MarginContainer/Panel/VBoxContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme = ExtResource("1_08c52")
+theme_override_colors/font_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_name")
+text = "mob name"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TextureRect" type="TextureRect" parent="MarginContainer/Panel/VBoxContainer/HBoxContainer/VBoxContainer"]
+material = ExtResource("1_living")
+layout_mode = 2
+size_flags_vertical = 3
+texture = ExtResource("2_hngs5")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="MarginContainer/Panel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/Panel/VBoxContainer/HBoxContainer/VBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 4
+
+[node name="GridContainer" type="GridContainer" parent="MarginContainer/Panel/VBoxContainer/HBoxContainer/VBoxContainer2/MarginContainer" node_paths=PackedStringArray("label")]
+layout_mode = 2
+columns = 2
+script = ExtResource("4_kwyv7")
+label = NodePath("Label")
+is_leveling = true
+
+[node name="Label" type="Label" parent="MarginContainer/Panel/VBoxContainer/HBoxContainer/VBoxContainer2/MarginContainer/GridContainer"]
+visible = false
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5_u1j1l")
+theme_override_font_sizes/font_size = 18
+text = "ATK"
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/Panel/VBoxContainer/MarginContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.5
+theme_override_constants/separation = 24
+
+[node name="ProgressBar" type="ProgressBar" parent="MarginContainer/Panel/VBoxContainer/MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/background = SubResource("StyleBoxFlat_0gv6h")
+theme_override_styles/fill = SubResource("StyleBoxFlat_ajh4y")
+max_value = 10.0
+step = 0.1
+show_percentage = false
+
+[node name="ProgressBar2" type="ProgressBar" parent="MarginContainer/Panel/VBoxContainer/MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/background = SubResource("StyleBoxFlat_0gv6h")
+theme_override_styles/fill = SubResource("StyleBoxFlat_ajh4y")
+max_value = 10.0
+step = 0.1
+show_percentage = false
+
+[node name="Level_Anim" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_2d7mg")
+
+[node name="Label" type="Label" parent="Level_Anim"]
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -20.0
+offset_top = -23.0
+offset_right = 20.0
+grow_horizontal = 2
+grow_vertical = 0
+theme = ExtResource("1_08c52")
+theme_override_colors/font_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 50
+text = "LEVEL_UP_TITLE"

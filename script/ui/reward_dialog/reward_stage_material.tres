@@ -1,0 +1,24 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://b4qjtofr7wfi6"]
+
+[ext_resource type="Shader" uid="uid://be467lblpkpfs" path="res://script/ui/shader/living_pixels.gdshader" id="1_lp"]
+
+[resource]
+shader = ExtResource("1_lp")
+shader_parameter/pixel_size = 5.0
+shader_parameter/min_cells = 32.0
+shader_parameter/amplitude = 0.0
+shader_parameter/twitch = 0.0
+shader_parameter/twitch_chance = 0.0
+shader_parameter/loop_seconds = 30.0
+shader_parameter/particle_min_size = 1.0
+shader_parameter/particle_max_size = 1.20000004768372
+shader_parameter/flicker = 0.20800000988
+shader_parameter/color_levels = 4.0
+shader_parameter/dither_strength = 1.0
+shader_parameter/dither_scale = 2.0
+shader_parameter/dither_fps = 10.0
+shader_parameter/alpha_cutoff = 0.35
+shader_parameter/reveal = 1.0
+shader_parameter/outline_color = Color(1, 1, 0, 0)
+shader_parameter/outline_thickness = 4.0
+shader_parameter/tint_color = Color(1, 1, 1, 0)

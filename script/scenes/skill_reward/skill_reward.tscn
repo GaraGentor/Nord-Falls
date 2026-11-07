@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://dvvggrt372jt2"]
+
+[ext_resource type="Script" uid="uid://buu0g0vcpx6a3" path="res://script/scenes/skill_reward/skill_reward.gd" id="1_script"]
+
+[node name="SkillReward" type="Control" unique_id=1776749779]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")

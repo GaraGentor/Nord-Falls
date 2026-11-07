@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="56" viewBox="0 0 96 56">
+  <!-- aufgesprengte Glieder, rostig, an der Bruchstelle offen und auseinandergerückt -->
+  <g fill="none">
+    <path d="M30 11 H18 Q8 11 8 21 V35 Q8 45 18 45 H30" stroke="#06080c" stroke-width="13"/>
+    <path d="M66 11 H78 Q88 11 88 21 V35 Q88 45 78 45 H66" stroke="#06080c" stroke-width="13"/>
+    <path d="M29 11 H18 Q8 11 8 21 V35 Q8 45 18 45 H29" stroke="#6e3f26" stroke-width="7"/>
+    <path d="M67 11 H78 Q88 11 88 21 V35 Q88 45 78 45 H67" stroke="#6e3f26" stroke-width="7"/>
+    <!-- Bruchstücke des mittleren Glieds -->
+    <path d="M42 25 L47 19 M50 37 L55 31" stroke="#06080c" stroke-width="9"/>
+    <path d="M42 25 L47 19 M50 37 L55 31" stroke="#9a5a32" stroke-width="4"/>
+  </g>
+</svg>

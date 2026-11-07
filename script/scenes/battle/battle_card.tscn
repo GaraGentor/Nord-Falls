@@ -1,0 +1,77 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://script/scenes/battle/battle_card.gd" id="1_card"]
+[ext_resource type="Theme" uid="uid://bqwc2gott07le" path="res://script/ui/materials/battle_labels.tres" id="3_theme"]
+[ext_resource type="Texture2D" uid="uid://yg6oxnmiu0pd" path="res://assets/ui/icons/fist.svg" id="4_phys"]
+[ext_resource type="Texture2D" uid="uid://djt3q5aymms0i" path="res://assets/ui/icons/sparkle.svg" id="5_magic"]
+
+[node name="BattleCard" type="PanelContainer" node_paths=PackedStringArray("name_label", "cost_label", "value_label", "type_icon", "description_label")]
+custom_minimum_size = Vector2(150, 0)
+size_flags_vertical = 3
+mouse_filter = 0
+theme = ExtResource("3_theme")
+script = ExtResource("1_card")
+name_label = NodePath("MarginContainer/VBoxContainer/NameLabel")
+cost_label = NodePath("MarginContainer/VBoxContainer/TopRow/CostLabel")
+value_label = NodePath("MarginContainer/VBoxContainer/BottomRow/ValueLabel")
+type_icon = NodePath("MarginContainer/VBoxContainer/TopRow/TypeIcon")
+description_label = NodePath("MarginContainer/VBoxContainer/DescriptionLabel")
+physical_texture = ExtResource("4_phys")
+magic_texture = ExtResource("5_magic")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 11
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 11
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="TopRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="CostLabel" type="Label" parent="MarginContainer/VBoxContainer/TopRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "1"
+
+[node name="TypeIcon" type="TextureRect" parent="MarginContainer/VBoxContainer/TopRow"]
+custom_minimum_size = Vector2(22, 22)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("4_phys")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NameLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "SKILL"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="DescriptionLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(1, 0)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 12
+text = "Description"
+autowrap_mode = 3
+text_overrun_behavior = 3
+
+[node name="BottomRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
+alignment = 1
+
+[node name="ValueLabel" type="Label" parent="MarginContainer/VBoxContainer/BottomRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "20"

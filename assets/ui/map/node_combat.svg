@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <path d="M40 6 H88 L122 40 V88 L88 122 H40 L6 88 V40 Z" fill="#7a2a20" stroke="#06080c" stroke-width="6" stroke-linejoin="bevel"/>
+  <path d="M43 14 H85 L114 43 V85 L85 114 H43 L14 85 V43 Z" fill="none" stroke="#8d6a34" stroke-width="4" stroke-linejoin="bevel"/>
+  <g transform="rotate(45 64 64)">
+    <path d="M60 18 L64 12 L68 18 L68 80 L60 80 Z" fill="#e8eef2" stroke="#06080c" stroke-width="4" stroke-linejoin="bevel"/>
+    <rect x="46" y="80" width="36" height="8" rx="3" fill="#e0b050" stroke="#06080c" stroke-width="4" stroke-linejoin="bevel"/>
+    <rect x="60" y="88" width="8" height="16" fill="#7a4a22" stroke="#06080c" stroke-width="4" stroke-linejoin="bevel"/>
+    <circle cx="64" cy="108" r="5" fill="#e0b050" stroke="#06080c" stroke-width="4" stroke-linejoin="bevel"/>
+  </g>
+  <g transform="rotate(-45 64 64)">
+    <path d="M60 18 L64 12 L68 18 L68 80 L60 80 Z" fill="#e8eef2" stroke="#06080c" stroke-width="4" stroke-linejoin="bevel"/>
+    <rect x="46" y="80" width="36" height="8" rx="3" fill="#e0b050" stroke="#06080c" stroke-width="4" stroke-linejoin="bevel"/>
+    <rect x="60" y="88" width="8" height="16" fill="#7a4a22" stroke="#06080c" stroke-width="4" stroke-linejoin="bevel"/>
+    <circle cx="64" cy="108" r="5" fill="#e0b050" stroke="#06080c" stroke-width="4" stroke-linejoin="bevel"/>
+  </g>
+</svg>

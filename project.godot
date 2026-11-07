@@ -1,0 +1,56 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
+[application]
+
+config/name="To the north"
+run/main_scene="res://script/scenes/selection/selection.tscn"
+config/features=PackedStringArray("4.7", "Forward Plus")
+config/icon="res://icon.svg"
+
+[autoload]
+
+SaveManager="*res://script/globals/save_manager.gd"
+State="*res://script/globals/state.gd"
+Skills="*res://script/globals/skills.gd"
+Map="*res://script/globals/map.gd"
+Events="*res://script/globals/events.gd"
+Enums="*res://script/globals/enums.gd"
+Helper="*res://script/globals/helper.gd"
+Monmap="*res://script/globals/monmap.gd"
+ColorMap="*res://script/globals/color_map.gd"
+Relics="*res://script/globals/relics.gd"
+DebugSettings="*res://script/globals/debug_settings.gd"
+MCPScreenshot="*res://addons/godot_mcp/mcp_screenshot_service.gd"
+MCPInputService="*res://addons/godot_mcp/mcp_input_service.gd"
+MCPGameInspector="*res://addons/godot_mcp/mcp_game_inspector_service.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="viewport"
+window/stretch/aspect="expand"
+
+[dotnet]
+
+project/assembly_name="To the north"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg")
+
+[internationalization]
+
+locale/translations=PackedStringArray("res://localization/translations.en.translation", "res://localization/translations.de.translation")

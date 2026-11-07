@@ -1,0 +1,330 @@
+[gd_scene format=4 uid="uid://cljr4qcwlnyny"]
+
+[ext_resource type="Script" uid="uid://bobjnfvtlhndb" path="res://script/scenes/battle/battle.gd" id="1_08vc2"]
+[ext_resource type="Texture2D" uid="uid://cymuw7e6p5brv" path="res://assets/sczene_backgrounds/Gemini_Generated_Image_ffhltcffhltcffhl.jpg" id="3_2nwnk"]
+[ext_resource type="Script" uid="uid://1wes0enluvmo" path="res://script/scenes/battle/animation_controller.gd" id="3_cggex"]
+[ext_resource type="Shader" uid="uid://be467lblpkpfs" path="res://script/ui/shader/living_pixels.gdshader" id="3_vws2o"]
+[ext_resource type="Texture2D" uid="uid://bq0pf5g35vxjd" path="res://assets/mons/1/1_frontx256.png" id="4_hpryk"]
+[ext_resource type="PackedScene" uid="uid://dp31mv1lmyood" path="res://script/scenes/battle/monster_scene.tscn" id="5_wskai"]
+[ext_resource type="PackedScene" path="res://script/scenes/battle/battle_info_panel.tscn" id="6_5lcde"]
+[ext_resource type="Theme" uid="uid://b5pomesyumr6n" path="res://script/scenes/battle/flat_button_theme.tres" id="7_uo6ii"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/battle/hypnosis_button.svg" id="11_uycmc"]
+[ext_resource type="Material" path="res://script/scenes/jailer/jailer_props_material.tres" id="11_props"]
+[ext_resource type="Shader" uid="uid://b072tfwp8m2f" path="res://script/scenes/battle/catch_anim.gdshader" id="13_3plyr"]
+[ext_resource type="Script" uid="uid://dgw3mowp6ys8c" path="res://script/scenes/battle/catch_anim.gd" id="13_lgcwj"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/battle/end_turn_button.svg" id="13_lhy1u"]
+[ext_resource type="PackedScene" path="res://script/scenes/battle/card_hand.tscn" id="14_hand"]
+[ext_resource type="Theme" path="res://script/ui/materials/pixel_font_theme.tres" id="99_font_theme"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_4lrrq"]
+shader = ExtResource("3_vws2o")
+shader_parameter/pixel_size = 6.0
+shader_parameter/min_cells = 32.0
+shader_parameter/amplitude = 0.0
+shader_parameter/twitch = 0.0
+shader_parameter/twitch_chance = 0.0
+shader_parameter/loop_seconds = 30.0
+shader_parameter/particle_min_size = 1.0
+shader_parameter/particle_max_size = 1.20000004768372
+shader_parameter/flicker = 0.1670000079325
+shader_parameter/color_levels = 4.0
+shader_parameter/dither_strength = 1.0
+shader_parameter/dither_scale = 1.0
+shader_parameter/dither_fps = 10.0
+shader_parameter/alpha_cutoff = 0.35
+shader_parameter/reveal = 1.0
+shader_parameter/outline_color = Color(1, 1, 0, 0)
+shader_parameter/outline_thickness = 4.0
+shader_parameter/tint_color = Color(1, 1, 1, 0)
+
+[sub_resource type="ImageTexture" id="ImageTexture_quuqv"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ycqul"]
+shader = ExtResource("13_3plyr")
+shader_parameter/center = Vector2(0.5, 0.5)
+shader_parameter/stripes = 20
+shader_parameter/speed = 0.2
+shader_parameter/direction = 1
+shader_parameter/stripe_colors = PackedVector4Array(0.298, 0.1, 0.98, 0, 0.398, 0, 1, 0, 0.498, 0, 1, 0, 0.198, 0, 0.7, 0)
+shader_parameter/color_count = 4
+
+[sub_resource type="CanvasTexture" id="CanvasTexture_tuqf4"]
+
+[node name="Battle" type="Control" unique_id=1735669626 node_paths=PackedStringArray("catch_anim", "catch_button", "battle_info", "card_hand")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("99_font_theme")
+script = ExtResource("1_08vc2")
+catch_anim = NodePath("Catch_anim")
+catch_button = NodePath("UI/HBoxContainer/TextureRect/Catch")
+battle_info = NodePath("UI/BattleInfoPanel")
+card_hand = NodePath("GameWindow/CardHand")
+
+[node name="AnimationController" type="Node" parent="." unique_id=1941830434]
+script = ExtResource("3_cggex")
+
+[node name="GameWindow" type="Control" parent="." unique_id=1169158061]
+layout_mode = 1
+anchor_right = 0.639
+anchor_bottom = 1.0
+offset_right = 0.079895
+
+[node name="TextureRect" type="TextureRect" parent="GameWindow" unique_id=1257679029]
+modulate = Color(0.73561597, 0.7273815, 0.62138367, 1)
+material = SubResource("ShaderMaterial_4lrrq")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 2.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("3_2nwnk")
+expand_mode = 1
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="GameWindow" unique_id=1067161045]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.03
+anchor_right = 1.0
+anchor_bottom = 0.36
+offset_right = 2.0
+alignment = 1
+
+[node name="MonsterScene0" parent="GameWindow/HBoxContainer3" unique_id=863722545 instance=ExtResource("5_wskai")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MonsterScene1" parent="GameWindow/HBoxContainer3" unique_id=1666613509 instance=ExtResource("5_wskai")]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+mon_slot = 1
+
+[node name="MonsterScene2" parent="GameWindow/HBoxContainer3" unique_id=1727657015 instance=ExtResource("5_wskai")]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+mon_slot = 2
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="GameWindow" unique_id=285976807]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.002
+anchor_top = 0.36
+anchor_right = 1.0
+anchor_bottom = 0.82
+offset_left = 0.364
+alignment = 1
+
+[node name="MonsterScene0" parent="GameWindow/HBoxContainer2" unique_id=1958585144 instance=ExtResource("5_wskai")]
+layout_mode = 2
+size_flags_horizontal = 3
+home_mons = true
+
+[node name="MonsterScene1" parent="GameWindow/HBoxContainer2" unique_id=835013480 instance=ExtResource("5_wskai")]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+mon_slot = 1
+home_mons = true
+
+[node name="HandBackground" type="ColorRect" parent="GameWindow" unique_id=1565682947]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.7
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 2.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.45)
+
+[node name="CardHand" parent="GameWindow" unique_id=1000149303 instance=ExtResource("14_hand")]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.7
+offset_right = 2.0
+
+[node name="Phase" type="Control" parent="." unique_id=1459139747]
+visible = false
+layout_mode = 1
+anchor_right = 0.642
+anchor_bottom = 0.056
+offset_right = 0.23999
+offset_bottom = -0.32
+
+[node name="ColorRect" type="ColorRect" parent="Phase" unique_id=141679833]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 0.998
+anchor_bottom = 0.875
+offset_right = -0.356018
+color = Color(0, 0, 0, 1)
+
+[node name="PhaseLabel" type="Label" parent="Phase/ColorRect" unique_id=1730462350]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 32.0
+grow_horizontal = 2
+text = "BATTLE_PHASE"
+horizontal_alignment = 1
+
+[node name="UI" type="Control" parent="." unique_id=1082588571]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 819.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ColorRect" type="ColorRect" parent="UI" unique_id=308788346]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="BattleInfoPanel" parent="UI" unique_id=1617508137 instance=ExtResource("6_5lcde")]
+layout_mode = 1
+anchors_preset = -1
+anchor_bottom = 0.84
+offset_bottom = 11.2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI" unique_id=109800599]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.017
+anchor_top = 0.832
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -7.837
+offset_top = -0.0400391
+offset_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TextureRect" type="TextureRect" parent="UI/HBoxContainer" unique_id=781254773]
+material = ExtResource("11_props")
+layout_mode = 2
+size_flags_horizontal = 3
+texture = ExtResource("11_uycmc")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Catch" type="Button" parent="UI/HBoxContainer/TextureRect" unique_id=905362931]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+theme = ExtResource("7_uo6ii")
+theme_override_font_sizes/font_size = 26
+text = "BATTLE_HYPNOSIS"
+icon = SubResource("ImageTexture_quuqv")
+flat = true
+
+[node name="TextureRect3" type="TextureRect" parent="UI/HBoxContainer" unique_id=1984233202]
+material = ExtResource("11_props")
+layout_mode = 2
+size_flags_horizontal = 3
+texture = ExtResource("13_lhy1u")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="EndTurn" type="Button" parent="UI/HBoxContainer/TextureRect3" unique_id=1939269431]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+theme = ExtResource("7_uo6ii")
+theme_override_font_sizes/font_size = 26
+text = "BATTLE_END_TURN"
+flat = true
+
+[node name="UI_Blocker" type="Panel" parent="." unique_id=927229944]
+visible = false
+layout_mode = 0
+offset_right = 1286.0
+offset_bottom = 725.0
+
+[node name="Catch_anim" type="Control" parent="." unique_id=1800587850 node_paths=PackedStringArray("msg")]
+visible = false
+z_index = 20
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("13_lgcwj")
+msg = NodePath("TextureRect/Label2")
+
+[node name="TextureRect" type="TextureRect" parent="Catch_anim" unique_id=50211099]
+material = SubResource("ShaderMaterial_ycqul")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("CanvasTexture_tuqf4")
+
+[node name="MonTexture" type="TextureRect" parent="Catch_anim/TextureRect" unique_id=438198927]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 100.0
+offset_top = 95.0
+offset_right = -100.0
+offset_bottom = -95.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("4_hpryk")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="Catch_anim/TextureRect" unique_id=1073071278]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -265.5
+offset_right = 265.5
+offset_bottom = 88.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 64
+horizontal_alignment = 1
+
+[node name="Label2" type="Label" parent="Catch_anim/TextureRect" unique_id=903598385]
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -265.5
+offset_top = -88.0
+offset_right = 265.5
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 64
+text = "BATTLE_CATCH_NOT_ON_SIDE"
+horizontal_alignment = 1
+
+[connection signal="pressed" from="UI/HBoxContainer/TextureRect/Catch" to="." method="_on_catch_pressed"]
+[connection signal="pressed" from="UI/HBoxContainer/TextureRect3/EndTurn" to="." method="_on_end_turn_pressed"]

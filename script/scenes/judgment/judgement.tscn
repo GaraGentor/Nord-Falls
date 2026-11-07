@@ -1,0 +1,459 @@
+[gd_scene format=3 uid="uid://cyw2det7lplq0"]
+
+[ext_resource type="Script" path="res://script/scenes/judgment/judgement.gd" id="1_nuduw"]
+[ext_resource type="Shader" path="res://script/scenes/world_map/map_background.gdshader" id="2_g5s67"]
+[ext_resource type="PackedScene" uid="uid://bqa8vtcwoin5c" path="res://script/scenes/battle/monster_widget.tscn" id="3_4or1s"]
+[ext_resource type="Theme" uid="uid://b5pomesyumr6n" path="res://script/scenes/battle/flat_button_theme.tres" id="4_atuse"]
+[ext_resource type="StyleBox" path="res://script/ui/materials/iron_inset_box.tres" id="7_inset"]
+[ext_resource type="Script" path="res://script/ui/shader/iron_plate.gd" id="7_plate"]
+[ext_resource type="Theme" path="res://script/ui/materials/pixel_font_theme.tres" id="7_font"]
+[ext_resource type="Script" path="res://script/scenes/judgment/judgement_dialog.gd" id="8_dlg01"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cx0eb"]
+shader = ExtResource("2_g5s67")
+shader_parameter/bottom_color = Color(0, 0, 0, 1)
+shader_parameter/top_color = Color(0.361529, 0.769848, 0.955851, 1)
+shader_parameter/wave_amp = 0.115
+shader_parameter/wave_size = 1.0
+shader_parameter/wave_time_mul = 0.933
+shader_parameter/total_phases = 8
+shader_parameter/living_pixels = true
+shader_parameter/pixel_size = 4.0
+shader_parameter/amplitude = 0.0
+shader_parameter/loop_seconds = 19.365
+shader_parameter/particle_min_size = 1.0
+shader_parameter/particle_max_size = 1.2
+shader_parameter/flicker = 0.15
+shader_parameter/color_levels = 8.0
+shader_parameter/dither_strength = 1.0
+shader_parameter/dither_scale = 2.0
+shader_parameter/dither_fps = 10.0
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_fd6q6"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_plate"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_button"]
+content_margin_left = 8.0
+content_margin_top = 4.0
+content_margin_right = 8.0
+content_margin_bottom = 4.0
+
+[node name="Judgement" type="Control" node_paths=PackedStringArray("mw1", "mw2", "mw3", "catch_header", "catch_badges", "catch_area", "catch_empty", "prev_button", "next_button", "dots", "slot_area_1", "slot_area_2", "slot_badges_1", "slot_badges_2", "slot_empty_1", "slot_empty_2", "hint_label", "zone_row", "confirm_button", "confirm_info", "dialog")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("7_font")
+script = ExtResource("1_nuduw")
+mw1 = NodePath("Margin/VBox/Top/CatchFrame/Content/CatchArea/MonsterWidget")
+mw2 = NodePath("Margin/VBox/Top/TeamFrame/Content/TeamRow/Slot1/Area1/MonsterWidget2")
+mw3 = NodePath("Margin/VBox/Top/TeamFrame/Content/TeamRow/Slot2/Area2/MonsterWidget3")
+catch_header = NodePath("Margin/VBox/Top/CatchFrame/Legend/Margin/Label")
+catch_badges = NodePath("Margin/VBox/Top/CatchFrame/Content/Badges")
+catch_area = NodePath("Margin/VBox/Top/CatchFrame/Content/CatchArea")
+catch_empty = NodePath("Margin/VBox/Top/CatchFrame/Content/CatchArea/Empty")
+prev_button = NodePath("Margin/VBox/Top/CatchFrame/Content/Nav/Prev")
+next_button = NodePath("Margin/VBox/Top/CatchFrame/Content/Nav/Next")
+dots = NodePath("Margin/VBox/Top/CatchFrame/Content/Nav/Dots")
+slot_area_1 = NodePath("Margin/VBox/Top/TeamFrame/Content/TeamRow/Slot1/Area1")
+slot_area_2 = NodePath("Margin/VBox/Top/TeamFrame/Content/TeamRow/Slot2/Area2")
+slot_badges_1 = NodePath("Margin/VBox/Top/TeamFrame/Content/TeamRow/Slot1/Badges1")
+slot_badges_2 = NodePath("Margin/VBox/Top/TeamFrame/Content/TeamRow/Slot2/Badges2")
+slot_empty_1 = NodePath("Margin/VBox/Top/TeamFrame/Content/TeamRow/Slot1/Area1/Empty1")
+slot_empty_2 = NodePath("Margin/VBox/Top/TeamFrame/Content/TeamRow/Slot2/Area2/Empty2")
+hint_label = NodePath("Margin/VBox/Top/TeamFrame/Content/Hint")
+zone_row = NodePath("Margin/VBox/Bottom/Zones")
+confirm_button = NodePath("Margin/VBox/Bottom/Confirm/ConfirmButton")
+confirm_info = NodePath("Margin/VBox/Bottom/Confirm/Info")
+dialog = NodePath("Dialog")
+
+[node name="ColorRect" type="TextureRect" parent="."]
+material = SubResource("ShaderMaterial_cx0eb")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("ViewportTexture_fd6q6")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Top" type="HBoxContainer" parent="Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="CatchFrame" type="Control" parent="Margin/VBox/Top"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Border" type="ColorRect" parent="Margin/VBox/Top/CatchFrame"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 14.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("7_plate")
+
+[node name="Content" type="VBoxContainer" parent="Margin/VBox/Top/CatchFrame"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 38.0
+offset_right = -12.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 4
+
+[node name="Badges" type="HBoxContainer" parent="Margin/VBox/Top/CatchFrame/Content"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="CatchArea" type="Control" parent="Margin/VBox/Top/CatchFrame/Content"]
+clip_contents = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MonsterWidget" parent="Margin/VBox/Top/CatchFrame/Content/CatchArea" instance=ExtResource("3_4or1s")]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Empty" type="Label" parent="Margin/VBox/Top/CatchFrame/Content/CatchArea"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.86, 0.83, 0.72, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = ExtResource("7_inset")
+text = "JUDGEMENT_NO_CATCHES_LEFT"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="Nav" type="HBoxContainer" parent="Margin/VBox/Top/CatchFrame/Content"]
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+
+[node name="Prev" type="Button" parent="Margin/VBox/Top/CatchFrame/Content/Nav"]
+custom_minimum_size = Vector2(56, 0)
+layout_mode = 2
+theme = ExtResource("4_atuse")
+theme_override_colors/font_color = Color(0.86, 0.83, 0.72, 1)
+theme_override_colors/font_hover_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_colors/font_pressed_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_button")
+theme_override_font_sizes/font_size = 20
+text = "<"
+
+[node name="Plate" type="ColorRect" parent="Margin/VBox/Top/CatchFrame/Content/Nav/Prev"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("7_plate")
+
+[node name="Dots" type="HBoxContainer" parent="Margin/VBox/Top/CatchFrame/Content/Nav"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="Next" type="Button" parent="Margin/VBox/Top/CatchFrame/Content/Nav"]
+custom_minimum_size = Vector2(56, 0)
+layout_mode = 2
+theme = ExtResource("4_atuse")
+theme_override_colors/font_color = Color(0.86, 0.83, 0.72, 1)
+theme_override_colors/font_hover_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_colors/font_pressed_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_button")
+theme_override_font_sizes/font_size = 20
+text = ">"
+
+[node name="Plate" type="ColorRect" parent="Margin/VBox/Top/CatchFrame/Content/Nav/Next"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("7_plate")
+
+[node name="Legend" type="PanelContainer" parent="Margin/VBox/Top/CatchFrame"]
+layout_mode = 0
+offset_left = 18.0
+offset_right = 18.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_plate")
+
+[node name="Plate" type="ColorRect" parent="Margin/VBox/Top/CatchFrame/Legend"]
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("7_plate")
+
+[node name="Margin" type="MarginContainer" parent="Margin/VBox/Top/CatchFrame/Legend"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 5
+
+[node name="Label" type="Label" parent="Margin/VBox/Top/CatchFrame/Legend/Margin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_font_sizes/font_size = 18
+
+[node name="TeamFrame" type="Control" parent="Margin/VBox/Top"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 2.0
+
+[node name="Border" type="ColorRect" parent="Margin/VBox/Top/TeamFrame"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 14.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("7_plate")
+
+[node name="Content" type="VBoxContainer" parent="Margin/VBox/Top/TeamFrame"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 14.0
+offset_top = 38.0
+offset_right = -14.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 4
+
+[node name="TeamRow" type="HBoxContainer" parent="Margin/VBox/Top/TeamFrame/Content"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="Slot1" type="VBoxContainer" parent="Margin/VBox/Top/TeamFrame/Content/TeamRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="Badges1" type="HBoxContainer" parent="Margin/VBox/Top/TeamFrame/Content/TeamRow/Slot1"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Area1" type="Control" parent="Margin/VBox/Top/TeamFrame/Content/TeamRow/Slot1"]
+clip_contents = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MonsterWidget2" parent="Margin/VBox/Top/TeamFrame/Content/TeamRow/Slot1/Area1" instance=ExtResource("3_4or1s")]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Empty1" type="Label" parent="Margin/VBox/Top/TeamFrame/Content/TeamRow/Slot1/Area1"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.86, 0.83, 0.72, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = ExtResource("7_inset")
+text = "JUDGEMENT_FREE_SLOT"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="Slot2" type="VBoxContainer" parent="Margin/VBox/Top/TeamFrame/Content/TeamRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="Badges2" type="HBoxContainer" parent="Margin/VBox/Top/TeamFrame/Content/TeamRow/Slot2"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Area2" type="Control" parent="Margin/VBox/Top/TeamFrame/Content/TeamRow/Slot2"]
+clip_contents = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MonsterWidget3" parent="Margin/VBox/Top/TeamFrame/Content/TeamRow/Slot2/Area2" instance=ExtResource("3_4or1s")]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Empty2" type="Label" parent="Margin/VBox/Top/TeamFrame/Content/TeamRow/Slot2/Area2"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.86, 0.83, 0.72, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = ExtResource("7_inset")
+text = "JUDGEMENT_FREE_SLOT"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="Hint" type="Label" parent="Margin/VBox/Top/TeamFrame/Content"]
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="Legend" type="PanelContainer" parent="Margin/VBox/Top/TeamFrame"]
+layout_mode = 0
+offset_left = 18.0
+offset_right = 18.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_plate")
+
+[node name="Plate" type="ColorRect" parent="Margin/VBox/Top/TeamFrame/Legend"]
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("7_plate")
+
+[node name="Margin" type="MarginContainer" parent="Margin/VBox/Top/TeamFrame/Legend"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 5
+
+[node name="Label" type="Label" parent="Margin/VBox/Top/TeamFrame/Legend/Margin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_font_sizes/font_size = 18
+text = "JUDGEMENT_CURRENT_TEAM"
+
+[node name="Bottom" type="HBoxContainer" parent="Margin/VBox"]
+custom_minimum_size = Vector2(0, 104)
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Zones" type="HBoxContainer" parent="Margin/VBox/Bottom"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 2.6
+theme_override_constants/separation = 12
+
+[node name="Confirm" type="VBoxContainer" parent="Margin/VBox/Bottom"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="ConfirmButton" type="Button" parent="Margin/VBox/Bottom/Confirm"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+theme = ExtResource("4_atuse")
+theme_override_colors/font_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_colors/font_hover_color = Color(1, 0.9, 0.65, 1)
+theme_override_colors/font_pressed_color = Color(1, 0.9, 0.65, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_button")
+autowrap_mode = 3
+
+[node name="Plate" type="ColorRect" parent="Margin/VBox/Bottom/Confirm/ConfirmButton"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("7_plate")
+
+[node name="Info" type="Label" parent="Margin/VBox/Bottom/Confirm"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.86, 0.83, 0.72, 1)
+theme_override_font_sizes/font_size = 13
+horizontal_alignment = 1
+autowrap_mode = 3
+max_lines_visible = 3
+
+[node name="Dialog" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("8_dlg01")
+
+[connection signal="pressed" from="Margin/VBox/Top/CatchFrame/Content/Nav/Prev" to="." method="_step" binds= [-1]]
+[connection signal="pressed" from="Margin/VBox/Top/CatchFrame/Content/Nav/Next" to="." method="_step" binds= [1]]
+[connection signal="pressed" from="Margin/VBox/Bottom/Confirm/ConfirmButton" to="." method="_on_confirm_pressed"]

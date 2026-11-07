@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>To the North Wiki</title>
+<!-- Generiert von tools/wiki/build_wiki.js – nicht von Hand bearbeiten, Änderungen gehören ins Template. -->
+<style>
+@font-face {
+	font-family: "Pixelify";
+	src: url("../script/ui/fonts/pxelfont/PixelifySans-VariableFont_wght.ttf");
+}
+:root {
+	--bg: #f4f1ea;
+	--panel: #fffdf8;
+	--panel-2: #f0ebe0;
+	--line: #ddd5c4;
+	--text: #2a2620;
+	--muted: #6f675a;
+	--accent: #2f7f86;
+	--accent-soft: #d8ecec;
+	--good: #2e8b57;
+	--bad: #b8473b;
+	--shadow: 0 1px 2px rgba(40, 30, 10, .08), 0 4px 14px rgba(40, 30, 10, .06);
+	color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) {
+		--bg: #15181c;
+		--panel: #1d2127;
+		--panel-2: #252a31;
+		--line: #333a43;
+		--text: #e6e2da;
+		--muted: #9a9a94;
+		--accent: #5cc4cc;
+		--accent-soft: #1f3a3d;
+		--good: #5fc48a;
+		--bad: #e57a6c;
+		--shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 4px 14px rgba(0, 0, 0, .25);
+		color-scheme: dark;
+	}
+}
+:root[data-theme="dark"] {
+	--bg: #15181c;
+	--panel: #1d2127;
+	--panel-2: #252a31;
+	--line: #333a43;
+	--text: #e6e2da;
+	--muted: #9a9a94;
+	--accent: #5cc4cc;
+	--accent-soft: #1f3a3d;
+	--good: #5fc48a;
+	--bad: #e57a6c;
+	--shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 4px 14px rgba(0, 0, 0, .25);
+	color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+	background: var(--bg);
+	color: var(--text);
+	font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+h1, h2, h3, .pixel { font-family: "Pixelify", system-ui, sans-serif; font-weight: 600; letter-spacing: .01em; }
+h2 { font-size: 1.6rem; margin: 0 0 .25rem; }
+h3 { font-size: 1.15rem; margin: 0; }
+a { color: var(--accent); }
+.muted { color: var(--muted); }
+.small { font-size: .85rem; }
+
+header {
+	position: sticky; top: 0; z-index: 10;
+	background: color-mix(in srgb, var(--bg) 88%, transparent);
+	backdrop-filter: blur(8px);
+	border-bottom: 1px solid var(--line);
+}
+.bar { max-width: 1200px; margin: 0 auto; padding: 10px 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.brand { font-size: 1.35rem; margin: 0; white-space: nowrap; }
+.brand span { color: var(--accent); }
+.spacer { flex: 1; }
+input[type="search"], select {
+	background: var(--panel); color: var(--text);
+	border: 1px solid var(--line); border-radius: 8px;
+	padding: 6px 10px; font: inherit; min-width: 0;
+}
+input[type="search"] { width: 220px; max-width: 100%; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { background: var(--panel); color: var(--muted); border: 0; padding: 6px 10px; font: inherit; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+nav.tabs { max-width: 1200px; margin: 0 auto; padding: 0 16px; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+nav.tabs button {
+	background: none; border: 0; border-bottom: 3px solid transparent;
+	color: var(--muted); padding: 8px 10px; font: inherit; cursor: pointer; white-space: nowrap;
+}
+nav.tabs button[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
+nav.tabs .count { font-size: .75rem; color: var(--muted); margin-left: 4px; }
+
+main { max-width: 1200px; margin: 0 auto; padding: 20px 16px 60px; }
+section[hidden] { display: none; }
+.lead { margin: 0 0 18px; color: var(--muted); max-width: 70ch; }
+.grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); padding: 14px; min-width: 0; }
+.card.wide { grid-column: 1 / -1; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; margin: 10px 0 0; font-size: .9rem; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; }
+
+.chip {
+	display: inline-flex; align-items: center; gap: 5px;
+	border-radius: 999px; padding: 1px 9px 1px 4px; font-size: .8rem; white-space: nowrap;
+	background: var(--panel-2); border: 1px solid var(--line);
+}
+.chip i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; box-shadow: inset 0 0 0 1px rgba(0,0,0,.25); }
+.tag { display: inline-block; font-size: .72rem; padding: 1px 7px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.tier { font-family: "Pixelify", monospace; color: var(--accent); letter-spacing: 1px; }
+
+.mon-img { width: 100%; height: 180px; object-fit: contain; background: var(--panel-2); border-radius: 10px; flex: none; }
+.stat-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; margin-top: 4px; text-align: center; font-size: .85rem; }
+.stat-row span { display: block; font-size: .7rem; color: var(--muted); }
+.skill-group { margin-top: 12px; }
+.skill-group h4 { margin: 0 0 4px; font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.skill-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 3px; }
+.skill-list li { display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; font-size: .9rem; }
+.skill-list .how { color: var(--muted); font-size: .8rem; }
+
+.table-wrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td.wrap { white-space: normal; min-width: 220px; }
+th { background: var(--panel-2); font-weight: 600; position: sticky; top: 0; }
+th.sortable { cursor: pointer; user-select: none; }
+th.sortable::after { content: " ↕"; color: var(--muted); font-size: .75rem; }
+th[data-dir="asc"]::after { content: " ↑"; color: var(--accent); }
+th[data-dir="desc"]::after { content: " ↓"; color: var(--accent); }
+tbody tr:hover { background: var(--panel-2); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.filters { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 12px; align-items: center; }
+
+.matrix td, .matrix th { padding: 4px 6px; text-align: center; font-variant-numeric: tabular-nums; }
+.matrix th.rowh { text-align: left; position: sticky; left: 0; background: var(--panel-2); }
+.m-up { background: color-mix(in srgb, var(--good) calc(var(--s) * 18%), transparent); color: var(--good); font-weight: 600; }
+.m-down { background: color-mix(in srgb, var(--bad) calc(var(--s) * 18%), transparent); color: var(--bad); font-weight: 600; }
+.m-eq { color: var(--muted); }
+.swatch { width: 40px; height: 40px; border-radius: 10px; flex: none; box-shadow: inset 0 0 0 1px rgba(0,0,0,.2); }
+.cycle { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 1rem; }
+.icon { width: 40px; height: 40px; padding: 7px; border-radius: 10px; background: #2b3336; flex: none; }
+:root[data-theme="dark"] .icon, :root:not([data-theme="light"]) .icon { filter: none; }
+code { font-family: ui-monospace, Consolas, monospace; font-size: .82rem; background: var(--panel-2); padding: 1px 5px; border-radius: 5px; word-break: break-word; }
+.warn { background: color-mix(in srgb, var(--bad) 14%, var(--panel)); border: 1px solid var(--bad); border-radius: 10px; padding: 10px 14px; margin-bottom: 16px; }
+.empty { padding: 30px; text-align: center; color: var(--muted); }
+footer { max-width: 1200px; margin: 0 auto; padding: 0 16px 30px; color: var(--muted); font-size: .8rem; }
+mark { background: color-mix(in srgb, var(--accent) 30%, transparent); color: inherit; border-radius: 3px; }
+
+@media (max-width: 600px) {
+	input[type="search"] { width: 100%; order: 10; }
+	.brand { font-size: 1.15rem; }
+}
+</style>
+</head>
+<body>
+<header>
+	<div class="bar">
+		<h1 class="brand">To the <span>North</span> · Wiki</h1>
+		<div class="spacer"></div>
+		<input type="search" id="search" placeholder="Suchen…" aria-label="Suchen">
+		<div class="seg" id="lang" role="group" aria-label="Sprache"></div>
+		<div class="seg" id="theme" role="group" aria-label="Farbschema">
+			<button data-theme="auto" title="System">◐</button>
+			<button data-theme="light" title="Hell">☀</button>
+			<button data-theme="dark" title="Dunkel">☾</button>
+		</div>
+	</div>
+	<nav class="tabs" id="tabs" role="tablist"></nav>
+</header>
+<main id="main"></main>
+<footer id="footer"></footer>
+
+<script>
+const DATA = /*__WIKI_DATA__*/null;
+
+// ─────────────────────────
+// Grundlagen
+
+const UI = {
+	de: {
+		search: "Suchen…", monsters: "Monster", skills: "Skills", elements: "Elemente", gems: "Trophäen",
+		relics: "Relikte", unlocks: "Freischaltungen", map: "Karte", rarity: "Seltenheit", element: "Element",
+		bst: "Basiswerte (BST)", preferredStats: "Bevorzugte Werteverteilung", preferredHint: "Summe 100 %, schwankt pro Run um bis zu ±15 %", maxUpgrades: "Max. Upgrades", catchBase: "Grund-Fangchance",
+		defaultSkills: "Start-Ei-Attacken", unlockable: "Durch Fangen & Opfern", milestone: "Meilensteine", bounty: "Kopfgelder",
+		name: "Name", tier: "Stufe", power: "Stärke", type: "Art", cost: "Kosten", cd: "CD", shop: "Shop-Preis",
+		source: "Quelle", usableBy: "Spielbar für", desc: "Beschreibung", target: "Ziel", all: "Alle",
+		physical: "physisch", ability: "magisch", none: "—", generated: "Generiert", commit: "Commit",
+		attacker: "Angriff ↓ / Ziel →", combos: "Element-Kombinationen", matchups: "Effektivität",
+		perDepth: "Bonus pro Biom-Tiefe", depth: "Tiefe", stat: "Wert", choices: "Auswahl pro Feld",
+		hooks: "Effekt-Hooks", hook: "Hook", code: "Code", requirement: "Bedingung", reward: "Belohnung",
+		appearsFrom: "Taucht auf ab Tiefe", levelBonus: "Stufen-Bonus", bountyChance: "Kopfgeld-Chance pro Kampf",
+		nodeTypes: "Feldtypen", paths: "Pfade", special: "Spezialfelder", lines: "Linien", nodeRows: "Zeilen mit festem Feld",
+		components: "Besteht aus", weight: "Spawn-Gewicht", noResults: "Keine Treffer.", warnings: "Warnungen beim Generieren",
+		strongVs: "stark gegen", maxSkills: "Max. Skills pro Monster", tierWeights: "Stufen-Gewichte (Spawn-Häufigkeit)",
+		onlyBase: "Nur Grund-Elemente", allCombos: "Alle Kombinationen", catchHint: "bei 0 HP und gleicher Stufe",
+		mon: "Monster", lists: {
+			attack_skills: "Basis-Angriff", defensive_skills: "Basis-Block", buff_skills: "Buff", passive_skills: "Passiv", area_skills: "Flächenangriff", reward_skills: "Belohnung",
+			egg_skills: "Ei-Attacke", milestone_skills: "Meilenstein", bounty_skills: "Kopfgeld",
+		},
+		leads: {
+			monsters: "Alle Monster-Arten aus <code>Monmap.mons</code> mit ihren Ei-Attacken und wie man sie freischaltet.",
+			skills: "Alle Skills aus <code>Skills</code>. Ein Monster kann einen Skill nur spielen, wenn sein Typ alle Elemente des Skills enthält. Spalten sind sortierbar.",
+			elements: "Element-Kreis und alle Kombinationen aus <code>ColorMap</code>. Jedes Skill-Element wird gegen jedes Ziel-Element verglichen; Kombi-Monster erben alle Schwächen und Resistenzen.",
+			gems: "Trophäen erhöhen einen Wert eines eigenen Monsters um feste Punkte für den restlichen Run.",
+			relics: "Relikte sind passive Run-Boni. Es gibt sie zur Auswahl in der Kiste nach Biom-Bossen und im Laden, unabhängig von ihrer Seltenheit.",
+			unlocks: "Meilenstein-Ei-Attacken (mit der Art als Start-Monster) und Kopfgeld-Ei-Attacken (letzter Treffer gegen ein Kopfgeld-Monster).",
+			map: "Aufbau der Weltkarte pro Biom-Tiefe aus <code>Map.map_settings</code>. Zahlen in den Spalten sind die Zeilen, in denen das Feld fest liegt.",
+		},
+	},
+	en: {
+		search: "Search…", monsters: "Monsters", skills: "Skills", elements: "Elements", gems: "Trophies",
+		relics: "Relics", unlocks: "Unlocks", map: "Map", rarity: "Rarity", element: "Element",
+		bst: "Base stats (BST)", preferredStats: "Preferred stat spread", preferredHint: "Sums to 100 %, varies by up to ±15 % per run", maxUpgrades: "Max upgrades", catchBase: "Base catch chance",
+		defaultSkills: "Starting egg moves", unlockable: "Catch & sacrifice", milestone: "Milestones", bounty: "Bounties",
+		name: "Name", tier: "Tier", power: "Power", type: "Type", cost: "Cost", cd: "CD", shop: "Shop price",
+		source: "Source", usableBy: "Usable by", desc: "Description", target: "Target", all: "All",
+		physical: "physical", ability: "magical", none: "—", generated: "Generated", commit: "Commit",
+		attacker: "Attack ↓ / Target →", combos: "Element combinations", matchups: "Effectiveness",
+		perDepth: "Bonus per biome depth", depth: "Depth", stat: "Stat", choices: "Choices per node",
+		hooks: "Effect hooks", hook: "Hook", code: "Code", requirement: "Requirement", reward: "Reward",
+		appearsFrom: "Appears from depth", levelBonus: "Level bonus", bountyChance: "Bounty chance per battle",
+		nodeTypes: "Node types", paths: "Paths", special: "Special nodes", lines: "Lines", nodeRows: "Rows with a fixed node",
+		components: "Made of", weight: "Spawn weight", noResults: "No results.", warnings: "Warnings during generation",
+		strongVs: "strong against", maxSkills: "Max skills per monster", tierWeights: "Tier weights (spawn frequency)",
+		onlyBase: "Base elements only", allCombos: "All combinations", catchHint: "at 0 HP and same level",
+		mon: "Monster", lists: {
+			attack_skills: "Basic attack", defensive_skills: "Basic block", buff_skills: "Buff", passive_skills: "Passive", area_skills: "Area attack", reward_skills: "Reward",
+			egg_skills: "Egg move", milestone_skills: "Milestone", bounty_skills: "Bounty",
+		},
+		leads: {
+			monsters: "All monster species from <code>Monmap.mons</code> with their egg moves and how to unlock them.",
+			skills: "All skills from <code>Skills</code>. A monster can only play a skill if its type contains all of the skill's elements. Columns are sortable.",
+			elements: "Element cycle and all combinations from <code>ColorMap</code>. Every skill element is compared with every target element; combined monsters inherit all weaknesses and resistances.",
+			gems: "Trophies raise one stat of your own monster by fixed points for the rest of the run.",
+			relics: "Relics are passive run bonuses. You can pick them from the chest after biome bosses and buy them in the shop, regardless of rarity.",
+			unlocks: "Milestone egg moves (with the species as starter) and bounty egg moves (last hit against a bounty monster).",
+			map: "World map layout per biome depth from <code>Map.map_settings</code>. Numbers are the rows where that node is fixed.",
+		},
+	},
+};
+
+const state = {
+	lang: localGet("wiki.lang") || (DATA.langs.includes("de") ? "de" : DATA.langs[0]),
+	tab: (location.hash || "").slice(1) || localGet("wiki.tab") || "monsters",
+	query: "",
+	skillSort: { key: "tier", dir: "asc" },
+	skillElement: "all",
+	skillList: "all",
+	matrixAll: false,
+};
+
+function localGet(key) { try { return localStorage.getItem(key); } catch { return null; } }
+function localSet(key, value) { try { localStorage.setItem(key, value); } catch {} }
+
+const ui = (key) => (UI[state.lang] || UI.en)[key] ?? UI.en[key] ?? key;
+// wie Helper.mon_display_name
+const monName = (n) => (tr("MONSTER_" + n) === "MONSTER_" + n ? ui("mon") + " " + n : tr("MONSTER_" + n));
+const rarityName = (r) => tr("RARITY_" + r);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+function tr(key, args = {}) {
+	const text = DATA.tr[state.lang]?.[key] || DATA.tr.en?.[key] || key;
+	return text.replace(/\{(\w+)\}/g, (all, k) => (k in args ? args[k] : all));
+}
+const res = (p) => (p || "").replace(/^res:\/\//, "../");
+const pct = (v) => `${Math.round(v * 1000) / 10} %`;
+const fmtNum = (v) => (Number.isInteger(v) ? String(v) : String(Math.round(v * 100) / 100));
+
+// ─────────────────────────
+// Elemente
+
+const BASE = DATA.elements.base;
+const BASE_MASKS = Object.values(BASE);
+const comboByMask = Object.fromEntries(DATA.elements.combos.map((c) => [c.mask, c]));
+const elementsIn = (mask) => BASE_MASKS.filter((e) => mask & e);
+const elementName = (mask) => tr(comboByMask[mask]?.label || "ELEMENT_UNKNOWN");
+const elementColor = (mask) => comboByMask[mask]?.color || "#555555";
+const chip = (mask) => `<span class="chip"><i style="background:${esc(elementColor(mask))}"></i>${esc(elementName(mask))}</span>`;
+
+// Spiegelt Skills.element_score / element_multiplier
+function elementScore(skillNature, targetType) {
+	const strong = DATA.elements.strongAgainst;
+	let score = 0;
+	for (const a of BASE_MASKS) {
+		if (!(skillNature & a)) continue;
+		for (const d of BASE_MASKS) {
+			if (!(targetType & d)) continue;
+			if (strong[a] === d) score++;
+			else if (strong[d] === a) score--;
+		}
+	}
+	return score;
+}
+function elementMultiplier(skillNature, targetType) {
+	const score = elementScore(skillNature, targetType);
+	const bonus = DATA.elements.elementBonus;
+	return score >= 0 ? 1 + bonus * score : Math.pow(1 - bonus, -score);
+}
+const covers = (typeMask, nature) => (nature & ~typeMask) === 0;
+
+// ─────────────────────────
+// Skills
+
+const skillByName = Object.fromEntries(DATA.skills.map((s) => [s.name, s]));
+const tierStars = (t) => "◆".repeat(t || 1) + `<span class="muted">${"◇".repeat(Math.max(0, 4 - (t || 1)))}</span>`;
+const dmgType = (s) => (s.damage_type === "ABILITY" ? ui("ability") : ui("physical"));
+const skillDesc = (s) => tr(s.description, { value: fmtNum(s.value ?? s.damage ?? 0) });
+const skillLabel = (name) => {
+	const s = skillByName[name];
+	return s ? `${chip(s.nature)} <b>${esc(tr(name))}</b> <span class="tier small">${tierStars(s.tier)}</span>` : `<b>${esc(tr(name))}</b>`;
+};
+function skillWeight(s, depth = 0) {
+	const t = s.tier || 1;
+	return DATA.tierWeights[t] * Math.pow(1 + DATA.depthTierBonus * depth, t - 1);
+}
+
+// ─────────────────────────
+// Suche
+
+function matches(...texts) {
+	if (!state.query) return true;
+	const q = state.query.toLowerCase();
+	return texts.some((t) => String(t ?? "").toLowerCase().includes(q));
+}
+function hl(text) {
+	const s = esc(text);
+	if (!state.query) return s;
+	const q = state.query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	return s.replace(new RegExp(`(${esc(q)})`, "gi"), "<mark>$1</mark>");
+}
+
+// ─────────────────────────
+// Seiten
+
+const SECTIONS = {
+	monsters: { count: () => DATA.mons.length, render: renderMonsters },
+	skills: { count: () => DATA.skills.length, render: renderSkills },
+	elements: { count: () => DATA.elements.combos.length, render: renderElements },
+	gems: { count: () => Object.keys(DATA.gems.stats).length, render: renderGems },
+	relics: { count: () => Object.keys(DATA.relics).length, render: renderRelics },
+	unlocks: { count: () => DATA.milestones.length + DATA.bounties.length, render: renderUnlocks },
+	map: { count: () => Object.keys(DATA.map.settings).length, render: renderMap },
+};
+
+function header(key) {
+	return `<h2>${esc(ui(key))}</h2><p class="lead">${ui("leads")[key] || ""}</p>`;
+}
+
+// Bevorzugte Werteverteilung der Art, Spielwerte heißen im Spiel STAT_*
+function statProfile(m) {
+	const labels = { hp: "HP", atk: "ATK", def: "DEF", s_atk: "SPA", s_def: "SPD", speed: "SPE" };
+	if (!m.preferred_stats) return "";
+	return `<div class="skill-group"><h4>${ui("preferredStats")}</h4><div class="stat-row" title="${esc(ui("preferredHint"))}">${
+		Object.entries(labels).map(([key, label]) => `<div><span>${esc(tr("STAT_" + label).replace(":", ""))}</span>${m.preferred_stats[key] ?? "–"} %</div>`).join("")}</div></div>`;
+}
+
+function renderMonsters() {
+	const bountyByKey = Object.fromEntries(DATA.bounties.map((b) => [b.key, b]));
+	const msByKey = Object.fromEntries(DATA.milestones.map((m) => [m.key, m]));
+	const cards = DATA.mons.filter((m) => {
+		const skills = [...(m.default_egg_skills || []), ...(m.unlockable_egg_skills || []),
+			...Object.values(m.milestone_egg_skills || {}), ...Object.values(m.bounty_egg_skills || {})];
+		return matches(m.name, monName(m.name), elementName(m.initial_type), rarityName(m.rarity), ...skills.map((s) => tr(s)));
+	}).map((m) => {
+		const list = (names, how) => names.length ? `<ul class="skill-list">${names.map((n, i) =>
+			`<li>${skillLabel(n)}${how ? `<span class="how">· ${esc(how(i))}</span>` : ""}</li>`).join("")}</ul>` : `<span class="muted">${ui("none")}</span>`;
+		const ms = Object.entries(m.milestone_egg_skills || {});
+		const bs = Object.entries(m.bounty_egg_skills || {});
+		const catchBase = DATA.catch.rarityBase?.[m.rarity];
+		return `<article class="card">
+			<div class="row" style="align-items:flex-start">
+				<img class="mon-img" src="${esc(res(m.image))}" alt="${esc(monName(m.name))}" loading="lazy" onerror="this.style.visibility='hidden'">
+				<div style="min-width:0">
+					<h3>${hl(monName(m.name))}</h3>
+					<div class="row" style="margin-top:4px">${chip(m.initial_type)} <span class="tag">${esc(rarityName(m.rarity))}</span></div>
+					<dl class="kv">
+						<dt>${ui("bst")}</dt><dd>${(m.stats || []).join(" – ")}</dd>
+						<dt>${ui("maxUpgrades")}</dt><dd>${m.max_upgrades ?? ui("none")}</dd>
+						${catchBase != null ? `<dt>${ui("catchBase")}</dt><dd title="${esc(ui("catchHint"))}">${pct(catchBase)}</dd>` : ""}
+					</dl>
+				</div>
+			</div>
+			${statProfile(m)}
+			<div class="skill-group"><h4>${ui("defaultSkills")}</h4>${list(m.default_egg_skills || [])}</div>
+			<div class="skill-group"><h4>${ui("unlockable")}</h4>${list(m.unlockable_egg_skills || [])}</div>
+			<div class="skill-group"><h4>${ui("milestone")}</h4>${list(ms.map(([, s]) => s), (i) => {
+				const def = msByKey[ms[i][0]];
+				return def ? `${def.count}× ${tr("MILESTONE_STAT_" + def.stat.toUpperCase())}` : ms[i][0];
+			})}</div>
+			<div class="skill-group"><h4>${ui("bounty")}</h4>${list(bs.map(([, s]) => s), (i) => {
+				const def = bountyByKey[bs[i][0]];
+				return def ? tr(def.label, { mon: monName(def.mon) }) + ` (${ui("depth")} ${def.min_depth + 1}+)` : bs[i][0];
+			})}</div>
+		</article>`;
+	});
+	return header("monsters") + (cards.length ? `<div class="grid">${cards.join("")}</div>` : `<div class="empty">${ui("noResults")}</div>`);
+}
+
+function renderSkills() {
+	const cols = [
+		{ key: "name", label: ui("name"), get: (s) => tr(s.name) },
+		{ key: "nature", label: ui("element"), get: (s) => elementsIn(s.nature).length * 100 + s.nature },
+		{ key: "tier", label: ui("tier"), get: (s) => s.tier || 1 },
+		{ key: "value", label: ui("power"), get: (s) => s.value ?? s.damage ?? 0, num: true },
+		{ key: "damage_type", label: ui("type"), get: (s) => dmgType(s) },
+		{ key: "cost", label: ui("cost"), get: (s) => s.cost, num: true },
+		{ key: "cooldown", label: ui("cd"), get: (s) => s.cooldown, num: true },
+		{ key: "shop", label: ui("shop"), get: (s) => s.shop_cost?.min ?? 0, num: true },
+		{ key: "list", label: ui("source"), get: (s) => DATA.skillLists.indexOf(s.list) },
+	];
+	const { key, dir } = state.skillSort;
+	const col = cols.find((c) => c.key === key) || cols[2];
+	const rows = DATA.skills
+		.filter((s) => state.skillElement === "all" || (s.nature & Number(state.skillElement)))
+		.filter((s) => state.skillList === "all" || s.list === state.skillList)
+		.filter((s) => matches(tr(s.name), s.name, elementName(s.nature), skillDesc(s), ui("lists")[s.list]))
+		.sort((a, b) => {
+			const x = col.get(a), y = col.get(b);
+			const c = typeof x === "number" ? x - y : String(x).localeCompare(String(y), state.lang);
+			return (dir === "asc" ? c : -c) || (a.tier || 1) - (b.tier || 1) || (a.value ?? 0) - (b.value ?? 0);
+		});
+	const usable = (s) => DATA.mons.filter((m) => covers(m.initial_type, s.nature)).map((m) => monName(m.name));
+	const filters = `<div class="filters">
+		<select id="f-element" aria-label="${ui("element")}">
+			<option value="all">${ui("element")}: ${ui("all")}</option>
+			${BASE_MASKS.map((e) => `<option value="${e}" ${String(e) === state.skillElement ? "selected" : ""}>${esc(elementName(e))}</option>`).join("")}
+		</select>
+		<select id="f-list" aria-label="${ui("source")}">
+			<option value="all">${ui("source")}: ${ui("all")}</option>
+			${DATA.skillLists.map((l) => `<option value="${l}" ${l === state.skillList ? "selected" : ""}>${esc(ui("lists")[l] || l)}</option>`).join("")}
+		</select>
+		<span class="muted small">${rows.length} / ${DATA.skills.length} · ${ui("maxSkills")}: ${DATA.maxSkills ?? "?"}</span>
+	</div>`;
+	const table = `<div class="table-wrap"><table>
+		<thead><tr>${cols.map((c) => `<th class="sortable ${c.num ? "num" : ""}" data-sort="${c.key}" ${c.key === key ? `data-dir="${dir}"` : ""}>${esc(c.label)}</th>`).join("")}
+			<th>${ui("desc")}</th><th>${ui("usableBy")}</th></tr></thead>
+		<tbody>${rows.map((s) => `<tr>
+			<td><b>${hl(tr(s.name))}</b><br><code class="small">${hl(s.name)}</code></td>
+			<td>${chip(s.nature)}</td>
+			<td class="tier" title="${ui("weight")}: ${fmtNum(skillWeight(s))}">${tierStars(s.tier)}</td>
+			<td class="num">${fmtNum(s.value ?? s.damage ?? 0)}</td>
+			<td>${dmgType(s)}</td>
+			<td class="num">${s.cost ?? ""}</td>
+			<td class="num">${s.cooldown ?? ""}</td>
+			<td class="num">${s.shop_cost ? `${s.shop_cost.min}–${s.shop_cost.max}` : ""}</td>
+			<td><span class="tag">${esc(ui("lists")[s.list] || s.list)}</span></td>
+			<td class="wrap">${hl(skillDesc(s))}</td>
+			<td class="wrap small">${esc(usable(s).join(", ") || ui("none"))}</td>
+		</tr>`).join("")}</tbody></table></div>`;
+	const weights = `<p class="small muted" style="margin-top:12px">${ui("tierWeights")}: ${Object.entries(DATA.tierWeights || {}).map(([t, w]) => `${ui("tier")} ${t} = ${w}`).join(" · ")}
+		(+${Math.round((DATA.depthTierBonus || 0) * 100)} % / ${ui("depth")} / ${ui("tier")})</p>`;
+	return header("skills") + filters + (rows.length ? table : `<div class="empty">${ui("noResults")}</div>`) + weights;
+}
+
+function renderElements() {
+	const strong = DATA.elements.strongAgainst;
+	// Kreis ab dem ersten Element ablaufen
+	const cycle = [];
+	let cur = BASE_MASKS[0];
+	while (cur && !cycle.includes(cur)) { cycle.push(cur); cur = strong[cur]; }
+	const cycleHtml = `<div class="card wide"><h3>${ui("strongVs")}</h3><div class="cycle" style="margin-top:8px">${
+		cycle.map(chip).join(" <span class='muted'>→</span> ")} <span class="muted">→</span> ${chip(cycle[0])}</div>
+		<p class="small muted" style="margin:8px 0 0">+1 → ×${1 + DATA.elements.elementBonus}, +2 → ×${1 + 2 * DATA.elements.elementBonus} · −1 → ×${1 - DATA.elements.elementBonus}, −2 → ×${Math.pow(1 - DATA.elements.elementBonus, 2)}</p></div>`;
+
+	const combos = DATA.elements.combos
+		.filter((c) => matches(tr(c.label), c.label, ...elementsIn(c.mask).map(elementName)))
+		.sort((a, b) => elementsIn(a.mask).length - elementsIn(b.mask).length || a.mask - b.mask);
+	const comboHtml = combos.map((c) => {
+		const skills = DATA.skills.filter((s) => s.nature === c.mask);
+		const mons = DATA.mons.filter((m) => m.initial_type === c.mask);
+		return `<article class="card"><div class="row">
+			<div class="swatch" style="background:${esc(c.color)}"></div>
+			<div><h3>${hl(tr(c.label))}</h3><div class="small muted">${elementsIn(c.mask).length > 1 ? `${ui("components")}: ${elementsIn(c.mask).map(elementName).join(" + ")}` : esc(c.color)}</div></div>
+		</div>
+		<dl class="kv">
+			<dt>${ui("skills")}</dt><dd>${skills.length ? skills.map((s) => esc(tr(s.name))).join(", ") : ui("none")}</dd>
+			<dt>${ui("monsters")}</dt><dd>${mons.length ? mons.map((m) => esc(monName(m.name))).join(", ") : ui("none")}</dd>
+		</dl></article>`;
+	}).join("");
+
+	const axis = (state.matrixAll ? DATA.elements.combos.map((c) => c.mask) : BASE_MASKS)
+		.slice().sort((a, b) => elementsIn(a).length - elementsIn(b).length || a - b);
+	const cell = (a, d) => {
+		const m = elementMultiplier(a, d);
+		const s = Math.min(Math.abs(elementScore(a, d)), 4);
+		const cls = m > 1 ? "m-up" : m < 1 ? "m-down" : "m-eq";
+		return `<td class="${cls}" style="--s:${s}" title="${esc(elementName(a))} → ${esc(elementName(d))}">×${fmtNum(m)}</td>`;
+	};
+	const matrix = `<div class="card wide">
+		<div class="row"><h3>${ui("matchups")}</h3><div class="spacer"></div>
+			<div class="seg" id="matrix-mode">
+				<button data-all="0" aria-pressed="${!state.matrixAll}">${ui("onlyBase")}</button>
+				<button data-all="1" aria-pressed="${state.matrixAll}">${ui("allCombos")}</button>
+			</div></div>
+		<div class="table-wrap" style="margin-top:10px;box-shadow:none"><table class="matrix">
+			<thead><tr><th class="rowh small">${ui("attacker")}</th>${axis.map((d) => `<th>${chip(d)}</th>`).join("")}</tr></thead>
+			<tbody>${axis.map((a) => `<tr><th class="rowh">${chip(a)}</th>${axis.map((d) => cell(a, d)).join("")}</tr>`).join("")}</tbody>
+		</table></div></div>`;
+
+	return header("elements") + `<div class="grid">${cycleHtml}${matrix}</div>
+		<h3 style="margin:24px 0 10px">${ui("combos")}</h3>
+		${combos.length ? `<div class="grid">${comboHtml}</div>` : `<div class="empty">${ui("noResults")}</div>`}`;
+}
+
+function renderGems() {
+	const depths = DATA.gems.bonusByDepth;
+	const cards = Object.entries(DATA.gems.stats)
+		.filter(([key, g]) => matches(key, tr(g.name), tr(g.desc), tr(g.stat)))
+		.map(([key, g]) => `<article class="card"><div class="row">
+			<div class="swatch" style="background:url('${esc(res(g.icon))}') center/contain no-repeat;box-shadow:none"></div>
+			<div><h3>${hl(tr(g.name))}</h3><div class="small muted">${esc(tr(g.stat).replace(/:$/, ""))} · <code>${esc(key)}</code></div></div>
+		</div>
+		<p class="small" style="margin:10px 0 0">${hl(tr(g.desc))}</p>
+		<p class="small" style="margin:6px 0 0">${esc(tr("GEM_DESC", { stat: tr(g.stat).replace(/:$/, ""), value: `${depths[0]}–${depths[depths.length - 1]}` }))}</p>
+		</article>`);
+	const table = `<div class="card wide"><h3>${ui("perDepth")}</h3>
+		<div class="table-wrap" style="margin-top:10px;box-shadow:none"><table>
+			<thead><tr><th>${ui("depth")}</th>${depths.map((_, i) => `<th class="num">${i + 1}</th>`).join("")}</tr></thead>
+			<tbody><tr><td>Bonus</td>${depths.map((b) => `<td class="num">+${b}</td>`).join("")}</tr></tbody>
+		</table></div>
+		<p class="small muted" style="margin:8px 0 0">${ui("choices")}: ${DATA.gems.choices ?? "?"}</p></div>`;
+	return header("gems") + `<div class="grid">${cards.join("")}${table}</div>`;
+}
+
+function renderRelics() {
+	const cards = Object.entries(DATA.relics)
+		.filter(([id, r]) => matches(id, tr(r.name), tr(r.description), rarityName(r.rarity)))
+		.map(([id, r]) => `<article class="card"><div class="row" style="align-items:flex-start">
+			<img class="icon" src="${esc(res(r.icon))}" alt="" onerror="this.style.visibility='hidden'">
+			<div style="min-width:0"><h3>${hl(tr(r.name))}</h3>
+				<div class="row small" style="margin-top:2px"><span class="tag">${esc(rarityName(r.rarity))}</span><code>${esc(id)}</code></div>
+				<p style="margin:8px 0 0">${hl(tr(r.description))}</p>
+			</div></div>
+			${Object.entries(r.hooks || {}).map(([hook, code]) => `<p class="small" style="margin:10px 0 0"><span class="muted">${ui("hook")} <b>${esc(hook)}</b>:</span><br><code>${esc(code)}</code></p>`).join("")}
+		</article>`);
+	const hooks = DATA.relicHooks.length ? `<div class="card wide"><h3>${ui("hooks")}</h3><dl class="kv">${
+		DATA.relicHooks.map((h) => `<dt><code>${esc(h.key)}</code></dt><dd>${esc(h.desc)}</dd>`).join("")}</dl></div>` : "";
+	return header("relics") + (cards.length ? `<div class="grid">${cards.join("")}${hooks}</div>` : `<div class="empty">${ui("noResults")}</div>`);
+}
+
+function renderUnlocks() {
+	const ms = DATA.milestones.filter((m) => matches(m.key, tr(m.hint), ...DATA.mons.map((mon) => tr(mon.milestone_egg_skills?.[m.key]))));
+	const bs = DATA.bounties.filter((b) => matches(b.key, tr(b.label, { mon: monName(b.mon) }), tr(b.hint), ...DATA.mons.map((mon) => tr(mon.bounty_egg_skills?.[b.key]))));
+	const rewards = (field, key) => DATA.mons.filter((m) => m[field]?.[key])
+		.map((m) => `<li>${esc(monName(m.name))}: ${skillLabel(m[field][key])}</li>`).join("");
+	const msHtml = ms.map((m) => `<article class="card">
+		<h3>${esc(m.count)}× ${esc(tr("MILESTONE_STAT_" + m.stat.toUpperCase()))}</h3>
+		<p class="small muted" style="margin:4px 0 0">${hl(tr(m.hint))}</p>
+		<div class="skill-group"><h4>${ui("reward")}</h4><ul class="skill-list">${rewards("milestone_egg_skills", m.key) || ui("none")}</ul></div>
+	</article>`).join("");
+	const bsHtml = bs.map((b) => `<article class="card">
+		<h3>${hl(tr(b.label, { mon: monName(b.mon) }))}</h3>
+		<dl class="kv">
+			<dt>${ui("appearsFrom")}</dt><dd>${b.min_depth + 1}</dd>
+			<dt>${ui("levelBonus")}</dt><dd>+${b.level_bonus}</dd>
+		</dl>
+		<p class="small muted" style="margin:8px 0 0">${hl(tr(b.hint))}</p>
+		<div class="skill-group"><h4>${ui("reward")}</h4><ul class="skill-list">${rewards("bounty_egg_skills", b.key) || ui("none")}</ul></div>
+	</article>`).join("");
+	return header("unlocks") +
+		`<h3 style="margin:0 0 10px">${ui("milestone")}</h3>${msHtml ? `<div class="grid">${msHtml}</div>` : `<div class="empty">${ui("noResults")}</div>`}
+		<h3 style="margin:24px 0 4px">${ui("bounty")}</h3>
+		<p class="small muted" style="margin:0 0 10px">${ui("bountyChance")}: ${pct(DATA.bountyChance || 0)}</p>
+		${bsHtml ? `<div class="grid">${bsHtml}</div>` : `<div class="empty">${ui("noResults")}</div>`}`;
+}
+
+function renderMap() {
+	const settings = Object.entries(DATA.map.settings);
+	// Spalten aus den Daten, damit neue Feldtypen automatisch auftauchen
+	const keys = [...new Set(settings.flatMap(([, s]) => Object.keys(s)))];
+	const scalar = keys.filter((k) => settings.every(([, s]) => !Array.isArray(s[k])));
+	const lists = keys.filter((k) => !scalar.includes(k));
+	const nodeLabel = { bosses: "BOSS", tresures: "TREASURE", shops: "SHOP", trainers: "TRAINER", jailer: "JAILER", gems: "GEM", camps: "CAMP", events: "EVENT" };
+	const label = (k) => ({ paths: ui("paths"), special_nodes: ui("special"), lines: ui("lines") }[k] ||
+		(nodeLabel[k] ? tr("MAP_NODE_" + nodeLabel[k]) : k));
+	const biomeTier = (i) => i === settings.length - 1 ? 4 : Math.min(1 + Math.round(i * 3 / Math.max(settings.length - 1, 1)), 3);
+	const table = `<div class="table-wrap"><table>
+		<thead><tr><th>${ui("depth")}</th><th>${ui("element")}</th>${scalar.map((k) => `<th class="num">${esc(label(k))}</th>`).join("")}${lists.map((k) => `<th>${esc(label(k))}</th>`).join("")}</tr></thead>
+		<tbody>${settings.map(([d, s], i) => `<tr>
+			<td><b>${Number(d) + 1}</b></td>
+			<td class="small">${biomeTier(i)} ${biomeTier(i) === 1 ? ui("element") : ui("elements")}</td>
+			${scalar.map((k) => `<td class="num">${s[k] ?? ""}</td>`).join("")}
+			${lists.map((k) => `<td>${(s[k] || []).length ? s[k].join(", ") : `<span class="muted">${ui("none")}</span>`}</td>`).join("")}
+		</tr>`).join("")}</tbody></table></div>`;
+	const nodeTypes = Object.keys(DATA.enums.PATH_TYPE).filter((k) => tr("MAP_NODE_" + k + "_DESC") !== "MAP_NODE_" + k + "_DESC" && matches(tr("MAP_NODE_" + k), tr("MAP_NODE_" + k + "_DESC")));
+	const nodeHtml = nodeTypes.map((k) => `<article class="card"><h3>${hl(tr("MAP_NODE_" + k))}</h3><p class="small" style="margin:6px 0 0">${hl(tr("MAP_NODE_" + k + "_DESC"))}</p></article>`).join("");
+	return header("map") + table + `<p class="small muted" style="margin-top:12px">${ui("nodeRows")} · max_rows ${DATA.map.maxRows ?? "?"} · max_cols ${DATA.map.maxCols ?? "?"}</p>` +
+		(nodeHtml ? `<h3 style="margin:24px 0 10px">${ui("nodeTypes")}</h3><div class="grid">${nodeHtml}</div>` : "");
+}
+
+// ─────────────────────────
+// Rahmen
+
+function renderChrome() {
+	document.documentElement.lang = state.lang;
+	document.getElementById("search").placeholder = ui("search");
+	document.getElementById("lang").innerHTML = DATA.langs.map((l) =>
+		`<button data-lang="${l}" aria-pressed="${l === state.lang}">${l.toUpperCase()}</button>`).join("");
+	document.getElementById("tabs").innerHTML = Object.entries(SECTIONS).map(([key, s]) =>
+		`<button role="tab" data-tab="${key}" aria-selected="${key === state.tab}">${esc(ui(key))}<span class="count">${s.count()}</span></button>`).join("");
+	const date = new Date(DATA.generatedAt);
+	document.getElementById("footer").innerHTML = `${ui("generated")}: ${date.toLocaleString(state.lang)}${DATA.git ? ` · ${ui("commit")} <code>${esc(DATA.git)}</code>` : ""} · <code>node tools/wiki/build_wiki.js</code>`;
+}
+
+function render() {
+	if (!SECTIONS[state.tab]) state.tab = "monsters";
+	renderChrome();
+	const warn = DATA.warnings?.length ? `<div class="warn"><b>${ui("warnings")}</b><ul>${DATA.warnings.map((w) => `<li>${esc(w)}</li>`).join("")}</ul></div>` : "";
+	document.getElementById("main").innerHTML = warn + `<section>${SECTIONS[state.tab].render()}</section>`;
+}
+
+function applyTheme(theme) {
+	if (theme === "auto") delete document.documentElement.dataset.theme;
+	else document.documentElement.dataset.theme = theme;
+	document.querySelectorAll("#theme button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.theme === theme)));
+	localSet("wiki.theme", theme);
+}
+
+document.addEventListener("click", (e) => {
+	const t = e.target.closest("button, th.sortable");
+	if (!t) return;
+	if (t.dataset.tab) {
+		state.tab = t.dataset.tab;
+		localSet("wiki.tab", state.tab);
+		history.replaceState(null, "", "#" + state.tab);
+		render();
+		window.scrollTo({ top: 0 });
+	} else if (t.dataset.lang) {
+		state.lang = t.dataset.lang;
+		localSet("wiki.lang", state.lang);
+		render();
+	} else if (t.dataset.theme) {
+		applyTheme(t.dataset.theme);
+	} else if (t.dataset.sort) {
+		const s = state.skillSort;
+		state.skillSort = { key: t.dataset.sort, dir: s.key === t.dataset.sort && s.dir === "asc" ? "desc" : "asc" };
+		render();
+	} else if (t.dataset.all !== undefined) {
+		state.matrixAll = t.dataset.all === "1";
+		render();
+	}
+});
+document.addEventListener("change", (e) => {
+	if (e.target.id === "f-element") state.skillElement = e.target.value;
+	else if (e.target.id === "f-list") state.skillList = e.target.value;
+	else return;
+	render();
+});
+document.getElementById("search").addEventListener("input", (e) => {
+	state.query = e.target.value.trim();
+	const pos = e.target.selectionStart;
+	render();
+	e.target.focus();
+	e.target.setSelectionRange(pos, pos);
+});
+window.addEventListener("hashchange", () => { state.tab = location.hash.slice(1); render(); });
+
+applyTheme(localGet("wiki.theme") || "auto");
+render();
+</script>
+</body>
+</html>

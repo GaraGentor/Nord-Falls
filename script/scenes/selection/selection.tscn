@@ -1,0 +1,244 @@
+[gd_scene format=3 uid="uid://dsdifxr5v1fah"]
+
+[ext_resource type="Script" uid="uid://drp8xp2csh7wy" path="res://script/scenes/selection/control.gd" id="1_7et7b"]
+[ext_resource type="Shader" uid="uid://be467lblpkpfs" path="res://script/ui/shader/living_pixels.gdshader" id="2_7l32t"]
+[ext_resource type="Texture2D" uid="uid://ksplq2buvdml" path="res://assets/sczene_backgrounds/ChatGPT Image 12. Nov. 2025, 19_35_52.png" id="3_efscr"]
+[ext_resource type="Texture2D" uid="uid://cjvfj6dpk3y2n" path="res://assets/ui/eggs/common_1.png" id="4_4snxg"]
+[ext_resource type="FontFile" uid="uid://cbavibkhidesl" path="res://script/ui/fonts/pxelfont/PixelifySans-VariableFont_wght.ttf" id="4_tpsnj"]
+[ext_resource type="Script" uid="uid://degyfi6ckr318" path="res://script/scenes/selection/ui.gd" id="5_aea4x"]
+[ext_resource type="PackedScene" path="res://script/scenes/selection/starter_info_panel.tscn" id="7_f6ddp"]
+[ext_resource type="Script" uid="uid://bsftl68bgh2n1" path="res://script/scenes/selection/biome_path.gd" id="8_biome"]
+[ext_resource type="Theme" path="res://script/ui/materials/pixel_font_theme.tres" id="99_font_theme"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_k0ik4"]
+shader = ExtResource("2_7l32t")
+shader_parameter/pixel_size = 6.0
+shader_parameter/min_cells = 32.0
+shader_parameter/amplitude = 0.0
+shader_parameter/twitch = 0.0
+shader_parameter/twitch_chance = 0.0
+shader_parameter/loop_seconds = 30.0
+shader_parameter/particle_min_size = 1.0
+shader_parameter/particle_max_size = 1.20000004768372
+shader_parameter/flicker = 0.410000019475
+shader_parameter/color_levels = 5.0
+shader_parameter/dither_strength = 1.0
+shader_parameter/dither_scale = 2.0
+shader_parameter/dither_fps = 10.0
+shader_parameter/alpha_cutoff = 0.35
+shader_parameter/reveal = 1.0
+shader_parameter/outline_color = Color(1, 1, 0, 0)
+shader_parameter/outline_thickness = 4.0
+shader_parameter/tint_color = Color(1, 1, 1, 0)
+
+[sub_resource type="Gradient" id="Gradient_7ag31"]
+colors = PackedColorArray(0.0627451, 0.0862745, 0.0823529, 0, 0.0643197, 0.0863678, 0.0819577, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_p4ys2"]
+gradient = SubResource("Gradient_7ag31")
+fill_from = Vector2(0, 1)
+fill_to = Vector2(0.196581, 1)
+
+[node name="Control" type="Control" unique_id=114657079 node_paths=PackedStringArray("title_label", "go_button", "reroll_button", "info_panel", "biome_path")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme = ExtResource("99_font_theme")
+script = ExtResource("1_7et7b")
+title_label = NodePath("Selection/ChatGptImage26_Juni2025,124247/Label")
+go_button = NodePath("Selection/MarginContainer/VBoxContainer/Button2")
+reroll_button = NodePath("Selection/MarginContainer/VBoxContainer/RerollButton")
+info_panel = NodePath("UI/StarterInfoPanel")
+biome_path = NodePath("Selection/BiomePath")
+
+[node name="Selection" type="Control" parent="." unique_id=224124060]
+layout_mode = 1
+anchor_right = 0.703
+anchor_bottom = 1.0
+offset_right = 0.159973
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ChatGptImage26_Juni2025,124247" type="TextureRect" parent="Selection" unique_id=2128861748]
+material = SubResource("ShaderMaterial_k0ik4")
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 0.999
+anchor_bottom = 1.0
+offset_right = 124.9
+offset_bottom = 624.0
+scale = Vector2(0.87793, 0.702148)
+texture = ExtResource("3_efscr")
+
+[node name="Label" type="Label" parent="Selection/ChatGptImage26_Juni2025,124247" unique_id=1654696847]
+layout_mode = 1
+anchors_preset = 14
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_top = -626.562
+offset_bottom = -603.562
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("4_tpsnj")
+theme_override_font_sizes/font_size = 36
+text = "SELECTION_TITLE_START"
+horizontal_alignment = 1
+
+[node name="BiomePath" type="Control" parent="Selection" unique_id=1938274651]
+layout_mode = 1
+anchor_left = 0.04
+anchor_top = 0.12
+anchor_right = 0.96
+anchor_bottom = 0.21
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("8_biome")
+font = ExtResource("4_tpsnj")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Selection" unique_id=320258260]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.265
+anchor_right = 1.0
+anchor_bottom = 0.535
+offset_top = 0.259995
+offset_bottom = -0.0600281
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 50
+alignment = 1
+
+[node name="ColorRect1" type="Control" parent="Selection/HBoxContainer" unique_id=635026405]
+custom_minimum_size = Vector2(195, 0)
+layout_mode = 2
+
+[node name="TextureRect1" type="TextureRect" parent="Selection/HBoxContainer/ColorRect1" unique_id=493081087]
+custom_minimum_size = Vector2(60, 60)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -450.0
+offset_bottom = -450.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("4_4snxg")
+expand_mode = 2
+
+[node name="ColorRect2" type="Control" parent="Selection/HBoxContainer" unique_id=246900079]
+custom_minimum_size = Vector2(195, 0)
+layout_mode = 2
+
+[node name="TextureRect2" type="TextureRect" parent="Selection/HBoxContainer/ColorRect2" unique_id=990182621]
+custom_minimum_size = Vector2(60, 60)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -450.0
+offset_bottom = -450.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("4_4snxg")
+expand_mode = 2
+
+[node name="ColorRect3" type="Control" parent="Selection/HBoxContainer" unique_id=1701817335]
+custom_minimum_size = Vector2(195, 0)
+layout_mode = 2
+
+[node name="TextureRect3" type="TextureRect" parent="Selection/HBoxContainer/ColorRect3" unique_id=25231485]
+custom_minimum_size = Vector2(60, 60)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -450.0
+offset_bottom = -450.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("4_4snxg")
+expand_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="Selection" unique_id=1822022514]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.789
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 151.076
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/margin_left = 60
+theme_override_constants/margin_top = 60
+theme_override_constants/margin_right = 60
+theme_override_constants/margin_bottom = 60
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Selection/MarginContainer" unique_id=836207606]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Button" type="Button" parent="Selection/MarginContainer/VBoxContainer" unique_id=827233767]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_tpsnj")
+theme_override_font_sizes/font_size = 32
+text = "SELECTION_DRAW_EGG"
+flat = true
+
+[node name="RerollButton" type="Button" parent="Selection/MarginContainer/VBoxContainer" unique_id=1584207361]
+visible = false
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_tpsnj")
+theme_override_font_sizes/font_size = 32
+text = "SELECTION_REROLL_EGGS"
+flat = true
+
+[node name="Button2" type="Button" parent="Selection/MarginContainer/VBoxContainer" unique_id=238439135]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_tpsnj")
+theme_override_font_sizes/font_size = 32
+disabled = true
+text = "SELECTION_BEGIN_JOURNEY"
+flat = true
+
+[node name="UI" type="Control" parent="." unique_id=565903469]
+layout_mode = 1
+anchor_left = 0.637
+anchor_top = -0.006
+anchor_right = 1.0
+anchor_bottom = 1.001
+offset_left = 78.64
+offset_top = 0.32
+offset_bottom = 0.279968
+script = ExtResource("5_aea4x")
+
+[node name="ColorRect" type="TextureRect" parent="UI" unique_id=1500316517]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -0.233
+anchor_top = 0.004
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -0.129997
+offset_top = 0.124
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("GradientTexture2D_p4ys2")
+
+[node name="StarterInfoPanel" parent="UI" unique_id=525460248 instance=ExtResource("7_f6ddp")]
+visible = false
+layout_mode = 1
+
+[connection signal="gui_input" from="Selection/HBoxContainer/ColorRect1/TextureRect1" to="." method="_on_gui_input1"]
+[connection signal="gui_input" from="Selection/HBoxContainer/ColorRect2/TextureRect2" to="." method="_on_gui_input2"]
+[connection signal="gui_input" from="Selection/HBoxContainer/ColorRect3/TextureRect3" to="." method="_on_gui_input3"]
+[connection signal="pressed" from="Selection/MarginContainer/VBoxContainer/Button" to="." method="_on_pick_egg_button_pressed"]
+[connection signal="pressed" from="Selection/MarginContainer/VBoxContainer/RerollButton" to="." method="_on_reroll_button_pressed"]
+[connection signal="pressed" from="Selection/MarginContainer/VBoxContainer/Button2" to="." method="_on_button_pressed"]

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="28" viewBox="0 0 24 28">
+  <!-- Zipfel der dunklen Sprechblase, links überdeckt er den Rand der Blase -->
+  <path d="M0 2 L22 14 L0 26 Z" fill="#06080c"/>
+  <path d="M0 6 L15 14 L0 22 Z" fill="#4f6a6c"/>
+  <path d="M0 9 L9 14 L0 19 Z" fill="#141b20"/>
+</svg>

@@ -1,0 +1,89 @@
+[gd_scene format=3 uid="uid://dnayp1xl2x6gl"]
+
+[ext_resource type="Script" path="res://script/scenes/heal_camp/heal_camp.gd" id="1_t64m8"]
+[ext_resource type="Shader" path="res://script/scenes/world_map/map_background.gdshader" id="2_0ig3j"]
+[ext_resource type="PackedScene" path="res://script/scenes/heal_camp/camp_fire.tscn" id="4_fire"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_5bmje"]
+shader = ExtResource("2_0ig3j")
+shader_parameter/bottom_color = Color(0, 0, 0, 1)
+shader_parameter/top_color = Color(0.361529, 0.769848, 0.955851, 1)
+shader_parameter/wave_amp = 0.115
+shader_parameter/wave_size = 1.0
+shader_parameter/wave_time_mul = 0.933
+shader_parameter/total_phases = 8
+shader_parameter/living_pixels = true
+shader_parameter/pixel_size = 4.0
+shader_parameter/amplitude = 0.0
+shader_parameter/loop_seconds = 19.365
+shader_parameter/particle_min_size = 1.0
+shader_parameter/particle_max_size = 1.2
+shader_parameter/flicker = 0.15
+shader_parameter/color_levels = 8.0
+shader_parameter/dither_strength = 1.0
+shader_parameter/dither_scale = 2.0
+shader_parameter/dither_fps = 10.0
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_nfe6y"]
+
+[node name="HealCamp" type="Control" node_paths=PackedStringArray("left_slot", "right_slot", "fire", "feed_row")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_t64m8")
+left_slot = NodePath("MarginContainer/VBoxContainer/MonsterRow/LeftSlot")
+right_slot = NodePath("MarginContainer/VBoxContainer/MonsterRow/RightSlot")
+fire = NodePath("MarginContainer/VBoxContainer/MonsterRow/CampFire")
+feed_row = NodePath("MarginContainer/VBoxContainer/FeedRow")
+
+[node name="ColorRect" type="TextureRect" parent="."]
+material = SubResource("ShaderMaterial_5bmje")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+texture = SubResource("ViewportTexture_nfe6y")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = -60
+
+[node name="MonsterRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 0
+
+[node name="LeftSlot" type="CenterContainer" parent="MarginContainer/VBoxContainer/MonsterRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CampFire" parent="MarginContainer/VBoxContainer/MonsterRow" instance=ExtResource("4_fire")]
+layout_mode = 2
+
+[node name="RightSlot" type="CenterContainer" parent="MarginContainer/VBoxContainer/MonsterRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="FeedRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="96" viewBox="0 0 192 96">
+  <!-- Eisenplatte mit grossem Pfeil -->
+  <path d="M12 2 H180 L190 12 V84 L180 94 H12 L2 84 V12 Z" fill="#141a1f" stroke="#06080c" stroke-width="4" stroke-linejoin="bevel"/>
+  <path d="M12 6 H180 L186 12 V84 L180 90 H12 L6 84 V12 Z" fill="none" stroke="#3b4a4e" stroke-width="4" stroke-linejoin="bevel"/>
+  <path d="M20 34 H116 V10 L174 48 L116 86 V62 H20 Z" fill="#b08a4e" stroke="#06080c" stroke-width="5" stroke-linejoin="bevel"/>
+  <path d="M26 40 H122 V22" fill="none" stroke="#e0c98c" stroke-width="3"/>
+  <path d="M26 57 H116 M122 75 L164 48" fill="none" stroke="#6e4f26" stroke-width="3"/>
+</svg>

@@ -1,0 +1,30 @@
+Skill-System Idee (für später, wenn es ~80 Monster gibt)
+
+Ausgangslage:
+	Pro Art: 3 Standard + 9 freischaltbare Ei-Attacken (3 Fangen & Opfern, 3 Meilensteine, 3 Bounty Hunter).
+	80 Arten x 9 eigene Attacken = 720 Skills -> zu viele, die würden sich wiederholen.
+	Ziel: ca. 250-300 Skills insgesamt, aus Bausteinen zusammengesetzt.
+
+Woher die Attacken kommen:
+	> Standard (3): geteilt, Basis-Angriff/-Block pro Element
+	> Fangen & Opfern (3): geteilt, aus dem Element-Pool (ca. 100-150 Skills, ein paar pro Element-Kombi und Stufe)
+	> Meilensteine (3): eigene Attacken der Art (oder Passive, siehe unten)
+	> Bounty (3): gemischt, 1-2 eigene Attacken der Art, Rest geteilt
+	> 1-3 eigene Attacken pro Art = 80-240 Skills, die der Art ihren Charakter geben
+	> Bounty-Ziele sind schon sparsam: ein Kopfgeld-Monster schaltet für jede Art etwas frei -> 10-15 Kopfgeld-Monster reichen
+
+Effekte statt nur Schaden:
+	> Jeder Skill hat schon ein "handle" in skills.gd, darauf aufbauen
+	> 15-25 Effekt-Bausteine: Schaden, Mehrfachtreffer, Brennen/Gift über Zeit, Schild, Heilen, Kosten senken,
+	  Cooldown zurücksetzen, "bei K.O.", "gegen Kopfgeld-/Boss-Monster", Element ändern
+	> Ein Skill = Element + Stufe + 1-2 Bausteine
+	> Synergien über Schlagworte (z. B. "Jäger", "Sturm", "Flut", "Opfer")
+		Beispiel: "Jäger-Skills machen +20 % Schaden gegen Gegner unter 50 % KP" -> Bounty-Attacken = Jäger-Familie
+
+Passive Werte:
+	> Eine Passive pro Art statt zusätzlicher Attacken
+		Beispiele: "+1 Skillpunkt in der ersten Runde", "Luft-Skills kosten in Luft-Biomen 1 weniger", "heilt 5 % nach einem K.O."
+	> Stärkster Meilenstein (Spiel gewinnen) könnte eine verbesserte Passive statt einer Attacke freischalten
+
+Nächster Schritt:
+	> Effekt-System mit ersten Bausteinen in skills.gd aufsetzen

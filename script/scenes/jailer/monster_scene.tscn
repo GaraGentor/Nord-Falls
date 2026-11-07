@@ -1,0 +1,115 @@
+[gd_scene format=3 uid="uid://dqh7x5xl00r8k"]
+
+[ext_resource type="Script" path="res://script/scenes/jailer/monster_scene.gd" id="1_1y24n"]
+[ext_resource type="StyleBox" uid="uid://bdq0txb6w7gmt" path="res://script/ui/materials/monster_widget_boxes.tres" id="2_4pma3"]
+[ext_resource type="Texture2D" uid="uid://bq0pf5g35vxjd" path="res://assets/mons/1/1_frontx256.png" id="2_8ffct"]
+[ext_resource type="PackedScene" uid="uid://bjesvsa1s6x4w" path="res://script/scenes/jailer/upgrade_infos.tscn" id="4_hkjvs"]
+[ext_resource type="Theme" uid="uid://bqwc2gott07le" path="res://script/ui/materials/battle_labels.tres" id="4_lnwu2"]
+
+[node name="MonsterScene" type="Control" unique_id=402484050 node_paths=PackedStringArray("sold_panel", "max_upgrade_panel", "buy_button", "texture", "upgrade_infos", "mon_name_label")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_1y24n")
+sold_panel = NodePath("Panel/MarginContainer/Panel")
+max_upgrade_panel = NodePath("Panel/MarginContainer/MaxUpgrade")
+buy_button = NodePath("Panel/MarginContainer/VBoxContainer/Button")
+texture = NodePath("Panel/MarginContainer/VBoxContainer/TextureRect")
+upgrade_infos = NodePath("Panel/MarginContainer/VBoxContainer/UpgradeInfos")
+mon_name_label = NodePath("Panel/MarginContainer/VBoxContainer/Label")
+
+[node name="Panel" type="Panel" parent="." unique_id=1993088333]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = ExtResource("2_4pma3")
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel" unique_id=986947929]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer" unique_id=1529084089]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="Label" type="Label" parent="Panel/MarginContainer/VBoxContainer" unique_id=1875147262]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Name"
+
+[node name="TextureRect" type="TextureRect" parent="Panel/MarginContainer/VBoxContainer" unique_id=1083386134]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 3
+texture = ExtResource("2_8ffct")
+expand_mode = 2
+stretch_mode = 4
+
+[node name="UpgradeInfos" parent="Panel/MarginContainer/VBoxContainer" unique_id=1644111354 instance=ExtResource("4_hkjvs")]
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="Button" type="Button" parent="Panel/MarginContainer/VBoxContainer" unique_id=1414096054]
+layout_mode = 2
+disabled = true
+text = "JAILER_BUY"
+
+[node name="Panel" type="Panel" parent="Panel/MarginContainer" unique_id=679061627]
+visible = false
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/MarginContainer/Panel" unique_id=762554685]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -23.5
+offset_top = -11.5
+offset_right = 23.5
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("4_lnwu2")
+theme_override_font_sizes/font_size = 40
+text = "JAILER_SOLD"
+
+[node name="MaxUpgrade" type="Panel" parent="Panel/MarginContainer" unique_id=1016260237]
+visible = false
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/MarginContainer/MaxUpgrade" unique_id=276344895]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -23.5
+offset_top = -11.5
+offset_right = 23.5
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("4_lnwu2")
+theme_override_font_sizes/font_size = 40
+text = "JAILER_MAX_UPGRADE"
+
+[connection signal="pressed" from="Panel/MarginContainer/VBoxContainer/Button" to="." method="_on_buy_pressed"]

@@ -1,0 +1,42 @@
+[gd_scene load_steps=4 format=3 uid="uid://dkfj4q8vk8cit"]
+
+[ext_resource type="StyleBox" uid="uid://bdq0txb6w7gmt" path="res://script/ui/materials/monster_widget_boxes.tres" id="1_fhs8x"]
+[ext_resource type="Texture2D" uid="uid://c8m6khyf3wd7c" path="res://assets/map/imageedit_3_2341269576.png" id="2_i5cxe"]
+[ext_resource type="Texture2D" uid="uid://vjcmh84infk1" path="res://assets/map/imageedit_1_8113501049.png" id="3_pfoby"]
+
+[node name="MapPrototype" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = ExtResource("1_fhs8x")
+
+[node name="Imageedit32341269576" type="Sprite2D" parent="."]
+position = Vector2(514, 117)
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("2_i5cxe")
+
+[node name="Imageedit32341269577" type="Sprite2D" parent="."]
+position = Vector2(641, 278)
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("2_i5cxe")
+
+[node name="Imageedit32341269578" type="Sprite2D" parent="."]
+position = Vector2(794, 122)
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("2_i5cxe")
+
+[node name="Imageedit18113501049" type="Sprite2D" parent="."]
+position = Vector2(364, 273)
+scale = Vector2(0.4, 0.4)
+texture = ExtResource("3_pfoby")

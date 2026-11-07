@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="320" viewBox="0 0 280 320">
+  <!-- Vordere Stäbe, Aufhängung und Ring: geschwärztes Eisen, kantig wie die Figur des Kerkermeisters -->
+  <g fill="none" stroke-linejoin="bevel" stroke-linecap="butt">
+    <g stroke="#06080c" stroke-width="13">
+      <path d="M22 280 V130 L50 72 L98 34 L140 18 L182 34 L230 72 L258 130 V280"/>
+      <path d="M60 280 V126 L84 72 L140 18"/>
+      <path d="M220 280 V126 L196 72 L140 18"/>
+      <path d="M50 72 H230"/>
+    </g>
+    <g stroke="#2d383d" stroke-width="7">
+      <path d="M22 280 V130 L50 72 L98 34 L140 18 L182 34 L230 72 L258 130 V280"/>
+      <path d="M60 280 V126 L84 72 L140 18"/>
+      <path d="M220 280 V126 L196 72 L140 18"/>
+      <path d="M50 72 H230"/>
+    </g>
+    <!-- Lichtkante links oben, Grünspan -->
+    <g stroke="#6f968a" stroke-width="3">
+      <path d="M20 222 V130 L48 71 L96 33 L136 18"/>
+      <path d="M58 200 V126 L82 72 L118 37"/>
+    </g>
+    <!-- Rost, der von unten hochkriecht -->
+    <g stroke="#6e3f26" stroke-width="7">
+      <path d="M22 280 V238"/>
+      <path d="M60 280 V252"/>
+      <path d="M220 280 V226"/>
+      <path d="M258 280 V248"/>
+    </g>
+    <g stroke="#9a5a32" stroke-width="3">
+      <path d="M21 278 V256"/>
+      <path d="M219 278 V246"/>
+    </g>
+  </g>
+  <!-- Ring und Kappe oben -->
+  <circle cx="140" cy="11" r="8" fill="none" stroke="#06080c" stroke-width="9"/>
+  <circle cx="140" cy="11" r="8" fill="none" stroke="#4a5a5c" stroke-width="4"/>
+  <path d="M118 28 L128 16 H152 L162 28 L150 40 H130 Z" fill="#2d383d" stroke="#06080c" stroke-width="4" stroke-linejoin="bevel"/>
+  <path d="M128 18 H140 V38 H130 L122 28 Z" fill="#4f6264"/>
+  <!-- Sockelring für die Ketten -->
+  <path d="M14 272 H266 L274 280 V308 L266 316 H14 L6 308 V280 Z" fill="#141a1f" stroke="#06080c" stroke-width="4" stroke-linejoin="bevel"/>
+  <path d="M14 272 H266 L274 280 H6 Z" fill="#4f6264" stroke="#06080c" stroke-width="2" stroke-linejoin="bevel"/>
+  <path d="M6 308 H274 L266 316 H14 Z" fill="#432618" stroke="#06080c" stroke-width="2" stroke-linejoin="bevel"/>
+  <!-- Rostflecken und Nieten -->
+  <path d="M28 280 L48 280 L42 294 L30 290 Z" fill="#4d2c1b"/>
+  <path d="M236 298 L258 296 L262 308 L232 308 Z" fill="#4d2c1b"/>
+  <g fill="#6f968a" stroke="#06080c" stroke-width="2">
+    <rect x="16" y="289" width="8" height="8"/>
+    <rect x="256" y="289" width="8" height="8"/>
+  </g>
+</svg>

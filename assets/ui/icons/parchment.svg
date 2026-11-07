@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <!-- Abgegriffene Pergamentrolle: harte Kanten, Licht von oben links, wie die Requisiten im Shop -->
+  <!-- obere Rolle hinten -->
+  <path d="M34 12 H106 L116 20 V32 L106 38 H34 Z" fill="#7d6840" stroke="#06080c" stroke-width="5" stroke-linejoin="bevel"/>
+  <!-- Blatt -->
+  <path d="M30 24 H98 V100 L90 110 H22 V88 L30 84 Z" fill="#c4ad7c" stroke="#06080c" stroke-width="5" stroke-linejoin="bevel"/>
+  <path d="M34 28 H62 L42 80 H34 Z" fill="#dcc896"/>
+  <path d="M84 28 H94 V98 L88 106 H72 Z" fill="#9c8759"/>
+  <!-- Schrift -->
+  <path d="M42 46 H84 M42 60 H84 M42 74 H70" fill="none" stroke="#3a2c18" stroke-width="5"/>
+  <!-- untere Rolle vorne -->
+  <path d="M12 90 L22 84 H34 L40 92 V104 L34 112 H22 L12 106 Z" fill="#8e7a4e" stroke="#06080c" stroke-width="5" stroke-linejoin="bevel"/>
+  <!-- obere Rolle vorne -->
+  <path d="M24 16 L34 10 H44 L50 18 V30 L44 38 H34 L24 32 Z" fill="#a8925f" stroke="#06080c" stroke-width="5" stroke-linejoin="bevel"/>
+  <!-- Siegel -->
+  <path d="M78 80 H90 L97 87 V99 L90 106 H78 L71 99 V87 Z" fill="#8a2a20" stroke="#06080c" stroke-width="4" stroke-linejoin="bevel"/>
+  <path d="M80 86 H87 L91 90 V94 L80 90 Z" fill="#c2503e"/>
+</svg>

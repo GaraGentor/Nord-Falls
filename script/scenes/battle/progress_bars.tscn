@@ -1,0 +1,212 @@
+[gd_scene load_steps=12 format=3 uid="uid://coyny15w4ca7j"]
+
+[ext_resource type="Script" path="res://script/scenes/battle/progress_bars.gd" id="1_agbnj"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_veyet"]
+bg_color = Color(0, 0, 0, 1)
+skew = Vector2(0.5, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_60twr"]
+draw_center = false
+skew = Vector2(0.5, 0)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rr2py"]
+bg_color = Color(0.6, 0, 0, 1)
+skew = Vector2(0.5, 0)
+border_width_left = 4
+border_width_top = 4
+border_width_bottom = 4
+border_color = Color(0, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qr7y0"]
+bg_color = Color(0, 0, 0, 1)
+skew = Vector2(-0.5, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_q3rv5"]
+bg_color = Color(1, 1, 1, 1)
+skew = Vector2(-0.5, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u7x2r"]
+bg_color = Color(0, 0, 0, 1)
+skew = Vector2(-0.5, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0ypim"]
+draw_center = false
+
+[sub_resource type="Gradient" id="Gradient_fmfef"]
+offsets = PackedFloat32Array(0.108014, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_3lmu0"]
+gradient = SubResource("Gradient_fmfef")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_5etbf"]
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 19.71
+initial_velocity_min = 54.2
+initial_velocity_max = 54.2
+orbit_velocity_min = -2.0
+orbit_velocity_max = 2.0
+gravity = Vector3(0, -98, 0)
+scale_min = 8.0
+scale_max = 8.0
+color = Color(0.294174, 0.749597, 0.921871, 1)
+color_ramp = SubResource("GradientTexture1D_3lmu0")
+hue_variation_min = -0.1
+hue_variation_max = 0.18
+
+[node name="ProgressBars" type="BoxContainer" node_paths=PackedStringArray("progress_bar", "element_panel", "level_label", "skill_points_label", "catch_propability_label", "catch_panel", "skill_panel")]
+anchors_preset = -1
+anchor_right = 0.212
+anchor_bottom = 0.081
+offset_right = 0.639984
+offset_bottom = -0.32
+grow_horizontal = 2
+size_flags_horizontal = 3
+alignment = 1
+vertical = true
+script = ExtResource("1_agbnj")
+progress_bar = NodePath("MarginContainer/HBoxContainer/VBoxContainer/HBoxContainer/ProgressBar")
+element_panel = NodePath("MarginContainer/HBoxContainer/VBoxContainer/HBoxContainer2/Panel3")
+level_label = NodePath("MarginContainer/HBoxContainer/VBoxContainer/HBoxContainer2/Panel2/Level")
+skill_points_label = NodePath("MarginContainer/HBoxContainer/Panel/Label")
+catch_propability_label = NodePath("MarginContainer/HBoxContainer/VBoxContainer/HBoxContainer2/Panel4/Label")
+catch_panel = NodePath("MarginContainer/HBoxContainer/VBoxContainer/HBoxContainer2/Panel4")
+skill_panel = NodePath("MarginContainer/HBoxContainer/Panel")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_right = 16
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Panel" type="Panel" parent="MarginContainer/HBoxContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_veyet")
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/VBoxContainer/HBoxContainer/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "HP"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ProgressBar" type="ProgressBar" parent="MarginContainer/HBoxContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/background = SubResource("StyleBoxFlat_60twr")
+theme_override_styles/fill = SubResource("StyleBoxFlat_rr2py")
+value = 50.0
+show_percentage = false
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="MarginContainer/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+
+[node name="Panel2" type="Panel" parent="MarginContainer/HBoxContainer/VBoxContainer/HBoxContainer2"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_qr7y0")
+
+[node name="Level" type="Label" parent="MarginContainer/HBoxContainer/VBoxContainer/HBoxContainer2/Panel2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Lv. 2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Panel3" type="Panel" parent="MarginContainer/HBoxContainer/VBoxContainer/HBoxContainer2"]
+custom_minimum_size = Vector2(25, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_q3rv5")
+
+[node name="Panel" type="Panel" parent="MarginContainer/HBoxContainer/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_u7x2r")
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/VBoxContainer/HBoxContainer2/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "MONSTER_STATUS_EFFECTS"
+vertical_alignment = 1
+
+[node name="Panel4" type="Panel" parent="MarginContainer/HBoxContainer/VBoxContainer/HBoxContainer2"]
+custom_minimum_size = Vector2(50, 20)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_u7x2r")
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/VBoxContainer/HBoxContainer2/Panel4"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "100%"
+vertical_alignment = 1
+
+[node name="Panel" type="Panel" parent="MarginContainer/HBoxContainer"]
+visible = false
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_0ypim")
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="MarginContainer/HBoxContainer/Panel"]
+position = Vector2(8, 10)
+amount = 26
+process_material = SubResource("ParticleProcessMaterial_5etbf")
+trail_enabled = true
+trail_lifetime = 0.55
+trail_sections = 6
+trail_section_subdivisions = 2
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Panel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -5.0
+offset_top = -11.5
+offset_right = 5.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 26
+text = "5"
+horizontal_alignment = 1
+vertical_alignment = 1

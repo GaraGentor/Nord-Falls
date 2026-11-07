@@ -1,0 +1,11 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://dsr8iqo26w65c"]
+
+[ext_resource type="Shader" path="res://script/scenes/battle/battle.gdshader" id="1_0ur51"]
+
+[resource]
+shader = ExtResource("1_0ur51")
+shader_parameter/color = Color(1, 1, 0, 1)
+shader_parameter/thickness = 4.617
+shader_parameter/tolerance = 0.0
+shader_parameter/diagonals = true
+shader_parameter/rounded = true

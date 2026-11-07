@@ -1,0 +1,493 @@
+[gd_scene format=3 uid="uid://ct8ovcic8ewvm"]
+
+[ext_resource type="Script" path="res://script/scenes/world_map/world_map.gd" id="1_fque0"]
+[ext_resource type="Script" path="res://script/scenes/world_map/event_handler.gd" id="2_7tuf0"]
+[ext_resource type="Texture2D" uid="uid://cdaudimnlhfta" path="res://assets/ui/map/battle_icon.png" id="2_sikk3"]
+[ext_resource type="PackedScene" uid="uid://dnayp1xl2x6gl" path="res://script/scenes/heal_camp/heal_camp.tscn" id="2_tj45e"]
+[ext_resource type="PackedScene" uid="uid://bcjim8fkv613c" path="res://script/scenes/shop/shop.tscn" id="3_t1igp"]
+[ext_resource type="PackedScene" uid="uid://082mo0k6468p" path="res://script/scenes/jailer/jailer.tscn" id="4_e13wj"]
+[ext_resource type="PackedScene" uid="uid://bc56refqd7yk6" path="res://script/scenes/trainer/trainer.tscn" id="4_k05nh"]
+[ext_resource type="Script" path="res://script/ui/shader/iron_plate.gd" id="4_plate"]
+[ext_resource type="Shader" path="res://script/scenes/world_map/map_background.gdshader" id="5_23h7f"]
+[ext_resource type="PackedScene" uid="uid://c3ubam1ngmpg5" path="res://script/scenes/treasure/treasure.tscn" id="5_pm81x"]
+[ext_resource type="Theme" uid="uid://bqwc2gott07le" path="res://script/ui/materials/battle_labels.tres" id="5_pvajd"]
+[ext_resource type="Theme" uid="uid://b5pomesyumr6n" path="res://script/scenes/battle/flat_button_theme.tres" id="6_4ileh"]
+[ext_resource type="Script" path="res://script/scenes/world_map/node_container.gd" id="6_334vr"]
+[ext_resource type="Texture2D" uid="uid://ck0te7vt8u4p2" path="res://assets/ui/map/node_boss.svg" id="7_w2axr"]
+[ext_resource type="Shader" path="res://script/scenes/world_map/ui_line_wave.gdshader" id="15_qkwaq"]
+[ext_resource type="Script" path="res://script/scenes/world_map/line_control.gd" id="15_w2ou5"]
+[ext_resource type="Script" path="res://script/ui/relic_bar/relic_bar.gd" id="16_relic"]
+[ext_resource type="Texture2D" uid="uid://cpfweiuuk0lou" path="res://assets/ui/icons/bag.svg" id="17_bag"]
+[ext_resource type="ShaderMaterial" path="res://script/scenes/jailer/jailer_props_material.tres" id="17_bag_mat"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/monster_essence.svg" id="18_essence"]
+[ext_resource type="Texture2D" uid="uid://clfj4a2tkwr85" path="res://assets/ui/jailer/boss_tear.svg" id="19_shard"]
+[ext_resource type="Script" path="res://script/scenes/world_map/team_bar.gd" id="20_team"]
+[ext_resource type="Script" path="res://script/scenes/world_map/map_legend.gd" id="21_legend"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/parchment.svg" id="22_parch"]
+[ext_resource type="Script" path="res://script/scenes/world_map/map_paper.gd" id="23_paper"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/key.svg" id="24_key"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/coupon.svg" id="24_coupon"]
+[ext_resource type="Material" uid="uid://blo3dbj5wps64" path="res://script/ui/shader/living_pixels_material.tres" id="25_living"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_hmv0x"]
+shader = ExtResource("5_23h7f")
+shader_parameter/bottom_color = Color(0, 0, 0, 1)
+shader_parameter/top_color = Color(0.116466, 0.34427, 0.19721, 1)
+shader_parameter/wave_amp = 0.115
+shader_parameter/wave_size = 1.0
+shader_parameter/wave_time_mul = 0.933
+shader_parameter/total_phases = 8
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_0eq7q"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_14sbp"]
+bg_color = Color(0, 0, 0, 0)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_vjn3m"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_header"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t4rwl"]
+bg_color = Color(1, 1, 1, 0)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_xod0g"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_oh3lj"]
+shader = ExtResource("15_qkwaq")
+shader_parameter/glow_color = Color(0.4, 0.9, 1, 1)
+shader_parameter/glow_intensity = 1.594
+shader_parameter/glow_speed = 2.76
+
+[node name="WorldMap" type="Control" node_paths=PackedStringArray("scroll_container", "map_layout", "battle_c", "camp_c", "grid_container", "boss_button", "node_container", "node_name", "line_node", "boss_shard_label", "money_label", "key_label", "coupon_label", "depth_level", "biome_path_label", "team_bar", "view_container")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("1_fque0")
+scroll_container = NodePath("HBoxContainer/Panel2/ScrollContainer")
+map_layout = NodePath("HBoxContainer/Panel2/ScrollContainer/MarginContainer/VBoxContainer/MapLayout")
+battle_c = NodePath("BattleIcon")
+camp_c = NodePath("CampColor")
+grid_container = NodePath("HBoxContainer/Panel2/ScrollContainer/MarginContainer/VBoxContainer/MapLayout/GridContainer")
+boss_button = NodePath("HBoxContainer/Panel2/ScrollContainer/MarginContainer/VBoxContainer/Panel/BossButton")
+node_container = NodePath("Items/NodeContainer")
+node_name = NodePath("Items/NodeName")
+line_node = NodePath("Items/UILine")
+boss_shard_label = NodePath("HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow/ShardLabel")
+money_label = NodePath("HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow/MoneyLabel")
+key_label = NodePath("HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow/KeyLabel")
+coupon_label = NodePath("HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow/CouponLabel")
+depth_level = NodePath("HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow/DepthLevel")
+biome_path_label = NodePath("HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow/BiomePath")
+team_bar = NodePath("HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TeamBar")
+heal_camp_scene = ExtResource("2_tj45e")
+shop_scene = ExtResource("3_t1igp")
+jailer_scene = ExtResource("4_e13wj")
+trainer_scene = ExtResource("4_k05nh")
+treasure_scene = ExtResource("5_pm81x")
+view_container = NodePath("ViewPanel")
+
+[node name="BattleIcon" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 1146.0
+offset_top = 14.0
+offset_right = 1186.0
+offset_bottom = 54.0
+pivot_offset = Vector2(20, 20)
+size_flags_horizontal = 0
+size_flags_vertical = 0
+texture = ExtResource("2_sikk3")
+expand_mode = 1
+stretch_mode = 4
+script = ExtResource("2_7tuf0")
+
+[node name="CampColor" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+offset_right = 40.0
+offset_bottom = 40.0
+pivot_offset = Vector2(20, 20)
+color = Color(0.254134, 0.630116, 0.20459, 1)
+
+[node name="ColorRect" type="TextureRect" parent="."]
+z_index = -1
+material = SubResource("ShaderMaterial_hmv0x")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+texture = SubResource("ViewportTexture_0eq7q")
+
+[node name="DEBUG" type="Node" parent="."]
+
+[node name="Button" type="Button" parent="DEBUG"]
+visible = false
+offset_left = 1211.0
+offset_top = 23.0
+offset_right = 1248.0
+offset_bottom = 54.0
+text = "gen"
+
+[node name="HBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+
+[node name="Panel" type="Panel" parent="HBoxContainer"]
+custom_minimum_size = Vector2(0, 184)
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("5_pvajd")
+theme_override_styles/panel = SubResource("StyleBoxFlat_14sbp")
+
+[node name="MarginContainer" type="MarginContainer" parent="HBoxContainer/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="Header" type="HBoxContainer" parent="HBoxContainer/Panel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BagSpace" type="Control" parent="HBoxContainer/Panel/MarginContainer/Header"]
+custom_minimum_size = Vector2(56, 0)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="HBoxContainer/Panel/MarginContainer/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxEmpty_header")
+
+[node name="Plate" type="ColorRect" parent="HBoxContainer/Panel/MarginContainer/Header/Panel"]
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("4_plate")
+
+[node name="MarginContainer" type="MarginContainer" parent="HBoxContainer/Panel/MarginContainer/Header/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 80
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TopRow" type="HBoxContainer" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="EssenceIcon" type="TextureRect" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow"]
+material = ExtResource("25_living")
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+texture = ExtResource("18_essence")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="MoneyLabel" type="Label" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_font_sizes/font_size = 22
+text = "0"
+
+[node name="ShardIcon" type="TextureRect" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow"]
+material = ExtResource("25_living")
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+tooltip_text = "BOSS_REWARD_SHARD_DESC"
+texture = ExtResource("19_shard")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ShardLabel" type="Label" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_font_sizes/font_size = 22
+text = "0"
+
+[node name="KeyIcon" type="TextureRect" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow"]
+material = ExtResource("25_living")
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+tooltip_text = "KEY_DESC"
+texture = ExtResource("24_key")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="KeyLabel" type="Label" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_font_sizes/font_size = 22
+text = "0"
+
+[node name="CouponIcon" type="TextureRect" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow"]
+material = ExtResource("25_living")
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+tooltip_text = "COUPON_DESC"
+texture = ExtResource("24_coupon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CouponLabel" type="Label" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_font_sizes/font_size = 22
+text = "0"
+
+[node name="DepthLevel" type="Label" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "Biom"
+
+[node name="BiomePath" type="RichTextLabel" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_font_sizes/normal_font_size = 16
+theme_override_font_sizes/bold_font_size = 18
+bbcode_enabled = true
+fit_content = true
+autowrap_mode = 0
+horizontal_alignment = 2
+
+[node name="RelicBar" type="HBoxContainer" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_constants/separation = 8
+script = ExtResource("16_relic")
+
+[node name="TeamBar" type="HBoxContainer" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+script = ExtResource("20_team")
+
+[node name="BagShadow" type="TextureRect" parent="HBoxContainer/Panel"]
+modulate = Color(0, 0, 0, 0.45)
+layout_mode = 0
+offset_left = 6.0
+offset_top = 20.0
+offset_right = 146.0
+offset_bottom = 160.0
+rotation = -0.14
+pivot_offset = Vector2(70, 70)
+mouse_filter = 2
+texture = ExtResource("17_bag")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BagIcon" type="TextureRect" parent="HBoxContainer/Panel"]
+material = ExtResource("17_bag_mat")
+layout_mode = 0
+offset_top = 12.0
+offset_right = 140.0
+offset_bottom = 152.0
+rotation = -0.14
+pivot_offset = Vector2(70, 70)
+mouse_filter = 2
+texture = ExtResource("17_bag")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LegendButton" type="Button" parent="HBoxContainer/Panel"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -72.0
+offset_top = -72.0
+offset_right = -16.0
+offset_bottom = -16.0
+grow_horizontal = 0
+grow_vertical = 0
+tooltip_text = "MAP_LEGEND"
+theme = ExtResource("6_4ileh")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_header")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_header")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_header")
+icon = ExtResource("22_parch")
+icon_alignment = 1
+expand_icon = true
+
+[node name="Plate" type="ColorRect" parent="HBoxContainer/Panel/LegendButton"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("4_plate")
+
+[node name="Panel2" type="Panel" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxEmpty_vjn3m")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="HBoxContainer/Panel2"]
+layout_mode = 2
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_t4rwl")
+
+[node name="MarginContainer" type="MarginContainer" parent="HBoxContainer/Panel2/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 60
+theme_override_constants/margin_top = 60
+theme_override_constants/margin_right = 60
+theme_override_constants/margin_bottom = 60
+
+[node name="MapPaper" type="Control" parent="HBoxContainer/Panel2/ScrollContainer/MarginContainer"]
+z_index = -1
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("23_paper")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer/Panel2/ScrollContainer/MarginContainer"]
+layout_mode = 2
+
+[node name="Panel" type="Panel" parent="HBoxContainer/Panel2/ScrollContainer/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 300)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_vjn3m")
+
+[node name="BossButton" type="Button" parent="HBoxContainer/Panel2/ScrollContainer/MarginContainer/VBoxContainer/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("6_4ileh")
+tooltip_text = "WORLDMAP_BOSS"
+flat = true
+icon = ExtResource("7_w2axr")
+icon_alignment = 1
+
+[node name="MapLayout" type="ColorRect" parent="HBoxContainer/Panel2/ScrollContainer/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(900, 2000)
+layout_mode = 2
+color = Color(0, 0, 0, 0)
+
+[node name="GridContainer" type="GridContainer" parent="HBoxContainer/Panel2/ScrollContainer/MarginContainer/VBoxContainer/MapLayout"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+columns = 8
+
+[node name="MapLegend" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("21_legend")
+
+[node name="ViewPanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_xod0g")
+
+[node name="Items" type="Node" parent="."]
+
+[node name="NodeName" type="Button" parent="Items"]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+pivot_offset = Vector2(32, 32)
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme = ExtResource("5_pvajd")
+theme_override_constants/icon_max_width = 64
+theme_override_font_sizes/font_size = 24
+flat = true
+icon_alignment = 1
+expand_icon = true
+
+[node name="NodeContainer" type="Panel" parent="Items"]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxEmpty_vjn3m")
+script = ExtResource("6_334vr")
+
+[node name="UILine" type="Control" parent="Items"]
+material = SubResource("ShaderMaterial_oh3lj")
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+script = ExtResource("15_w2ou5")
+width = 7.0
+wave_color = Color(1, 0.95, 0.7, 1)
+wave_intensity = 0.4
+wave_speed = 1.6
+
+[connection signal="gui_input" from="BattleIcon" to="BattleIcon" method="_on_gui_input"]
+[connection signal="pressed" from="DEBUG/Button" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/Panel2/ScrollContainer/MarginContainer/VBoxContainer/Panel/BossButton" to="." method="_on_boss_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/Panel/LegendButton" to="MapLegend" method="toggle"]

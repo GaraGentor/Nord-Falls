@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="170" viewBox="0 0 180 170">
+  <!-- Abgewetzter Lederbeutel von vorne: liegt vor den Boss Tränen -->
+  <path d="M26 72 L154 72 L170 112 L156 150 L126 164 H54 L24 150 L10 112 Z" fill="#33211a" stroke="#06080c" stroke-width="5" stroke-linejoin="bevel"/>
+  <path d="M26 74 L72 78 L52 160 L26 148 L13 112 Z" fill="#46301f"/>
+  <path d="M154 74 L128 78 L128 162 L154 148 L167 112 Z" fill="#20140f"/>
+  <path d="M30 96 L24 124 L36 146" fill="none" stroke="#6b4a30" stroke-width="4"/>
+  <!-- Flicken mit Naht -->
+  <path d="M134 118 L156 112 L158 136 L138 142 Z" fill="#432618" stroke="#06080c" stroke-width="3"/>
+  <!-- Kordel um die Öffnung -->
+  <path d="M24 70 H156 L160 84 H20 Z" fill="#59462c" stroke="#06080c" stroke-width="4" stroke-linejoin="bevel"/>
+  <path d="M36 72 V84 M56 72 V84 M76 72 V84 M96 72 V84 M116 72 V84 M136 72 V84" stroke="#2a2014" stroke-width="4"/>
+  <path d="M24 72 H156" stroke="#8d7446" stroke-width="2.5"/>
+  <!-- Lasche und Eisenschnalle rechts -->
+  <path d="M150 74 L174 78 L172 106 L156 110 L150 92 Z" fill="#20140f" stroke="#06080c" stroke-width="4" stroke-linejoin="bevel"/>
+  <rect x="156" y="86" width="12" height="12" fill="#4f6264" stroke="#06080c" stroke-width="3"/>
+  <!-- Eiserne Plakette für die Anzahl -->
+  <path d="M74 98 H106 L118 110 V138 L106 150 H74 L62 138 V110 Z" fill="#0d1216" stroke="#06080c" stroke-width="4" stroke-linejoin="bevel"/>
+  <path d="M76 103 H104 L113 112 V136 L104 145 H76 L67 136 V112 Z" fill="none" stroke="#8d6a34" stroke-width="4" stroke-linejoin="bevel"/>
+</svg>

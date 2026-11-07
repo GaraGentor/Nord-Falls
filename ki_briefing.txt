@@ -1,0 +1,85 @@
+Du bist erfahrene/r Game Designer/in. Bitte gib mir Ideen und ehrliche Kritik zu meinem Spiel.
+
+# Das Spiel
+"To the North" ist ein Singleplayer-Roguelike mit Monsterfang und rundenbasierten
+Kartenkämpfen (Godot 4, 2D). Spielgefühl: Monster fangen und entwickeln wie in Pokémon,
+Run-Struktur und Kartenwahl wie in Slay the Spire. Das Spiel ist in Entwicklung.
+
+# Ablauf eines Runs
+- Ich wähle ein Ei als Start-Monster und nehme 3 seiner Ei-Attacken mit.
+- Ich reise durch 5 Biome und wähle auf einer Pfad-Karte jeweils das nächste Feld:
+  Kampf, Boss, Lager, Shop, Trainer, Kerkermeister, Ereignis, Schatz, Trophäe.
+  Vor dem Boss steht ein Rastlager.
+- Ein voller Run hat rund 26 normale Kämpfe. Die Gegner steigen von etwa Stufe 5 auf 35.
+- Der Run endet, wenn alle eigenen Monster K.O. sind oder der Endboss besiegt ist.
+- Der Biom-Pfad wird pro Run gewürfelt. Biome sind Elementkombinationen, das erste hat
+  ein Element, das letzte ist "Chaos" mit allen vier. Pro Biom gibt es einen Pool von
+  4 Monster-Arten.
+
+# Kampf
+- Mein Team hat maximal 2 Monster, die Gegnerseite 1 bis 3. Spät ist 3 gegen 2 die Regel.
+- Die Zugreihenfolge zeigt ein Initiative-Rad. Das Monster am Zug spielt seine Skills als
+  Karten. Jedes Monster kennt maximal 6.
+- Eigene Monster haben 1 Aktion pro Zug, Gegner später bis zu 3. Mehr Aktionen gibt es
+  für mich nur über den Kerkermeister oder ein Relic. Skills kosten Aktionen und können
+  Abklingzeiten haben.
+- Gegner kündigen ihren nächsten Zug samt Ziel und Schaden an. Ihre Skillwahl und ihre
+  Ziele sind aber bisher reiner Zufall.
+- Es gibt physischen und magischen Schaden. Schilde sind ebenfalls getrennt und halten
+  bis zum nächsten eigenen Zug des geschützten Monsters.
+- Dazu kommen Buffs, Flächen-Skills und Passive, die dem Team Boni geben.
+- Elementkreis: Wasser > Feuer > Luft > Erde > Wasser, Bonus oder Malus je 50 %.
+  Monster können mehrere Elemente haben, dann werden die Effekte verrechnet.
+- Skills sind an Elemente gebunden. Über Tränke kann ein Monster neue Elemente lernen
+  und damit mehr Skills einsetzen.
+- Werte sind teilweise verdeckt: Die Stats pro Art werden pro Run gewürfelt und durch
+  Treffer aufgedeckt.
+
+# Der Kern: Fangen statt Töten
+- Statt anzugreifen kann ich einen Fang versuchen. Das geht nur, bevor ich in diesem Zug
+  einen Skill gespielt habe, und beendet den Zug. Die Chance hängt von Seltenheit,
+  HP und Stufe ab.
+- Der Zielkonflikt: 2 K.O.s geben +1 Stufe. Wer nur fängt, fällt beim Level zurück.
+- Nach dem Kampf entscheide ich für jeden Fang: ins Team aufnehmen, eine Attacke an mein
+  Team weitergeben lassen, opfern oder freilassen.
+- Opfern schaltet die Ei-Attacke des Monsters dauerhaft für künftige Runs frei.
+- Gefallene eigene Monster kann ich einmal pro Run durch einen neuen Fang wiederbeleben
+  (30 % HP). Sonst vererben sie als "Letzter Wille" eine Sache.
+
+# Run-Belohnungen
+- EP dienen als Währung und zum Einkaufen.
+- Relics sind passive Boni. Es gibt bisher nur 3, ausgelöst über benannte Hooks.
+- Monster-Trophäen (z. B. Sturmgreif Feder) geben feste Stat-Punkte für den Run.
+- Der Shop verkauft Elementtränke, Trophäen und Relics, der Trainer seltene Skills.
+- Das Glücksrad-Ereignis gewinnt oder verliert 50 % des Goldes. Im Void-Ereignis tauscht man ein Relic gegen ein anderes gleicher Seltenheit.
+
+# Dauerhafter Fortschritt
+- Pro Art gibt es 3 Standard-Attacken und 9 freischaltbare Ei-Attacken, je 3 aus:
+  - Fangen und Opfern
+  - Meilensteinen (nur mit dem Start-Monster, das dafür im Team bleiben muss;
+	Bosse besiegen, Spiel gewinnen)
+  - Kopfgeldern (seltene Monster, die genau diese Art selbst erledigen muss)
+- Boss Tränen gibt es für Boss-Siege. Beim Kerkermeister sprengt eine Träne eine Kette
+  und gibt der Art dauerhaft +1 Aktion pro Zug. Das ist sehr stark.
+
+# Aktueller Stand und Lücken
+- 16 Monster-Arten, Ziel sind etwa 80.
+- Nur 3 Relics und nur 3 Ereignistypen.
+- Noch keine Statuseffekte und keine einzigartigen Skills pro Art.
+- Die Gegner-KI ist zu simpel.
+
+# Offene Designfragen
+1. Karte: Pfad-Karte behalten oder Hex-Karte mit nachrückender Giftwolke von Süden?
+   Die Wolke würde Zeitdruck und Reisegefühl bringen. Mein Hybrid-Vorschlag: Biome als
+   Bänder nach Distanz, Osten/Westen als seitliche Entscheidungen, Sichtweite 1-2 Ringe.
+2. Skill-System: Rund 250-300 Skills aus 15-25 Effekt-Bausteinen, mit Synergien über
+   Schlagworte (Jäger, Sturm, Flut, Opfer) und einer Passive pro Art?
+3. Wie macht man die Gegner-KI klüger, ohne dass die angekündigten Züge an Wert verlieren?
+
+# Deine Aufgabe
+Mach zuerst keine allgemeinen Genre-Tipps, sondern:
+- Nenne die 3 größten Designschwächen, die du aus dieser Beschreibung ableitest.
+- Schlage 10 konkrete Ideen vor, die den Zielkonflikt Fangen/Töten/Opfern verschärfen.
+  Nenne pro Idee Effekt, Aufwand (klein/mittel/groß) und das größte Risiko.
+- Beziehe Stellung zu Frage 1, mit Begründung.
+- Stelle mir Rückfragen, wenn dir für eine gute Antwort etwas fehlt.

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="170" viewBox="0 0 180 170">
+  <!-- Innenseite der offenen Tasche: liegt hinter den Boss Tränen -->
+  <path d="M30 66 L48 44 H132 L150 66 L146 90 H34 Z" fill="#0b0705" stroke="#06080c" stroke-width="4" stroke-linejoin="bevel"/>
+  <path d="M48 48 H132 L142 62 H38 Z" fill="#20130c"/>
+</svg>

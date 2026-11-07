@@ -1,0 +1,14 @@
+[gd_resource type="ShaderMaterial" load_steps=3 format=3 uid="uid://7bgpu2glfdp1"]
+
+[ext_resource type="Shader" path="res://script/ui/monster_card/monster_card.gdshader" id="1_vqw07"]
+
+[sub_resource type="CurveXYZTexture" id="CurveXYZTexture_yo4x4"]
+
+[resource]
+shader = ExtResource("1_vqw07")
+shader_parameter/size_effect = 1.0
+shader_parameter/speed = 1.0
+shader_parameter/highlight_strength = 0.5
+shader_parameter/color_mode_toggle = false
+shader_parameter/is_horizontal = true
+shader_parameter/color_gradient = SubResource("CurveXYZTexture_yo4x4")
