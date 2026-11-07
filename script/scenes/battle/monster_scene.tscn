@@ -3,27 +3,8 @@
 [ext_resource type="Texture2D" uid="uid://cc0iba7o70h8m" path="res://assets/mons/4/4_front.png" id="1_oxh2b"]
 [ext_resource type="Script" uid="uid://0mkejswpipjh" path="res://script/scenes/battle/monster_scene.gd" id="1_qfx22"]
 [ext_resource type="Theme" uid="uid://bqwc2gott07le" path="res://script/ui/materials/battle_labels.tres" id="2_theme"]
-[ext_resource type="PackedScene" path="res://script/ui/moves_badge/moves_particles_view.tscn" id="3_moves"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hp_bg"]
-bg_color = Color(0.75, 0.1, 0.1, 1)
-skew = Vector2(0.4, 0)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0, 0, 0, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hp_fill"]
-bg_color = Color(0.2, 0.8, 0.25, 1)
-skew = Vector2(0.4, 0)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0, 0, 0, 1)
-
-[node name="MonsterScene" type="Control" unique_id=1545540616 node_paths=PackedStringArray("texture_rect", "name_label", "level_label", "hp_bar", "hp_label", "status_box", "intent_box", "moves_particles")]
+[node name="MonsterScene" type="Control" unique_id=1545540616 node_paths=PackedStringArray("texture_rect", "status_box", "intent_box")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -32,108 +13,41 @@ grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("2_theme")
 script = ExtResource("1_qfx22")
-texture_rect = NodePath("AspectRatioContainer/HBoxContainer/TextureRect")
-name_label = NodePath("AspectRatioContainer/HBoxContainer/Info/Header/Name")
-level_label = NodePath("AspectRatioContainer/HBoxContainer/Info/Header/Level")
-hp_bar = NodePath("AspectRatioContainer/HBoxContainer/Info/HpRow/HpBar")
-hp_label = NodePath("AspectRatioContainer/HBoxContainer/Info/HpRow/HpBar/Label")
-status_box = NodePath("AspectRatioContainer/HBoxContainer/Info/Status")
-intent_box = NodePath("AspectRatioContainer/HBoxContainer/Info/Intents")
-moves_particles = NodePath("MovesParticles")
+texture_rect = NodePath("Layout/Body")
+status_box = NodePath("Layout/Status")
+intent_box = NodePath("Layout/Intents")
 
-[node name="AspectRatioContainer" type="AspectRatioContainer" parent="." unique_id=1680842463]
+[node name="Layout" type="VBoxContainer" parent="." unique_id=1680842463]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 2
-ratio = 1.5
-
-[node name="HBoxContainer" type="HBoxContainer" parent="AspectRatioContainer" unique_id=1640520753]
-layout_mode = 2
-theme_override_constants/separation = 6
-alignment = 1
-
-[node name="Info" type="VBoxContainer" parent="AspectRatioContainer/HBoxContainer" unique_id=261880129]
-custom_minimum_size = Vector2(190, 0)
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/separation = 4
-alignment = 1
-
-[node name="Header" type="HBoxContainer" parent="AspectRatioContainer/HBoxContainer/Info" unique_id=1445878885]
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/separation = 8
-
-[node name="Name" type="Label" parent="AspectRatioContainer/HBoxContainer/Info/Header" unique_id=1206852189]
-custom_minimum_size = Vector2(60, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/outline_size = 6
-theme_override_font_sizes/font_size = 22
-text = "[NAME]"
-text_overrun_behavior = 3
-
-[node name="Level" type="Label" parent="AspectRatioContainer/HBoxContainer/Info/Header" unique_id=415529257]
-layout_mode = 2
-theme_override_constants/outline_size = 6
-theme_override_font_sizes/font_size = 22
-text = "Lv 1"
-
-[node name="HpRow" type="HBoxContainer" parent="AspectRatioContainer/HBoxContainer/Info" unique_id=1616818004]
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/separation = 6
-
-[node name="HpBar" type="ProgressBar" parent="AspectRatioContainer/HBoxContainer/Info/HpRow" unique_id=557128888]
-custom_minimum_size = Vector2(0, 20)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 4
-mouse_filter = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_hp_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_hp_fill")
-step = 0.0
-value = 100.0
-show_percentage = false
-
-[node name="Label" type="Label" parent="AspectRatioContainer/HBoxContainer/Info/HpRow/HpBar" unique_id=1507372011]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 14
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Status" type="HBoxContainer" parent="AspectRatioContainer/HBoxContainer/Info" unique_id=710069513]
-custom_minimum_size = Vector2(0, 22)
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/separation = 10
-
-[node name="Intents" type="VBoxContainer" parent="AspectRatioContainer/HBoxContainer/Info" unique_id=202147931]
-layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 2
 
-[node name="TextureRect" type="TextureRect" parent="AspectRatioContainer/HBoxContainer" unique_id=264053181]
+[node name="Intents" type="HFlowContainer" parent="Layout" unique_id=202147931]
+custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
-size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 2
+alignment = 1
+
+[node name="Status" type="HFlowContainer" parent="Layout" unique_id=710069513]
+custom_minimum_size = Vector2(0, 22)
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 2
+alignment = 1
+
+[node name="Body" type="TextureRect" parent="Layout" unique_id=264053181]
+layout_mode = 2
 size_flags_vertical = 3
 texture = ExtResource("1_oxh2b")
 expand_mode = 1
 stretch_mode = 5
-
-[node name="MovesParticles" parent="." unique_id=2143914963 instance=ExtResource("3_moves")]
-visible = false
-z_index = 5
-layout_mode = 0
 
 [connection signal="gui_input" from="." to="." method="_on_gui_input"]

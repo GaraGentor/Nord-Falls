@@ -1,15 +1,21 @@
 extends Control
 
-## Infobereich im Kampf: oben das Turn Wheel, darunter Werte und Skills
+## Infobereich im Kampf: oben das Turn Wheel zwischen den Karten aller Monster, darunter Werte und Skills
 ## des Monsters, das gerade auf dem Feld ausgewählt ist (eigenes oder gegnerisches).
 
 const SKILL_COLUMNS := ["SKILL_HEADER_SKILL", "SKILL_HEADER_COST", "SKILL_HEADER_CD", "SKILL_HEADER_POWER"]
 const EGG_SKILL_COLOR := Color(0.858824, 0.717647, 0.45098, 1)
 const EGG_LOCKED_COLOR := Color(0.5, 0.5, 0.5)
 const EGG_TEXTURE := preload("res://assets/ui/eggs/common_1.png")
+const MON_CARD := preload("res://script/scenes/battle/battle_mon_card.tscn")
 
 @export var turn_wheel: Control
+## optional: Spalten für die Karten der Monster, links die Gegner, rechts die eigenen
+@export var enemy_cards: Container
+@export var own_cards: Container
 @export var name_label: Label
+## Überschrift "Stats für NAME Lv. X" statt nur Name und Stufe (im Kampf, wo die Karten schon Name und Stufe zeigen)
+@export var stats_title := false
 @export var element_chip: Control
 ## Seltenheit der Art, rechts neben dem Typ
 @export var rarity_chip: Control
@@ -33,12 +39,30 @@ const EGG_TEXTURE := preload("res://assets/ui/eggs/common_1.png")
 var monster: Monster:
 	set(mon):
 		monster = mon
+		_highlight_card()
 		refresh()
+
+## Eine Karte für jedes Monster auf dem Feld
+func build_mon_cards() -> void:
+	for side in [[enemy_cards, State.enemy_mons], [own_cards, State.mons]]:
+		for mon: Monster in side[1]:
+			var card: BattleMonCard = MON_CARD.instantiate()
+			side[0].add_child(card)
+			card.setup(mon)
+
+func _highlight_card() -> void:
+	if enemy_cards == null or own_cards == null:
+		return
+	for card: BattleMonCard in enemy_cards.get_children() + own_cards.get_children():
+		card.set_selected(card.mon == monster)
 
 func refresh() -> void:
 	if monster == null:
 		return
-	name_label.text = "%s  Lv. %d" % [Helper.mon_battle_name(monster), monster._level]
+	if stats_title:
+		name_label.text = tr("BATTLE_STATS_FOR").format({"mon": Helper.mon_battle_name(monster), "level": monster._level})
+	else:
+		name_label.text = "%s  Lv. %d" % [Helper.mon_battle_name(monster), monster._level]
 	name_label.self_modulate = Helper.color_by_mon(monster)
 	element_chip._init_color(monster)
 	if rarity_chip:

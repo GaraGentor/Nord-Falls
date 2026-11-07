@@ -9,7 +9,8 @@ const DRAG_THRESHOLD := 12.0
 const SWIPE_TO_DRAG := 40.0
 
 @export var name_label: Label
-@export var cost_label: Label
+## Kosten in Zügen, mit den gleichen Partikeln wie die übrigen Züge auf den Monster-Karten
+@export var cost_badge: Control
 @export var value_label: Label
 @export var type_icon: TextureRect
 @export var description_label: Label
@@ -48,7 +49,7 @@ func _init_card() -> void:
 		_paper.set_skill(skill)
 	name_label.text = tr(skill.name)
 	name_label.self_modulate = SkillCardPaper.readable_color(Helper.color_by_type(skill.nature))
-	cost_label.text = str(skill.cost)
+	cost_badge.show_number(skill.cost, false)
 	value_label.text = Helper.format_number(skill.get("value", skill.get("damage", "")))
 	type_icon.texture = physical_texture if skill.damage_type == Enums.SKILL_DAMAGE_TYPE.PHYSICAL else magic_texture
 	description_label.text = Helper.skill_description(skill)

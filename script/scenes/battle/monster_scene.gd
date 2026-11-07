@@ -9,17 +9,10 @@ extends Control
 
 var mon: Monster
 
-@export var name_label: Label
-@export var level_label: Label
-@export var hp_bar: ProgressBar
-## HP-Zahl im Balken: bei Gegnern leer, solange die Art unbekannt ist
-@export var hp_label: Label
-## Statuseffekte unter dem HP-Balken: Schilde, Buffs und bei Gegnern die Fangchance
-@export var status_box: HBoxContainer
-## Absichten, eine Zeile pro Zug, unter dem Status
-@export var intent_box: VBoxContainer
-## Partikel hinter der Züge-Zahl eigener Monster, laufen nur solange noch Züge übrig sind
-@export var moves_particles: MovesParticlesView
+## Statuseffekte über dem Monster: Schilde, Buffs und bei Gegnern die Fangchance
+@export var status_box: HFlowContainer
+## Slots über dem Status: bei Gegnern die Absichten, bei eigenen Monstern die eingehenden Angriffe
+@export var intent_box: HFlowContainer
 
 @export var is_healing: bool
 
@@ -38,19 +31,6 @@ func _ready() -> void:
 		visible = true
 		# eigene Monster stehen mit dem Rücken zur Kamera, Gegner schauen her
 		Monmap.show_on(texture_rect, mon._name, Monmap.SMALL, home_mons and not show_front)
-		if home_mons and not show_front:
-			# eigene Monster sitzen unten in ihrer Reihe und ragen etwas hinter die Kartenhand,
-			# so wirken sie näher und größer als die Gegner; Name und HP bleiben oben sichtbar
-			$AspectRatioContainer.alignment_vertical = AspectRatioContainer.ALIGNMENT_END
-			$AspectRatioContainer/HBoxContainer/Info.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-		name_label.text = Helper.mon_battle_name(mon)
-		name_label.tooltip_text = name_label.text
-		# Name in der Typfarbe, wie im Infobereich
-		name_label.self_modulate = Helper.color_by_mon(mon)
-		hp_bar.max_value = mon.hp()
-		hp_bar.value = mon.hp()
-		level_label.text = tr("BATTLE_MON_LEVEL") + " " + str(mon._level)
-		_set_hp(mon.hp())
 		printStuff()
 
 func _deal_damage(_mon: Monster) -> void:
@@ -145,7 +125,7 @@ func _new_row_box(vertical: bool) -> BoxContainer:
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return box
 
-func _clear_box(box: BoxContainer) -> void:
+func _clear_box(box: Container) -> void:
 	for child in box.get_children():
 		box.remove_child(child)
 		child.queue_free()
@@ -153,7 +133,7 @@ func _clear_box(box: BoxContainer) -> void:
 func _format_multiplier(multiplier: float) -> String:
 	return String.num(multiplier, 2)
 
-# Status unter dem HP-Balken: bei Gegnern die Fangchance (Hypnose-Spirale),
+# Status über dem Monster: bei Gegnern die Fangchance (Hypnose-Spirale),
 # Schild-Symbole mit ihrem Wert, Buffs als Pfeil.
 const STATUS_FONT_SIZE := 18
 const CATCH_COLOR := Color(1.0, 0.85, 0.4)
@@ -176,65 +156,14 @@ func _refresh_status() -> void:
 	if mon.is_buffed():
 		status_box.add_child(_icon_row([ICON_BUFF], BUFF_COLOR, STATUS_FONT_SIZE))
 
-# Übrige Züge eigener Monster: Zahl mit Partikeln über dem Monster-Bild, poppt bei jeder Änderung auf, bei 0 grau.
-const MOVES_COLOR := Color.WHITE
-const MOVES_EMPTY_COLOR := Color(0.55, 0.55, 0.55)
-
-var _moves_label: Label
-
-func _refresh_moves() -> void:
-	if _moves_label == null:
-		_moves_label = Label.new()
-		_moves_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		_moves_label.add_theme_font_size_override("font_size", 24)
-		_moves_label.add_theme_color_override("font_outline_color", Color.BLACK)
-		_moves_label.add_theme_constant_override("outline_size", 7)
-		_moves_label.tooltip_text = tr("BATTLE_MON_MOVES")
-		_moves_label.mouse_filter = Control.MOUSE_FILTER_PASS
-		_moves_label.z_index = 6
-		add_child(_moves_label)
-	var text = str(mon._computed_moves)
-	var changed = _moves_label.text != text
-	_moves_label.text = text
-	_moves_label.add_theme_color_override("font_color", MOVES_COLOR if mon._computed_moves > 0 else MOVES_EMPTY_COLOR)
-	_moves_label.visible = mon.is_alive()
-	if moves_particles:
-		moves_particles.visible = mon.is_alive()
-		moves_particles.emitting = mon.is_alive() and mon._computed_moves > 0
-	_place_moves_label()
-	if changed:
-		_moves_label.pivot_offset = _moves_label.size / 2
-		var tween := _moves_label.create_tween()
-		_moves_label.scale = Vector2.ONE * 1.6
-		_moves_label.modulate = Color(2, 2, 2)
-		tween.set_parallel()
-		tween.tween_property(_moves_label, "scale", Vector2.ONE, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		tween.tween_property(_moves_label, "modulate", Color.WHITE, 0.35)
-
-func _place_moves_label() -> void:
-	if _moves_label == null:
-		return
-	_moves_label.size = _moves_label.get_combined_minimum_size()
-	_moves_label.position = _texture_offset() + Vector2((texture_rect.size.x - _moves_label.size.x) / 2, -_moves_label.size.y * 0.3)
-	if moves_particles:
-		moves_particles.center_on(_moves_label.position + _moves_label.size / 2)
-
 func printStuff() -> void:
 	if mon:
-		if home_mons:
-			_refresh_moves()
+		# die übrigen Züge eigener Monster stehen auf ihrer Karte im Infobereich (BattleMonCard)
 		_refresh_status()
+		# die Lebensanzeige liegt auf der Karte im Infobereich, der Kampf wartet auf ihre Animation
 		if get_tree():
-			await get_tree().create_tween().tween_method(_set_hp, hp_bar.value, mon.hp() - mon._lost_hp, 0.3).finished
+			await get_tree().create_timer(BattleMonCard.HP_TWEEN_TIME).timeout
 		Events.damage_animation_done.emit(mon)
-
-func _set_hp(value: float) -> void:
-	hp_bar.value = value
-	# genaue HP von Gegnern nur bei Arten, die man hat oder in diesem Run gefangen hat, sonst bleibt der Balken ohne Zahl
-	if home_mons or State.is_mon_known(mon._name):
-		hp_label.text = "%d / %d" % [roundi(value), roundi(hp_bar.max_value)]
-	else:
-		hp_label.text = ""
 
 func _remove_mon(_mon) -> void:
 	if _mon == mon:
@@ -266,8 +195,6 @@ func _process(_delta: float) -> void:
 		and _can_drop_data(Vector2.ZERO, drag_data)
 	modulate = Color(1.3, 1.3, 1.0) if hovered else Color.WHITE
 	_update_drag_preview(drag_data)
-	# das Layout kann sich verschieben (z. B. wenn ein Monster ausscheidet)
-	_place_moves_label()
 
 # Während eine Angriffskarte gezogen wird, zeigt jedes mögliche Ziel seinen Element-Faktor an.
 var _preview_label: Label
@@ -299,9 +226,9 @@ func _update_drag_preview(drag_data) -> void:
 	_preview_label.visible = true
 	_preview_label.position = _texture_offset() + Vector2((texture_rect.size.x - _preview_label.get_minimum_size().x) / 2, 0)
 
-# Absichten unter dem Status, als Symbole:
+# Slots über dem Status, als Symbole:
 # Gegner zeigen ihren geplanten Zug (Schwert = Angriff, Stern = Sp.-Angriff, Schild, Buff-Pfeil, dahinter das Bild des Ziels),
-# eigene Monster den Schaden, der im nächsten Zug der Gegner auf sie zukommt, mit und ohne Schild (Schwert -12, Schild -4).
+# eigene Monster je Slot einen Angriff, der im nächsten Zug der Gegner auf sie zukommt, mit und ohne Schild (Schwert -12, Schild -4).
 const INTENT_COLOR := Color(1.0, 0.45, 0.4)
 const INTENT_BLOCKED_COLOR := Color(0.55, 0.8, 1.0)
 const BUFF_COLOR := Color(0.55, 1.0, 0.55)
@@ -312,20 +239,21 @@ func _refresh_intent() -> void:
 		return
 	_clear_box(intent_box)
 	for row in (_own_intent_rows() if home_mons else _enemy_intent_rows()):
-		row.alignment = BoxContainer.ALIGNMENT_BEGIN
 		intent_box.add_child(row)
-	intent_box.visible = mon.is_alive() and intent_box.get_child_count() > 0
 
 func _own_intent_rows() -> Array:
-	var incoming = Skills.incoming_damage(mon, State.enemy_mons)
-	if incoming.full <= 0:
-		return []
-	var full = roundi(incoming.full)
-	var after = roundi(incoming.after)
-	# Blau, wenn der Schild etwas abfängt: so sieht man direkt, dass sich Blocken gelohnt hat
-	if after < full:
-		return [_icon_row([ICON_ATTACK, "-%d" % full, ICON_SHIELD, "-%d" % after], INTENT_BLOCKED_COLOR, INTENT_FONT_SIZE)]
-	return [_icon_row([ICON_ATTACK, "-%d" % full], INTENT_COLOR, INTENT_FONT_SIZE)]
+	var rows = []
+	for hit in Skills.incoming_hits(mon, State.enemy_mons):
+		var attack_icon = ICON_ATTACK if hit.physical else ICON_S_ATTACK
+		var full = roundi(hit.full)
+		var after = roundi(hit.after)
+		# Blau, wenn der Schild etwas abfängt: so sieht man direkt, dass sich Blocken gelohnt hat
+		if after < full:
+			rows.append(_icon_row([attack_icon, "-%d" % full, ICON_SHIELD if hit.physical else ICON_S_SHIELD, "-%d" % after],
+				INTENT_BLOCKED_COLOR, INTENT_FONT_SIZE))
+		else:
+			rows.append(_icon_row([attack_icon, "-%d" % full], INTENT_COLOR if hit.physical else SPECIAL_COLOR, INTENT_FONT_SIZE))
+	return rows
 
 func _enemy_intent_rows() -> Array:
 	var rows = []

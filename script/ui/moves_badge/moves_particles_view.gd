@@ -20,5 +20,16 @@ func _ready() -> void:
 func center_on(point: Vector2) -> void:
 	position = point - size / 2
 
+## Wie weit die Partikel fliegen (1 = wie im Material), ihre Größe bleibt gleich
+func set_range(factor: float) -> void:
+	if is_equal_approx(factor, 1.0):
+		return
+	var mat := particles.process_material.duplicate() as ParticleProcessMaterial
+	mat.emission_sphere_radius *= factor
+	mat.initial_velocity_min *= factor
+	mat.initial_velocity_max *= factor
+	mat.gravity *= factor
+	particles.process_material = mat
+
 func restart() -> void:
 	particles.restart()

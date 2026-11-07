@@ -116,25 +116,28 @@ func action_hits(action: Dictionary, mon: Monster) -> bool:
 		return true
 	return targets_team(action.skill) and action.target != null and State.mons.has(action.target) == State.mons.has(mon)
 
-# Schaden, den die geplanten Angriffe der attackers bei target anrichten werden:
-# {"full": ohne Schild, "after": nach Abzug der aktuellen Schilde}. Physisch und magisch zählen getrennt gegen ihren Schild.
-func incoming_damage(target: Monster, attackers: Array) -> Dictionary:
-	var physical = 0.0
-	var ability = 0.0
+# Geplante Angriffe der attackers auf target, einer pro Eintrag:
+# {"physical": bool, "full": ohne Schild, "after": nach Schild}. Physisch und magisch zählen getrennt gegen ihren Schild,
+# und jeder Treffer verbraucht den Schild, wie Monster.absorb_damage es im Kampf tut.
+func incoming_hits(target: Monster, attackers: Array) -> Array:
+	var shield = target._shield
+	var s_shield = target._s_shield
+	var hits = []
 	for attacker: Monster in attackers:
 		if not attacker.is_alive():
 			continue
 		for action in attacker._intent:
 			if not is_damage_skill(action.skill) or not action_hits(action, target):
 				continue
-			if is_physical(action.skill):
-				physical += calc_damage(attacker, target, action.skill)
+			var physical = is_physical(action.skill)
+			var full = calc_damage(attacker, target, action.skill)
+			var blocked = minf(shield if physical else s_shield, full)
+			if physical:
+				shield -= blocked
 			else:
-				ability += calc_damage(attacker, target, action.skill)
-	return {
-		"full": physical + ability,
-		"after": maxf(physical - target._shield, 0.0) + maxf(ability - target._s_shield, 0.0),
-	}
+				s_shield -= blocked
+			hits.append({"physical": physical, "full": full, "after": full - blocked})
+	return hits
 
 # Bonus aller passiven Skills im Team auf einen Wert (z. B. +15 KP für jedes Monster im Team).
 # Es gilt die Element-Regel: nur Monster, die den Skill einsetzen könnten, geben den Bonus.

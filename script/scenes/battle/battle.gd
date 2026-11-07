@@ -59,6 +59,7 @@ func _ready() -> void:
 		_plan_intent(emon)
 	Events.intents_changed.emit()
 	_refresh_skill_points()
+	battle_info.build_mon_cards()
 	Events.mouse_event.emit({"action": Enums.MOUSE_ACTION.SELECT_MONSTER, "mon": State.enemy_mons[0]})
 
 	if State.mons.size() > 1:

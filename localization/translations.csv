@@ -47,6 +47,7 @@ BATTLE_MON_LEVEL,Lv,Lv
 BATTLE_MON_CATCH,Catch,Fang
 BATTLE_MON_MOVES,Moves,Züge
 BATTLE_MON_TYPE,Type,Typ
+BATTLE_STATS_FOR,Stats for {mon} Lv. {level},Stats für {mon} Lv. {level}
 BATTLE_SWITCH,Switch,Wechseln
 BATTLE_NEXT,next,weiter
 MONSTER_CLOSE_INFO,Close Info,Info schließen
