@@ -395,7 +395,7 @@ RELIC_GOLDEN_IDOL_DESC,+30% ME from won battles.,+30 % ME aus gewonnenen Kämpfe
 RELIC_SPYGLASS,Spyglass,Fernrohr
 RELIC_SPYGLASS_DESC,The map shows how many enemies await in each fight.,"Die Karte zeigt, wie viele Gegner in jedem Kampf warten."
 RELIC_SUPER_CATCHER,Super Catcher,Super Catcher
-RELIC_SUPER_CATCHER_DESC,A ? on the map marks fights with species you do not own yet. Hover over a fight to see which monsters live there.,"Ein ? auf der Karte markiert Kämpfe mit Arten, die du noch nicht besitzt. Fahre über einen Kampf, um zu sehen, welche Monster dort leben."
+RELIC_SUPER_CATCHER_DESC,A ? on the map marks fights with species you do not own yet.,"Ein ? auf der Karte markiert Kämpfe mit Arten, die du noch nicht besitzt."
 RELIC_KEY_FINDER,Key Finder,Schlüsselfinder
 RELIC_KEY_FINDER_DESC,Keys drop 50% more often.,Schlüssel fallen 50 % häufiger.
 RELIC_SLOW_START,Slow Start,Langsamer Start

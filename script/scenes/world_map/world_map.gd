@@ -211,16 +211,16 @@ func refresh_encounter_info() -> void:
 		for node in column:
 			if node != null and node._ui_item != null:
 				show_encounter_info(node._ui_item, tr(Map.type_label(node._type)), node._enemies)
-	show_encounter_info(boss_button, tr("WORLDMAP_BOSS"), Map.boss_enemies)
+	show_encounter_info(boss_button, tr("WORLDMAP_BOSS"), Map.boss_enemies, false)
 
 # Spyglass: Anzahl der Gegner direkt auf dem Feld. Super Catcher: "?" bei Arten, die du noch nicht besitzt (Start-Monster und
-# catched_monsters im Spielstand), und die Arten im Tooltip, jede nur einmal, die Anzahl verrät nur das Spyglass.
-# Mit beiden Relikten steht dort z. B. "2?".
-func show_encounter_info(button: Button, title: String, enemies: Array[Monster]) -> void:
+# catched_monsters im Spielstand). Mit beiden Relikten steht dort z. B. "2?". Der Biom-Boss bekommt kein Badge.
+# Der Tooltip nennt nur die Art des Feldes, keine Monster.
+func show_encounter_info(button: Button, title: String, enemies: Array[Monster], show_badge := true) -> void:
 	var badge: Label = button.get_node_or_null(ENEMY_BADGE_NAME)
-	var badge_text := str(enemies.size()) if Relics.works("spyglass") and not enemies.is_empty() else ""
+	var badge_text := str(enemies.size()) if show_badge and Relics.works("spyglass") and not enemies.is_empty() else ""
 	var owned := Helper.get_all_owned_monster_names()
-	if Relics.works("super_catcher") and enemies.any(func(mon: Monster): return not owned.has(mon._name)):
+	if show_badge and Relics.works("super_catcher") and enemies.any(func(mon: Monster): return not owned.has(mon._name)):
 		badge_text += "?"
 	if badge == null and badge_text != "":
 		badge = make_enemy_badge()
@@ -229,13 +229,7 @@ func show_encounter_info(button: Button, title: String, enemies: Array[Monster])
 		badge.visible = badge_text != ""
 		badge.text = badge_text
 		badge.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT, Control.PRESET_MODE_MINSIZE)
-	var names := PackedStringArray()
-	if Relics.works("super_catcher"):
-		for mon in enemies:
-			var mon_name := Helper.mon_battle_name(mon)
-			if not names.has(mon_name):
-				names.append(mon_name)
-	button.tooltip_text = title if names.is_empty() else title + "\n" + "\n".join(names)
+	button.tooltip_text = title
 
 func make_enemy_badge() -> Label:
 	var badge := Label.new()
