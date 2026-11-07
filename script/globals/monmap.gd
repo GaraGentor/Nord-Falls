@@ -36,10 +36,18 @@ const MONSTER_MATERIAL := preload("res://script/ui/shader/monster_living_materia
 const SELECTED_OUTLINE_COLOR := Color(0.858824, 0.717647, 0.45098)
 ## wie MONSTER_MATERIAL, zusätzlich mit goldenem Umriss (ausgewähltes Monster)
 var monster_selected_material: ShaderMaterial
+## Dezenter Umriss im Kampf: dünn und halbtransparent, das Monster bleibt im Vordergrund
+const BATTLE_OUTLINE_COLOR := Color(0.858824, 0.717647, 0.45098, 0.5)
+const BATTLE_OUTLINE_THICKNESS := 2.0
+## wie MONSTER_MATERIAL, zusätzlich mit dezentem Umriss (Monster, dessen Werte im Kampf angezeigt werden)
+var monster_battle_selected_material: ShaderMaterial
 
 func _init() -> void:
 	monster_selected_material = MONSTER_MATERIAL.duplicate()
 	monster_selected_material.set_shader_parameter("outline_color", SELECTED_OUTLINE_COLOR)
+	monster_battle_selected_material = MONSTER_MATERIAL.duplicate()
+	monster_battle_selected_material.set_shader_parameter("outline_color", BATTLE_OUTLINE_COLOR)
+	monster_battle_selected_material.set_shader_parameter("outline_thickness", BATTLE_OUTLINE_THICKNESS)
 
 ## Monsterbild samt Monster-Material auf ein TextureRect setzen
 func show_on(rect: TextureRect, name: String, display_size: float, back := false) -> void:
