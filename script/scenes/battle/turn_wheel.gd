@@ -17,6 +17,9 @@ const ENEMY_PULSE_COLOR := Color("#e0304f")
 const ROTATE_DURATION := 0.45
 const ACTIVE_SCALE := 1.35
 const INACTIVE_ALPHA := 0.7
+## Ring um das Icon des Monsters, dessen Werte gerade angezeigt werden: so weit steht er über und so dick ist er
+const SELECTION_RING_GROW := 5
+const SELECTION_RING_WIDTH := 3.0
 
 var debug = false
 
@@ -29,6 +32,8 @@ var icons: Array[Control] = []
 var current_index := -1
 var current_mon: Monster
 var round_number := 0
+## Monster, dessen Werte gerade angezeigt werden
+var selected_mon: Monster
 
 var _rotation_tween: Tween
 
@@ -81,6 +86,13 @@ func remove_mon(mon: Monster) -> void:
 	_highlight()
 	_rotate_to(maxi(current_index, 0))
 
+## Markiert das Monster auf dem Rad, dessen Werte gerade angezeigt werden.
+func set_selected_mon(mon: Monster) -> void:
+	selected_mon = mon
+	for i in range(icons.size()):
+		icons[i].get_meta("selection_ring").visible = order[i] == mon
+	_highlight()
+
 func is_own(mon: Monster) -> bool:
 	return State.mons.has(mon)
 
@@ -128,7 +140,8 @@ func _update_slots() -> void:
 
 func _create_icon(mon: Monster) -> Control:
 	var icon := Panel.new()
-	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	icon.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	icon.gui_input.connect(_on_icon_input.bind(mon))
 	icon.size = Vector2(wheel.icon_size, wheel.icon_size)
 	icon.pivot_offset = icon.size / 2
 	var style := StyleBoxFlat.new()
@@ -153,7 +166,20 @@ func _create_icon(mon: Monster) -> Control:
 	icon.add_child(frame)
 	frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	icon.set_meta("frame", frame)
+
+	var selection_ring := IconFrame.new()
+	selection_ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	selection_ring.setup(Monmap.SELECTED_OUTLINE_COLOR, Monmap.SELECTED_OUTLINE_COLOR)
+	selection_ring.material.set_shader_parameter("line_width", SELECTION_RING_WIDTH)
+	selection_ring.visible = mon == selected_mon
+	icon.add_child(selection_ring)
+	selection_ring.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT, Control.PRESET_MODE_MINSIZE, -SELECTION_RING_GROW)
+	icon.set_meta("selection_ring", selection_ring)
 	return icon
+
+func _on_icon_input(event: InputEvent, mon: Monster) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		Events.mouse_event.emit({"action": Enums.MOUSE_ACTION.SELECT_MONSTER, "mon": mon})
 
 func _highlight() -> void:
 	for i in range(icons.size()):
@@ -164,7 +190,7 @@ func _highlight() -> void:
 			wheel.move_child(icon, -1)
 		var tween := create_tween().set_parallel()
 		tween.tween_property(icon, "scale", Vector2.ONE * (ACTIVE_SCALE if is_active else 1.0), ROTATE_DURATION)
-		tween.tween_property(icon, "modulate:a", 1.0 if is_active else INACTIVE_ALPHA, ROTATE_DURATION)
+		tween.tween_property(icon, "modulate:a", 1.0 if is_active or order[i] == selected_mon else INACTIVE_ALPHA, ROTATE_DURATION)
 		tween.tween_property(icon.get_meta("frame"), "active_amount", 1.0 if is_active else 0.0, ROTATE_DURATION)
 
 func _rotate_to(index: int) -> void:

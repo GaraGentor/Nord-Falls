@@ -137,6 +137,7 @@ func _select_mon(mon: Monster) -> void:
 		currently_selected_enemy_mon = mon
 	for scene in _monster_scenes():
 		scene.texture_rect.material = Monmap.monster_battle_selected_material if scene.mon == mon and mon != null else Monmap.MONSTER_MATERIAL
+	turn_wheel.set_selected_mon(mon)
 	battle_info.monster = mon
 
 ## nach einem K.O. oder Fang ein noch kämpfendes Monster markieren
