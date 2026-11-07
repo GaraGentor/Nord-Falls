@@ -210,7 +210,7 @@ class CageSlot extends VBoxContainer:
 
 	## Hervorhebung beim Vorstellen und Auswählen: Umriss ums Monster, goldener Rand am Schild
 	func set_glow(glowing: bool) -> void:
-		_monster.material = Monmap.living_selected_material if glowing else Monmap.LIVING_MATERIAL
+		_monster.material = Monmap.monster_selected_material if glowing else Monmap.MONSTER_MATERIAL
 		_sign.set_rim(GOLD if glowing else IronPlate.RIM)
 
 	## choosable: nach dem Abgeben der Träne anklickbar; locked: ausgegraut

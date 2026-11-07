@@ -104,7 +104,6 @@ func _build() -> void:
 	left.add_child(mon_panel)
 	var texture := TextureRect.new()
 	Monmap.show_on(texture, _mon._name, Monmap.MEDIUM)
-	texture.material = Monmap.LIVING_MATERIAL
 	texture.custom_minimum_size = Vector2(120, 120)
 	texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED

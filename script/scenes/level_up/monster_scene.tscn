@@ -3,7 +3,7 @@
 [ext_resource type="Theme" uid="uid://bqwc2gott07le" path="res://script/ui/materials/battle_labels.tres" id="1_08c52"]
 [ext_resource type="Script" path="res://script/scenes/level_up/level_up_monster_scene.gd" id="1_055lq"]
 [ext_resource type="Script" path="res://script/ui/shader/iron_plate.gd" id="1_plate"]
-[ext_resource type="Material" path="res://script/ui/shader/living_pixels_material.tres" id="1_living"]
+[ext_resource type="Material" path="res://script/ui/shader/monster_living_material.tres" id="1_living"]
 [ext_resource type="Texture2D" uid="uid://8stqwlamb4k5" path="res://assets/mons/2/2_front.png" id="2_hngs5"]
 [ext_resource type="Script" path="res://script/scenes/battle/stats_grid_container.gd" id="4_kwyv7"]
 [ext_resource type="FontFile" uid="uid://cbavibkhidesl" path="res://script/ui/fonts/pxelfont/PixelifySans-VariableFont_wght.ttf" id="5_u1j1l"]

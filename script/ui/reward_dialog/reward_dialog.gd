@@ -464,7 +464,7 @@ static func mon_name(mon: Variant) -> String:
 ## Bild eines eigenen Monsters bzw. einer Art, als Ziel für Edelsteine, Tränke und Boss Tränen
 static func mon_icon(mon: Variant) -> Control:
 	var icon := texture_icon(Monmap.texture(mon_name(mon), Monmap.SMALL))
-	icon.material = Monmap.LIVING_MATERIAL
+	icon.material = Monmap.MONSTER_MATERIAL
 	return icon
 
 ## Preis, der in die Tasche gezogen wird (Gold, Relic)

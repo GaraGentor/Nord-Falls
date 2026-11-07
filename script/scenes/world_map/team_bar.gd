@@ -61,7 +61,7 @@ func _entry(mon: Monster) -> Control:
 	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	portrait.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
 	portrait.texture = Monmap.texture(mon._name, PORTRAIT_SIZE.x)
-	portrait.material = Monmap.LIVING_MATERIAL
+	portrait.material = Monmap.MONSTER_MATERIAL
 	entry.add_child(portrait)
 
 	var info := VBoxContainer.new()
@@ -136,4 +136,4 @@ func _show_toggled() -> void:
 	for mon: Monster in _entries:
 		var selected := mon == _open_mon
 		_entries[mon].plate.set_rim(Monmap.SELECTED_OUTLINE_COLOR if selected else IronPlate.RIM)
-		_entries[mon].portrait.material = Monmap.living_selected_material if selected else Monmap.LIVING_MATERIAL
+		_entries[mon].portrait.material = Monmap.monster_selected_material if selected else Monmap.MONSTER_MATERIAL

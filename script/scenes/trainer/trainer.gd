@@ -30,7 +30,7 @@ class PlateMon extends RewardDialog.DropTarget:
 			on_click.call()
 
 	func set_selected(selected: bool) -> void:
-		icon.material = Monmap.living_selected_material if selected else Monmap.LIVING_MATERIAL
+		icon.material = Monmap.monster_selected_material if selected else Monmap.MONSTER_MATERIAL
 		if _tween:
 			_tween.kill()
 		_tween = create_tween()

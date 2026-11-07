@@ -28,21 +28,23 @@ func texture(name: String, display_size: float, back := false) -> Texture2D:
 	var suffix = "" if size == LARGE else "x%d" % size
 	return load("res://assets/mons/%s/%s_%s%s.png" % [name, name, view, suffix])
 
-## "Lebende Pixel" mit animiertem Dithering für alle Monsterbilder (siehe living_pixels.gdshader)
+## "Lebende Pixel" mit animiertem Dithering für Icons, Eier und Requisiten (siehe living_pixels.gdshader)
 const LIVING_MATERIAL := preload("res://script/ui/shader/living_pixels_material.tres")
+## Für alle Monsterbilder: "Lebende Pixel" plus Atmen und Wiegen (siehe monster_living.gdshader)
+const MONSTER_MATERIAL := preload("res://script/ui/shader/monster_living_material.tres")
 ## Umriss für alles Ausgewählte und Hervorgehobene: gedämpftes Gold
 const SELECTED_OUTLINE_COLOR := Color(0.858824, 0.717647, 0.45098)
-## wie LIVING_MATERIAL, zusätzlich mit goldenem Umriss (ausgewähltes Monster)
-var living_selected_material: ShaderMaterial
+## wie MONSTER_MATERIAL, zusätzlich mit goldenem Umriss (ausgewähltes Monster)
+var monster_selected_material: ShaderMaterial
 
 func _init() -> void:
-	living_selected_material = LIVING_MATERIAL.duplicate()
-	living_selected_material.set_shader_parameter("outline_color", SELECTED_OUTLINE_COLOR)
+	monster_selected_material = MONSTER_MATERIAL.duplicate()
+	monster_selected_material.set_shader_parameter("outline_color", SELECTED_OUTLINE_COLOR)
 
-## Monsterbild samt Lebende-Pixel-Material auf ein TextureRect setzen
+## Monsterbild samt Monster-Material auf ein TextureRect setzen
 func show_on(rect: TextureRect, name: String, display_size: float, back := false) -> void:
 	rect.texture = texture(name, display_size, back)
-	rect.material = LIVING_MATERIAL
+	rect.material = MONSTER_MATERIAL
 
 ## Farbe und Übersetzungs-Key pro Seltenheit (Ei-Färbung, Seltenheits-Chip im Kampf)
 const RARITY_COLORS := {

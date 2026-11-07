@@ -12,6 +12,10 @@ const HEADER_FONT_SIZE := 18
 const MON_COLUMNS := 8
 const MON_BUTTON_SIZE := Vector2(130, 120)
 const MON_ICON_SIZE := 72
+const PREVIEW_COLUMNS := 5
+const PREVIEW_IMAGE_SIZE := Vector2(210, 210)
+## Höhe der Vorschau-Liste, zeigt zwei Reihen und passt samt Titel und Buttons in die 720 px hohe Ansicht
+const PREVIEW_LIST_HEIGHT := 480
 const UNPICKED_COLOR := Color(0.65, 0.65, 0.65)
 const EGG_LABEL_WIDTH := 170
 const EGG_BUTTON_SIZE := Vector2(300, 44)
@@ -64,6 +68,11 @@ var _stats_summary: Label
 var _stat_values := {}
 var _relic_page: VBoxContainer
 var _relic_rows: VBoxContainer
+var _preview_page: VBoxContainer
+## Art -> Bild in der Vorschau
+var _preview_images := {}
+var _preview_back := false
+var _preview_view_button: Button
 
 func _ready() -> void:
 	set_accent(ACCENT)
@@ -76,6 +85,7 @@ func _ready() -> void:
 	_build_egg_page()
 	_build_stats_page()
 	_build_relic_page()
+	_build_preview_page()
 	_show_page(_main)
 
 func _build_main() -> void:
@@ -123,6 +133,7 @@ func _build_main() -> void:
 	extras.add_child(_make_button("EI-ATTACKEN ...", func(): _show_page(_egg_page)))
 	extras.add_child(_make_button("WERTE-VERTEILUNG ...", func(): _show_page(_stats_page)))
 	extras.add_child(_make_button("RELIKTE ...", func(): _show_page(_relic_page)))
+	extras.add_child(_make_button("MONSTER-VORSCHAU ...", func(): _show_page(_preview_page)))
 
 	var close_button := _make_button("SCHLIESSEN", close)
 	close_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -217,8 +228,60 @@ func _build_egg_page() -> void:
 	_egg_page.add_child(row)
 	first.button_pressed = true
 
+## Alle Monster auf einen Blick, mit demselben Material wie im Spiel
+func _build_preview_page() -> void:
+	_preview_page = VBoxContainer.new()
+	_preview_page.add_theme_constant_override("separation", 12)
+	add_footer(_preview_page)
+
+	_preview_page.add_child(_make_header("Monster-Vorschau"))
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size.y = PREVIEW_LIST_HEIGHT
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_preview_page.add_child(scroll)
+	var grid := GridContainer.new()
+	grid.columns = PREVIEW_COLUMNS
+	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid.add_theme_constant_override("h_separation", 8)
+	grid.add_theme_constant_override("v_separation", 8)
+	scroll.add_child(grid)
+	for meta in Monmap.mons:
+		var entry := VBoxContainer.new()
+		var image := TextureRect.new()
+		_preview_images[meta.name] = image
+		image.custom_minimum_size = PREVIEW_IMAGE_SIZE
+		image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		entry.add_child(image)
+		var label := Label.new()
+		label.text = Helper.mon_display_name(meta.name)
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		label.custom_minimum_size.x = PREVIEW_IMAGE_SIZE.x
+		label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		label.add_theme_color_override("font_color", IronPlate.TEXT_COLOR)
+		entry.add_child(label)
+		grid.add_child(entry)
+
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 12)
+	row.add_child(_make_button("ZURÜCK", _show_page.bind(_main)))
+	_preview_view_button = _make_button("", _toggle_preview_view)
+	row.add_child(_preview_view_button)
+	_preview_page.add_child(row)
+	_refresh_preview()
+
+func _toggle_preview_view() -> void:
+	_preview_back = not _preview_back
+	_refresh_preview()
+
+func _refresh_preview() -> void:
+	_preview_view_button.text = "ANSICHT: HINTEN" if _preview_back else "ANSICHT: VORNE"
+	for species in _preview_images:
+		Monmap.show_on(_preview_images[species], species, PREVIEW_IMAGE_SIZE.x, _preview_back)
+
 func _show_page(page: VBoxContainer) -> void:
-	for other in [_main, _fight_page, _picker, _egg_page, _stats_page, _relic_page]:
+	for other in [_main, _fight_page, _picker, _egg_page, _stats_page, _relic_page, _preview_page]:
 		other.visible = other == page
 
 func _refresh_start() -> void:

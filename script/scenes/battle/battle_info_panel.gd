@@ -69,7 +69,7 @@ func _hidden_stats() -> Array:
 			hidden.append(stat)
 	return hidden
 
-## Pixel-Partikel des Monsterbilds tauchen nacheinander auf (nur mit living_pixels-Shader)
+## Pixel-Partikel des Monsterbilds tauchen nacheinander auf (nur mit Lebende-Pixel-Shader)
 func _reveal_monster_pixels() -> void:
 	var shared := monster_texture.material as ShaderMaterial
 	if shared == null or shared.get_shader_parameter("reveal") == null:

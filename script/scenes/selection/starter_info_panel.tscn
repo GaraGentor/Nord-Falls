@@ -8,7 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://yg6oxnmiu0pd" path="res://assets/ui/icons/fist.svg" id="7_phys"]
 [ext_resource type="Texture2D" uid="uid://djt3q5aymms0i" path="res://assets/ui/icons/sparkle.svg" id="8_magic"]
 [ext_resource type="PackedScene" uid="uid://owmyxu3qq3so" path="res://script/ui/element_chip/element_chip.tscn" id="9_chip"]
-[ext_resource type="Material" path="res://script/ui/shader/living_pixels_material.tres" id="10_living"]
+[ext_resource type="Material" path="res://script/ui/shader/monster_living_material.tres" id="10_living"]
 [ext_resource type="PackedScene" path="res://script/ui/moves_badge/moves_badge.tscn" id="11_moves"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_plate"]

@@ -204,7 +204,7 @@ class MonField extends RewardDialog.DropTarget:
 		top.add_theme_constant_override("separation", 10)
 		box.add_child(top)
 		_image = RewardDialog.texture_icon(Monmap.texture(monster._name, IMAGE_SIZE, true)) as TextureRect
-		_image.material = Monmap.LIVING_MATERIAL
+		_image.material = Monmap.MONSTER_MATERIAL
 		_image.custom_minimum_size = Vector2(IMAGE_SIZE, IMAGE_SIZE)
 		_image.pivot_offset = Vector2(IMAGE_SIZE / 2, IMAGE_SIZE)
 		top.add_child(_image)
@@ -265,14 +265,14 @@ class MonField extends RewardDialog.DropTarget:
 
 	## Hat gerade etwas bekommen: kurz golden aufleuchten und wachsen
 	func celebrate() -> void:
-		_image.material = Monmap.living_selected_material
+		_image.material = Monmap.monster_selected_material
 		if _pop:
 			_pop.kill()
 		_pop = create_tween()
 		_pop.tween_property(_image, "scale", Vector2(1.08, 1.08), 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		_pop.tween_property(_image, "scale", Vector2.ONE, 0.2)
 		_pop.tween_interval(0.5)
-		_pop.tween_callback(func(): _image.material = Monmap.LIVING_MATERIAL)
+		_pop.tween_callback(func(): _image.material = Monmap.MONSTER_MATERIAL)
 
 ## Offene Tasche in der Mitte, auf der Plakette steht das Geld. Ablegeziel für Relikte und Schlüssel.
 class ShopBag extends RewardDialog.DropTarget:
