@@ -648,3 +648,10 @@ BIOME_INFO_AGAINST,vs. {element},gegen {element}
 BIOME_INFO_NONE,none,keine
 BIOME_INFO_LEGEND,"Arrows point from the stronger to the weaker element. Green: your attacks deal +50 % per advantage. Red: attacks of the monsters here hit you harder. Each disadvantage halves the damage.","Pfeile zeigen vom stärkeren zum schwächeren Element. Grün: deine Angriffe machen +50 % pro Vorteil. Rot: Angriffe der Monster hier treffen dich härter. Jeder Nachteil halbiert den Schaden."
 BIOME_INFO_CLOSE,Close,Schließen
+ELEMENT_INFO_HINT,Click: what this element is made of,Klicken: woraus dieses Element besteht
+ELEMENT_INFO_LEVEL,Level {level} · {kind},Stufe {level} · {kind}
+ELEMENT_INFO_BASE,Base element,Grundelement
+ELEMENT_INFO_FUSION,Fusion of {count} elements,Verschmelzung aus {count} Elementen
+ELEMENT_INFO_BASE_DESC,"One of the four base elements, it cannot be split further. Fused with others it forms stronger combinations.","Eines der vier Grundelemente, es lässt sich nicht weiter zerlegen. Mit anderen verschmolzen entstehen daraus stärkere Kombinationen."
+ELEMENT_INFO_CONTAINS,Contains,Enthält
+ELEMENT_INFO_PART_OF,Part of,Steckt in

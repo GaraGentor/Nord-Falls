@@ -1,7 +1,18 @@
-1. Die Buttons "Ei ziehen..." & "Reise beginnen..." sehen nicht aus wie Buttons
-2. Im Tutorial Trenne "Tutorial überspringen" und den "Weiter" Button. Ornde Weiter rechts an und Tutorial Überspringen Links
-3. Färbe den "Tutorial überspringen" Button Rot.
-4. Es gibt ein Bug im Tutorial. Wenn ich eine Zu Starke Attacke mache und das Monster stirbt, dann kann ich das mit den Kritischen Treffern nicht lernen. Dadurch wird auch das Looten geskippt..
-5. Das Tutorial Icon im Kampf soll raus, sowie in der Karte. Setz es lieber an den Start des Spiels. Beim Triggern soll das Tutorial direkt starten & die EI Auwahl Resetten (aber keine neuen Eier Rollen)
-6. Wenn ich das Tutorial mit allen Punkten abschließe, möchte ich darüber bescheid wissen, der user soll angezeigt bekommen, dass alles wichtige nun erklärt wurde
-7. 
+Ich möchte nun etwas balancen. Dafür möchte ich folgendes Fragen: ist es gut, wenn die ELemente tlw. folgende effekte haben damit diese stärker / schwächer sind?
+Die Effekte sollen eintreten wenn  die fähigkeiten karten ausgewählt werden oder genutzt
+um denen mehr Bonis zu geben:
+	
+	z.B.:
+1. Schlamm kann gegner spürbar verlangsamen.
+2. Blitz kann eigene Monster schneller machen.
+3. Dampf erhöht die ausweich chance.
+4. Staub macht angriffe schwächer.
+5. Eis Zusätzlichen Damage nach Treffer geht aber nach paar runden wieder weg.
+6. Magma macht schilde schwächer.
+
+7. Sumpf vergiftet (Zusätzlichen Damage vor einem Zug Status bleibt bis Kampf Ende)
+8. Aschesturm Verbrennt (Zusätzlichen Damage nach einen Zug Status bleibt bis Kampf Ende)
+9. Gewitter Paralyziert (Kann manchmal nicht handeln Status bleibt bis Kamp Ende)
+10. Vulkan (Kann manchmal ein zweiten Treffer verursachen)
+
+Chaos macht prinzipiell nix besonderes außer, dass ggf. der damage gegen niedrigere elemente um 0,25 stärker sein soll. Sonst wäre das zu OP??? Vill müssen wir das hier auch nochmal im Battle etc. anpassen. Oder was wäre besonders für Chaos?
