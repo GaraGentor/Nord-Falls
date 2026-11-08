@@ -86,6 +86,8 @@ func _ready() -> void:
 	_ok_button.visible = false
 	_ok_button.pressed.connect(close)
 	add_footer(_ok_button)
+	_wheel.add_to_group("tut_wheel")
+	Tutorial.trigger("wheel")
 
 func _spin() -> void:
 	_spin_button.disabled = true

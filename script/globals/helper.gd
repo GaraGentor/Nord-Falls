@@ -56,7 +56,7 @@ func _team_level() -> float:
 	return alive.reduce(func(sum, m: Monster): return sum + m._level, 0) / float(alive.size())
 
 func will_catch_mon(mon) -> bool:
-	return randf() < catch_chance(mon)
+	return Tutorial.catches_for_sure(mon) or randf() < catch_chance(mon)
 
 func generate_mons(props: Dictionary = {
 	"count": 1,

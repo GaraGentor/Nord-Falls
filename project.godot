@@ -35,6 +35,7 @@ DebugSettings="*res://script/globals/debug_settings.gd"
 MCPScreenshot="*res://addons/godot_mcp/mcp_screenshot_service.gd"
 MCPInputService="*res://addons/godot_mcp/mcp_input_service.gd"
 MCPGameInspector="*res://addons/godot_mcp/mcp_game_inspector_service.gd"
+Tutorial="*res://script/globals/tutorial.gd"
 
 [display]
 

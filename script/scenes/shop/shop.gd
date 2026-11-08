@@ -420,7 +420,26 @@ func _ready() -> void:
 	_money_suffix = ""
 	_watch_money()
 	add_coupons(_stage, checkout_image)
-	_explain()
+	_add_tutorial_targets()
+	# beim ersten Besuch erklärt die Kasse im Tutorial, mit Blick auf die Regale; danach bleibt der letzte Satz stehen
+	if not Tutorial.trigger("shop", _after_tutorial):
+		_explain()
+
+## Gruppen, die das interaktive Tutorial hervorhebt (siehe Tutorial.SEQUENCES)
+func _add_tutorial_targets() -> void:
+	checkout_image.add_to_group("tut_npc")
+	_bag.add_to_group("tut_shop_bag")
+	for i in _mon_fields.size():
+		_mon_fields[i].add_to_group("tut_shop_mon_%d" % i)
+	# eine Gruppe pro Regal: Brett und Ware zusammen
+	for i in _shelves.size():
+		var group := "tut_shop_shelf_%d" % i
+		_shelves[i].image.add_to_group(group)
+		for item: Control in _shelves[i].items:
+			item.add_to_group(group)
+
+func _after_tutorial() -> void:
+	_bubble.say(tr(HOWTO_LINES[-1]))
 
 ## Freie Bühne statt der Standard-Spalten: alles wird in _layout_stage platziert.
 ## Die Ware liegt über den Monstern, damit sich nichts verdecken lässt, was man anklicken will.

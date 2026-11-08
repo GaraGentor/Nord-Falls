@@ -116,6 +116,14 @@ func _ready() -> void:
 		_add_skill_card(skill)
 	_build_top_bar()
 	_first_layout()
+	trainer_image.add_to_group("tut_npc")
+	_card_layer.add_to_group("tut_trn_cards")
+	_bag.add_to_group("tut_trn_bag")
+	for plate in _plates:
+		plate.add_to_group("tut_trn_mons")
+	# beim ersten Besuch erklärt der Trainer im Tutorial, danach sagt er wieder seinen Hinweis
+	if Tutorial.trigger("trainer", set_drag_hint.bind("TRAINER_HINT")):
+		_bubble.hide()
 
 ## Oben links die Tasche mit der Essenz und daneben die Gutscheine, oben rechts der Verlassen-Button.
 ## Erst aufrufen, wenn alle Karten einen Preis haben

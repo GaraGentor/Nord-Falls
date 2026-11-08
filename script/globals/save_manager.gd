@@ -24,6 +24,9 @@ var save_data := {
 	# Biom-Pfad und Monster-Pools pro Tiefe (Map.load_biome_path), bleiben ebenfalls bis zum nächsten Run-Ende gleich
 	"biome_path": [],
 	"biome_pools": [],
+	# interaktives Tutorial (siehe Tutorial): gesehene Sequenzen, done = abgeschlossen oder übersprungen, kommt nie wieder
+	"tutorial_seen": [],
+	"tutorial_done": false,
 }
 
 # Called when the node enters the scene tree for the first time.

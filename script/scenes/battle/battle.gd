@@ -15,6 +15,8 @@ const GOLD_LOOT_PER_DEPTH := 5
 const BIOME_BOSS_SHARDS := 1
 const FINAL_BOSS_SHARDS := 3
 const NOISE_SHADER := preload("res://script/scenes/world_map/map_noise.gdshader")
+const HELP_BUTTON_SIZE := Vector2(48, 48)
+const HELP_BUTTON_MARGIN := 8
 
 @export var catch_anim: Control
 @export var catch_button: Button
@@ -73,6 +75,30 @@ func _ready() -> void:
 	turn_wheel.turn_for.connect(_on_turn_for)
 	card_hand.show_mon(State.mons[0])
 	turn_wheel.start()
+	_add_help_button()
+	_add_tutorial_targets()
+	if Tutorial.teaching_enemy:
+		Tutorial.trigger("battle")
+	elif is_boss_battle:
+		Tutorial.trigger("boss")
+
+## "?" oben rechts im Infobereich: Erklärungen nachlesen, Tutorial wiederholen oder ausschalten
+func _add_help_button() -> void:
+	var button := HelpDialog.button(HELP_BUTTON_SIZE)
+	# direkt über dem Infobereich, Eingabe-Sperre und Fang-Animation liegen darüber
+	$UI.add_sibling(button)
+	button.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT, Control.PRESET_MODE_KEEP_SIZE, HELP_BUTTON_MARGIN)
+
+## Gruppen, die das interaktive Tutorial hervorhebt (siehe Tutorial.SEQUENCES)
+func _add_tutorial_targets() -> void:
+	turn_wheel.add_to_group("tut_bat_wheel")
+	card_hand.add_to_group("tut_bat_hand")
+	catch_button.add_to_group("tut_bat_catch")
+	$UI/HBoxContainer/TextureRect3/EndTurn.add_to_group("tut_bat_end_turn")
+	for scene in _monster_scenes():
+		if State.enemy_mons.has(scene.mon):
+			scene.add_to_group("tut_bat_enemies")
+			scene.intent_box.add_to_group("tut_bat_intent")
 
 ## Im schwarzen Infobereich zieht das Wetter des aktuellen Bioms durch, im selben Pixel-Look wie auf der Karte
 func _add_ambient() -> void:
@@ -155,6 +181,7 @@ func _reselect_if_gone(gone: Monster) -> void:
 		_select_mon(alive[0])
 
 func _exit_tree() -> void:
+	Tutorial.teaching_enemy = null
 	Events.mouse_event.disconnect(_catch_mouse_event)
 	Events.monster_faints.disconnect(_check_game_over)
 	Events.finish_catching.disconnect(_finish_catching)
@@ -259,6 +286,8 @@ func _generate_battle():
 		level = roundi(lerpf(encounter.level[0], encounter.level[1], t))
 		State.biome_fight_index += 1
 	var ms := _take_enemies(fight_index)
+	if not is_boss_battle and Tutorial.is_teaching_fight():
+		ms = _teaching_enemies(ms)
 	# nie unter der Startstufe des eigenen Teams
 	for mon in ms:
 		mon._is_boss = is_boss_battle
@@ -267,8 +296,21 @@ func _generate_battle():
 			mon._level += Skills.get_bounty(mon._bounty).level_bonus
 		mon._initial_moves = maxi(Map.roll_weighted(encounter.moves, t), min_moves)
 		State.record_sighting(mon, depth)
+	if Tutorial.teaching_enemy:
+		Tutorial.teaching_enemy._level = State.INITIAL_LEVEL
+		Tutorial.teaching_enemy._initial_moves = Monster.BASE_MOVES
 	print("encounter depth ", depth, " fight ", State.biome_fight_index, ": ", ms.size(), "x level ", level)
 	State.enemy_mons = ms
+
+## Lehrkampf (Tutorial): ein einzelner Gegner ohne Kopfgeld auf Startstufe mit einer Aktion.
+## Er geht nicht K.O. und wird sicher gefangen (Tutorial.cap_damage, Tutorial.catches_for_sure).
+func _teaching_enemies(ms: Array[Monster]) -> Array[Monster]:
+	var plain := ms.filter(func(mon: Monster): return mon._bounty == "")
+	var enemy: Monster = plain[0] if not plain.is_empty() else ms[0]
+	enemy._bounty = ""
+	Tutorial.teaching_enemy = enemy
+	var single: Array[Monster] = [enemy]
+	return single
 
 ## Die Gegner des betretenen Felds. Kämpfe aus dem Debug-Menü kommen ohne Feld oder mit fester Anzahl und würfeln hier.
 func _take_enemies(fight_index: int) -> Array[Monster]:

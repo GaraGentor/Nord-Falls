@@ -61,6 +61,8 @@ const DESK_WAVE_AMP := 0.025
 const DESK_WAVE_SPEED := 0.25
 const NOISE_SHADER := preload("res://script/scenes/world_map/map_noise.gdshader")
 const ENEMY_BADGE_NAME := "EnemyCount"
+## so groß wie der Legenden-Button daneben
+const HELP_BUTTON_SIZE := Vector2(56, 56)
 
 # Körniger, düsterer Look wie im Kampf über Papier, Deko und Wetter.
 # All das liegt auf z_index -1 (auch in world_map.tscn), damit Felder, Wege, Lager, Shop & Co. normal darüber bleiben.
@@ -122,18 +124,34 @@ func _ready() -> void:
 	else:
 		change_position(State.current_map_position)
 	change_ep_text(State.ep)
+	add_help_button()
 	if OS.is_debug_build():
 		add_debug_button()
 	show_pending_rewards()
+	team_bar.add_to_group("tut_map_team")
+	$HBoxContainer/Panel/LegendButton.add_to_group("tut_map_legend")
+	# erst zu Beginn eines Runs, wenn die erste Reihe noch frei wählbar ist
+	if State.current_map_position == State.NO_MAP_POSITION:
+		Tutorial.trigger("map")
 
-# Nur in Debug-Builds: links neben dem Legenden-Button im Header
+## "?" links neben dem Legenden-Button im Header: Erklärungen nachlesen, Tutorial wiederholen oder ausschalten
+func add_help_button() -> void:
+	var button := HelpDialog.button(HELP_BUTTON_SIZE)
+	button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	button.offset_left = -80.0 - HELP_BUTTON_SIZE.x
+	button.offset_top = -16.0 - HELP_BUTTON_SIZE.y
+	button.offset_right = -80.0
+	button.offset_bottom = -16.0
+	$HBoxContainer/Panel.add_child(button)
+
+# Nur in Debug-Builds: links neben dem Hilfe-Button im Header
 func add_debug_button() -> void:
 	var button := RewardDialog.plate_button("DEBUG")
 	button.add_theme_font_size_override("font_size", 16)
 	button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-	button.offset_left = -172.0
+	button.offset_left = -236.0
 	button.offset_top = -60.0
-	button.offset_right = -80.0
+	button.offset_right = -144.0
 	button.offset_bottom = -16.0
 	button.pressed.connect(func():
 		var menu = DEBUG_MENU.new()
@@ -183,6 +201,8 @@ func set_map():
 				d.material = Monmap.LIVING_MATERIAL
 				d.tooltip_text = tr(Map.type_label(y_path._type))
 				d.pressed.connect(func(): call_map_event(y_path))
+				if y_path._pos.y == 0:
+					d.add_to_group("tut_map_start")
 				d.visible = true
 				y_path._ui_item = d
 				g_container._path = y_path

@@ -43,6 +43,7 @@ func _ready() -> void:
 		# auf dem Teppich ist nur Platz für den Effekt, die Beschreibung steht im Tooltip
 		add_gem_card(self, stat, _bonus, false).tooltip_text = tr(STATS[stat].desc)
 	play_chest_intro()
+	Tutorial.trigger("gems")
 
 ## Bild der Trophäe mit lebenden Pixeln
 static func gem_icon(stat: String) -> Control:

@@ -18,7 +18,7 @@ var common_egg_crack = preload("res://assets/ui/eggs/common_2.png")
 ## Ansicht des gewählten Eis wie im Kampf: Name, Bild, Typ, Werte, Skills
 @export var info_panel: Control
 @export var biome_path: Control
-## Erklärt das Spiel am selben Platz, solange noch kein Ei gewählt ist
+## Erklärt das Spiel am selben Platz, solange noch kein Ei gewählt ist; nach dem interaktiven Tutorial nicht mehr
 @export var tutorial: Control
 
 var selected_egg: int = 0
@@ -29,6 +29,17 @@ func _ready() -> void:
 	# display_mons()
 	Events.select_initial_mon.connect(select_egg)
 	# Events.select_initial_mon.emit(0)
+	_add_tutorial_targets()
+	tutorial.visible = not Tutorial.is_complete()
+	Tutorial.trigger("selection")
+
+## Gruppen, die das interaktive Tutorial hervorhebt (siehe Tutorial.SEQUENCES)
+func _add_tutorial_targets() -> void:
+	biome_path.add_to_group("tut_biome_path")
+	$Selection/HBoxContainer.add_to_group("tut_eggs")
+	$Selection/MarginContainer/VBoxContainer/Button.add_to_group("tut_draw_egg")
+	info_panel.add_to_group("tut_starter_info")
+	go_button.add_to_group("tut_begin_journey")
 
 ## Eier aus dem Spielstand, neue gibt es nur ohne gespeicherte (erster Start oder nach einem Run-Ende)
 func load_eggs() -> void:
@@ -111,4 +122,4 @@ func _on_reroll_button_pressed() -> void:
 	# die alte Wahl gilt nicht mehr
 	go_button.disabled = true
 	info_panel.visible = false
-	tutorial.visible = true
+	tutorial.visible = not Tutorial.is_complete()

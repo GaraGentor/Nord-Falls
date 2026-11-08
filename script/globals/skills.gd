@@ -6,7 +6,7 @@ func deal_damage(props):
 	var full_damage = calc_damage(props.from, props.mon, props.skill)
 	reveal_stats_by_hit(props.from, props.mon, props.skill)
 	# Schilde fangen den Schaden zuerst ab
-	var damage = props.mon.absorb_damage(full_damage, is_physical(props.skill))
+	var damage = Tutorial.cap_damage(props.mon, props.mon.absorb_damage(full_damage, is_physical(props.skill)))
 	var multiplier = element_multiplier(props.skill.nature, props.mon._type)
 	print("lose:" + str(props.skill.value) + ":" + str(damage) + " (Element x" + str(multiplier) + ")")
 	Events.monster_hit_with_element.emit(props.mon, damage, multiplier, full_damage - damage)

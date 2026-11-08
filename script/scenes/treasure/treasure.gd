@@ -36,6 +36,8 @@ func _ready() -> void:
 		add_bag_card(tr("TREASURE_GOLD"), Helper.me_text(gold), texture_icon(ESSENCE_ICON), _on_gold_taken.bind(gold))
 	_build_buttons()
 	play_chest_intro()
+	_buttons.add_to_group("tut_treasure_buttons")
+	Tutorial.trigger("treasure")
 
 func _build_buttons() -> void:
 	_buttons = HBoxContainer.new()
