@@ -2,8 +2,9 @@ extends Control
 
 ## Konfigurator nach "Reise beginnen": wähle 3 Ei-Attacken, die dein Monster in den Run mitnimmt.
 ## Zur Wahl stehen die Standard-Ei-Attacken der Art und alle freigeschalteten.
-## Die gewählten stehen in der festen Box über der scrollbaren Auswahl, ein Klick lässt eine
-## Attacke zwischen beiden hin- und herfliegen.
+## Die gewählten stehen in der festen Box über der scrollbaren Auswahl. Ein Klick zeigt nur die Karte,
+## gewählt wird per Ziehen: auf einen Platz ziehen setzt die Attacke ein (eine dort liegende fliegt zurück
+## bzw. tauscht den Platz), aus der Box herausziehen und irgendwo loslassen legt sie zurück in die Auswahl.
 
 const SKILLS_TO_PICK := 3
 const GOLD := SkillDetailPopup.GOLD
@@ -17,6 +18,9 @@ const GRID_SEPARATION := 16
 const EMPTY_SLOT_COLOR := Color(0.2, 0.2, 0.22, 0.85)
 const EMPTY_SLOT_BORDER := Color(0.36, 0.36, 0.38)
 const FLY_SECONDS := 0.35
+## Durchsichtigkeit der Kachel, während sie gezogen wird
+const DRAG_ALPHA := 0.35
+const DRAG_PREVIEW_ALPHA := 0.85
 
 var _mon: Monster
 ## Skill-Name pro Platz in der Box, "" = leer
@@ -28,6 +32,8 @@ var _cards := {}
 ## Skill-Name -> Knoten im Grid (Kachel oder Platzhalter für eine zurückfliegende Kachel)
 var _grid_nodes := {}
 var _flying := {}
+## Skill-Name der gerade gezogenen Kachel, "" = keine
+var _dragging := ""
 var _grid: GridContainer
 var _scroll: ScrollContainer
 ## oberste Ebene, auf der die Kacheln fliegen
@@ -156,6 +162,7 @@ func _build() -> void:
 	for skill_name in _available:
 		var card := SkillTile.create(Skills.get_skill(skill_name), _mon)
 		card.pressed.connect(_on_card_pressed.bind(skill_name))
+		card.set_drag_forwarding(_get_card_drag_data.bind(skill_name), _can_drop_on_slot, _drop_on_slot)
 		_cards[skill_name] = card
 		var slot_index := _slot_skills.find(skill_name)
 		if slot_index >= 0:
@@ -206,6 +213,7 @@ func _build_slot_box() -> Control:
 		slot.custom_minimum_size.y = SkillTile.HEIGHT
 		slot.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		slot.add_theme_stylebox_override("panel", empty)
+		slot.set_drag_forwarding(Callable(), _can_drop_on_slot, _drop_on_slot)
 		row.add_child(slot)
 		_slots.append(slot)
 	return panel
@@ -234,21 +242,92 @@ func _show_detail(skill: Dictionary, note: String, note_color: Color, locked: bo
 	_detail_note.text = note
 	_detail_note.add_theme_color_override("font_color", note_color)
 
+## Ein Klick zeigt nur die Karte, die Auswahl bleibt unverändert
 func _on_card_pressed(skill_name: String) -> void:
 	var skill := Skills.get_skill(skill_name)
 	_show_detail(skill, Skills.missing_elements_text(_mon, skill), MISSING_COLOR, false)
-	if _flying.has(skill_name):
+
+# ─────────────────────────
+# Ziehen und Ablegen
+
+## Beim Ziehen hängt eine Kopie der Kachel an der Maus, das Original bleibt blass an seinem Platz
+func _get_card_drag_data(at_position: Vector2, skill_name: String) -> Variant:
+	if _flying.has(skill_name) or _dragging != "":
+		return null
+	var card: Control = _cards[skill_name]
+	var preview := Control.new()
+	preview.modulate.a = DRAG_PREVIEW_ALPHA
+	var tile := SkillTile.create(Skills.get_skill(skill_name), _mon)
+	tile.custom_minimum_size = card.size
+	tile.size = card.size
+	# dort festhalten, wo die Kachel gepackt wurde
+	tile.position = -at_position
+	preview.add_child(tile)
+	set_drag_preview(preview)
+	card.modulate.a = DRAG_ALPHA
+	_dragging = skill_name
+	_on_card_pressed(skill_name)
+	return {"egg_skill": skill_name}
+
+## Abgelegt wird nur auf einem Platz der Box (auf der leeren Fläche oder der Kachel darin)
+func _can_drop_on_slot(_at_position: Vector2, data: Variant) -> bool:
+	if not (data is Dictionary and data.has("egg_skill")):
+		return false
+	var slot_index := _slot_under_mouse()
+	if slot_index < 0:
+		return false
+	var target := _slot_skills[slot_index]
+	return target == "" or not _flying.has(target)
+
+## Die gezogene Attacke kommt auf den Platz. Lag dort schon eine, fliegt sie zurück in die Auswahl
+## oder, kam die gezogene aus einem anderen Platz, auf diesen (Tausch).
+func _drop_on_slot(_at_position: Vector2, data: Variant) -> void:
+	var slot_index := _slot_under_mouse()
+	var skill_name: String = data.egg_skill
+	var from_slot := _slot_skills.find(skill_name)
+	if slot_index < 0 or from_slot == slot_index:
+		return
+	var old := _slot_skills[slot_index]
+	_slot_skills[slot_index] = skill_name
+	if from_slot >= 0:
+		_slot_skills[from_slot] = old
+		if old != "":
+			_fly_to_slot(old, from_slot)
+	else:
+		_grid_nodes.erase(skill_name)
+		if old != "":
+			_fly_to_grid(old)
+	var card: Control = _cards[skill_name]
+	card.get_parent().remove_child(card)
+	_slots[slot_index].add_child(card)
+	_refresh()
+
+func _slot_under_mouse() -> int:
+	var mouse := get_global_mouse_position()
+	for i in _slots.size():
+		if _slots[i].get_global_rect().has_point(mouse):
+			return i
+	return -1
+
+## Aus der Box gezogen und nicht auf einem Platz losgelassen: zurück in die Auswahl
+func _notification(what: int) -> void:
+	if what != NOTIFICATION_DRAG_END or _dragging == "":
+		return
+	var skill_name := _dragging
+	_dragging = ""
+	_cards[skill_name].modulate.a = 1.0
+	if get_viewport().gui_is_drag_successful():
 		return
 	var slot_index := _slot_skills.find(skill_name)
-	if slot_index >= 0:
-		_slot_skills[slot_index] = ""
-		_fly_to_grid(skill_name)
-	else:
-		var free_slot := _slot_skills.find("")
-		if free_slot < 0:
-			return
-		_slot_skills[free_slot] = skill_name
-		_fly_to_slot(skill_name, free_slot)
+	if slot_index < 0:
+		return
+	_slot_skills[slot_index] = ""
+	var card: Control = _cards[skill_name]
+	var index := _grid_index(skill_name)
+	card.get_parent().remove_child(card)
+	_grid.add_child(card)
+	_grid.move_child(card, index)
+	_grid_nodes[skill_name] = card
 	_refresh()
 
 ## Aus der Auswahl nach oben auf den grauen Platz. Die Auswahl rückt sofort zusammen.
@@ -269,6 +348,8 @@ func _fly_to_grid(skill_name: String) -> void:
 	_grid.move_child(placeholder, index)
 	_grid_nodes[skill_name] = placeholder
 	_flying[skill_name] = true
+	# sofort aus dem Platz lösen, dort liegt evtl. schon die neue Kachel
+	_lift(_cards[skill_name])
 	await get_tree().process_frame
 	await get_tree().process_frame
 	var target := placeholder.get_global_rect()
@@ -296,12 +377,8 @@ func _grid_index(skill_name: String) -> int:
 func _fly(skill_name: String, target: Rect2, on_arrived: Callable) -> void:
 	var card: Control = _cards[skill_name]
 	_flying[skill_name] = true
-	var from := card.get_global_rect()
-	card.get_parent().remove_child(card)
-	_fly_layer.add_child(card)
-	card.global_position = from.position
-	card.size = from.size
-	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if card.get_parent() != _fly_layer:
+		_lift(card)
 	var tween := create_tween().set_parallel().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
 	tween.tween_property(card, "global_position", target.position, FLY_SECONDS)
 	tween.tween_property(card, "size", target.size, FLY_SECONDS)
@@ -310,6 +387,15 @@ func _fly(skill_name: String, target: Rect2, on_arrived: Callable) -> void:
 		on_arrived.call(card)
 		card.mouse_filter = Control.MOUSE_FILTER_STOP
 		_flying.erase(skill_name))
+
+## Kachel an ihrer aktuellen Stelle auf die oberste Ebene heben
+func _lift(card: Control) -> void:
+	var from := card.get_global_rect()
+	card.get_parent().remove_child(card)
+	_fly_layer.add_child(card)
+	card.global_position = from.position
+	card.size = from.size
+	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 func _selected() -> Array[String]:
 	return _slot_skills.filter(func(skill_name): return skill_name != "")

@@ -1,14 +1,7 @@
-Ziel ist es, alle "Highlight Effekt" gleich zu haben...
-Im Trainer, Laden und Kerkermeister sind für die NPC Bilder andere Effekte wie für die Monster.
-Das soll alles einheitlich sein, am besten gefällt mir der Goldene Rahmen.
-Geh die Liste durch
-- Beim Trainer müssen es die Monster sein.
-- Im Laden muss es der Monster Rahmen sein.
-- Im Lagerfeuer muss es das Feuer sein.
-- Im Kerkermeister muss es der NPC sein.
-- Beim Schatz öffnen kann die Tasche ohne den Rahmen da stehen. Hier soll dann auch nur die Tasche gehighlighted werden
-- Beim Relik öffnen kann die Tasche ohne den Rahmen da stehen. Hier soll dann auch nur die Tasche gehighlighted werden
-- Bei der Fähigkeiten Auswahl kann der Rahmen Gold werden wo das monster drin steckt mit den Stats.
-- Im Void kann die Tasche auch Ohne Rahmen da sein und selbst den goldenen rahmen bekommen (also die Tasche)
-
-- Im Kampf kann es derzeit so bleiben, da das dort nicht der fokus sein soll.
+1. Die Buttons "Ei ziehen..." & "Reise beginnen..." sehen nicht aus wie Buttons
+2. Im Tutorial Trenne "Tutorial überspringen" und den "Weiter" Button. Ornde Weiter rechts an und Tutorial Überspringen Links
+3. Färbe den "Tutorial überspringen" Button Rot.
+4. Es gibt ein Bug im Tutorial. Wenn ich eine Zu Starke Attacke mache und das Monster stirbt, dann kann ich das mit den Kritischen Treffern nicht lernen. Dadurch wird auch das Looten geskippt..
+5. Das Tutorial Icon im Kampf soll raus, sowie in der Karte. Setz es lieber an den Start des Spiels. Beim Triggern soll das Tutorial direkt starten & die EI Auwahl Resetten (aber keine neuen Eier Rollen)
+6. Wenn ich das Tutorial mit allen Punkten abschließe, möchte ich darüber bescheid wissen, der user soll angezeigt bekommen, dass alles wichtige nun erklärt wurde
+7. 

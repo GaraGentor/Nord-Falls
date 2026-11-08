@@ -15,7 +15,7 @@ CONFIGURATOR_SKILL_STATS,Cost {cost} · CD {cooldown} ·,Kosten {cost} · CD {co
 CONFIGURATOR_TIER,Tier {tier},Stufe {tier}
 CONFIGURATOR_LOCKED,Locked (catch & sacrifice),Gesperrt (fangen & opfern)
 CONFIGURATOR_LOCKED_MILESTONE,Locked (milestone),Gesperrt (Meilenstein)
-CONFIGURATOR_PICK_HINT,Tap a move to see its card,Tippe auf eine Attacke für ihre Karte
+CONFIGURATOR_PICK_HINT,"Tap a move to see its card, drag it into a slot above to take it along","Tippe auf eine Attacke für ihre Karte, zieh sie oben in einen Platz, um sie mitzunehmen"
 EGG_SKILL_TAG,{skill} (Egg),{skill} (Ei)
 EGG_SKILL_HINT,"Egg move: catch this monster and sacrifice it to unlock this move permanently","Ei-Attacke: Fange dieses Monster und opfere es, um die Attacke dauerhaft freizuschalten"
 EGG_SKILL_UNLOCKED,{skill} unlocked for {mon}!,{skill} für {mon} freigeschaltet!

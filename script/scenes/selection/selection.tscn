@@ -10,6 +10,8 @@
 [ext_resource type="Script" uid="uid://bsftl68bgh2n1" path="res://script/scenes/selection/biome_path.gd" id="8_biome"]
 [ext_resource type="Theme" path="res://script/ui/materials/pixel_font_theme.tres" id="99_font_theme"]
 [ext_resource type="Script" path="res://script/scenes/selection/tutorial_panel.gd" id="9_tutorial"]
+[ext_resource type="Theme" uid="uid://b5pomesyumr6n" path="res://script/scenes/battle/flat_button_theme.tres" id="10_flat_btn"]
+[ext_resource type="Script" uid="uid://o0lwh6vlyh25" path="res://script/ui/shader/iron_plate.gd" id="11_plate"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_k0ik4"]
 shader = ExtResource("2_7l32t")
@@ -31,6 +33,12 @@ shader_parameter/reveal = 1.0
 shader_parameter/outline_color = Color(1, 1, 0, 0)
 shader_parameter/outline_thickness = 4.0
 shader_parameter/tint_color = Color(1, 1, 1, 0)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_button"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
 
 [sub_resource type="Gradient" id="Gradient_7ag31"]
 colors = PackedColorArray(0.0627451, 0.0862745, 0.0823529, 0, 0.0643197, 0.0863678, 0.0819577, 1)
@@ -188,27 +196,87 @@ layout_mode = 2
 theme_override_constants/separation = 20
 
 [node name="Button" type="Button" parent="Selection/MarginContainer/VBoxContainer" unique_id=827233767]
+custom_minimum_size = Vector2(320, 60)
 layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("10_flat_btn")
+theme_override_colors/font_color = Color(0.86, 0.83, 0.72, 1)
+theme_override_colors/font_hover_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_colors/font_pressed_color = Color(0.858824, 0.717647, 0.45098, 1)
 theme_override_fonts/font = ExtResource("4_tpsnj")
 theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_button")
 text = "SELECTION_DRAW_EGG"
-flat = true
+
+[node name="Plate" type="ColorRect" parent="Selection/MarginContainer/VBoxContainer/Button"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("11_plate")
 
 [node name="RerollButton" type="Button" parent="Selection/MarginContainer/VBoxContainer" unique_id=1584207361]
 visible = false
+custom_minimum_size = Vector2(320, 60)
 layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("10_flat_btn")
+theme_override_colors/font_color = Color(0.86, 0.83, 0.72, 1)
+theme_override_colors/font_hover_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_colors/font_pressed_color = Color(0.858824, 0.717647, 0.45098, 1)
 theme_override_fonts/font = ExtResource("4_tpsnj")
 theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_button")
 text = "SELECTION_REROLL_EGGS"
-flat = true
+
+[node name="Plate" type="ColorRect" parent="Selection/MarginContainer/VBoxContainer/RerollButton"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("11_plate")
 
 [node name="Button2" type="Button" parent="Selection/MarginContainer/VBoxContainer" unique_id=238439135]
+custom_minimum_size = Vector2(320, 60)
 layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("10_flat_btn")
+theme_override_colors/font_color = Color(0.86, 0.83, 0.72, 1)
+theme_override_colors/font_hover_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_colors/font_pressed_color = Color(0.858824, 0.717647, 0.45098, 1)
 theme_override_fonts/font = ExtResource("4_tpsnj")
 theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_button")
 disabled = true
 text = "SELECTION_BEGIN_JOURNEY"
-flat = true
+
+[node name="Plate" type="ColorRect" parent="Selection/MarginContainer/VBoxContainer/Button2"]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("11_plate")
 
 [node name="UI" type="Control" parent="." unique_id=565903469]
 layout_mode = 1
