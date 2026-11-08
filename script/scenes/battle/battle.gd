@@ -2,6 +2,10 @@ extends Control
 
 const ENEMY_THINK_TIME := 0.6
 const ENEMY_ACTION_TIME := 0.9
+## Pause nach Gift/Verbrennung, länger als die KP-Animation: ein K.O. ist dann schon verarbeitet (turn_wheel.remove_mon)
+const STATUS_TICK_TIME := BattleMonCard.HP_TWEEN_TIME + 0.3
+## so lange steht "Betäubt!" über einem gelähmten Monster, bevor sein Zug endet
+const STUNNED_TIME := 0.9
 ## Chancen auf Zufallsbeute pro besiegtem Monster, gefangene Monster würfeln nicht. Jede Beute wird einzeln gewürfelt.
 const KEY_LOOT_CHANCE := 0.15
 const GEM_LOOT_CHANCE := 0.10
@@ -93,7 +97,27 @@ func _is_own_turn() -> bool:
 
 func _on_turn_for(mon: Monster) -> void:
 	active_mon = mon
+	$UI_Blocker.visible = true
+	# Gift wirkt vor dem Zug, solange die Rüstung aus dem letzten Zug noch steht (start_turn lässt Schilde ablaufen)
+	if ElementEffects.tick_poison(mon):
+		await get_tree().create_timer(STATUS_TICK_TIME).timeout
+		if not is_inside_tree():
+			return
 	mon.start_turn()
+	# am Gift gestorben: das Rad hat das Monster schon entfernt, weiter zum nächsten
+	if not mon.is_alive():
+		turn_wheel.next_mon()
+		return
+	# Paralyse: betäubt, der Zug endet sofort
+	if ElementEffects.rolls_paralysis(mon):
+		await get_tree().create_timer(STUNNED_TIME).timeout
+		if not is_inside_tree():
+			return
+		if State.enemy_mons.has(mon):
+			_plan_intent(mon)
+			Events.intents_changed.emit()
+		_end_turn(mon)
+		return
 	var own_index = State.mons.find(mon)
 	if own_index > -1:
 		# Skillpunkte zu Beginn des eigenen Zuges auffüllen
@@ -119,6 +143,14 @@ func _on_turn_for(mon: Monster) -> void:
 			return
 	_plan_intent(mon)
 	Events.intents_changed.emit()
+	_end_turn(mon)
+
+## Ende eines Zuges: Verbrennung wirkt, danach ist das nächste Monster dran.
+func _end_turn(mon: Monster) -> void:
+	if ElementEffects.tick_burn(mon):
+		await get_tree().create_timer(STATUS_TICK_TIME).timeout
+		if not is_inside_tree():
+			return
 	turn_wheel.next_mon()
 
 func _monster_scenes() -> Array:
@@ -208,15 +240,30 @@ func _is_valid_target(from: Monster, skill: Dictionary, target: Monster) -> bool
 	return side.has(target)
 
 ## Setzt einen Skill ein: Flächen-Skills treffen die ganze Seite des Ziels, danach startet die Abklingzeit.
+## Element-Effekte (ElementEffects): Schwächungen und Status pro getroffenem Gegner, Verstärkungen einmal für den Wirker.
+## Vulkan wirkt mit etwas Glück ein zweites Mal mit gleicher Stärke (zweiter Treffer, doppelter Schild).
 func _use_skill(from: Monster, skill: Dictionary, target: Monster) -> void:
 	var targets = [target]
 	if Skills.targets_team(skill):
 		targets = _allies_of(target)
-	for mon in targets:
-		# Angriffsanimation nur gegen Gegner
-		if not Skills.targets_friends(skill):
-			Events.monster_hit_monster.emit(_scene_for(from), _scene_for(mon))
-		skill.handle.call({"from": from, "skill": skill, "mon": mon})
+	var repeats := 1
+	if ElementEffects.rolls_eruption(skill):
+		repeats = 2
+		Events.monster_effect_text.emit(from, tr("EFFECT_TEXT_ERUPTION"), ElementEffects.ERUPTION_COLOR)
+	var dealt := 0.0
+	for _i in repeats:
+		for mon in targets:
+			if not mon.is_alive():
+				continue
+			# Angriffsanimation nur gegen Gegner
+			if not Skills.targets_friends(skill):
+				Events.monster_hit_monster.emit(_scene_for(from), _scene_for(mon))
+			var props := {"from": from, "skill": skill, "mon": mon}
+			skill.handle.call(props)
+			dealt += props.get("dealt", 0.0)
+			if not Skills.targets_friends(skill):
+				ElementEffects.on_hit(from, mon, skill)
+	ElementEffects.on_cast(from, skill, dealt)
 	Skills.start_cooldown(skill)
 	Events.monster_status_changed.emit(from)
 	# Treffer decken Werte auf (Skills.reveal_stats_by_hit)
@@ -424,7 +471,7 @@ func _on_end_turn_pressed() -> void:
 		return
 	$UI_Blocker.visible = true
 	Events.mouse_event.emit({"action": Enums.MOUSE_ACTION.NONE})
-	turn_wheel.next_mon()
+	_end_turn(active_mon)
 
 func _finish_catching(catched: bool, mon: Monster) -> void:
 	if catched:

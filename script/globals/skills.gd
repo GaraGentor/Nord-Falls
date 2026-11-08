@@ -5,8 +5,10 @@ func deal_damage(props):
 	props.mon._last_hit_by = props.from
 	var full_damage = calc_damage(props.from, props.mon, props.skill)
 	reveal_stats_by_hit(props.from, props.mon, props.skill)
-	# Schilde fangen den Schaden zuerst ab
-	var damage = props.mon.absorb_damage(full_damage, is_physical(props.skill))
+	# Schilde fangen den Schaden zuerst ab (Magma zieht sie doppelt ab)
+	var damage = props.mon.absorb_damage(full_damage, is_physical(props.skill), ElementEffects.shield_cost(props.skill))
+	# für Element-Effekte, die vom verursachten Schaden abhängen (Eis), siehe battle.gd _use_skill
+	props.dealt = props.get("dealt", 0.0) + damage
 	var multiplier = element_multiplier(props.skill.nature, props.mon._type)
 	print("lose:" + str(props.skill.value) + ":" + str(damage) + " (Element x" + str(multiplier) + ")")
 	Events.monster_hit_with_element.emit(props.mon, damage, multiplier, full_damage - damage)
@@ -86,11 +88,13 @@ func is_passive(skill: Dictionary) -> bool:
 	return skill.get("effect", "") == "passive"
 
 # +1 -> x1.5, +2 -> x2.0, ... / -1 -> x0.5, -2 -> x0.25, ...
+# Chaos-Skills bekommen gegen Nicht-Chaos-Ziele einen Zuschlag (ElementEffects.chaos_bonus).
 func element_multiplier(skill_nature: int, target_type: int) -> float:
 	var score = element_score(skill_nature, target_type)
+	var bonus = ElementEffects.chaos_bonus(skill_nature, target_type)
 	if score >= 0:
-		return 1.0 + ELEMENT_BONUS * score
-	return pow(1.0 - ELEMENT_BONUS, -score)
+		return 1.0 + ELEMENT_BONUS * score + bonus
+	return pow(1.0 - ELEMENT_BONUS, -score) + bonus
 
 # ─────────────────────────
 # Schilde halten bis zum nächsten eigenen Zug des geschützten Monsters oder bis sie aufgebraucht sind (siehe Monster.start_turn, Monster.absorb_damage).
@@ -131,11 +135,13 @@ func incoming_hits(target: Monster, attackers: Array) -> Array:
 				continue
 			var physical = is_physical(action.skill)
 			var full = calc_damage(attacker, target, action.skill)
-			var blocked = minf(shield if physical else s_shield, full)
+			# gleiche Rechnung wie Monster.absorb_damage, Magma zieht den Schild doppelt ab
+			var cost = ElementEffects.shield_cost(action.skill)
+			var blocked = minf((shield if physical else s_shield) / cost, full)
 			if physical:
-				shield -= blocked
+				shield -= blocked * cost
 			else:
-				s_shield -= blocked
+				s_shield -= blocked * cost
 			hits.append({"physical": physical, "full": full, "after": full - blocked})
 	return hits
 

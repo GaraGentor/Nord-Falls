@@ -22,6 +22,7 @@ func _ready() -> void:
 	Events.deal_damage_to_monster.connect(_deal_damage)
 	Events.monster_hit_with_element.connect(_show_hit_text)
 	Events.monster_status_changed.connect(_on_status_changed)
+	Events.monster_effect_text.connect(_show_effect_text)
 	Events.monster_faints.connect(_remove_mon)
 	Events.mon_is_catched.connect(_remove_mon)
 	Events.intents_changed.connect(_refresh_intent)
@@ -81,6 +82,22 @@ func _show_hit_text(_mon: Monster, damage: float, multiplier: float, blocked: fl
 	tween.tween_property(box, "position:y", box.position.y - 60, 1.2)
 	tween.tween_property(box, "modulate:a", 0.0, 0.6).set_delay(0.6)
 	tween.chain().tween_callback(box.queue_free)
+
+# Schwebender Hinweis der Element-Effekte ("Gift -12", "Betäubt!", "Ausbruch!"), etwas höher als der Schadenstext,
+# damit sich beide nicht überdecken.
+func _show_effect_text(_mon: Monster, text: String, color: Color) -> void:
+	if mon != _mon or not is_inside_tree():
+		return
+	var row := _icon_row([text], color, 24)
+	row.z_index = 10
+	add_child(row)
+	row.size = row.get_combined_minimum_size()
+	row.position = _texture_offset() + Vector2((texture_rect.size.x - row.size.x) / 2, 0)
+	var tween := row.create_tween()
+	tween.set_parallel()
+	tween.tween_property(row, "position:y", row.position.y - 50, 1.4)
+	tween.tween_property(row, "modulate:a", 0.0, 0.6).set_delay(0.8)
+	tween.chain().tween_callback(row.queue_free)
 
 ## Zeile aus Symbolen und Text: Texture2D = Symbol in der Zeilenfarbe, String = Text,
 ## Monster = kleines Bild des Monsters (als Ziel einer Absicht).
@@ -155,6 +172,14 @@ func _refresh_status() -> void:
 		status_box.add_child(_icon_row([ICON_S_SHIELD, str(roundi(mon._s_shield))], SPECIAL_COLOR, STATUS_FONT_SIZE))
 	if mon.is_buffed():
 		status_box.add_child(_icon_row([ICON_BUFF], BUFF_COLOR, STATUS_FONT_SIZE))
+	if mon.is_debuffed():
+		status_box.add_child(_icon_row([tr("STATUS_WEAKENED")], ElementEffects.DEBUFF_COLOR, STATUS_FONT_SIZE))
+	# Statuseffekte der Element-Effekte bis Kampfende, Gift mit seinen Stapeln
+	for status in mon._statuses:
+		var text := tr(ElementEffects.STATUS_LABELS[status])
+		if status == ElementEffects.POISON:
+			text += " x%d" % mon.status_stacks(status)
+		status_box.add_child(_icon_row([text], ElementEffects.STATUS_COLORS[status], STATUS_FONT_SIZE))
 
 func printStuff() -> void:
 	if mon:

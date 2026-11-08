@@ -210,12 +210,15 @@ func format_number(v) -> String:
 		return str(roundi(v)) if is_equal_approx(v, roundf(v)) else str(snappedf(v, 0.1))
 	return str(v)
 
-## Skill-Beschreibung mit eingesetzten Werten, Zahlen wie in format_number
+## Skill-Beschreibung mit eingesetzten Werten, Zahlen wie in format_number,
+## bei Kombi-Elementen mit dem Element-Effekt als zweiter Zeile (ElementEffects)
 func skill_description(skill: Dictionary) -> String:
 	var values := {}
 	for key in skill:
 		values[key] = format_number(skill[key]) if skill[key] is float else skill[key]
-	return tr(skill.description).format(values)
+	var text := tr(skill.description).format(values)
+	var effect := ElementEffects.skill_effect_text(skill)
+	return text if effect == "" else text + "\n" + effect
 
 func between(v, min, max) -> bool:
 	return v >= min and v <= max

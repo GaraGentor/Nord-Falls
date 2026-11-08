@@ -655,3 +655,21 @@ ELEMENT_INFO_FUSION,Fusion of {count} elements,Verschmelzung aus {count} Element
 ELEMENT_INFO_BASE_DESC,"One of the four base elements, it cannot be split further. Fused with others it forms stronger combinations.","Eines der vier Grundelemente, es lässt sich nicht weiter zerlegen. Mit anderen verschmolzen entstehen daraus stärkere Kombinationen."
 ELEMENT_INFO_CONTAINS,Contains,Enthält
 ELEMENT_INFO_PART_OF,Part of,Steckt in
+EFFECT_LIGHTNING_DESC,Lightning: the user gains +{speed}% Initiative for {turns} turns,Blitz: Der Wirker erhält +{speed}% Initiative für {turns} Züge
+EFFECT_STEAM_DESC,Steam: the target loses {speed}% Initiative for {turns} turns,Dampf: Das Ziel verliert {speed}% Initiative für {turns} Züge
+EFFECT_MUD_DESC,Mud: the user gains +{attack}% Attack and Sp. Attack for {turns} turns,Schlamm: Der Wirker erhält +{attack}% Angriff und Sp. Angriff für {turns} Züge
+EFFECT_DUST_DESC,Dust: the target loses {attack}% Attack and Sp. Attack for {turns} turns,Staub: Das Ziel verliert {attack}% Angriff und Sp. Angriff für {turns} Züge
+EFFECT_MAGMA_DESC,Magma: hits drain shields {magma}x as fast,Magma: Treffer ziehen Schilde {magma}-fach ab
+EFFECT_ICE_DESC,Ice: the user gains a shield worth {ice}% of the damage dealt,Eis: Der Wirker erhält einen Schild in Höhe von {ice}% des verursachten Schadens
+EFFECT_SWAMP_DESC,Swamp: poisons the target. Before each of its turns it loses {poison}% max HP per stack (up to {stacks}) until the battle ends. Ignores magic shields.,Sumpf: Vergiftet das Ziel. Vor jedem seiner Züge verliert es {poison}% max. KP pro Stapel (bis {stacks}) bis Kampfende. Ignoriert Magie-Schilde.
+EFFECT_ASH_STORM_DESC,Ash Storm: burns the target. After each of its turns it loses {burn}% max HP and it has -{burn_attack}% Attack until the battle ends. Ignores armor.,Aschesturm: Verbrennt das Ziel. Nach jedem seiner Züge verliert es {burn}% max. KP und hat -{burn_attack}% Angriff bis Kampfende. Ignoriert Rüstung.
+EFFECT_THUNDERSTORM_DESC,Thunderstorm: paralyzes the target. Each turn it has a {paralysis}% chance to be stunned and lose its turn until the battle ends.,Gewitter: Lähmt das Ziel. Bis Kampfende ist es jeden Zug mit {paralysis}% Chance betäubt und setzt aus.
+EFFECT_VOLCANO_DESC,Volcano: {volcano}% chance to take effect twice,Vulkan: {volcano}% Chance doppelt zu wirken
+EFFECT_CHAOS_DESC,Chaos: +{chaos} element multiplier against all non-Chaos targets,Chaos: +{chaos} Element-Faktor gegen alle Nicht-Chaos-Ziele
+STATUS_POISON,Poison,Gift
+STATUS_BURN,Burn,Verbrennung
+STATUS_PARALYSIS,Paralysis,Paralyse
+STATUS_WEAKENED,Weakened,Geschwächt
+EFFECT_TEXT_STUNNED,Stunned!,Betäubt!
+EFFECT_TEXT_ERUPTION,Eruption!,Ausbruch!
+EFFECT_CHANCE_PREFIX,{chance}% chance - ,{chance}% Chance - 

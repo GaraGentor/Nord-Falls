@@ -35,6 +35,10 @@ func _build(content: VBoxContainer) -> void:
 		content.add_child(_recipe())
 	else:
 		content.add_child(_note(tr("ELEMENT_INFO_BASE_DESC"), IronPlate.TEXT_COLOR))
+	# was Skills dieses Elements zusätzlich bewirken (ElementEffects)
+	var effect := ElementEffects.element_effect_text(_mask)
+	if effect != "":
+		content.add_child(_note(effect, SkillDetailPopup.GOLD))
 
 	var lists := VBoxContainer.new()
 	lists.add_theme_constant_override("separation", 10)
