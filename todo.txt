@@ -1,18 +1,8 @@
-Ich möchte nun etwas balancen. Dafür möchte ich folgendes Fragen: ist es gut, wenn die ELemente tlw. folgende effekte haben damit diese stärker / schwächer sind?
-Die Effekte sollen eintreten wenn  die fähigkeiten karten ausgewählt werden oder genutzt
-um denen mehr Bonis zu geben:
-	
-	z.B.:
-1. Schlamm kann gegner spürbar verlangsamen.
-2. Blitz kann eigene Monster schneller machen.
-3. Dampf erhöht die ausweich chance.
-4. Staub macht angriffe schwächer.
-5. Eis Zusätzlichen Damage nach Treffer geht aber nach paar runden wieder weg.
-6. Magma macht schilde schwächer.
-
-7. Sumpf vergiftet (Zusätzlichen Damage vor einem Zug Status bleibt bis Kampf Ende)
-8. Aschesturm Verbrennt (Zusätzlichen Damage nach einen Zug Status bleibt bis Kampf Ende)
-9. Gewitter Paralyziert (Kann manchmal nicht handeln Status bleibt bis Kamp Ende)
-10. Vulkan (Kann manchmal ein zweiten Treffer verursachen)
-
-Chaos macht prinzipiell nix besonderes außer, dass ggf. der damage gegen niedrigere elemente um 0,25 stärker sein soll. Sonst wäre das zu OP??? Vill müssen wir das hier auch nochmal im Battle etc. anpassen. Oder was wäre besonders für Chaos?
+1. Heilmösch: Heilt das Monster um 20% des zugefügten Schadens
+2. Glutboden: Gibt 5% der Maximale HP als schaden Pro Runde
+3. Fate-Spiegel: Bekommt in der nächsten Runde den zugefügten schaden als Schild und Typ des schildes
+4. Bongos: Bekommt bei jedem Kampfbeginn abwechselnd 25 Rüstung und 25 Magische Rüstung
+5. Nebelmaschine: Fähigkeiten haben eine 50% wahrscheinlichkeit nicht zu treffen
+6. Flinkerwiesel: Ist abwechselnd immer erster am Zug und in der anderen Runde letzter
+7. Mikrofon: lässt in ungeraden Runden alle züge ausfallen. Dabei heilen sich ALLE um 10% des fehlenden Lebens
+8. Magische Dornen: lässt abwechselnd immer magischen oder physischen schaden zu einem gewissen prozentsatz abprallen (15%)

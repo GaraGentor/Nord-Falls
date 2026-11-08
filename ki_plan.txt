@@ -1,0 +1,85 @@
+UMSETZUNGSPLAN: INTELLIGENTERE GEGNER-KI
+========================================
+
+Ausgangslage
+------------
+battle.gd _plan_intent wählt Skill UND Ziel rein zufällig (pick_random). Die Gegner sprechen sich nicht ab,
+sie kennen keine Elemente und achten weder auf Kills noch auf die Reihenfolge ihrer Aktionen.
+Weil die Absichten vorher angezeigt werden, darf die KI klüger werden, ohne unfair zu sein: Der Spieler
+sieht den Plan und kann reagieren (Schild, Ziel zuerst ausschalten, fangen ...).
+
+Grundregeln
+-----------
+- Zufall bleibt erhalten: Es wird GEWICHTET gewürfelt, nicht stur der beste Zug genommen.
+- Die KI plant mit dem, was sie beim Planen weiß (aktuelle Werte, bereits geplante Angriffe).
+- Schilde der eigenen Monster zählen beim Planen NICHT: Sie laufen meist ab, bevor der Gegner zuschlägt.
+- Alle Werte stehen als Konstanten oben in battle.gd (Abschnitt "Gegner-KI"), damit das Balancing an
+  EINER Stelle passiert.
+
+
+JETZT (Schritt 1-4)
+===================
+
+1. Bewertung + gewichteter Zufall
+---------------------------------
+  - _score_action(emon, skill, target) -> float, für jede mögliche Kombination aus Skill und Ziel.
+  - Gewicht = score ^ AI_SHARPNESS. Bei 0 bleibt alles reiner Zufall wie bisher, je höher der Wert,
+    desto öfter wird der beste Zug gewählt.
+  - Die Schärfe steigt mit der Tiefe (State.map_level), Bosse bekommen einen Zuschlag:
+      AI_SHARPNESS_BASE + AI_SHARPNESS_PER_DEPTH * Tiefe (+ AI_SHARPNESS_BOSS)
+    -> frühe Gegner wirken fast noch zufällig, späte Gegner und Bosse sind taktisch.
+  - Schadens-Skills: erwarteter Schaden (Skills.calc_damage, enthält Element-Faktor und Buffs),
+    begrenzt auf die Rest-KP des Ziels. Flächen-Skills zählen den Schaden auf allen Zielen zusammen.
+  - Schild/Buff: vorerst ein fester Grundwert (Schildmenge bzw. Verteidigungs-Zuwachs * Gewicht),
+    das Ziel bleibt zufällig. Die richtige defensive Logik kommt mit Schritt 6.
+
+2. Klügere Zielwahl
+-------------------
+  - Kill möglich (Schaden >= Rest-KP): Score x AI_KILL_BONUS
+  - Element-Schwäche: steckt schon über calc_damage im Schaden
+  - Bedrohung: Ziele mit hohem Angriff/Sp. Angriff werden leicht bevorzugt (AI_THREAT_WEIGHT)
+  - _pick_target nutzt dieselbe Bewertung, auch beim Neuwählen (_retarget_intents, _ki_action).
+
+3. Absprache zwischen den Gegnern
+---------------------------------
+  - Rest-KP eines Ziels = KP - verlorene KP - Schaden, den ALLE Gegner schon eingeplant haben
+    (die Absichten der anderen plus die bisherigen Aktionen dieses Gegners).
+  - Dadurch entsteht Fokus: Zwei Gegner legen zusammen ein Ziel um (Kill-Bonus über die gemeinsamen Rest-KP).
+  - Kein Overkill: Ist ein Ziel schon "verplant", zählt nur noch AI_OVERKILL_SHARE des Schadens.
+
+4. Reihenfolge innerhalb des Zuges
+----------------------------------
+  Nach dem Planen werden die Aktionen sortiert:
+    1. Buffs (Verteidigung rauf -> ein Schild danach wird größer)
+    2. Schilde
+    3. Schlamm-Angriffe (Angriff +20 % für den Wirker -> die folgenden Angriffe treffen härter)
+    4. übrige Angriffe
+  Innerhalb einer Gruppe bleibt die geplante Reihenfolge.
+
+
+SPÄTER (Schritt 5-7)
+====================
+
+5. Element-Effekte sinnvoll einsetzen
+  - Gift nicht auf Ziele mit vollen Stapeln (POISON_MAX_STACKS), Verbrennung/Paralyse nicht doppelt
+  - laufende Debuffs (Staub, Dampf) nicht sinnlos auffrischen
+  - Magma bevorzugt gegen Ziele mit Schild, Eis bevorzugt, wenn der Wirker angeschlagen ist
+  - Gift gegen Ziele mit Magie-Schild, Verbrennung gegen Ziele mit Rüstung
+
+6. Defensive Logik
+  - Schild/Buff nur, wenn es sich lohnt: Monster angeschlagen oder vermutlich bedroht
+    (Werte der eigenen Monster gegen den Gegner schätzen)
+  - einen schwachen Verbündeten schützen statt sich selbst
+  - keine Schilde bei vollen KP ohne Bedrohung, Buffs nicht auffrischen, solange sie noch laufen
+
+7. Persönlichkeiten
+  - Gewichtsprofile pro Art, Trainer oder Boss: Aggressiv, Beschützer, Jäger, Taktiker
+  - z. B. als Feld am Monster (_ai_profile), das die Gewichte aus Schritt 1-6 multipliziert
+
+
+TESTEN
+======
+  - Kämpfe in Biom 1 sollen sich weiter locker anfühlen (geringe Schärfe).
+  - Doppelkämpfe: Fokussieren die Gegner sichtbar ein angeschlagenes Monster?
+  - Bosse: spürbar härter, aber dank der Absichten-Anzeige konterbar?
+  - Werte nur in den AI_-Konstanten in battle.gd anpassen.

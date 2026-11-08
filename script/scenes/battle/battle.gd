@@ -20,6 +20,24 @@ const BIOME_BOSS_SHARDS := 1
 const FINAL_BOSS_SHARDS := 3
 const NOISE_SHADER := preload("res://script/scenes/world_map/map_noise.gdshader")
 
+# ─────────────────────────
+# Gegner-KI (siehe ki_plan.txt): jede Kombination aus Skill und Ziel bekommt einen Score, gewürfelt wird mit
+# Gewicht score ^ Schärfe. Schärfe 0 = reiner Zufall, je höher, desto öfter der beste Zug.
+## Schärfe in Biom 1, Zuschlag pro Biom-Tiefe und für Bosse
+const AI_SHARPNESS_BASE := 0.5
+const AI_SHARPNESS_PER_DEPTH := 0.5
+const AI_SHARPNESS_BOSS := 1.0
+## Score x so viel, wenn der Angriff das Ziel (zusammen mit den schon geplanten Angriffen) besiegt
+const AI_KILL_BONUS := 2.0
+## Anteil des Schadens, der über die Rest-KP hinausgeht oder ein schon verplantes Ziel trifft
+const AI_OVERKILL_SHARE := 0.15
+## wie stark Ziele mit hohem (Sp.) Angriff bevorzugt werden (0 = gar nicht)
+const AI_THREAT_WEIGHT := 0.3
+## Schild- und Buff-Skills: Grundwert = Schildmenge bzw. Wertzuwachs x Züge x dieses Gewicht (Ausbau in Schritt 6)
+const AI_DEFENSE_WEIGHT := 0.5
+## jeder Zug bleibt möglich
+const AI_MIN_SCORE := 0.1
+
 @export var catch_anim: Control
 @export var catch_button: Button
 @export var battle_info: Control
@@ -415,8 +433,9 @@ func _clear_fainted_mons() -> Array:
 		State.mons.erase(item)
 	return v
 
-## Plant den nächsten Zug eines Gegners (Monster._intent): zufällige Skills, bis seine Aktionen aufgebraucht sind,
-## jeweils auf ein zufälliges lebendes Ziel (Angriffe auf eigene Monster, Schilde und Buffs auf sich selbst oder einen Verbündeten).
+## Plant den nächsten Zug eines Gegners (Monster._intent): Skills, bis seine Aktionen aufgebraucht sind.
+## Jede Kombination aus Skill und Ziel wird bewertet (_score_action) und gewichtet gewürfelt (_weighted_pick),
+## dabei zählen die schon geplanten Angriffe aller Gegner mit (Fokus, kein Overkill). Zum Schluss wird sortiert (_order_intent).
 ## Gegner halten sich an dieselben Regeln wie der Spieler (Element, Kosten, Abklingzeit, Passive nicht ausspielbar).
 ## Nur Angriffe ohne Abklingzeit dürfen mehrfach im selben Zug vorkommen.
 ## Geplant wird vor dem Zug: Abklingzeiten zählen zu dessen Beginn noch einmal herunter, daher reicht <= 1.
@@ -430,20 +449,137 @@ func _plan_intent(emon: Monster) -> void:
 	while true:
 		var options = emon._skills.filter(func(skill): return _can_plan(emon, skill, moves) and not once_used.has(skill))
 		if options.is_empty():
-			return
-		var picked: Dictionary = options.pick_random()
-		moves -= maxi(picked.cost, 1)
-		if picked.get("cooldown", 0) > 0 or not Skills.is_damage_skill(picked):
-			once_used.append(picked)
-		emon._intent.append({"skill": picked, "target": _pick_target(emon, picked)})
+			break
+		var candidates = []
+		for skill in options:
+			for target in _candidate_targets(emon, skill):
+				candidates.append({"skill": skill, "target": target, "score": _score_action(emon, skill, target)})
+		var picked: Dictionary = _weighted_pick(candidates)
+		moves -= maxi(picked.skill.cost, 1)
+		if picked.skill.get("cooldown", 0) > 0 or not Skills.is_damage_skill(picked.skill):
+			once_used.append(picked.skill)
+		# sofort eintragen: die folgenden Aktionen sehen diesen Angriff schon bei den Rest-KP
+		emon._intent.append({"skill": picked.skill, "target": picked.target})
+	_order_intent(emon)
 
 func _can_plan(emon: Monster, skill: Dictionary, moves_left: int) -> bool:
 	return Skills.can_use(emon, skill) and not Skills.is_passive(skill) \
 		and Skills.cooldown_left(skill) <= 1 and maxi(skill.cost, 1) <= moves_left
 
+## Bestes Ziel für einen Skill (gewichtet gewürfelt), auch beim Neuwählen nach einem K.O.
 func _pick_target(emon: Monster, skill: Dictionary) -> Monster:
+	var candidates = []
+	for target in _candidate_targets(emon, skill):
+		candidates.append({"target": target, "score": _score_action(emon, skill, target)})
+	return _weighted_pick(candidates).target if not candidates.is_empty() else null
+
+## Mögliche Ziele: Flächen-Skills treffen ohnehin die ganze Seite, dort reicht ein Ziel.
+func _candidate_targets(emon: Monster, skill: Dictionary) -> Array:
 	var side = _allies_of(emon) if Skills.targets_friends(skill) else _opponents_of(emon)
-	return side.pick_random() if not side.is_empty() else null
+	if Skills.targets_team(skill) and not side.is_empty():
+		return [side[0]]
+	return side
+
+## Gewichteter Zufall über {"score": float, ...}: Gewicht = score ^ Schärfe
+func _weighted_pick(candidates: Array) -> Dictionary:
+	var sharpness := _ai_sharpness()
+	var weights = candidates.map(func(c): return pow(maxf(c.score, AI_MIN_SCORE), sharpness))
+	var total: float = 0.0
+	for w in weights:
+		total += w
+	var roll := randf() * total
+	for i in candidates.size():
+		roll -= weights[i]
+		if roll <= 0.0:
+			return candidates[i]
+	return candidates.back()
+
+## Je tiefer im Run, desto taktischer, Bosse noch etwas mehr
+func _ai_sharpness() -> float:
+	var sharpness := AI_SHARPNESS_BASE + AI_SHARPNESS_PER_DEPTH * Map.encounter_depth()
+	if is_boss_battle or State.is_final_boss:
+		sharpness += AI_SHARPNESS_BOSS
+	return sharpness
+
+## Wie gut ist dieser Skill gegen dieses Ziel? Schaden in KP, Schilde/Buffs als Grundwert (Ausbau in Schritt 6).
+func _score_action(emon: Monster, skill: Dictionary, target: Monster) -> float:
+	if Skills.targets_friends(skill):
+		if skill.has("buff_stat"):
+			var stat_value: float = _stat_value(target, skill.buff_stat)
+			return stat_value * skill.value / 100 * skill.get("buff_turns", 1) * AI_DEFENSE_WEIGHT
+		var physical := Skills.is_physical(skill)
+		var def: float = emon.defense() if physical else emon.s_defense()
+		return def * skill.value / 100 * AI_DEFENSE_WEIGHT
+	if not Skills.is_damage_skill(skill):
+		return AI_MIN_SCORE
+	var targets = _allies_of(target) if Skills.targets_team(skill) else [target]
+	var score := 0.0
+	for mon: Monster in targets:
+		score += _damage_value(emon, skill, mon)
+	return score
+
+## aktueller Wert zu einem Buff-Schlüssel (buff_stat)
+func _stat_value(mon: Monster, stat: String) -> float:
+	match stat:
+		"atk": return mon.attack()
+		"s_atk": return mon.s_attack()
+		"s_def": return mon.s_defense()
+		"speed": return mon.speed()
+	return mon.defense()
+
+## Schaden gegen ein Ziel, gemessen an seinen Rest-KP nach allen schon geplanten Angriffen:
+## Kill = Bonus, Schaden darüber hinaus zählt kaum, Ziele mit hohem Angriff werden leicht bevorzugt.
+## Schilde der Ziele zählen nicht: sie laufen meist ab, bevor der Gegner zuschlägt.
+func _damage_value(emon: Monster, skill: Dictionary, target: Monster) -> float:
+	var damage := Skills.calc_damage(emon, target, skill)
+	var remaining := _remaining_hp(target)
+	var value: float
+	if remaining <= 0.0:
+		value = damage * AI_OVERKILL_SHARE
+	else:
+		value = minf(damage, remaining) + maxf(damage - remaining, 0.0) * AI_OVERKILL_SHARE
+		if damage >= remaining:
+			value *= AI_KILL_BONUS
+	return value * _threat_factor(target)
+
+## KP nach allen Angriffen, die die Gegner (inklusive des gerade planenden) schon eingeplant haben
+func _remaining_hp(target: Monster) -> float:
+	var remaining: float = target.hp() - target._lost_hp
+	for hit in Skills.incoming_hits(target, State.enemy_mons):
+		remaining -= hit.full
+	return remaining
+
+## 1.0 für durchschnittlich starke Ziele, mehr für Ziele mit überdurchschnittlichem (Sp.) Angriff
+func _threat_factor(target: Monster) -> float:
+	var side = _allies_of(target)
+	if side.size() < 2 or AI_THREAT_WEIGHT <= 0.0:
+		return 1.0
+	var total := 0.0
+	for mon: Monster in side:
+		total += maxf(mon.attack(), mon.s_attack())
+	var average := total / side.size()
+	if average <= 0.0:
+		return 1.0
+	var threat := maxf(target.attack(), target.s_attack()) / average
+	return maxf(1.0 + AI_THREAT_WEIGHT * (threat - 1.0), 0.5)
+
+## Reihenfolge im Zug: Buffs (Verteidigung rauf -> größerer Schild), Schilde, Schlamm-Angriffe
+## (Angriff rauf für die folgenden Treffer), übrige Angriffe. Innerhalb einer Gruppe bleibt die Reihenfolge.
+func _order_intent(emon: Monster) -> void:
+	var entries = []
+	for i in emon._intent.size():
+		entries.append({"priority": _action_priority(emon._intent[i].skill), "index": i, "action": emon._intent[i]})
+	entries.sort_custom(func(a, b): return a.priority < b.priority or (a.priority == b.priority and a.index < b.index))
+	emon._intent = entries.map(func(e): return e.action)
+
+func _action_priority(skill: Dictionary) -> int:
+	if skill.has("buff_stat"):
+		return 0
+	if not Skills.is_damage_skill(skill):
+		return 1
+	if skill.nature == ElementEffects.MUD:
+		return 2
+	return 3
 
 ## Ziele, die inzwischen K.O. oder gefangen sind, werden durch ein anderes lebendes Ziel ersetzt.
 func _retarget_intents() -> void:
