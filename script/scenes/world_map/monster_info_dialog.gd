@@ -105,5 +105,6 @@ func _right_side() -> Control:
 func _select_skill(index: int) -> void:
 	for i in _tiles.size():
 		_tiles[i].set_pressed_no_signal(i == index)
+	_detail_card.mon = _mon
 	_detail_card.skill = _mon._skills[index]
 	_detail_card.visible = true

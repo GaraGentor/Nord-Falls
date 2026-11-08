@@ -14,8 +14,6 @@ const MON_CARD := preload("res://script/scenes/battle/battle_mon_card.tscn")
 @export var enemy_cards: Container
 @export var own_cards: Container
 @export var name_label: Label
-## Überschrift "Stats für NAME Lv. X" statt nur Name und Stufe (im Kampf, wo die Karten schon Name und Stufe zeigen)
-@export var stats_title := false
 @export var element_chip: Control
 ## Seltenheit der Art, rechts neben dem Typ
 @export var rarity_chip: Control
@@ -24,9 +22,6 @@ const MON_CARD := preload("res://script/scenes/battle/battle_mon_card.tscn")
 @export var stats_grid: GridContainer
 @export var skill_grid: GridContainer
 @export var skill_info_container: Control
-
-@export var physical_texture: Texture2D
-@export var magic_texture: Texture2D
 
 ## optionales Bild des Monsters (Ei-Auswahl), im Kampf steht es auf dem Feld
 @export var monster_texture: TextureRect
@@ -59,10 +54,7 @@ func _highlight_card() -> void:
 func refresh() -> void:
 	if monster == null:
 		return
-	if stats_title:
-		name_label.text = tr("BATTLE_STATS_FOR").format({"mon": Helper.mon_battle_name(monster), "level": monster._level})
-	else:
-		name_label.text = "%s  Lv. %d" % [Helper.mon_battle_name(monster), monster._level]
+	name_label.text = "%s  Lv. %d" % [Helper.mon_battle_name(monster), monster._level]
 	name_label.self_modulate = Helper.color_by_mon(monster)
 	element_chip._init_color(monster)
 	if rarity_chip:
@@ -252,7 +244,7 @@ func _build_skill_list() -> void:
 			icon.material = Monmap.egg_material(Monmap.rarity_of(monster._name))
 			icon.tooltip_text = tr("EGG_SKILL_HINT")
 		elif known:
-			icon.texture = physical_texture if skill.damage_type == Enums.SKILL_DAMAGE_TYPE.PHYSICAL else magic_texture
+			icon.texture = Skills.kind_icon(skill)
 		skill_grid.add_child(icon)
 
 		# unbekannte Skills verraten Element (Farbe) und Stufe, damit man gezielt Monster jagen kann
@@ -278,8 +270,8 @@ func _build_skill_list() -> void:
 				if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 					_show_skill_info(skill))
 		skill_grid.add_child(skill_name)
-		for value in [skill.cost, skill.cooldown, skill.get("value", skill.get("damage", ""))]:
-			skill_grid.add_child(_label(Helper.format_number(value) if known else "?"))
+		for value in [Helper.format_number(skill.cost), Helper.format_number(skill.cooldown), Skills.power_text(skill, monster)]:
+			skill_grid.add_child(_label(value if known else "?"))
 
 func _label(text: String, color: Color = IronPlate.TEXT_COLOR) -> Label:
 	var label := Label.new()

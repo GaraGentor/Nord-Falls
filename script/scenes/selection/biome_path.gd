@@ -11,6 +11,7 @@ extends Control
 
 # nicht erreichte Biome (Endbildschirm) werden abgedunkelt
 const UNREACHED_MODULATE := Color(0.55, 0.55, 0.55, 0.85)
+const HOVER_MODULATE := Color(1.25, 1.25, 1.15)
 const GOLD := SkillDetailPopup.GOLD
 const DEPTH_FONT_SIZE := 14
 const NAME_FONT_SIZE := 18
@@ -103,6 +104,12 @@ func _create_biome(depth_index: int, mask: int) -> Control:
 	var holder := Control.new()
 	holder.custom_minimum_size = Vector2(0, node_height)
 	holder.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# Klick zeigt Stärken und Schwächen des Bioms, beim Drüberfahren hellt das Feld auf
+	holder.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	holder.tooltip_text = tr("BIOME_INFO_HINT")
+	holder.gui_input.connect(_on_biome_input.bind(depth_index, mask))
+	holder.mouse_entered.connect(func(): holder.modulate = HOVER_MODULATE)
+	holder.mouse_exited.connect(func(): holder.modulate = Color.WHITE)
 
 	var panel := PanelContainer.new()
 	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -121,6 +128,10 @@ func _create_biome(depth_index: int, mask: int) -> Control:
 
 	_fields.append({"panel": panel, "plate": plate, "color": color})
 	return holder
+
+func _on_biome_input(event: InputEvent, depth_index: int, mask: int) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		BiomeInfoDialog.open(self, mask, depth_index)
 
 func _create_label(text: String, font_size: int, color: Color) -> Label:
 	var label := Label.new()

@@ -89,6 +89,13 @@ func _ready() -> void:
 	Relics.relics_changed.connect(refresh_walkable_nodes)
 
 	show_biome()
+	# Klick auf ein Biom der Route bzw. das aktuelle Biom zeigt seine Stärken und Schwächen
+	biome_path_label.meta_clicked.connect(func(meta): _open_biome_info(int(str(meta))))
+	biome_path_label.tooltip_text = tr("BIOME_INFO_HINT")
+	depth_level.tooltip_text = tr("BIOME_INFO_HINT")
+	depth_level.gui_input.connect(func(event: InputEvent):
+		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			_open_biome_info(State.map_level))
 	monster_shard_changed(State.boss_shards)
 	change_key_text(State.keys)
 	change_coupon_text(State.coupons)
@@ -530,7 +537,8 @@ func show_biome_path() -> void:
 	var passed := Color(IronPlate.TEXT_COLOR, 0.35).to_html()
 	for depth in State.biome_path.size():
 		var combo = ColorMap.get_combo(State.biome_path[depth])
-		var text = "%d %s" % [depth + 1, tr(combo.label)]
+		# jedes Biom ist ein Link auf seine Tiefe (siehe _open_biome_info)
+		var text = "[url=%d]%d %s[/url]" % [depth, depth + 1, tr(combo.label)]
 		if depth < State.map_level:
 			parts.append("[color=#%s]%s[/color]" % [passed, text])
 		elif depth == State.map_level:
@@ -538,6 +546,10 @@ func show_biome_path() -> void:
 		else:
 			parts.append("[color=#%s]%s[/color]" % [Color(combo.color).lightened(0.2).to_html(false), text])
 	biome_path_label.text = "[color=#%s]%s[/color] %s" % [SkillDetailPopup.GOLD.to_html(false), tr("MAP_HEADER_ROUTE"), (" [color=#%s]›[/color] " % passed).join(parts)]
+
+func _open_biome_info(depth: int) -> void:
+	if depth >= 0 and depth < State.biome_path.size():
+		BiomeInfoDialog.open(self, State.biome_path[depth], depth)
 
 func reset_animation_state(ele) -> void:
 	ele._ui_item.scale = Vector2(1,1)

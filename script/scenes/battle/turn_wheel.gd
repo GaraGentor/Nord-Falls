@@ -24,7 +24,10 @@ const SELECTION_RING_WIDTH := 3.0
 var debug = false
 
 @export var wheel: Control
+## Runde über dem Rad
 @export var round_label: Label
+## übrige Züge in der Mitte des Rads, nur solange ein eigenes Monster am Zug ist
+@export var moves_badge: Control
 @export var debug_button: Button
 
 var order: Array = []
@@ -40,6 +43,8 @@ var _rotation_tween: Tween
 func _ready() -> void:
 	debug_button.visible = debug
 	round_label.text = ""
+	moves_badge.tooltip_text = tr("BATTLE_MON_MOVES")
+	Events.refresh_ui_for_monster.connect(_refresh_moves)
 	if debug:
 		var mon1:Monster = Helper.generate_mons({"count": 1, "level": randi_range(10,30)})[0]
 		var mon2:Monster = Helper.generate_mons({"count": 1, "level": randi_range(10,30)})[0]
@@ -118,9 +123,20 @@ func _begin_turn() -> void:
 		return
 	current_mon = order[current_index]
 	_highlight()
+	moves_badge.visible = false
 	await _rotate_to(current_index)
 	if is_inside_tree():
+		if is_own(current_mon):
+			moves_badge.show_number(current_mon._computed_moves, false, true)
+			moves_badge.visible = true
 		turn_for.emit(current_mon)
+
+## Züge des eigenen Monsters am Zug, poppt nur auf, wenn sich die Zahl geändert hat
+## (refresh_ui_for_monster kommt für jedes Monster, z. B. auch beim Auffüllen zu Zugbeginn)
+func _refresh_moves() -> void:
+	if not moves_badge.visible or current_mon == null or moves_badge.label.text == str(current_mon._computed_moves):
+		return
+	moves_badge.show_number(current_mon._computed_moves, true, true)
 
 func _build_icons() -> void:
 	for icon in icons:

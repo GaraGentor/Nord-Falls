@@ -1,6 +1,9 @@
 Tasks:
 	
 > Konkretes Balancing der ELemente und Karten sowie mehr Mobs...
+	> Fähigkeit:
+		> Legendary shield, Nimmt den höchsten DEF Wert oder MDEF Wert und macht ihm (MOON) zum anderen shield
+		> Legendary shield, Nimmt den höchsten DEF Wert oder MDEF Wert und macht ihm (SUN) zum gleichen shield
 	> Status Effekte
 > Passiven
 	> Stat Switcher

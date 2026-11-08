@@ -348,8 +348,45 @@ const EGG_SKILL_CATEGORIES = [
 	{"key": "magic", "label": "EGG_CATEGORY_MAGIC", "icon": "res://assets/ui/icons/sparkle.svg"},
 	{"key": "shield", "label": "EGG_CATEGORY_SHIELD", "icon": "res://assets/ui/icons/battle/shield.svg"},
 	{"key": "buff", "label": "EGG_CATEGORY_BUFF", "icon": "res://assets/ui/icons/battle/buff.svg"},
-	{"key": "passive", "label": "EGG_CATEGORY_PASSIVE", "icon": "res://assets/ui/icons/parchment.svg"},
+	{"key": "passive", "label": "EGG_CATEGORY_PASSIVE", "icon": "res://assets/ui/icons/passive.svg"},
 ]
+
+const PHYSICAL_ICON := preload("res://assets/ui/icons/fist.svg")
+const MAGIC_ICON := preload("res://assets/ui/icons/sparkle.svg")
+const PASSIVE_ICON := preload("res://assets/ui/icons/passive.svg")
+
+## Icon der Skill-Art auf Karten und in Tabellen: passiv, sonst physisch (Faust) oder magisch.
+func kind_icon(skill: Dictionary) -> Texture2D:
+	if is_passive(skill):
+		return PASSIVE_ICON
+	return PHYSICAL_ICON if is_physical(skill) else MAGIC_ICON
+
+## Wert, der auf Karten und in Tabellen unter "Stärke" steht: bei Angriffen der Schaden gegen ein Ziel mit gleicher
+## (Sp.) Verteidigung und neutralem Element, bei Schilden die Schildstärke, beides aus den aktuellen Werten des Monsters.
+## Buffs, Passive und Skills ohne Monster zeigen ihren Grundwert. Ist der Wert eines Gegners noch nicht aufgedeckt,
+## steht der Prozentwert da, damit die Karte nichts verrät.
+func power_text(skill: Dictionary, mon: Monster) -> String:
+	var value = skill.get("value", skill.get("damage", ""))
+	if mon == null or not (value is float or value is int):
+		return Helper.format_number(value)
+	var physical := is_physical(skill)
+	var stat := ""
+	if is_damage_skill(skill):
+		stat = "atk" if physical else "s_atk"
+	elif egg_skill_category(skill) == "shield":
+		stat = "def" if physical else "s_def"
+	if stat == "":
+		return Helper.format_number(value)
+	if not _stat_visible(mon, stat):
+		return Helper.format_number(value) + "%"
+	var base: float = {"atk": mon.attack(), "s_atk": mon.s_attack(), "def": mon.defense(), "s_def": mon.s_defense()}[stat]
+	return str(int(ceilf(base * value / 100.0)))
+
+## Gegner im Kampf verraten ihre Werte erst, wenn sie aufgedeckt sind (siehe BattleInfoPanel._hidden_stats).
+func _stat_visible(mon: Monster, stat: String) -> bool:
+	if not State.enemy_mons.has(mon):
+		return true
+	return State.is_mon_known(mon._name) or Relics.works("all_stats") or State.is_mon_stat_revealed(mon._name, stat)
 
 func egg_skill_category(skill: Dictionary) -> String:
 	if is_passive(skill):

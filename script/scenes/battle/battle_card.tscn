@@ -1,9 +1,8 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://script/scenes/battle/battle_card.gd" id="1_card"]
 [ext_resource type="Theme" uid="uid://bqwc2gott07le" path="res://script/ui/materials/battle_labels.tres" id="3_theme"]
 [ext_resource type="Texture2D" uid="uid://yg6oxnmiu0pd" path="res://assets/ui/icons/fist.svg" id="4_phys"]
-[ext_resource type="Texture2D" uid="uid://djt3q5aymms0i" path="res://assets/ui/icons/sparkle.svg" id="5_magic"]
 [ext_resource type="PackedScene" path="res://script/ui/moves_badge/moves_badge.tscn" id="6_moves"]
 
 [node name="BattleCard" type="PanelContainer" node_paths=PackedStringArray("name_label", "cost_badge", "value_label", "type_icon", "description_label")]
@@ -17,8 +16,6 @@ cost_badge = NodePath("MarginContainer/VBoxContainer/TopRow/CostBadge")
 value_label = NodePath("MarginContainer/VBoxContainer/BottomRow/ValueLabel")
 type_icon = NodePath("MarginContainer/VBoxContainer/TopRow/TypeIcon")
 description_label = NodePath("MarginContainer/VBoxContainer/DescriptionLabel")
-physical_texture = ExtResource("4_phys")
-magic_texture = ExtResource("5_magic")
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 2

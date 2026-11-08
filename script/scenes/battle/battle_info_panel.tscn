@@ -6,8 +6,6 @@
 [ext_resource type="Script" path="res://script/ui/shader/iron_plate.gd" id="15_plate"]
 [ext_resource type="FontFile" uid="uid://cbavibkhidesl" path="res://script/ui/fonts/pxelfont/PixelifySans-VariableFont_wght.ttf" id="5_font"]
 [ext_resource type="Script" path="res://script/scenes/battle/skill_info_scroll_container.gd" id="6_skillinfo"]
-[ext_resource type="Texture2D" uid="uid://yg6oxnmiu0pd" path="res://assets/ui/icons/fist.svg" id="7_phys"]
-[ext_resource type="Texture2D" uid="uid://djt3q5aymms0i" path="res://assets/ui/icons/sparkle.svg" id="8_magic"]
 [ext_resource type="PackedScene" uid="uid://owmyxu3qq3so" path="res://script/ui/element_chip/element_chip.tscn" id="9_chip"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_plate"]
@@ -29,15 +27,12 @@ script = ExtResource("1_info")
 turn_wheel = NodePath("MarginContainer/VBoxContainer/MonRow/TurnWheel")
 enemy_cards = NodePath("MarginContainer/VBoxContainer/MonRow/EnemyCards")
 own_cards = NodePath("MarginContainer/VBoxContainer/MonRow/OwnCards")
-name_label = NodePath("MarginContainer/VBoxContainer/NameLabel")
+name_label = NodePath("MarginContainer/VBoxContainer/TypeRow/NameLabel")
 element_chip = NodePath("MarginContainer/VBoxContainer/TypeRow/ElementChip")
 rarity_chip = NodePath("MarginContainer/VBoxContainer/TypeRow/RarityChip")
 stats_grid = NodePath("MarginContainer/VBoxContainer/StatsPanel/MarginContainer/StatsGrid")
 skill_grid = NodePath("MarginContainer/VBoxContainer/SkillPanel/ScrollContainer/MarginContainer/SkillGrid")
 skill_info_container = NodePath("MarginContainer/VBoxContainer/SkillPanel/SkillInfo")
-stats_title = true
-physical_texture = ExtResource("7_phys")
-magic_texture = ExtResource("8_magic")
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 1
@@ -67,7 +62,7 @@ theme_override_constants/separation = 7
 alignment = 1
 
 [node name="TurnWheel" parent="MarginContainer/VBoxContainer/MonRow" instance=ExtResource("2_wheel")]
-custom_minimum_size = Vector2(0, 230)
+custom_minimum_size = Vector2(0, 250)
 layout_mode = 2
 size_flags_horizontal = 3
 
@@ -77,18 +72,19 @@ layout_mode = 2
 theme_override_constants/separation = 7
 alignment = 1
 
-[node name="NameLabel" type="Label" parent="MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("5_font")
-theme_override_font_sizes/font_size = 22
-text = "[NAME]"
-horizontal_alignment = 1
-
 [node name="TypeRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 size_flags_vertical = 0
 theme_override_constants/separation = 16
+alignment = 1
+
+[node name="NameLabel" type="Label" parent="MarginContainer/VBoxContainer/TypeRow"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5_font")
+theme_override_font_sizes/font_size = 22
+text = "[NAME]"
+vertical_alignment = 1
 
 [node name="ElementChip" parent="MarginContainer/VBoxContainer/TypeRow" instance=ExtResource("9_chip")]
 layout_mode = 2

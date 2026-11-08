@@ -232,6 +232,7 @@ func _label(text: String, font_size: int, color: Color) -> Label:
 	return label
 
 func _show_detail(skill: Dictionary, note: String, note_color: Color, locked: bool) -> void:
+	_detail_card.mon = _mon
 	_detail_card.skill = skill
 	_detail_card.modulate = Color(0.6, 0.6, 0.6) if locked else Color.WHITE
 	_detail_card.visible = true

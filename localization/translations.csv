@@ -47,7 +47,6 @@ BATTLE_MON_LEVEL,Lv,Lv
 BATTLE_MON_CATCH,Catch,Fang
 BATTLE_MON_MOVES,Moves,Züge
 BATTLE_MON_TYPE,Type,Typ
-BATTLE_STATS_FOR,Stats for {mon} Lv. {level},Stats für {mon} Lv. {level}
 BATTLE_SWITCH,Switch,Wechseln
 BATTLE_NEXT,next,weiter
 MONSTER_CLOSE_INFO,Close Info,Info schließen
@@ -635,3 +634,17 @@ TUTORIAL_ESSENCE_TITLE,Monster Essence,Monster Essenz
 TUTORIAL_ESSENCE,"Monster Essence (ME) is the currency. You earn it in fights and treasures and spend it in the shop, at the trainer, at the camp fire (healing) or on rerolls at the jailer. Keys open treasure chests, coupons give 25% off your next purchase.","Monster Essenz (ME) ist die Währung. Du bekommst sie in Kämpfen und Schätzen und gibst sie im Laden, beim Trainer, am Lagerfeuer (Heilung) oder fürs Neuwürfeln beim Kerkermeister aus. Schlüssel öffnen Schatzkisten, Gutscheine geben 25% Rabatt auf den nächsten Kauf."
 TUTORIAL_LOOT_TITLE,Loot,Beute
 TUTORIAL_LOOT,"After every fight the loot lies on the battlefield. Drag it into the bag, whatever stays behind is lost when you move on. Boxes, envelopes and trophy bags open the next time you enter the map.","Nach jedem Kampf liegt die Beute auf dem Schlachtfeld. Zieh sie in die Tasche, was liegen bleibt, ist beim Weitergehen verloren. Kisten, Couverts und Trophäen-Beutel öffnen sich beim nächsten Betreten der Karte."
+BIOME_INFO_HINT,Click: strengths & weaknesses of this biome,Klicken: Stärken & Schwächen dieses Bioms
+BIOME_INFO_ELEMENTS,Monsters here carry:,Monster hier tragen:
+BIOME_INFO_ATTACK,Your attacks,Deine Angriffe
+BIOME_INFO_STRONG,Hit hard,Treffen hart
+BIOME_INFO_WEAK,Bounce off,Prallen ab
+BIOME_INFO_NEUTRAL,Neutral,Neutral
+BIOME_INFO_DEFENSE,Your team,Dein Team
+BIOME_INFO_DANGER,In danger,In Gefahr
+BIOME_INFO_SAFE,Holds up well,Hält gut stand
+BIOME_INFO_BY,from {element},durch {element}
+BIOME_INFO_AGAINST,vs. {element},gegen {element}
+BIOME_INFO_NONE,none,keine
+BIOME_INFO_LEGEND,"Arrows point from the stronger to the weaker element. Green: your attacks deal +50 % per advantage. Red: attacks of the monsters here hit you harder. Each disadvantage halves the damage.","Pfeile zeigen vom stärkeren zum schwächeren Element. Grün: deine Angriffe machen +50 % pro Vorteil. Rot: Angriffe der Monster hier treffen dich härter. Jeder Nachteil halbiert den Schaden."
+BIOME_INFO_CLOSE,Close,Schließen

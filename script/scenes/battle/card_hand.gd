@@ -20,6 +20,7 @@ func show_mon(mon: Monster) -> void:
 		c.queue_free()
 	for skill in mon._skills:
 		var card = CARD_SCENE.instantiate()
+		card.mon = mon
 		card.skill = skill
 		card.hand = self
 		card_container.add_child(card)
