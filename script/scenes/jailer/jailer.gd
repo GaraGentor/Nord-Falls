@@ -300,6 +300,8 @@ func _build_stage() -> void:
 	_jailer_target = DropTarget.new()
 	_jailer_target.dialog = self
 	_jailer_target.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+	# hervorgehoben wird der Kerkermeister selbst
+	_jailer_target.outline = jailer_image.material
 	_stage.add_child(_jailer_target)
 
 	_bag = ShardBag.new()
@@ -528,6 +530,7 @@ func _hide_targets() -> void:
 	super()
 	if _bag:
 		_refresh_bag()
+		_jailer_target.set_highlight(false)
 
 ## Am Mauszeiger hängt die Träne selbst
 func _make_drag_preview(_card: RewardCard) -> Control:
@@ -559,11 +562,6 @@ func _drag_blocked(_card: RewardCard) -> String:
 func _show_blocked(reason: String) -> void:
 	_end_intro()
 	_bubble.say(reason)
-
-func _process(delta: float) -> void:
-	super(delta)
-	var over := _dragged != null and _jailer_target.get_global_rect().has_point(get_global_mouse_position())
-	jailer_image.modulate = HOVER_COLOR if over else Color.WHITE
 
 func _reroll() -> void:
 	if State.ep < REROLL_COST:

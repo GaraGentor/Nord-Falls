@@ -1,10 +1,9 @@
 [gd_scene format=3 uid="uid://bkfsbhixef0u2"]
 
 [ext_resource type="Script" uid="uid://ds7jr0mn6eo5w" path="res://script/ui/moves_badge/moves_badge.gd" id="1_badge"]
-[ext_resource type="PackedScene" uid="uid://bn6ftiu7fy046" path="res://script/ui/moves_badge/moves_particles_view.tscn" id="2_particles"]
 
-[node name="MovesBadge" type="Control" unique_id=1927242705 node_paths=PackedStringArray("label", "particles")]
-custom_minimum_size = Vector2(40, 32)
+[node name="MovesBadge" type="Control" unique_id=1927242705 node_paths=PackedStringArray("label", "rune")]
+custom_minimum_size = Vector2(42, 39)
 layout_mode = 3
 anchors_preset = 0
 size_flags_horizontal = 3
@@ -12,22 +11,31 @@ size_flags_vertical = 3
 mouse_filter = 1
 script = ExtResource("1_badge")
 label = NodePath("Label")
-particles = NodePath("Particles")
+rune = NodePath("Rune")
 
-[node name="Particles" parent="." unique_id=1947679836 instance=ExtResource("2_particles")]
-layout_mode = 0
-
-[node name="Label" type="Label" parent="." unique_id=218063445]
+[node name="Rune" type="ColorRect" parent="." unique_id=1947679836]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="." unique_id=218063445]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -2.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.95, 0.85, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 7
-theme_override_font_sizes/font_size = 24
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 20
 text = "1"
 horizontal_alignment = 1
 vertical_alignment = 1

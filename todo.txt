@@ -1,1 +1,14 @@
 Ziel ist es, alle "Highlight Effekt" gleich zu haben...
+Im Trainer, Laden und Kerkermeister sind für die NPC Bilder andere Effekte wie für die Monster.
+Das soll alles einheitlich sein, am besten gefällt mir der Goldene Rahmen.
+Geh die Liste durch
+- Beim Trainer müssen es die Monster sein.
+- Im Laden muss es der Monster Rahmen sein.
+- Im Lagerfeuer muss es das Feuer sein.
+- Im Kerkermeister muss es der NPC sein.
+- Beim Schatz öffnen kann die Tasche ohne den Rahmen da stehen. Hier soll dann auch nur die Tasche gehighlighted werden
+- Beim Relik öffnen kann die Tasche ohne den Rahmen da stehen. Hier soll dann auch nur die Tasche gehighlighted werden
+- Bei der Fähigkeiten Auswahl kann der Rahmen Gold werden wo das monster drin steckt mit den Stats.
+- Im Void kann die Tasche auch Ohne Rahmen da sein und selbst den goldenen rahmen bekommen (also die Tasche)
+
+- Im Kampf kann es derzeit so bleiben, da das dort nicht der fokus sein soll.

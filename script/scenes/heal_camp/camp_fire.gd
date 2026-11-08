@@ -8,6 +8,7 @@ extends Control
 @export var glow: Control
 @export var embers: CPUParticles2D
 @export var eyes: Control
+@export var logs: Control
 
 const OUTER_FLICKER := 0.09
 const INNER_FLICKER := 0.14
@@ -29,8 +30,13 @@ const BLINK_CLOSED := 0.1
 var _speed := 1.0
 var _growth := 1.0
 var _calm_down: Tween
+## eigenes Material der äußeren Flamme und der Scheite, es trägt den goldenen Umriss (set_gold)
+var _outline_material: ShaderMaterial
 
 func _ready() -> void:
+	_outline_material = outer_flame.material.duplicate()
+	outer_flame.material = _outline_material
+	logs.material = _outline_material
 	_flicker(outer_flame, OUTER_FLICKER)
 	_flicker(inner_flame, INNER_FLICKER)
 	_pulse_glow()
@@ -46,6 +52,10 @@ func eat() -> void:
 	_calm_down.tween_interval(FED_SECONDS)
 	_calm_down.tween_property(self, "_growth", 1.0, SHRINK_SECONDS).set_trans(Tween.TRANS_SINE)
 	_calm_down.tween_callback(_set_speed.bind(1.0))
+
+## Goldener Umriss ums Feuer: die Essenz in der Hand schwebt darüber
+func set_gold(gold: bool) -> void:
+	RewardDialog.set_outline(_outline_material, gold)
 
 ## So viel höher als sonst reichen die Flammen gerade
 func flame_lift() -> float:

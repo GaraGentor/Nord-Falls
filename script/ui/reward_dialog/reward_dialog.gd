@@ -37,7 +37,6 @@ const CLICK_MAX_MOVE := 10.0
 const FONT_THEME = preload("res://script/ui/materials/pixel_font_theme.tres")
 const LABEL_THEME = preload("res://script/ui/materials/battle_labels.tres")
 const BAG_ICON = preload("res://assets/ui/icons/bag.svg")
-const HOVER_COLOR := Color(1.3, 1.3, 1.0)
 const LOCKED_COLOR := Color(0.45, 0.45, 0.45)
 const SOLD_ALPHA := 0.35
 const BUTTON_THEME = preload("res://script/scenes/battle/flat_button_theme.tres")
@@ -101,6 +100,17 @@ class DropTarget extends PanelContainer:
 	var stats: StatsGrid
 	## optional: Typ des Monsters, zeigt beim Ziehen die Änderung durch einen Trank
 	var type_row: HBoxContainer
+	## Platte des Ziels, ihr Rand wird beim Hervorheben golden
+	var plate: IronPlate
+	## Ziele ohne Platte (Tasche, Verkäufer): eigenes Material des Bildes, es bekommt den goldenen Umriss
+	var outline: ShaderMaterial
+
+	## Einheitliche Hervorhebung, solange etwas Passendes darüber gezogen wird: goldener Rahmen bzw. Umriss
+	func set_highlight(on: bool) -> void:
+		if plate:
+			plate.set_rim(SkillDetailPopup.GOLD if on else IronPlate.RIM)
+		if outline:
+			RewardDialog.set_outline(outline, on)
 
 	func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 		return not locked and dialog._dragged != null and is_same(data, dialog._dragged.drag)
@@ -399,6 +409,10 @@ func mark_sold(card: RewardCard) -> void:
 	card.modulate.a = SOLD_ALPHA
 	card.mouse_default_cursor_shape = Control.CURSOR_ARROW
 
+## Goldener Umriss eines Bildes mit Pixel-Material (living_pixels / monster_living), die Hervorhebung überall
+static func set_outline(material: Material, on: bool) -> void:
+	(material as ShaderMaterial).set_shader_parameter("outline_color", SkillDetailPopup.GOLD if on else OpenBag.NO_OUTLINE)
+
 static func texture_icon(texture: Texture2D, color: Color = Color.WHITE) -> Control:
 	var icon := TextureRect.new()
 	icon.texture = texture
@@ -626,10 +640,19 @@ func _add_target(target_title: String, icon: Control, mon: Variant) -> void:
 	target.size_flags_vertical = Control.SIZE_EXPAND_FILL
 
 	target.box = VBoxContainer.new()
-	IronPlate.frame(target, target.box, 8, 8)
+	var label := Label.new()
+	if mon == null:
+		# die Tasche steht ohne Platte da, hervorgehoben wird sie selbst
+		target.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+		target.add_child(target.box)
+		target.outline = icon.material.duplicate()
+		icon.material = target.outline
+		label.add_theme_color_override("font_outline_color", Color.BLACK)
+		label.add_theme_constant_override("outline_size", 6)
+	else:
+		target.plate = IronPlate.frame(target, target.box, 8, 8)
 	icon.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	target.box.add_child(icon)
-	var label := Label.new()
 	label.text = target_title
 	label.add_theme_color_override("font_color", IronPlate.TEXT_COLOR)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -672,6 +695,7 @@ func _build_targets(card: RewardCard) -> void:
 func _lock_targets() -> void:
 	for target in _fixed_targets:
 		target.locked = true
+		target.set_highlight(false)
 		# Werte und Typ sollen auch vor dem Ziehen lesbar sein
 		target.modulate = Color.WHITE if target.stats or target.type_row else LOCKED_COLOR
 		if target.stats:
@@ -708,10 +732,8 @@ func _process(_delta: float) -> void:
 	var hovered: DropTarget = null
 	for target: DropTarget in _drop_targets():
 		var over := target.get_global_rect().has_point(mouse)
-		if target.locked:
-			target.modulate = LOCKED_COLOR
-		else:
-			target.modulate = HOVER_COLOR if over else Color.WHITE
+		target.modulate = LOCKED_COLOR if target.locked else Color.WHITE
+		target.set_highlight(over and not target.locked)
 		if over:
 			hovered = target
 		if target.stats:

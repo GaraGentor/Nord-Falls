@@ -94,15 +94,14 @@ stretch_mode = 5
 
 [node name="MovesBadge" parent="Margin/Box/Top/Text/Info" instance=ExtResource("6_moves")]
 visible = false
-custom_minimum_size = Vector2(20, 16)
+custom_minimum_size = Vector2(26, 24)
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 4
-particle_range = 0.5
 
-[node name="Label" parent="Margin/Box/Top/Text/Info/MovesBadge" index="1"]
-theme_override_constants/outline_size = 5
-theme_override_font_sizes/font_size = 16
+[node name="Label" parent="Margin/Box/Top/Text/Info/MovesBadge"]
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 13
 
 [node name="HpBar" type="Control" parent="Margin/Box"]
 custom_minimum_size = Vector2(0, 14)

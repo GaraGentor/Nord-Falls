@@ -20,6 +20,8 @@ class PlateMon extends RewardDialog.DropTarget:
 	var chips: HBoxContainer
 	var _press_pos := Vector2.ZERO
 	var _tween: Tween
+	var _selected := false
+	var _highlighted := false
 
 	func _gui_input(event: InputEvent) -> void:
 		if not event is InputEventMouseButton or event.button_index != MOUSE_BUTTON_LEFT:
@@ -29,8 +31,17 @@ class PlateMon extends RewardDialog.DropTarget:
 		elif event.position.distance_to(_press_pos) < RewardDialog.CLICK_MAX_MOVE:
 			on_click.call()
 
+	## Kein Rahmen: das Monster selbst bekommt den goldenen Umriss, wie beim Auswählen
+	func set_highlight(on: bool) -> void:
+		_highlighted = on
+		_show_outline()
+
+	func _show_outline() -> void:
+		icon.material = Monmap.monster_selected_material if _selected or _highlighted else Monmap.MONSTER_MATERIAL
+
 	func set_selected(selected: bool) -> void:
-		icon.material = Monmap.monster_selected_material if selected else Monmap.MONSTER_MATERIAL
+		_selected = selected
+		_show_outline()
 		if _tween:
 			_tween.kill()
 		_tween = create_tween()
@@ -365,6 +376,7 @@ func _hide_targets() -> void:
 	for plate in _plates:
 		plate.locked = false
 		plate.modulate = Color.WHITE
+		plate.set_highlight(false)
 	_show_missing_elements(_focused_card)
 
 func _drop_targets() -> Array:

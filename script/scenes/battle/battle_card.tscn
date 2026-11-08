@@ -38,16 +38,15 @@ layout_mode = 2
 mouse_filter = 2
 
 [node name="CostBadge" parent="MarginContainer/VBoxContainer/TopRow" instance=ExtResource("6_moves")]
-custom_minimum_size = Vector2(24, 26)
+custom_minimum_size = Vector2(30, 28)
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 4
 mouse_filter = 2
-particle_range = 0.65
 
-[node name="Label" parent="MarginContainer/VBoxContainer/TopRow/CostBadge" index="1"]
-theme_override_constants/outline_size = 6
-theme_override_font_sizes/font_size = 22
+[node name="Label" parent="MarginContainer/VBoxContainer/TopRow/CostBadge"]
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 16
 
 [node name="TypeIcon" type="TextureRect" parent="MarginContainer/VBoxContainer/TopRow"]
 custom_minimum_size = Vector2(22, 22)

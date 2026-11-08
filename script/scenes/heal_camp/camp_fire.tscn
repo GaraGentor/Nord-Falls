@@ -24,7 +24,7 @@ fill_to = Vector2(1, 0.5)
 [sub_resource type="Gradient" id="Gradient_embers"]
 colors = PackedColorArray(1, 0.75, 0.25, 1, 1, 0.3, 0.05, 0)
 
-[node name="CampFire" type="Control" node_paths=PackedStringArray("outer_flame", "inner_flame", "glow", "embers", "eyes")]
+[node name="CampFire" type="Control" node_paths=PackedStringArray("outer_flame", "inner_flame", "glow", "embers", "eyes", "logs")]
 custom_minimum_size = Vector2(300, 408)
 layout_mode = 3
 anchors_preset = 0
@@ -36,6 +36,7 @@ inner_flame = NodePath("InnerFlame")
 glow = NodePath("Glow")
 embers = NodePath("EmberOrigin/Embers")
 eyes = NodePath("InnerFlame/Eyes")
+logs = NodePath("Logs")
 
 [node name="Glow" type="TextureRect" parent="."]
 material = SubResource("CanvasItemMaterial_glow")

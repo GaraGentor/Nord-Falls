@@ -33,7 +33,7 @@ egg_skill_overview = true
 name_label = NodePath("MarginContainer/VBoxContainer/NameLabel")
 element_chip = NodePath("MarginContainer/VBoxContainer/TypeRow/ElementChip")
 rarity_chip = NodePath("MarginContainer/VBoxContainer/TypeRow/RarityChip")
-moves_badge = NodePath("MarginContainer/VBoxContainer/TypeRow/MovesBadge")
+moves_badge = NodePath("MarginContainer/VBoxContainer/MovesBadge")
 stats_grid = NodePath("MarginContainer/VBoxContainer/StatsPanel/MarginContainer/StatsGrid")
 skill_grid = NodePath("MarginContainer/VBoxContainer/SkillPanel/ScrollContainer/MarginContainer/SkillGrid")
 skill_info_container = NodePath("MarginContainer/VBoxContainer/SkillPanel/SkillInfo")
@@ -70,6 +70,11 @@ layout_mode = 2
 expand_mode = 1
 stretch_mode = 5
 
+[node name="MovesBadge" parent="MarginContainer/VBoxContainer" instance=ExtResource("11_moves")]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+
 [node name="TypeRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
@@ -80,9 +85,6 @@ theme_override_constants/separation = 16
 layout_mode = 2
 
 [node name="RarityChip" parent="MarginContainer/VBoxContainer/TypeRow" instance=ExtResource("9_chip")]
-layout_mode = 2
-
-[node name="MovesBadge" parent="MarginContainer/VBoxContainer/TypeRow" instance=ExtResource("11_moves")]
 layout_mode = 2
 
 [node name="StatsPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]

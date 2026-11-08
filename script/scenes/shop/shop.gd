@@ -198,7 +198,7 @@ class MonField extends RewardDialog.DropTarget:
 		size = FIELD_SIZE
 		var box := VBoxContainer.new()
 		box.add_theme_constant_override("separation", 2)
-		IronPlate.frame(self, box, 10, 5)
+		plate = IronPlate.frame(self, box, 10, 5)
 
 		var top := HBoxContainer.new()
 		top.add_theme_constant_override("separation", 10)
@@ -282,6 +282,9 @@ class ShopBag extends RewardDialog.DropTarget:
 	var money: Label
 	var _art: OpenBag
 	var _pop: Tween
+	## angeklickte Ware gehört in die Tasche / gezogene Ware schwebt darüber
+	var _preview := false
+	var _hovered := false
 
 	func _init(owner_dialog: RewardDialog) -> void:
 		dialog = owner_dialog
@@ -301,9 +304,15 @@ class ShopBag extends RewardDialog.DropTarget:
 	func covers(global_point: Vector2) -> bool:
 		return get_global_rect().has_point(global_point)
 
-	## Golden, solange Ware für die Tasche gezogen wird oder angeklickt ist
+	## Golden, solange angeklickte Ware in die Tasche gehört
 	func set_gold(gold: bool) -> void:
-		_art.set_gold(gold)
+		_preview = gold
+		_art.set_gold(_preview or _hovered)
+
+	## Golden, solange Ware für die Tasche darüber gezogen wird
+	func set_highlight(on: bool) -> void:
+		_hovered = on
+		_art.set_gold(_preview or _hovered)
 
 	func celebrate() -> void:
 		if _pop:
@@ -571,7 +580,8 @@ func _update_previews() -> void:
 	var buyers := [] if drag.is_empty() or into_bag else _buyers(drag)
 	for field in _mon_fields:
 		field.show_preview(drag if buyers.has(field.mon) else {})
-	_bag.set_gold(into_bag)
+	# beim Ziehen leuchtet die Tasche erst, wenn die Ware darüber schwebt (set_highlight)
+	_bag.set_gold(into_bag and _dragged == null)
 
 ## Monster, die diese Ware bekommen können
 func _buyers(drag: Dictionary) -> Array:
@@ -681,6 +691,7 @@ func _hide_targets() -> void:
 	for target in _drop_targets():
 		target.locked = false
 		target.modulate = Color.WHITE
+		target.set_highlight(false)
 	_update_previews()
 
 func _drop_targets() -> Array:
@@ -696,14 +707,3 @@ func _make_drag_preview(card: RewardCard) -> Control:
 	var holder := Control.new()
 	holder.add_child(art)
 	return holder
-
-## Ziel unter der gezogenen Ware hervorheben; was sich ändert, zeigen die Monster selbst
-func _process(_delta: float) -> void:
-	if _dragged == null:
-		return
-	var mouse := get_global_mouse_position()
-	for target in _drop_targets():
-		if target.locked:
-			target.modulate = LOCKED_COLOR
-		else:
-			target.modulate = HOVER_COLOR if target.covers(mouse) else Color.WHITE

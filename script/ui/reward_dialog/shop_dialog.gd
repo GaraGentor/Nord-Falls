@@ -78,8 +78,9 @@ var _price_labels := {}
 var _coupon_active := false
 var _coupon_stack: CouponStack
 var _coupon_target: CouponTarget
-## Bild des Verkäufers, leuchtet beim Ziehen eines Gutscheins golden
+## Bild des Verkäufers, bekommt den goldenen Umriss, solange ein Gutschein darüber schwebt
 var _coupon_seller: TextureRect
+var _coupon_dragging := false
 
 ## Preis unter den Titel der Karte hängen. repeatable: bleibt nach dem Kauf im Angebot
 func set_price(card: RewardCard, price: int, repeatable := false) -> void:
@@ -122,9 +123,16 @@ func _coupons_changed(_new_val) -> void:
 	_money_changed(State.ep)
 
 func _set_coupon_dragged(dragged: bool) -> void:
+	_coupon_dragging = dragged
 	_coupon_target.mouse_filter = Control.MOUSE_FILTER_STOP if dragged else Control.MOUSE_FILTER_IGNORE
-	_coupon_seller.material.set_shader_parameter("outline_color", SkillDetailPopup.GOLD if dragged else OpenBag.NO_OUTLINE)
 	_coupon_stack.modulate.a = 0.4 if dragged else 1.0
+	if not dragged:
+		set_outline(_coupon_seller.material, false)
+
+func _process(delta: float) -> void:
+	super(delta)
+	if _coupon_dragging:
+		set_outline(_coupon_seller.material, _coupon_target.get_global_rect().has_point(get_global_mouse_position()))
 
 func _apply_coupon() -> void:
 	_coupon_active = true

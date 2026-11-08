@@ -258,11 +258,11 @@ func _show_money(ep: int) -> void:
 		stack.modulate = RewardDialog.LOCKED_COLOR if blocked else Color.WHITE
 		stack.mouse_default_cursor_shape = CURSOR_ARROW if blocked else CURSOR_DRAG
 
-## Das Feuer leuchtet auf, solange die Essenz darüber schwebt
+## Das Feuer bekommt den goldenen Umriss, solange die Essenz darüber schwebt
 func _process(_delta: float) -> void:
 	_place_bubble()
 	var over := get_viewport().gui_is_dragging() and fire.get_global_rect().has_point(get_global_mouse_position())
-	fire.modulate = RewardDialog.HOVER_COLOR if over else Color.WHITE
+	fire.set_gold(over)
 
 ## Ein neuer Bissen übernimmt die laufende Anzeige, damit schnelles Füttern nichts verschluckt
 func _heal_team(hp: int) -> void:
