@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://script/scenes/selection/starter_info_panel.tscn" id="7_f6ddp"]
 [ext_resource type="Script" uid="uid://bsftl68bgh2n1" path="res://script/scenes/selection/biome_path.gd" id="8_biome"]
 [ext_resource type="Theme" path="res://script/ui/materials/pixel_font_theme.tres" id="99_font_theme"]
+[ext_resource type="Script" path="res://script/scenes/selection/tutorial_panel.gd" id="9_tutorial"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_k0ik4"]
 shader = ExtResource("2_7l32t")
@@ -39,7 +40,7 @@ gradient = SubResource("Gradient_7ag31")
 fill_from = Vector2(0, 1)
 fill_to = Vector2(0.196581, 1)
 
-[node name="Control" type="Control" unique_id=114657079 node_paths=PackedStringArray("title_label", "go_button", "reroll_button", "info_panel", "biome_path")]
+[node name="Control" type="Control" unique_id=114657079 node_paths=PackedStringArray("title_label", "go_button", "reroll_button", "info_panel", "biome_path", "tutorial")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -55,6 +56,7 @@ go_button = NodePath("Selection/MarginContainer/VBoxContainer/Button2")
 reroll_button = NodePath("Selection/MarginContainer/VBoxContainer/RerollButton")
 info_panel = NodePath("UI/StarterInfoPanel")
 biome_path = NodePath("Selection/BiomePath")
+tutorial = NodePath("UI/Tutorial")
 
 [node name="Selection" type="Control" parent="." unique_id=224124060]
 layout_mode = 1
@@ -235,6 +237,15 @@ texture = SubResource("GradientTexture2D_p4ys2")
 [node name="StarterInfoPanel" parent="UI" unique_id=525460248 instance=ExtResource("7_f6ddp")]
 visible = false
 layout_mode = 1
+
+[node name="Tutorial" type="ScrollContainer" parent="UI"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("9_tutorial")
 
 [connection signal="gui_input" from="Selection/HBoxContainer/ColorRect1/TextureRect1" to="." method="_on_gui_input1"]
 [connection signal="gui_input" from="Selection/HBoxContainer/ColorRect2/TextureRect2" to="." method="_on_gui_input2"]

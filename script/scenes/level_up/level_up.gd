@@ -210,14 +210,22 @@ func _add_loot(texture: Texture2D, text: String, on_taken: Callable, art_materia
 		_loot_field.remove_child(loot)
 		loot.queue_free()
 		_hint_panel.visible = _loot_field.get_child_count() > 0
-	loot.drag_started.connect(_bag.art.set_gold.bind(true))
+	loot.drag_started.connect(_on_loot_drag_started)
 	_loot_field.add_child(loot)
 	return loot
+
+## Während des Ziehens fängt keine Beute den Drop ab, auch wenn sie über der Tasche liegt
+func _on_loot_drag_started() -> void:
+	_bag.art.set_gold(true)
+	for loot: Control in _loot_field.get_children():
+		loot.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 ## Verteilt die Beute zufällig auf dem Bild, frei von Hinweis, Tasche und anderer Beute.
 ## Bis dahin unsichtbar, denn deren Größen stehen erst nach dem ersten Layout fest.
 func _scatter_loot() -> void:
 	_loot_field.modulate.a = 0.0
+	# erst nach dem zweiten Frame stehen Hinweis und Tasche an ihrem endgültigen Platz
+	await get_tree().process_frame
 	await get_tree().process_frame
 	var area := Rect2(Vector2.ZERO, _loot_field.size).grow(-LOOT_EDGE_MARGIN)
 	var icons := _loot_field.get_children()
@@ -239,15 +247,16 @@ func _scatter_loot() -> void:
 			loot.set_anchor_and_offset(side, center.y, 0.0, true)
 	_loot_field.modulate.a = 1.0
 
-## Raster über der Fläche, zufällig sortiert: erst die Zellen, die weder Hinweis noch Tasche berühren, dann die übrigen.
-## So liegt die Beute verstreut, aber nie übereinander.
+## Raster über der Fläche, zufällig sortiert: nur Zellen, die weder Hinweis noch Tasche berühren.
+## Reichen sie nicht, liegt Beute eher übereinander als auf der Tasche (dann ginge nichts mehr hinein).
+## Nur wenn gar keine Zelle frei ist, kommen die übrigen dazu.
 func _free_cells(area: Rect2, min_cell: Vector2) -> Array[Rect2]:
 	var columns := maxi(floori(area.size.x / min_cell.x), 1)
 	var rows := maxi(floori(area.size.y / min_cell.y), 1)
 	var cell_size := area.size / Vector2(columns, rows)
 	var blockers: Array[Rect2] = []
 	for blocker: Control in [_hint_panel, _bag]:
-		blockers.append(Rect2(blocker.global_position - _loot_field.global_position, blocker.size))
+		blockers.append(Rect2(blocker.global_position - _loot_field.global_position, blocker.size).grow(LOOT_GAP))
 	var free: Array[Rect2] = []
 	var blocked: Array[Rect2] = []
 	for row in rows:
@@ -258,8 +267,9 @@ func _free_cells(area: Rect2, min_cell: Vector2) -> Array[Rect2]:
 			else:
 				free.append(cell)
 	free.shuffle()
-	blocked.shuffle()
-	free.append_array(blocked)
+	if free.is_empty():
+		blocked.shuffle()
+		return blocked
 	return free
 
 func _take_essence() -> void:
@@ -302,6 +312,7 @@ func _notification(what: int) -> void:
 		_bag.art.set_gold(false)
 		for loot in _loot_field.get_children():
 			loot.modulate.a = 1.0
+			loot.mouse_filter = Control.MOUSE_FILTER_STOP
 
 func _on_button_pressed() -> void:
 	# was nicht in der Tasche liegt, bleibt auf dem Schlachtfeld

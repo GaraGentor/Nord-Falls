@@ -18,6 +18,8 @@ var common_egg_crack = preload("res://assets/ui/eggs/common_2.png")
 ## Ansicht des gewählten Eis wie im Kampf: Name, Bild, Typ, Werte, Skills
 @export var info_panel: Control
 @export var biome_path: Control
+## Erklärt das Spiel am selben Platz, solange noch kein Ei gewählt ist
+@export var tutorial: Control
 
 var selected_egg: int = 0
 
@@ -61,6 +63,7 @@ func select_egg(index):
 		egg_rect(i).material = Monmap.egg_material(Monmap.rarity_of(mons[i]._name), i == index)
 
 	selected_egg = index
+	tutorial.visible = false
 	info_panel.visible = true
 	info_panel.monster = mons[index]
 
@@ -108,3 +111,4 @@ func _on_reroll_button_pressed() -> void:
 	# die alte Wahl gilt nicht mehr
 	go_button.disabled = true
 	info_panel.visible = false
+	tutorial.visible = true
