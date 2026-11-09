@@ -1,6 +1,7 @@
 Tasks:
 	
 > Konkretes Balancing der ELemente und Karten sowie mehr Mobs...
+PT 1 Done muss man testen.
 	> Fähigkeit:
 		> Legendary shield, Nimmt den höchsten DEF Wert oder MDEF Wert und macht ihm (MOON) zum anderen shield
 		> Legendary shield, Nimmt den höchsten DEF Wert oder MDEF Wert und macht ihm (SUN) zum gleichen shield
@@ -9,13 +10,10 @@ Tasks:
 	> Stat Switcher
 	> Mehr ideen...
 > Vill noch eins zwei mehr Relics
-> KI bisschen intelligenter machen
-> Bosse Implementieren
 > End Boss hinzufügen
 > Schwarze Tür dropped beim Endboss als loot, beim aufheben wird direkt ein neuer Endboss kampf getriggert mit dem Clue, dass dort der Endboss gefangen werden kann und der Run beendet wird ohne loot.
 > Was mit One Way Use Items?
 > EI Attacke für das erste mal Chaos erreicht (Meilenstein)
-> Direkte Wirkung anzeigen der Skills z.B.: 20% von 100 atk = 20 damage.
 > Battle animationen. (Slash Heal etc.)
 
 - Tutorial Checken obs fine ist?
