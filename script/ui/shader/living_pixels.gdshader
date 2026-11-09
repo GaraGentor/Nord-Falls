@@ -36,6 +36,10 @@ uniform vec4 outline_color : source_color = vec4(1.0, 1.0, 0.0, 0.0);
 uniform float outline_thickness : hint_range(0.0, 16.0) = 4.0;
 // Einfärbung nach Helligkeit (z. B. Eier nach Seltenheit), Alpha = Stärke, 0 = aus
 uniform vec4 tint_color : source_color = vec4(1.0, 1.0, 1.0, 0.0);
+// Halbtransparenz des Bilds behalten statt jedes Partikel deckend zu machen (z. B. Kampf-Effekte aus einem
+// SubViewport, siehe battle_vfx_layer.gd). Deren Farben liegen über transparentem Schwarz vormultipliziert vor
+// und werden hier zurückgerechnet.
+uniform bool keep_alpha = false;
 
 const float BAYER[16] = float[16](
 	0.0, 8.0, 2.0, 10.0,
@@ -86,6 +90,9 @@ void fragment() {
 			if (col.a < alpha_cutoff) {
 				continue;
 			}
+			if (keep_alpha) {
+				col.rgb /= max(col.a, 1e-4);
+			}
 			if (tint_color.a > 0.0) {
 				float lum = dot(col.rgb, vec3(0.299, 0.587, 0.114));
 				col.rgb = mix(col.rgb, tint_color.rgb * lum * 1.3, tint_color.a);
@@ -117,7 +124,7 @@ void fragment() {
 			if (max(d.x, d.y) < half_size && h2.w > best_prio) {
 				best_prio = h2.w;
 				float bright = 1.0 + flicker * (sin((k1 + 2.0) * t + h.y * TAU) * 0.6 + (j.w - 0.5) * 0.8);
-				best = vec4(col.rgb * bright, 1.0);
+				best = vec4(col.rgb * bright, keep_alpha ? col.a : 1.0);
 			}
 		}
 	}
@@ -145,6 +152,6 @@ void fragment() {
 		int bi = int(mod(dp.x, 4.0)) + int(mod(dp.y, 4.0)) * 4;
 		float threshold = (BAYER[bi] + 0.5) / 16.0 - 0.5;
 		vec3 rgb = floor(best.rgb * color_levels + 0.5 + threshold * dither_strength) / color_levels;
-		COLOR = vec4(clamp(rgb, 0.0, 1.0), 1.0) * vertex_color;
+		COLOR = vec4(clamp(rgb, 0.0, 1.0), best.a) * vertex_color;
 	}
 }

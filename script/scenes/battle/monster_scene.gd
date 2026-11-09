@@ -40,6 +40,7 @@ func _deal_damage(_mon: Monster) -> void:
 		printStuff()
 
 const BattleVfxScript := preload("res://script/scenes/battle/battle_vfx.gd")
+const BattleVfxLayer := preload("res://script/scenes/battle/battle_vfx_layer.gd")
 ## kurz nach dem Zusammenzucken des Angreifers, damit Angriff und Treffer nacheinander wirken
 const VFX_HIT_DELAY := 0.08
 
@@ -64,12 +65,9 @@ func _play_skill_vfx(_mon: Monster, skill: Dictionary, blocked: float) -> void:
 	else:
 		_spawn_vfx(BattleVfxScript.Kind.SHIELD if physical else BattleVfxScript.Kind.S_SHIELD)
 
+## Effekte laufen auf einer gemeinsamen Bühne über dem Monsterbild, mit "Lebende Pixel"-Shader (battle_vfx_layer.gd)
 func _spawn_vfx(kind: int, accent := Color.WHITE, delay := 0.0) -> void:
-	var vfx: Node2D = BattleVfxScript.new()
-	var center := _texture_offset() + texture_rect.size / 2.0
-	var vfx_radius := minf(texture_rect.size.x, texture_rect.size.y) * 0.4
-	vfx.setup(center, vfx_radius, kind, accent, delay)
-	add_child(vfx)
+	BattleVfxLayer.for_target(self, texture_rect).play(kind, accent, delay)
 
 const SUPER_EFFECTIVE_COLOR := Color(1.0, 0.55, 0.2)
 const NOT_EFFECTIVE_COLOR := Color(0.6, 0.65, 0.7)

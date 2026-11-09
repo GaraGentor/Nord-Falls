@@ -304,55 +304,80 @@ func _refresh_preview() -> void:
 ## Kampf-Effekte (BattleVfx) an einem Monster ansehen, ohne einen Kampf zu starten.
 ## Größe wie im Kampf: Radius = 40 % des Monsterbilds (siehe MonsterScene._spawn_vfx).
 const BATTLE_VFX := preload("res://script/scenes/battle/battle_vfx.gd")
-const VFX_STAGE_SIZE := Vector2(900, 330)
+const BATTLE_VFX_LAYER := preload("res://script/scenes/battle/battle_vfx_layer.gd")
 const VFX_TARGET_SIZE := Vector2(256, 256)
+## Platz um das Monster, damit überstehende Effekte (Brocken von oben, Funken) nicht in die Buttons ragen
+const VFX_STAGE_SIZE := Vector2(420, 420)
+## Buttons pro Reihe in der scrollbaren Liste links
+const VFX_COLUMNS := 3
+## Höhe der Liste, passt samt Titel und Steuerung oben in die 720 px hohe Ansicht
+const VFX_LIST_HEIGHT := 480
 ## Pause zwischen zwei Effekten bei ALLE NACHEINANDER
 const VFX_SEQUENCE_PAUSE := 1.0
 
+## Oben die Steuerung, darunter links die Kategorien zum Scrollen, rechts das Monster als Bühne
 func _build_vfx_page() -> void:
 	_vfx_page = VBoxContainer.new()
 	_vfx_page.add_theme_constant_override("separation", 12)
 	add_footer(_vfx_page)
 
+	var controls := HBoxContainer.new()
+	controls.add_theme_constant_override("separation", 12)
+	controls.add_child(_make_button("ZURÜCK", _show_page.bind(_main)))
+	controls.add_child(_make_button("ALLE NACHEINANDER", _play_all_vfx))
+	_vfx_view_button = _make_button("", _toggle_vfx_view)
+	controls.add_child(_vfx_view_button)
+	_vfx_page.add_child(controls)
 	_vfx_page.add_child(_make_header("VFX-Vorschau: Effekte am Monster wie im Kampf"))
+
+	var body := HBoxContainer.new()
+	body.add_theme_constant_override("separation", 16)
+	_vfx_page.add_child(body)
+
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size.y = VFX_LIST_HEIGHT
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	body.add_child(scroll)
+	var list := VBoxContainer.new()
+	list.add_theme_constant_override("separation", 8)
+	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(list)
+
+	var kinds = BATTLE_VFX.Kind
+	_add_section(list, "Physischer Hieb (in der Elementfarbe)", [
+		["HIEB ERDE", _play_vfx.bind(kinds.SLASH, Enums.MON_TYPES.EARTH)],
+		["HIEB FEUER", _play_vfx.bind(kinds.SLASH, Enums.MON_TYPES.FIRE)],
+		["HIEB WASSER", _play_vfx.bind(kinds.SLASH, Enums.MON_TYPES.WATER)],
+		["HIEB LUFT", _play_vfx.bind(kinds.SLASH, Enums.MON_TYPES.AIR)],
+	], VFX_COLUMNS)
+	_add_section(list, "Magische Angriffe", [
+		["FEUER", _play_vfx.bind(kinds.FIRE)],
+		["WASSER", _play_vfx.bind(kinds.WATER)],
+		["ERDE", _play_vfx.bind(kinds.EARTH)],
+		["LUFT", _play_vfx.bind(kinds.AIR)],
+		["MAGMA (KOMBI)", _play_vfx_kinds.bind(BATTLE_VFX.element_kinds(Enums.MON_TYPES.EARTH | Enums.MON_TYPES.FIRE))],
+	], VFX_COLUMNS)
+	_add_section(list, "Schilde", [
+		["SCHILD", _play_vfx.bind(kinds.SHIELD)],
+		["MAG. SCHILD", _play_vfx.bind(kinds.S_SHIELD)],
+		["SCHILD-TREFFER", _play_vfx.bind(kinds.SHIELD_HIT)],
+		["MAG. SCHILD-TREFFER", _play_vfx.bind(kinds.S_SHIELD_HIT)],
+	], VFX_COLUMNS)
+	_add_section(list, "Buffs", [
+		["BUFF", _play_vfx.bind(kinds.BUFF)],
+	], VFX_COLUMNS)
+
 	var stage := CenterContainer.new()
 	stage.custom_minimum_size = VFX_STAGE_SIZE
-	_vfx_page.add_child(stage)
+	stage.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	body.add_child(stage)
 	_vfx_target = TextureRect.new()
 	_vfx_target.custom_minimum_size = VFX_TARGET_SIZE
 	_vfx_target.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_vfx_target.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_vfx_target.material = Monmap.MONSTER_MATERIAL
 	stage.add_child(_vfx_target)
-
-	var kinds = BATTLE_VFX.Kind
-	_add_section(_vfx_page, "Physischer Hieb (in der Elementfarbe)", [
-		["HIEB ERDE", _play_vfx.bind(kinds.SLASH, Enums.MON_TYPES.EARTH)],
-		["HIEB FEUER", _play_vfx.bind(kinds.SLASH, Enums.MON_TYPES.FIRE)],
-		["HIEB WASSER", _play_vfx.bind(kinds.SLASH, Enums.MON_TYPES.WATER)],
-		["HIEB LUFT", _play_vfx.bind(kinds.SLASH, Enums.MON_TYPES.AIR)],
-	])
-	_add_section(_vfx_page, "Magische Angriffe, Schilde und Buff", [
-		["FEUER", _play_vfx.bind(kinds.FIRE)],
-		["WASSER", _play_vfx.bind(kinds.WATER)],
-		["ERDE", _play_vfx.bind(kinds.EARTH)],
-		["LUFT", _play_vfx.bind(kinds.AIR)],
-		["MAGMA (KOMBI)", _play_vfx_kinds.bind(BATTLE_VFX.element_kinds(Enums.MON_TYPES.EARTH | Enums.MON_TYPES.FIRE))],
-		["BUFF", _play_vfx.bind(kinds.BUFF)],
-		["SCHILD", _play_vfx.bind(kinds.SHIELD)],
-		["MAG. SCHILD", _play_vfx.bind(kinds.S_SHIELD)],
-		["SCHILD-TREFFER", _play_vfx.bind(kinds.SHIELD_HIT)],
-		["MAG. SCHILD-TREFFER", _play_vfx.bind(kinds.S_SHIELD_HIT)],
-	])
-
-	var row := HBoxContainer.new()
-	row.alignment = BoxContainer.ALIGNMENT_CENTER
-	row.add_theme_constant_override("separation", 12)
-	row.add_child(_make_button("ZURÜCK", _show_page.bind(_main)))
-	row.add_child(_make_button("ALLE NACHEINANDER", _play_all_vfx))
-	_vfx_view_button = _make_button("", _toggle_vfx_view)
-	row.add_child(_vfx_view_button)
-	_vfx_page.add_child(row)
 	_refresh_vfx_target()
 
 ## Erstes eigenes Monster, sonst das erste bekannte
@@ -367,11 +392,10 @@ func _refresh_vfx_target() -> void:
 	_vfx_view_button.text = "ANSICHT: HINTEN" if _vfx_back else "ANSICHT: VORNE"
 	Monmap.show_on(_vfx_target, _vfx_species(), VFX_TARGET_SIZE.x, _vfx_back)
 
+## Wie im Kampf über die Effekt-Bühne mit "Lebende Pixel"-Shader (battle_vfx_layer.gd)
 func _play_vfx(kind: int, nature := 0) -> void:
 	var accent := Color(ColorMap.get_combo(nature).color) if nature != 0 else Color.WHITE
-	var vfx: Node2D = BATTLE_VFX.new()
-	vfx.setup(_vfx_target.size / 2.0, minf(_vfx_target.size.x, _vfx_target.size.y) * 0.4, kind, accent)
-	_vfx_target.add_child(vfx)
+	BATTLE_VFX_LAYER.for_target(_vfx_target, _vfx_target).play(kind, accent)
 
 func _play_vfx_kinds(kinds: Array) -> void:
 	for kind in kinds:
@@ -396,10 +420,10 @@ func _refresh_start() -> void:
 	# ohne Fang und Gefallenen würde das Judgement sofort zurück zur Karte springen
 	_start_button.disabled = _picked.is_empty() and not _fallen_check.button_pressed
 
-func _add_section(parent: Control, title: String, entries: Array) -> GridContainer:
+func _add_section(parent: Control, title: String, entries: Array, columns := COLUMNS) -> GridContainer:
 	parent.add_child(_make_header(title))
 	var grid := GridContainer.new()
-	grid.columns = COLUMNS
+	grid.columns = columns
 	grid.add_theme_constant_override("h_separation", 8)
 	grid.add_theme_constant_override("v_separation", 8)
 	parent.add_child(grid)
