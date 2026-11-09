@@ -44,5 +44,8 @@ signal damage_animation_done(mon)
 # hit anim
 signal monster_hit_monster(from, to)
 
+# Effekt eines ausgespielten Skills am Ziel (Hieb, Element-Treffer, Schild, Buff), blocked = vom Schild abgefangener Schaden
+signal skill_vfx(mon, skill, blocked)
+
 # upgrade status to make them upgraded on the run
 signal mon_upgraded(mon_name)

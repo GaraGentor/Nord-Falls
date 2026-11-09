@@ -26,6 +26,7 @@ func _ready() -> void:
 	Events.monster_faints.connect(_remove_mon)
 	Events.mon_is_catched.connect(_remove_mon)
 	Events.intents_changed.connect(_refresh_intent)
+	Events.skill_vfx.connect(_play_skill_vfx)
 	var mons = State.mons if home_mons else State.enemy_mons
 	if mons.size() > mon_slot:
 		mon = mons[mon_slot]
@@ -37,6 +38,38 @@ func _ready() -> void:
 func _deal_damage(_mon: Monster) -> void:
 	if mon == _mon:
 		printStuff()
+
+const BattleVfxScript := preload("res://script/scenes/battle/battle_vfx.gd")
+## kurz nach dem Zusammenzucken des Angreifers, damit Angriff und Treffer nacheinander wirken
+const VFX_HIT_DELAY := 0.08
+
+# Effekte am Ziel eines Skills: physische Angriffe als Hieb in der Elementfarbe, magische je Element
+# (Feuer-Explosion, Wasser-Spritzer, Steinbrocken, Windwirbel), Schildtreffer, wenn der Schild etwas abfängt,
+# neue Schilde (physisch/magisch) und Buffs. Die passiven Element-Kräfte haben keine eigenen Effekte.
+func _play_skill_vfx(_mon: Monster, skill: Dictionary, blocked: float) -> void:
+	if mon != _mon or not is_inside_tree() or Skills.is_passive(skill):
+		return
+	var physical := Skills.is_physical(skill)
+	if Skills.is_damage_skill(skill):
+		if physical:
+			var accent := Color(ColorMap.get_combo(skill.nature).get("color", "#FFFFFF"))
+			_spawn_vfx(BattleVfxScript.Kind.SLASH, accent, VFX_HIT_DELAY)
+		else:
+			for kind in BattleVfxScript.element_kinds(skill.nature):
+				_spawn_vfx(kind, Color.WHITE, VFX_HIT_DELAY)
+		if blocked > 0:
+			_spawn_vfx(BattleVfxScript.Kind.SHIELD_HIT if physical else BattleVfxScript.Kind.S_SHIELD_HIT, Color.WHITE, VFX_HIT_DELAY)
+	elif skill.get("effect", "") == "buff":
+		_spawn_vfx(BattleVfxScript.Kind.BUFF)
+	else:
+		_spawn_vfx(BattleVfxScript.Kind.SHIELD if physical else BattleVfxScript.Kind.S_SHIELD)
+
+func _spawn_vfx(kind: int, accent := Color.WHITE, delay := 0.0) -> void:
+	var vfx: Node2D = BattleVfxScript.new()
+	var center := _texture_offset() + texture_rect.size / 2.0
+	var vfx_radius := minf(texture_rect.size.x, texture_rect.size.y) * 0.4
+	vfx.setup(center, vfx_radius, kind, accent, delay)
+	add_child(vfx)
 
 const SUPER_EFFECTIVE_COLOR := Color(1.0, 0.55, 0.2)
 const NOT_EFFECTIVE_COLOR := Color(0.6, 0.65, 0.7)

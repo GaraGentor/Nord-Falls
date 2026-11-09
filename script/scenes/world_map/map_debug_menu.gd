@@ -86,6 +86,11 @@ var _preview_page: VBoxContainer
 var _preview_images := {}
 var _preview_back := false
 var _preview_view_button: Button
+var _vfx_page: VBoxContainer
+## Monster auf der VFX-Seite, an dem die Effekte abgespielt werden
+var _vfx_target: TextureRect
+var _vfx_back := false
+var _vfx_view_button: Button
 
 func _ready() -> void:
 	set_accent(ACCENT)
@@ -99,6 +104,7 @@ func _ready() -> void:
 	_build_stats_page()
 	_build_relic_page()
 	_build_preview_page()
+	_build_vfx_page()
 	_show_page(_main)
 
 func _build_main() -> void:
@@ -147,6 +153,7 @@ func _build_main() -> void:
 	extras.add_child(_make_button("WERTE-VERTEILUNG ...", func(): _show_page(_stats_page)))
 	extras.add_child(_make_button("RELIKTE ...", func(): _show_page(_relic_page)))
 	extras.add_child(_make_button("MONSTER-VORSCHAU ...", func(): _show_page(_preview_page)))
+	extras.add_child(_make_button("VFX-VORSCHAU ...", func(): _show_page(_vfx_page)))
 
 	var close_button := _make_button("SCHLIESSEN", close)
 	close_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -294,8 +301,95 @@ func _refresh_preview() -> void:
 	for species in _preview_images:
 		Monmap.show_on(_preview_images[species], species, PREVIEW_IMAGE_SIZE.x, _preview_back)
 
+## Kampf-Effekte (BattleVfx) an einem Monster ansehen, ohne einen Kampf zu starten.
+## Größe wie im Kampf: Radius = 40 % des Monsterbilds (siehe MonsterScene._spawn_vfx).
+const BATTLE_VFX := preload("res://script/scenes/battle/battle_vfx.gd")
+const VFX_STAGE_SIZE := Vector2(900, 330)
+const VFX_TARGET_SIZE := Vector2(256, 256)
+## Pause zwischen zwei Effekten bei ALLE NACHEINANDER
+const VFX_SEQUENCE_PAUSE := 1.0
+
+func _build_vfx_page() -> void:
+	_vfx_page = VBoxContainer.new()
+	_vfx_page.add_theme_constant_override("separation", 12)
+	add_footer(_vfx_page)
+
+	_vfx_page.add_child(_make_header("VFX-Vorschau: Effekte am Monster wie im Kampf"))
+	var stage := CenterContainer.new()
+	stage.custom_minimum_size = VFX_STAGE_SIZE
+	_vfx_page.add_child(stage)
+	_vfx_target = TextureRect.new()
+	_vfx_target.custom_minimum_size = VFX_TARGET_SIZE
+	_vfx_target.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_vfx_target.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_vfx_target.material = Monmap.MONSTER_MATERIAL
+	stage.add_child(_vfx_target)
+
+	var kinds = BATTLE_VFX.Kind
+	_add_section(_vfx_page, "Physischer Hieb (in der Elementfarbe)", [
+		["HIEB ERDE", _play_vfx.bind(kinds.SLASH, Enums.MON_TYPES.EARTH)],
+		["HIEB FEUER", _play_vfx.bind(kinds.SLASH, Enums.MON_TYPES.FIRE)],
+		["HIEB WASSER", _play_vfx.bind(kinds.SLASH, Enums.MON_TYPES.WATER)],
+		["HIEB LUFT", _play_vfx.bind(kinds.SLASH, Enums.MON_TYPES.AIR)],
+	])
+	_add_section(_vfx_page, "Magische Angriffe, Schilde und Buff", [
+		["FEUER", _play_vfx.bind(kinds.FIRE)],
+		["WASSER", _play_vfx.bind(kinds.WATER)],
+		["ERDE", _play_vfx.bind(kinds.EARTH)],
+		["LUFT", _play_vfx.bind(kinds.AIR)],
+		["MAGMA (KOMBI)", _play_vfx_kinds.bind(BATTLE_VFX.element_kinds(Enums.MON_TYPES.EARTH | Enums.MON_TYPES.FIRE))],
+		["BUFF", _play_vfx.bind(kinds.BUFF)],
+		["SCHILD", _play_vfx.bind(kinds.SHIELD)],
+		["MAG. SCHILD", _play_vfx.bind(kinds.S_SHIELD)],
+		["SCHILD-TREFFER", _play_vfx.bind(kinds.SHIELD_HIT)],
+		["MAG. SCHILD-TREFFER", _play_vfx.bind(kinds.S_SHIELD_HIT)],
+	])
+
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 12)
+	row.add_child(_make_button("ZURÜCK", _show_page.bind(_main)))
+	row.add_child(_make_button("ALLE NACHEINANDER", _play_all_vfx))
+	_vfx_view_button = _make_button("", _toggle_vfx_view)
+	row.add_child(_vfx_view_button)
+	_vfx_page.add_child(row)
+	_refresh_vfx_target()
+
+## Erstes eigenes Monster, sonst das erste bekannte
+func _vfx_species() -> String:
+	return State.mons[0]._name if not State.mons.is_empty() else Monmap.mons[0].name
+
+func _toggle_vfx_view() -> void:
+	_vfx_back = not _vfx_back
+	_refresh_vfx_target()
+
+func _refresh_vfx_target() -> void:
+	_vfx_view_button.text = "ANSICHT: HINTEN" if _vfx_back else "ANSICHT: VORNE"
+	Monmap.show_on(_vfx_target, _vfx_species(), VFX_TARGET_SIZE.x, _vfx_back)
+
+func _play_vfx(kind: int, nature := 0) -> void:
+	var accent := Color(ColorMap.get_combo(nature).color) if nature != 0 else Color.WHITE
+	var vfx: Node2D = BATTLE_VFX.new()
+	vfx.setup(_vfx_target.size / 2.0, minf(_vfx_target.size.x, _vfx_target.size.y) * 0.4, kind, accent)
+	_vfx_target.add_child(vfx)
+
+func _play_vfx_kinds(kinds: Array) -> void:
+	for kind in kinds:
+		_play_vfx(kind)
+
+func _play_all_vfx() -> void:
+	var kinds = BATTLE_VFX.Kind
+	var sequence := [[kinds.SLASH, Enums.MON_TYPES.FIRE], [kinds.FIRE, 0], [kinds.WATER, 0], [kinds.EARTH, 0], [kinds.AIR, 0],
+		[kinds.SHIELD, 0], [kinds.SHIELD_HIT, 0], [kinds.S_SHIELD, 0], [kinds.S_SHIELD_HIT, 0], [kinds.BUFF, 0]]
+	for entry in sequence:
+		# Seite gewechselt oder Menü geschlossen: Abfolge abbrechen
+		if not is_inside_tree() or not _vfx_page.visible:
+			return
+		_play_vfx(entry[0], entry[1])
+		await get_tree().create_timer(VFX_SEQUENCE_PAUSE).timeout
+
 func _show_page(page: VBoxContainer) -> void:
-	for other in [_main, _fight_page, _picker, _egg_page, _stats_page, _relic_page, _preview_page]:
+	for other in [_main, _fight_page, _picker, _egg_page, _stats_page, _relic_page, _preview_page, _vfx_page]:
 		other.visible = other == page
 
 func _refresh_start() -> void:

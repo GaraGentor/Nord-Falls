@@ -9,6 +9,7 @@ func deal_damage(props):
 	var damage = props.mon.absorb_damage(full_damage, is_physical(props.skill), ElementEffects.shield_cost(props.skill))
 	# für Element-Effekte, die vom verursachten Schaden abhängen (Eis), siehe battle.gd _use_skill
 	props.dealt = props.get("dealt", 0.0) + damage
+	props.blocked = props.get("blocked", 0.0) + full_damage - damage
 	var multiplier = element_multiplier(props.skill.nature, props.mon._type)
 	print("lose:" + str(props.skill.value) + ":" + str(damage) + " (Element x" + str(multiplier) + ")")
 	Events.monster_hit_with_element.emit(props.mon, damage, multiplier, full_damage - damage)

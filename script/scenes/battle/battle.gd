@@ -326,6 +326,7 @@ func _use_skill(from: Monster, skill: Dictionary, target: Monster) -> void:
 					continue
 			var props := {"from": from, "skill": skill, "mon": mon}
 			skill.handle.call(props)
+			Events.skill_vfx.emit(mon, skill, props.get("blocked", 0.0))
 			var hit: float = props.get("dealt", 0.0)
 			dealt += hit
 			if hostile:
