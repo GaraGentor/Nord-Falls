@@ -673,3 +673,29 @@ STATUS_WEAKENED,Weakened,Geschwächt
 EFFECT_TEXT_STUNNED,Stunned!,Betäubt!
 EFFECT_TEXT_ERUPTION,Eruption!,Ausbruch!
 EFFECT_CHANCE_PREFIX,{chance}% chance - ,{chance}% Chance - 
+BOSS_RELIC_HEAL_MOSS,Healing Moss,Heilmösch
+BOSS_RELIC_HEAL_MOSS_DESC,Enemies heal for {value}% of the damage they deal.,"Gegner heilen sich um {value} % des Schadens, den sie zufügen."
+BOSS_RELIC_EMBER_FLOOR,Ember Floor,Glutboden
+BOSS_RELIC_EMBER_FLOOR_DESC,"At the start of every round, all your monsters lose {value}% of their max HP.","Zu Beginn jeder Runde verlieren alle deine Monster {value} % ihrer max. KP."
+BOSS_RELIC_FATE_MIRROR,Mirror of Fate,Fate-Spiegel
+BOSS_RELIC_FATE_MIRROR_DESC,"The damage an enemy deals becomes a shield of the same kind (physical or magic) on its next turn.","Der Schaden, den ein Gegner zufügt, wird in seinem nächsten Zug zum Schild gleicher Art (physisch oder magisch)."
+BOSS_RELIC_BONGOS,Bongos,Bongos
+BOSS_RELIC_BONGOS_DESC,"At the start of each turn, enemies alternately gain armor and magic armor ({value}% of their (Sp.) Defense).","Gegner bekommen zu Beginn jedes Zuges abwechselnd Rüstung und magische Rüstung ({value} % ihrer (Sp.) Verteidigung)."
+BOSS_RELIC_FOG_MACHINE,Fog Machine,Nebelmaschine
+BOSS_RELIC_FOG_MACHINE_DESC,Attacks against enemies have a {value}% chance to miss.,Angriffe auf Gegner verfehlen mit {value} % Wahrscheinlichkeit.
+BOSS_RELIC_SWIFT_WEASEL,Swift Weasel,Flinkes Wiesel
+BOSS_RELIC_SWIFT_WEASEL_DESC,"Enemies alternately act first and last: first in odd rounds, last in even rounds.","Gegner sind abwechselnd als Erste und als Letzte am Zug: in ungeraden Runden zuerst, in geraden zuletzt."
+BOSS_RELIC_MICROPHONE,Microphone,Mikrofon
+BOSS_RELIC_MICROPHONE_DESC,"In odd rounds every turn is skipped. Instead, every monster heals {value}% of its missing HP.","In ungeraden Runden fallen alle Züge aus. Stattdessen heilt sich jedes Monster um {value} % seiner fehlenden KP."
+BOSS_RELIC_MAGIC_THORNS,Magic Thorns,Magische Dornen
+BOSS_RELIC_MAGIC_THORNS_DESC,"Enemies reflect {value}% of the damage they take back to the attacker: physical damage in odd rounds, magic damage in even rounds.","Gegner werfen {value} % des erlittenen Schadens auf den Angreifer zurück: in ungeraden Runden physischen, in geraden magischen Schaden."
+BOSS_RELIC_INTRO_TITLE,Boss Relics,Boss-Relikte
+BOSS_RELIC_INTRO_HINT,They empower all enemies until the last one is defeated or caught.,"Sie stärken alle Gegner, bis der letzte besiegt oder gefangen ist."
+BOSS_RELIC_START,Let's go!,Los geht's!
+BOSS_RELIC_CLOSE,Close,Schließen
+BOSS_RELIC_BROKEN,You beat the boss so hard that its relic broke!,"Du hast den Boss so hart verprügelt, dass das Relikt dabei zerbrochen ist!"
+BOSS_RELIC_BROKEN_MANY,You beat the boss so hard that its relics broke!,"Du hast den Boss so hart verprügelt, dass die Relikte dabei zerbrochen sind!"
+BOSS_RELIC_FORGOTTEN,The boss was so dumb it left its relic lying on the ground.,Der Boss hat das Relikt durch seine Dummheit auf dem Boden vergessen.
+BOSS_RELIC_FORGOTTEN_MANY,The boss was so dumb it left its relics lying on the ground.,Der Boss hat die Relikte durch seine Dummheit auf dem Boden vergessen.
+BOSS_RELIC_MISS,Missed!,Verfehlt!
+BOSS_RELIC_SILENCED,Drowned out!,Übertönt!

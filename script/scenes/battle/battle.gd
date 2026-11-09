@@ -19,6 +19,7 @@ const GOLD_LOOT_PER_DEPTH := 5
 const BIOME_BOSS_SHARDS := 1
 const FINAL_BOSS_SHARDS := 3
 const NOISE_SHADER := preload("res://script/scenes/world_map/map_noise.gdshader")
+const BossRelicOverlayScript := preload("res://script/scenes/battle/boss_relic_overlay.gd")
 
 # ─────────────────────────
 # Gegner-KI (siehe ki_plan.txt): jede Kombination aus Skill und Ziel bekommt einen Score, gewürfelt wird mit
@@ -60,6 +61,15 @@ var active_mon: Monster
 ## Boss-Feld oder Biom-Boss: ein Sieg bringt eine Relic-Auswahl
 var is_boss_battle: bool = false
 
+## Vorstellung und Zerbrechen der Boss-Relikte, liegt über allem
+var _relic_overlay: BossRelicOverlayScript
+## Boss-Relikte des Kampfs am Rand des Kampffelds
+var _relic_bar: BossRelicBar
+## Szenenwechsel ist schon unterwegs: spätere K.O.-Meldungen ändern nichts mehr
+var _battle_over := false
+## Boss-Relikte, die gerade zerbrechen oder darauf warten
+var _pending_breaks := 0
+
 func _enter_tree() -> void:
 	_generate_battle()
 
@@ -92,9 +102,23 @@ func _ready() -> void:
 
 	# unsichtbar, blockiert aber Eingaben während der Gegner am Zug ist
 	$UI_Blocker.self_modulate = Color(1, 1, 1, 0)
-	turn_wheel.turn_for.connect(_on_turn_for)
 	card_hand.show_mon(State.mons[0])
+	_relic_bar = BossRelicBar.new()
+	$GameWindow.add_child(_relic_bar)
+	_relic_bar.pressed.connect(func(): _relic_overlay.play_intro(BossRelics.active, false))
+	_relic_overlay = BossRelicOverlayScript.new()
+	add_child(_relic_overlay)
+	# Boss-Relikte stellen sich vor, bevor die erste Runde beginnt
+	if not BossRelics.active.is_empty():
+		await _relic_overlay.play_intro(BossRelics.active)
+		if not is_inside_tree():
+			return
+	turn_wheel.round_started.connect(_on_round_started)
+	turn_wheel.turn_for.connect(_on_turn_for)
 	turn_wheel.start()
+
+func _on_round_started(_round_number: int) -> void:
+	BossRelics.on_round_started()
 
 ## Im schwarzen Infobereich zieht das Wetter des aktuellen Bioms durch, im selben Pixel-Look wie auf der Karte
 func _add_ambient() -> void:
@@ -116,6 +140,10 @@ func _is_own_turn() -> bool:
 func _on_turn_for(mon: Monster) -> void:
 	active_mon = mon
 	$UI_Blocker.visible = true
+	# ein zerbrechendes Boss-Relikt hält den Kampf an
+	await _relic_overlay.wait_idle()
+	if not is_inside_tree():
+		return
 	# Gift wirkt vor dem Zug, solange die Rüstung aus dem letzten Zug noch steht (start_turn lässt Schilde ablaufen)
 	if ElementEffects.tick_poison(mon):
 		await get_tree().create_timer(STATUS_TICK_TIME).timeout
@@ -125,6 +153,17 @@ func _on_turn_for(mon: Monster) -> void:
 	# am Gift gestorben: das Rad hat das Monster schon entfernt, weiter zum nächsten
 	if not mon.is_alive():
 		turn_wheel.next_mon()
+		return
+	# Boss-Relikte zu Zugbeginn (Bongos, Fate-Spiegel), nach dem Ablaufen der alten Schilde
+	BossRelics.on_turn_start(mon, turn_wheel.round_number)
+	# Mikrofon: in ungeraden Runden fällt jeder Zug aus, dafür heilt sich das Monster etwas.
+	# Gegner behalten ihren angekündigten Zug für die nächste Runde.
+	if BossRelics.silences_round(turn_wheel.round_number):
+		BossRelics.microphone_turn(mon)
+		await get_tree().create_timer(STUNNED_TIME).timeout
+		if not is_inside_tree():
+			return
+		_end_turn(mon)
 		return
 	# Paralyse: betäubt, der Zug endet sofort
 	if ElementEffects.rolls_paralysis(mon):
@@ -157,6 +196,9 @@ func _on_turn_for(mon: Monster) -> void:
 		if selected_mon == mon:
 			battle_info.refresh()
 		await get_tree().create_timer(ENEMY_ACTION_TIME).timeout
+		if not is_inside_tree():
+			return
+		await _relic_overlay.wait_idle()
 		if not is_inside_tree():
 			return
 	_plan_intent(mon)
@@ -208,6 +250,8 @@ func _exit_tree() -> void:
 	Events.mouse_event.disconnect(_catch_mouse_event)
 	Events.monster_faints.disconnect(_check_game_over)
 	Events.finish_catching.disconnect(_finish_catching)
+	# Boss-Relikte gelten nur für diesen Kampf
+	BossRelics.active = []
 	# Buffs sollen nach dem Kampf nicht in den Werten auf der Karte stehen bleiben
 	for mon in State.mons:
 		mon.reset_battle_state()
@@ -269,18 +313,24 @@ func _use_skill(from: Monster, skill: Dictionary, target: Monster) -> void:
 		repeats = 2
 		Events.monster_effect_text.emit(from, tr("EFFECT_TEXT_ERUPTION"), ElementEffects.ERUPTION_COLOR)
 	var dealt := 0.0
+	var hostile := not Skills.targets_friends(skill)
 	for _i in repeats:
 		for mon in targets:
 			if not mon.is_alive():
 				continue
 			# Angriffsanimation nur gegen Gegner
-			if not Skills.targets_friends(skill):
+			if hostile:
 				Events.monster_hit_monster.emit(_scene_for(from), _scene_for(mon))
+				# Boss-Relikt Nebelmaschine: der Angriff kann ins Leere gehen
+				if Skills.is_damage_skill(skill) and BossRelics.dodges(mon):
+					continue
 			var props := {"from": from, "skill": skill, "mon": mon}
 			skill.handle.call(props)
-			dealt += props.get("dealt", 0.0)
-			if not Skills.targets_friends(skill):
+			var hit: float = props.get("dealt", 0.0)
+			dealt += hit
+			if hostile:
 				ElementEffects.on_hit(from, mon, skill)
+				BossRelics.on_damage_dealt(from, mon, skill, hit, turn_wheel.round_number)
 	ElementEffects.on_cast(from, skill, dealt)
 	Skills.start_cooldown(skill)
 	Events.monster_status_changed.emit(from)
@@ -332,8 +382,24 @@ func _generate_battle():
 			mon._level += Skills.get_bounty(mon._bounty).level_bonus
 		mon._initial_moves = maxi(Map.roll_weighted(encounter.moves, t), min_moves)
 		State.record_sighting(mon, depth)
+	# Boss-Relikte gehören zum Kampf, nicht zu einem Boss: alle Bosse teilen sie
+	BossRelics.active = BossRelics.random_relics() if is_boss_battle else []
+	if is_boss_battle:
+		_apply_debug_boss_setup(ms)
 	print("encounter depth ", depth, " fight ", State.biome_fight_index, ": ", ms.size(), "x level ", level)
 	State.enemy_mons = ms
+
+## Im Debug-Menü gewählte Relikte (für den Kampf) und Trophäen (für jeden Boss) ersetzen die gewürfelten
+func _apply_debug_boss_setup(bosses: Array[Monster]) -> void:
+	var relics = DebugSettings.take_boss_relics()
+	var trophies = DebugSettings.take_boss_trophies()
+	if relics != null:
+		BossRelics.active = relics.duplicate()
+	for boss in bosses:
+		if trophies != null:
+			boss._gems = {}
+			boss._gem_counts = {}
+			BossRelics.add_trophies(boss, trophies)
 
 ## Die Gegner des betretenen Felds. Kämpfe aus dem Debug-Menü kommen ohne Feld oder mit fester Anzahl und würfeln hier.
 func _take_enemies(fight_index: int) -> Array[Monster]:
@@ -355,6 +421,8 @@ func upgrade_mons():
 	pass
 
 func _check_game_over(last_fainted:Monster) -> void:
+	if _battle_over:
+		return
 	turn_wheel.remove_mon(last_fainted)
 	_reselect_if_gone(last_fainted)
 	_retarget_intents()
@@ -372,6 +440,13 @@ func _check_game_over(last_fainted:Monster) -> void:
 		var bounty_skill = Skills.claim_bounty(last_fainted)
 		if bounty_skill != "":
 			Helper.show_unlock_message(tr("BOUNTY_UNLOCKED").format({"skill": tr(bounty_skill), "mon": Helper.mon_display_name(last_fainted._last_hit_by._name)}))
+		# mit dem letzten Gegner zerbrechen die Relikte des Kampfs, erst danach geht es weiter
+		if not BossRelics.active.is_empty() and State.enemy_mons.all(func(mon: Monster): return not mon.is_alive()):
+			_pending_breaks += 1
+			await _break_relics(false)
+			_pending_breaks -= 1
+			if not is_inside_tree() or _battle_over:
+				return
 		print("State.mons.all(func(mon: Monster): return mon._hp <= 0 and not mon._new)",
 		State.mons.all(
 			func(mon: Monster):
@@ -382,11 +457,16 @@ func _check_game_over(last_fainted:Monster) -> void:
 			func(mon: Monster):
 			return not mon.is_alive()
 			):
+		_battle_over = true
 		State.end_run(false)
 		_clear_fainted_mons()
 		get_tree().change_scene_to_file("res://script/scenes/run_end/run_end.tscn")
 		return
 	if State.enemy_mons.all(func(mon: Monster): return not mon.is_alive()) or State.enemy_mons.size() == 0:
+		# zerbrechen die Relikte gerade noch, beendet erst deren Aufruf den Kampf
+		if _pending_breaks > 0:
+			return
+		_battle_over = true
 		print("will close battle")
 		State.stage_clear()
 		_add_boss_loot()
@@ -403,6 +483,12 @@ func _check_game_over(last_fainted:Monster) -> void:
 			get_tree().change_scene_to_file("res://script/scenes/judgment/judgement.tscn")
 			return
 		get_tree().change_scene_to_file("res://script/scenes/world_map/world_map.tscn")
+
+## Der letzte Gegner ist weg: die Relikte des Kampfs zerbrechen, forgotten = Fang mit vollen KP (sie bleiben liegen)
+func _break_relics(forgotten: bool) -> void:
+	var relics := BossRelics.take_active()
+	_relic_bar.refresh()
+	await _relic_overlay.play_break(relics, forgotten)
 
 ## Zufallsbeute für ein besiegtes Monster. Der finale Boss beendet den Run, danach bringt Beute nichts mehr.
 func _roll_kill_loot() -> void:
@@ -611,6 +697,12 @@ func _on_end_turn_pressed() -> void:
 
 func _finish_catching(catched: bool, mon: Monster) -> void:
 	if catched:
+		# war es der letzte Gegner, gehen die Relikte verloren: zerbrochen, oder bei vollen KP einfach liegen gelassen
+		var last_enemy: bool = State.enemy_mons.all(func(m: Monster): return m == mon or not m.is_alive())
+		if last_enemy and not BossRelics.active.is_empty():
+			await _break_relics(mon._lost_hp <= 0)
+			if not is_inside_tree():
+				return
 		State.mark_mon_defeated(mon._name)
 		var index = State.enemy_mons.find(mon)
 		if index > -1:

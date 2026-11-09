@@ -199,6 +199,7 @@ const UI = {
 		components: "Besteht aus", weight: "Spawn-Gewicht", noResults: "Keine Treffer.", warnings: "Warnungen beim Generieren",
 		strongVs: "stark gegen", maxSkills: "Max. Skills pro Monster", tierWeights: "Stufen-Gewichte (Spawn-Häufigkeit)",
 		onlyBase: "Nur Grund-Elemente", allCombos: "Alle Kombinationen", catchHint: "bei 0 HP und gleicher Stufe",
+		bossRelics: "Boss-Relikte", relicsPerBattle: "Relikte pro Boss-Kampf", rareBossChance: "Chance auf seltenen Boss (sonst legendär)",
 		mon: "Monster", lists: {
 			attack_skills: "Basis-Angriff", defensive_skills: "Basis-Block", buff_skills: "Buff", passive_skills: "Passiv", area_skills: "Flächenangriff", reward_skills: "Belohnung",
 			egg_skills: "Ei-Attacke", milestone_skills: "Meilenstein", bounty_skills: "Kopfgeld",
@@ -209,6 +210,7 @@ const UI = {
 			elements: "Element-Kreis und alle Kombinationen aus <code>ColorMap</code>. Jedes Skill-Element wird gegen jedes Ziel-Element verglichen; Kombi-Monster erben alle Schwächen und Resistenzen.",
 			gems: "Trophäen erhöhen einen Wert eines eigenen Monsters um feste Punkte für den restlichen Run.",
 			relics: "Relikte sind passive Run-Boni. Es gibt sie zur Auswahl in der Kiste nach Biom-Bossen und im Laden, unabhängig von ihrer Seltenheit.",
+			bossRelics: "Boss-Relikte aus <code>BossRelics.RELICS</code> gehören zum Boss-Kampf, nicht zu einem Boss: Jeder Boss-Kampf würfelt sie einmal, und sie stärken alle Gegner gleich. Ist der letzte Gegner besiegt oder gefangen, zerbrechen sie; ein gefangener Boss behält nur Werte, Fähigkeiten und Trophäen.",
 			unlocks: "Meilenstein-Ei-Attacken (mit der Art als Start-Monster) und Kopfgeld-Ei-Attacken (letzter Treffer gegen ein Kopfgeld-Monster).",
 			map: "Aufbau der Weltkarte pro Biom-Tiefe aus <code>Map.map_settings</code>. Zahlen in den Spalten sind die Zeilen, in denen das Feld fest liegt.",
 		},
@@ -229,6 +231,7 @@ const UI = {
 		components: "Made of", weight: "Spawn weight", noResults: "No results.", warnings: "Warnings during generation",
 		strongVs: "strong against", maxSkills: "Max skills per monster", tierWeights: "Tier weights (spawn frequency)",
 		onlyBase: "Base elements only", allCombos: "All combinations", catchHint: "at 0 HP and same level",
+		bossRelics: "Boss relics", relicsPerBattle: "Relics per boss battle", rareBossChance: "Chance for a rare boss (otherwise legendary)",
 		mon: "Monster", lists: {
 			attack_skills: "Basic attack", defensive_skills: "Basic block", buff_skills: "Buff", passive_skills: "Passive", area_skills: "Area attack", reward_skills: "Reward",
 			egg_skills: "Egg move", milestone_skills: "Milestone", bounty_skills: "Bounty",
@@ -239,6 +242,7 @@ const UI = {
 			elements: "Element cycle and all combinations from <code>ColorMap</code>. Every skill element is compared with every target element; combined monsters inherit all weaknesses and resistances.",
 			gems: "Trophies raise one stat of your own monster by fixed points for the rest of the run.",
 			relics: "Relics are passive run bonuses. You can pick them from the chest after biome bosses and buy them in the shop, regardless of rarity.",
+			bossRelics: "Boss relics from <code>BossRelics.RELICS</code> belong to the boss battle, not to a boss: each boss battle rolls them once and they empower all enemies alike. When the last enemy is defeated or caught they break; a caught boss keeps only its stats, skills and trophies.",
 			unlocks: "Milestone egg moves (with the species as starter) and bounty egg moves (last hit against a bounty monster).",
 			map: "World map layout per biome depth from <code>Map.map_settings</code>. Numbers are the rows where that node is fixed.",
 		},
@@ -343,6 +347,7 @@ const SECTIONS = {
 	elements: { count: () => DATA.elements.combos.length, render: renderElements },
 	gems: { count: () => Object.keys(DATA.gems.stats).length, render: renderGems },
 	relics: { count: () => Object.keys(DATA.relics).length, render: renderRelics },
+	bossRelics: { count: () => Object.keys(DATA.bossRelics || {}).length, render: renderBossRelics },
 	unlocks: { count: () => DATA.milestones.length + DATA.bounties.length, render: renderUnlocks },
 	map: { count: () => Object.keys(DATA.map.settings).length, render: renderMap },
 };
@@ -541,6 +546,24 @@ function renderRelics() {
 	const hooks = DATA.relicHooks.length ? `<div class="card wide"><h3>${ui("hooks")}</h3><dl class="kv">${
 		DATA.relicHooks.map((h) => `<dt><code>${esc(h.key)}</code></dt><dd>${esc(h.desc)}</dd>`).join("")}</dl></div>` : "";
 	return header("relics") + (cards.length ? `<div class="grid">${cards.join("")}${hooks}</div>` : `<div class="empty">${ui("noResults")}</div>`);
+}
+
+function renderBossRelics() {
+	const cards = Object.entries(DATA.bossRelics || {})
+		.filter(([id, r]) => matches(id, tr(r.name), tr(r.description, { value: r.value })))
+		.map(([id, r]) => `<article class="card"><div class="row" style="align-items:flex-start">
+			<img class="icon" src="${esc(res(r.icon))}" alt="" onerror="this.style.visibility='hidden'">
+			<div style="min-width:0"><h3>${hl(tr(r.name))}</h3>
+				<div class="row small" style="margin-top:2px"><code>${esc(id)}</code></div>
+				<p style="margin:8px 0 0">${hl(tr(r.description, { value: r.value }))}</p>
+			</div></div>
+		</article>`);
+	const s = DATA.bossRelicSettings || {};
+	const settings = `<div class="card wide"><dl class="kv">
+		<dt>${ui("relicsPerBattle")}</dt><dd>${s.perBattle ?? "?"}</dd>
+		<dt>${ui("rareBossChance")}</dt><dd>${(s.rareChance || []).map((c, i) => `${ui("depth")} ${i + 1}: ${pct(c)}`).join(" · ") || ui("none")}</dd>
+	</dl></div>`;
+	return header("bossRelics") + (cards.length ? `<div class="grid">${cards.join("")}${settings}</div>` : `<div class="empty">${ui("noResults")}</div>`);
 }
 
 function renderUnlocks() {

@@ -17,6 +17,10 @@ var _disabled_relics := []
 
 ## Im Debug-Menü gewählte Gegnerzahl für den nächsten Kampf, 0 = wie im normalen Spiel. Wird nicht gespeichert.
 var next_enemy_count := 0
+## Im Debug-Menü gewählte Boss-Relikte (Array von IDs) des nächsten Boss-Kampfs und Trophäen
+## (Stat-Key -> Anzahl) für jeden seiner Bosse, null = wie im normalen Spiel. Werden nicht gespeichert.
+var next_boss_relics = null
+var next_boss_trophies = null
 
 func _ready() -> void:
 	if not OS.is_debug_build() or not FileAccess.file_exists(PATH):
@@ -45,6 +49,18 @@ func take_enemy_count(usual_count: int) -> int:
 	var count := next_enemy_count if next_enemy_count > 0 else usual_count
 	next_enemy_count = 0
 	return count
+
+## Gewählte Boss-Relikte oder null, gilt nur für einen Kampf
+func take_boss_relics():
+	var relics = next_boss_relics
+	next_boss_relics = null
+	return relics
+
+## Gewählte Boss-Trophäen oder null, gilt nur für einen Kampf
+func take_boss_trophies():
+	var trophies = next_boss_trophies
+	next_boss_trophies = null
+	return trophies
 
 ## Reservierter Anteil eines Werts in Prozent
 func reserved(stat: String) -> int:

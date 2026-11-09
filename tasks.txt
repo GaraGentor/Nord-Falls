@@ -16,6 +16,7 @@ Tasks:
 > Was mit One Way Use Items?
 > EI Attacke für das erste mal Chaos erreicht (Meilenstein)
 > Direkte Wirkung anzeigen der Skills z.B.: 20% von 100 atk = 20 damage.
+> Battle animationen. (Slash Heal etc.)
 
 - Tutorial Checken obs fine ist?
 - Konzept durchgehen

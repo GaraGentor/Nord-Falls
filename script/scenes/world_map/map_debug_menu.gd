@@ -37,6 +37,11 @@ const FALLEN_GEM_BONUS := 20
 const LEVEL_UP_KILLS := 2
 ## So viele Gegner-Slots hat der Kampf (battle.tscn)
 const MAX_ENEMIES := 3
+## Trophäen-Zähler der Boss-Ausstattung
+const TROPHY_COLUMNS := 3
+const TROPHY_LABEL_WIDTH := 170
+const TROPHY_VALUE_WIDTH := 50
+const TROPHY_STEP_SIZE := Vector2(50, 40)
 
 const BATTLE_PATH := "res://script/scenes/battle/battle.tscn"
 const JUDGEMENT_PATH := "res://script/scenes/judgment/judgement.tscn"
@@ -52,6 +57,14 @@ var _main: VBoxContainer
 var _fight_page: VBoxContainer
 ## Startet den Kampf, für den gerade die Gegnerzahl gewählt wird
 var _fight_start: Callable
+## Boss-Ausstattung auf der Gegnerzahl-Seite, nur bei Boss-Kämpfen sichtbar
+var _boss_options: VBoxContainer
+var _boss_relic_picks: Array = []
+var _trophy_mode_button: Button
+var _trophy_custom := false
+## Stat-Key -> Anzahl Trophäen dieser Art pro Boss
+var _trophy_counts := {}
+var _trophy_labels := {}
 var _picker: VBoxContainer
 ## Arten, die im Judgement als Fänge bereitliegen
 var _picked: Array[String] = []
@@ -96,8 +109,8 @@ func _build_main() -> void:
 	var is_last_biome: bool = State.map_level == Map.map_settings.size() - 1
 	_add_section(_main, "Kämpfe", [
 		[tr(Map.type_label(Map.PATH_TYPE.COMBAT)) + " ...", _open_fight_page.bind(_change_scene.bind(BATTLE_PATH))],
-		["BOSS-FELD ...", _open_fight_page.bind(_start_map_boss)],
-		["ENDBOSS ..." if is_last_biome else "BIOM-BOSS ...", _open_fight_page.bind(map.start_biome_boss)],
+		["BOSS-FELD ...", _open_fight_page.bind(_start_map_boss, true)],
+		["ENDBOSS ..." if is_last_biome else "BIOM-BOSS ...", _open_fight_page.bind(map.start_biome_boss, true)],
 	])
 
 	var fields := []
@@ -149,6 +162,7 @@ func _build_fight_page() -> void:
 	for count in range(1, MAX_ENEMIES + 1):
 		entries.append([str(count), _start_fight.bind(count)])
 	_add_section(_fight_page, "Gegen wie viele Monster?", entries)
+	_build_boss_options()
 
 	var back_button := _make_button("ZURÜCK", _show_page.bind(_main))
 	back_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -339,13 +353,88 @@ func _make_mon_button(mon_species: String) -> Button:
 func _change_scene(path: String) -> void:
 	get_tree().change_scene_to_file(path)
 
-func _open_fight_page(start: Callable) -> void:
+func _open_fight_page(start: Callable, boss := false) -> void:
 	_fight_start = start
+	_boss_options.visible = boss
 	_show_page(_fight_page)
 
 func _start_fight(enemy_count: int) -> void:
 	DebugSettings.next_enemy_count = enemy_count
+	var boss := _boss_options.visible
+	DebugSettings.next_boss_relics = _boss_relic_picks.duplicate() if boss and not _boss_relic_picks.is_empty() else null
+	DebugSettings.next_boss_trophies = _trophy_counts.duplicate() if boss and _trophy_custom else null
 	_fight_start.call()
+
+# ─────────────────────────
+# Boss-Ausstattung (nur für Boss-Kämpfe auf der Gegnerzahl-Seite)
+
+## Relikte als Schalter (keins = wie im Spiel), Trophäen pro Art mit Zähler (WIE IM SPIEL oder EIGENE)
+func _build_boss_options() -> void:
+	_boss_options = VBoxContainer.new()
+	_boss_options.add_theme_constant_override("separation", 8)
+	_fight_page.add_child(_boss_options)
+
+	_boss_options.add_child(_make_header("Boss-Relikte des Kampfs (keins gewählt = wie im Spiel, %d zufällig)" % BossRelics.RELICS_PER_BATTLE))
+	var relic_grid := GridContainer.new()
+	relic_grid.columns = COLUMNS
+	relic_grid.add_theme_constant_override("h_separation", 8)
+	relic_grid.add_theme_constant_override("v_separation", 8)
+	_boss_options.add_child(relic_grid)
+	for id in BossRelics.RELICS:
+		var button := _make_toggle_button(tr(BossRelics.get_relic(id).name))
+		button.custom_minimum_size = BUTTON_SIZE
+		button.tooltip_text = BossRelics.description(id)
+		button.toggled.connect(func(on: bool):
+			if on:
+				_boss_relic_picks.append(id)
+			else:
+				_boss_relic_picks.erase(id))
+		relic_grid.add_child(button)
+
+	var default_count: int = BossRelics.default_trophies(Map.encounter_depth()).values()[0]
+	_boss_options.add_child(_make_header("Trophäen pro Boss, Anzahl je Art (wie im Spiel in diesem Biom: je %dx)" % default_count))
+	_trophy_mode_button = _make_toggle_button("")
+	_trophy_mode_button.custom_minimum_size = BUTTON_SIZE
+	_trophy_mode_button.toggled.connect(func(on: bool):
+		_trophy_custom = on
+		_refresh_trophy_mode())
+	_boss_options.add_child(_trophy_mode_button)
+	var trophy_grid := GridContainer.new()
+	trophy_grid.columns = TROPHY_COLUMNS
+	trophy_grid.add_theme_constant_override("h_separation", 24)
+	trophy_grid.add_theme_constant_override("v_separation", 8)
+	_boss_options.add_child(trophy_grid)
+	for stat in DebugSettings.STATS:
+		_trophy_counts[stat] = default_count
+		var cell := HBoxContainer.new()
+		cell.add_theme_constant_override("separation", 6)
+		var label := _make_header(STAT_NAMES[stat])
+		label.custom_minimum_size.x = TROPHY_LABEL_WIDTH
+		cell.add_child(label)
+		cell.add_child(_make_trophy_step_button(stat, -1))
+		var value := _make_header("")
+		value.custom_minimum_size.x = TROPHY_VALUE_WIDTH
+		value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		cell.add_child(value)
+		_trophy_labels[stat] = value
+		cell.add_child(_make_trophy_step_button(stat, 1))
+		trophy_grid.add_child(cell)
+	_refresh_trophy_mode()
+
+## Ein Zähler schaltet auf eigene Trophäen um
+func _make_trophy_step_button(stat: String, step: int) -> Button:
+	var button := _make_button("%+d" % step, func():
+		_trophy_counts[stat] = maxi(_trophy_counts[stat] + step, 0)
+		_trophy_mode_button.button_pressed = true
+		_refresh_trophy_mode())
+	button.custom_minimum_size = TROPHY_STEP_SIZE
+	return button
+
+func _refresh_trophy_mode() -> void:
+	_trophy_mode_button.text = "TROPHÄEN: " + ("EIGENE" if _trophy_custom else "WIE IM SPIEL")
+	for stat in _trophy_labels:
+		_trophy_labels[stat].text = "%dx" % _trophy_counts[stat]
+		_trophy_labels[stat].modulate = Color.WHITE if _trophy_custom else UNPICKED_COLOR
 
 func _start_map_boss() -> void:
 	State.is_map_boss = true

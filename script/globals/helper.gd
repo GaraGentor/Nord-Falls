@@ -99,8 +99,11 @@ func generate_mons(props: Dictionary = {
 
 	# optional ein Kopfgeld-Monster (Eintrag aus Skills.BOUNTIES) als erster Gegner
 	var bounty: Dictionary = props.get("bounty", {})
+	# optional feste Arten der Reihe nach (Bosse, siehe BossRelics.roll_species), danach wieder aus dem Pool
+	var species: Array = props.get("species", [])
 	for i in default_props.count:
-		var mon_meta_data = Monmap.mon_metainfos_by_name(bounty.mon if i == 0 and not bounty.is_empty() else mons_to_pick.pick_random())
+		var species_name: String = species[i] if i < species.size() else mons_to_pick.pick_random()
+		var mon_meta_data = Monmap.mon_metainfos_by_name(bounty.mon if i == 0 and not bounty.is_empty() else species_name)
 		var newMon = Monster.new(default_props.level, mon_meta_data)
 		# eigene Kopfgeld-Arten (Monmap bounty_target) sind auch bei normalem Auftauchen das Kopfgeld-Monster
 		newMon._bounty = bounty.key if i == 0 and not bounty.is_empty() else mon_meta_data.get("bounty_target", "")

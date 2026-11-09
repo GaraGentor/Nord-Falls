@@ -7,6 +7,8 @@ extends Control
 
 signal turn_for(mon)
 signal end_round()
+## Zu Beginn jeder Runde, bevor die Reihenfolge feststeht (Boss-Relikte wie Glutboden, siehe battle.gd)
+signal round_started(round_number)
 
 const IconFrame := preload("res://script/scenes/battle/wheel_icon_frame.gd")
 
@@ -104,6 +106,8 @@ func is_own(mon: Monster) -> bool:
 func _start_round() -> void:
 	round_number += 1
 	round_label.text = tr("TURN_WHEEL_ROUND").format({"round": round_number})
+	# vorher: wer dabei fällt, kommt gar nicht erst aufs Rad
+	round_started.emit(round_number)
 	order = []
 	order.append_array(State.mons.filter(func(mon: Monster): return mon.is_alive()))
 	order.append_array(State.enemy_mons.filter(func(mon: Monster): return mon.is_alive()))
@@ -114,6 +118,7 @@ func _start_round() -> void:
 		return a.speed() > b.speed())
 	if round_number == 1:
 		order = Relics.modify("first_round_order", order)
+	order = BossRelics.order_for_round(order, round_number)
 	_build_icons()
 	current_index = 0
 	wheel.angle_offset = 0.0

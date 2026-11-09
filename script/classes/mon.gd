@@ -67,6 +67,8 @@ var _statuses: Dictionary = {}
 const MIN_STAT_FACTOR := 0.25
 # Nur Gegner: geplanter nächster Zug als [{"skill": Dictionary, "target": Monster}], im Kampf als Absicht sichtbar (battle.gd _plan_intent)
 var _intent: Array = []
+# Zwischenstände der Boss-Relikte dieses Monsters im laufenden Kampf (z. B. Schaden für den Fate-Spiegel), siehe BossRelics
+var _relic_state: Dictionary = {}
 
 func _init(level: int, meta_data: Dictionary) -> void:
 	## get saved data and apply.
@@ -108,6 +110,7 @@ func reset_battle_state() -> void:
 	_debuffs = {}
 	_statuses = {}
 	_intent = []
+	_relic_state = {}
 	for skill in _skills:
 		skill.erase("_cooldown_left")
 	Events.monster_status_changed.emit(self)
@@ -246,8 +249,10 @@ func _base_stat(stat: String) -> float:
 	return share * _level * Helper.points_per_level(_best_points) * STAT_SCALE
 
 func gem_bonus(stat: String) -> int:
-	# der Relikt-Bonus zählt pro Trophäe und wird nicht gespeichert, gilt also auch rückwirkend
-	return _gems.get(stat, 0) + gem_count(stat) * Relics.modify("trophy_bonus", 0)
+	# der Relikt-Bonus zählt pro Trophäe und wird nicht gespeichert, gilt also auch rückwirkend.
+	# Er gehört dem Spieler: Trophäen von Bossen bekommen ihn erst, wenn der Boss gefangen ist.
+	var relic_bonus: int = 0 if State.enemy_mons.has(self) else Relics.modify("trophy_bonus", 0)
+	return _gems.get(stat, 0) + gem_count(stat) * relic_bonus
 
 func gem_count(stat: String) -> int:
 	return _gem_counts.get(stat, 0)

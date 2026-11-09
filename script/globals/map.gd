@@ -282,8 +282,17 @@ func roll_fight_enemies(fight_index: int, forced_count := 0) -> Array[Monster]:
 			enemies[0] = Helper.generate_mons({"count": 1, "bounty": bounty})[0]
 	return enemies
 
+## Bosse sind immer seltene oder legendäre Arten und tragen Trophäen. Die Boss-Relikte würfelt erst der Kampf (BossRelics).
 func roll_boss_enemies(forced_count := 0) -> Array[Monster]:
-	return Helper.generate_mons({"count": forced_count if forced_count > 0 else BOSS_ENCOUNTERS[encounter_depth()].count})
+	var depth := encounter_depth()
+	var count: int = forced_count if forced_count > 0 else BOSS_ENCOUNTERS[depth].count
+	var species := []
+	for i in count:
+		species.append(BossRelics.roll_species(depth))
+	var bosses := Helper.generate_mons({"count": count, "species": species})
+	for boss in bosses:
+		BossRelics.add_trophies(boss, BossRelics.default_trophies(depth))
+	return bosses
 
 ## Nur solange ein Team-Monster mit dem Kopfgeld noch etwas freischalten kann (sonst kommen sie nur noch von selbst).
 func _roll_bounty() -> Dictionary:
