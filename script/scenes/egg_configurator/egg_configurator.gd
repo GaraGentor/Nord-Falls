@@ -2,17 +2,16 @@ extends Control
 
 ## Konfigurator nach "Reise beginnen": wähle 3 Ei-Attacken, die dein Monster in den Run mitnimmt.
 ## Zur Wahl stehen die Standard-Ei-Attacken der Art und alle freigeschalteten.
-## Die gewählten stehen in der festen Box über der scrollbaren Auswahl. Ein Klick zeigt nur die Karte,
-## gewählt wird per Ziehen: auf einen Platz ziehen setzt die Attacke ein (eine dort liegende fliegt zurück
+## Alle stehen als große Karten (wie im Kampf) da, gesperrte liegen in Ketten.
+## Die gewählten stehen in der festen Box über der scrollbaren Auswahl, gewählt wird per Ziehen: auf einen Platz ziehen setzt die Attacke ein (eine dort liegende fliegt zurück
 ## bzw. tauscht den Platz), aus der Box herausziehen und irgendwo loslassen legt sie zurück in die Auswahl.
 
 const SKILLS_TO_PICK := 3
-const GOLD := SkillDetailPopup.GOLD
 const TEXT_COLOR := IronPlate.TEXT_COLOR
 const BG_TOP := Color(0.560784, 0.301961, 0.85098, 1)
-const MISSING_COLOR := Color(1, 0.45, 0.45)
 const MAP_BACKGROUND := preload("res://script/scenes/world_map/map_background.gdshader")
 const BATTLE_CARD := preload("res://script/scenes/battle/battle_card.tscn")
+const GOLD := SkillCardPaper.GOLD
 const GO_ICON := preload("res://assets/ui/icons/check_go.svg")
 const GRID_SEPARATION := 16
 const EMPTY_SLOT_COLOR := Color(0.2, 0.2, 0.22, 0.85)
@@ -21,6 +20,10 @@ const FLY_SECONDS := 0.35
 ## Durchsichtigkeit der Kachel, während sie gezogen wird
 const DRAG_ALPHA := 0.35
 const DRAG_PREVIEW_ALPHA := 0.85
+## Mit dem Finger beginnt das Ziehen einer Karte erst nach so langem Drücken, vorher scrollt Wischen die Auswahl
+const LONG_PRESS_USEC := 300_000
+## So weit darf sich der Finger bzw. die Maus bewegen, damit es noch als Antippen zählt
+const TAP_DISTANCE := DragScroll.DEADZONE
 
 var _mon: Monster
 ## Skill-Name pro Platz in der Box, "" = leer
@@ -40,12 +43,19 @@ var _scroll: ScrollContainer
 var _fly_layer: Control
 var _counter_label: Label
 var _go_button: Button
-## Spielkarte der zuletzt angeklickten Attacke, wie sie im Kampf aussieht
+## Hinweis zum Ziehen, weicht der Vorschau einer gesperrten Attacke
+var _pick_hint: Label
+## Spielkarte der zuletzt angeklickten gesperrten Attacke: was man freischaltet
 var _detail_card: Control
-## Unter der Karte: wie die verfügbare Attacke freigeschaltet wurde
-var _detail_source: Label
-## Hinweis unter der Karte: wie man sie freischaltet oder welche Elemente fehlen
-var _detail_note: Label
+## darunter: wie man sie freischaltet
+var _detail_title: Label
+var _detail_hint: Label
+## zuletzt angeklickte gesperrte Karte, leuchtet am Rahmen
+var _selected_locked: EggSkillCard
+## Zeitpunkt, seit dem ein Finger liegt (0 = kein Finger, z. B. Maus)
+var _touch_down_usec := 0
+## Wo die angetippte Karte gedrückt wurde
+var _tap_start := Vector2.ZERO
 
 func _ready() -> void:
 	_mon = State.mons[0]
@@ -98,7 +108,8 @@ func _build() -> void:
 	content.add_theme_constant_override("separation", 40)
 	margin.add_child(content)
 
-	# links: oben im Rahmen das gewählte Monster mit Typ und Werten, darunter frei die Karte der angeklickten Attacke
+	# links: im Rahmen das gewählte Monster mit Typ und Werten, darunter der Hinweis zum Ziehen
+	# bzw. nach Klick auf eine gesperrte Attacke ihre Spielkarte und wie man sie freischaltet
 	var left := VBoxContainer.new()
 	left.add_theme_constant_override("separation", GRID_SEPARATION)
 	content.add_child(left)
@@ -122,22 +133,31 @@ func _build() -> void:
 	mon_box.add_child(chip_row)
 	mon_box.add_child(StatsGrid.stacked_for(_mon))
 
+	_pick_hint = _label(tr("CONFIGURATOR_PICK_HINT"), 14, TEXT_COLOR)
+	_pick_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_pick_hint.custom_minimum_size = Vector2(300, 0)
+	left.add_child(_pick_hint)
+
 	_detail_card = BATTLE_CARD.instantiate()
-	_detail_card.custom_minimum_size = Vector2(220, 200)
+	_detail_card.custom_minimum_size = Vector2(220, 190)
 	_detail_card.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_detail_card.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	_detail_card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_detail_card.visible = false
 	left.add_child(_detail_card)
-	_detail_source = _label("", 14, GOLD)
-	_detail_source.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_detail_source.custom_minimum_size = Vector2(300, 0)
-	_detail_source.visible = false
-	left.add_child(_detail_source)
-	_detail_note = _label(tr("CONFIGURATOR_PICK_HINT"), 14, TEXT_COLOR)
-	_detail_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_detail_note.custom_minimum_size = Vector2(300, 0)
-	left.add_child(_detail_note)
+	var detail_texts := VBoxContainer.new()
+	detail_texts.add_theme_constant_override("separation", 4)
+	left.add_child(detail_texts)
+	_detail_title = _label("", 16, GOLD)
+	_detail_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_detail_title.custom_minimum_size = Vector2(300, 0)
+	_detail_title.visible = false
+	detail_texts.add_child(_detail_title)
+	_detail_hint = _label("", 14, TEXT_COLOR)
+	_detail_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_detail_hint.custom_minimum_size = Vector2(300, 0)
+	_detail_hint.visible = false
+	detail_texts.add_child(_detail_hint)
 
 	# rechts: oben Zähler und Aufbruch, darunter die feste Box, darunter die scrollbare Auswahl
 	var right := VBoxContainer.new()
@@ -157,12 +177,18 @@ func _build() -> void:
 	_grid.add_theme_constant_override("h_separation", GRID_SEPARATION)
 	_grid.add_theme_constant_override("v_separation", GRID_SEPARATION)
 	_scroll.add_child(_grid)
+	# die Karten fangen den Finger ab, ohne DragScroll käme Godots Touch-Scroll nie an
+	DragScroll.attach(_scroll)
 
 	_available = Skills.get_available_egg_skills(_mon._name)
 	for skill_name in _available:
-		var card := SkillTile.create(Skills.get_skill(skill_name), _mon)
-		card.pressed.connect(_on_card_pressed.bind(skill_name))
+		var card := EggSkillCard.create(Skills.get_skill(skill_name), _mon)
+		# wie die Attacke freigeschaltet wurde
+		var source := Skills.get_egg_skill_source(_mon._name, skill_name)
+		if not source.is_empty():
+			card.tooltip_text = tr(source[0]) + "\n" + tr(source[1])
 		card.set_drag_forwarding(_get_card_drag_data.bind(skill_name), _can_drop_on_slot, _drop_on_slot)
+		card.gui_input.connect(_on_card_input.bind(skill_name))
 		_cards[skill_name] = card
 		var slot_index := _slot_skills.find(skill_name)
 		if slot_index >= 0:
@@ -210,7 +236,7 @@ func _build_slot_box() -> Control:
 	empty.set_border_width_all(2)
 	for i in SKILLS_TO_PICK:
 		var slot := PanelContainer.new()
-		slot.custom_minimum_size.y = SkillTile.HEIGHT
+		slot.custom_minimum_size.y = EggSkillCard.HEIGHT
 		slot.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		slot.add_theme_stylebox_override("panel", empty)
 		slot.set_drag_forwarding(Callable(), _can_drop_on_slot, _drop_on_slot)
@@ -219,9 +245,27 @@ func _build_slot_box() -> Control:
 	return panel
 
 func _add_locked_card(skill: Dictionary, locked_label: String, hint: String) -> void:
-	var card := SkillTile.create(skill, _mon, locked_label)
-	card.pressed.connect(_show_detail.bind(skill, tr(locked_label) + "\n" + tr(hint), GOLD, true))
+	var card := EggSkillCard.create(skill, _mon, locked_label, hint)
+	card.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	card.gui_input.connect(func(event: InputEvent):
+		if _is_tap(event):
+			_show_locked_detail(card, skill, locked_label, hint))
 	_grid.add_child(card)
+
+## Gesperrte Attacke angeklickt: links ihre Spielkarte (was man freischaltet) und wie man sie freischaltet
+func _show_locked_detail(card: EggSkillCard, skill: Dictionary, locked_label: String, hint: String) -> void:
+	if _selected_locked:
+		_selected_locked.set_selected(false)
+	_selected_locked = card
+	card.set_selected(true)
+	_pick_hint.visible = false
+	_detail_card.mon = _mon
+	_detail_card.skill = skill
+	_detail_card.visible = true
+	_detail_title.text = tr(locked_label)
+	_detail_title.visible = true
+	_detail_hint.text = tr(hint)
+	_detail_hint.visible = true
 
 func _label(text: String, font_size: int, color: Color) -> Label:
 	var label := Label.new()
@@ -231,43 +275,28 @@ func _label(text: String, font_size: int, color: Color) -> Label:
 	label.add_theme_color_override("font_color", color)
 	return label
 
-func _show_detail(skill: Dictionary, note: String, note_color: Color, locked: bool) -> void:
-	_detail_card.mon = _mon
-	_detail_card.skill = skill
-	_detail_card.modulate = Color(0.6, 0.6, 0.6) if locked else Color.WHITE
-	_detail_card.visible = true
-	var source := [] if locked else Skills.get_egg_skill_source(_mon._name, skill.name)
-	_detail_source.visible = not source.is_empty()
-	if _detail_source.visible:
-		_detail_source.text = tr(source[0]) + "\n" + tr(source[1])
-	_detail_note.text = note
-	_detail_note.add_theme_color_override("font_color", note_color)
-
-## Ein Klick zeigt nur die Karte, die Auswahl bleibt unverändert
-func _on_card_pressed(skill_name: String) -> void:
-	var skill := Skills.get_skill(skill_name)
-	_show_detail(skill, Skills.missing_elements_text(_mon, skill), MISSING_COLOR, false)
-
 # ─────────────────────────
 # Ziehen und Ablegen
 
 ## Beim Ziehen hängt eine Kopie der Kachel an der Maus, das Original bleibt blass an seinem Platz
-func _get_card_drag_data(at_position: Vector2, skill_name: String) -> Variant:
+func _get_card_drag_data(_at_position: Vector2, skill_name: String) -> Variant:
 	if _flying.has(skill_name) or _dragging != "":
+		return null
+	# Finger kurz aufgelegt und gleich gewischt: das ist Scrollen (DragScroll), kein Ziehen
+	if _touch_down_usec > 0 and Time.get_ticks_usec() - _touch_down_usec < LONG_PRESS_USEC:
 		return null
 	var card: Control = _cards[skill_name]
 	var preview := Control.new()
 	preview.modulate.a = DRAG_PREVIEW_ALPHA
-	var tile := SkillTile.create(Skills.get_skill(skill_name), _mon)
+	var tile := EggSkillCard.create(Skills.get_skill(skill_name), _mon)
 	tile.custom_minimum_size = card.size
 	tile.size = card.size
-	# dort festhalten, wo die Kachel gepackt wurde
-	tile.position = -at_position
+	# dort festhalten, wo die Karte gepackt wurde (at_position kann vom Beschreibungstext kommen)
+	tile.position = -card.get_local_mouse_position()
 	preview.add_child(tile)
 	set_drag_preview(preview)
 	card.modulate.a = DRAG_ALPHA
 	_dragging = skill_name
-	_on_card_pressed(skill_name)
 	return {"egg_skill": skill_name}
 
 ## Abgelegt wird nur auf einem Platz der Box (auf der leeren Fläche oder der Kachel darin)
@@ -301,6 +330,35 @@ func _drop_on_slot(_at_position: Vector2, data: Variant) -> void:
 	var card: Control = _cards[skill_name]
 	card.get_parent().remove_child(card)
 	_slots[slot_index].add_child(card)
+	_refresh()
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventScreenTouch and event.index == 0:
+		_touch_down_usec = Time.get_ticks_usec() if event.pressed else 0
+
+## Gedrückt und an fast derselben Stelle losgelassen. Nach einem Wischen meldet DragScroll das Loslassen weit weg.
+func _is_tap(event: InputEvent) -> bool:
+	if not (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT):
+		return false
+	if event.pressed:
+		_tap_start = event.global_position
+		return false
+	return event.global_position.distance_to(_tap_start) < TAP_DISTANCE
+
+## Antippen statt Ziehen: aus der Auswahl auf den ersten freien Platz, aus der Box zurück in die Auswahl
+func _on_card_input(event: InputEvent, skill_name: String) -> void:
+	if not _is_tap(event) or _flying.has(skill_name) or _dragging != "":
+		return
+	var slot_index := _slot_skills.find(skill_name)
+	if slot_index >= 0:
+		_slot_skills[slot_index] = ""
+		_fly_to_grid(skill_name)
+	else:
+		var free := _slot_skills.find("")
+		if free < 0:
+			return
+		_slot_skills[free] = skill_name
+		_fly_to_slot(skill_name, free)
 	_refresh()
 
 func _slot_under_mouse() -> int:
@@ -341,7 +399,7 @@ func _fly_to_slot(skill_name: String, slot_index: int) -> void:
 ## Erst hält ein Platzhalter die Stelle frei, seine Position steht nach dem nächsten Layout fest.
 func _fly_to_grid(skill_name: String) -> void:
 	var placeholder := Control.new()
-	placeholder.custom_minimum_size.y = SkillTile.HEIGHT
+	placeholder.custom_minimum_size.y = EggSkillCard.HEIGHT
 	placeholder.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	placeholder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var index := _grid_index(skill_name)

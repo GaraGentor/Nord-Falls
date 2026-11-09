@@ -48,6 +48,7 @@ const JUDGEMENT_PATH := "res://script/scenes/judgment/judgement.tscn"
 const LEVEL_UP_PATH := "res://script/scenes/level_up/level_up.tscn"
 const RUN_END_PATH := "res://script/scenes/run_end/run_end.tscn"
 const WORLD_MAP_PATH := "res://script/scenes/world_map/world_map.tscn"
+const SELECTION_PATH := "res://script/scenes/selection/selection.tscn"
 const RELIC_REWARD_SCENE := preload("res://script/scenes/relic_reward/relic_reward.tscn")
 
 ## Die Karte (world_map.gd), über die die Felder geöffnet werden
@@ -91,6 +92,8 @@ var _vfx_page: VBoxContainer
 var _vfx_target: TextureRect
 var _vfx_back := false
 var _vfx_view_button: Button
+## Sicherheitsabfrage vor dem Löschen des Spielstands
+var _reset_page: VBoxContainer
 
 func _ready() -> void:
 	set_accent(ACCENT)
@@ -105,6 +108,7 @@ func _ready() -> void:
 	_build_relic_page()
 	_build_preview_page()
 	_build_vfx_page()
+	_build_reset_page()
 	_show_page(_main)
 
 func _build_main() -> void:
@@ -154,6 +158,7 @@ func _build_main() -> void:
 	extras.add_child(_make_button("RELIKTE ...", func(): _show_page(_relic_page)))
 	extras.add_child(_make_button("MONSTER-VORSCHAU ...", func(): _show_page(_preview_page)))
 	extras.add_child(_make_button("VFX-VORSCHAU ...", func(): _show_page(_vfx_page)))
+	extras.add_child(_make_button("SPIELSTAND LÖSCHEN ...", func(): _show_page(_reset_page)))
 
 	var close_button := _make_button("SCHLIESSEN", close)
 	close_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -413,7 +418,7 @@ func _play_all_vfx() -> void:
 		await get_tree().create_timer(VFX_SEQUENCE_PAUSE).timeout
 
 func _show_page(page: VBoxContainer) -> void:
-	for other in [_main, _fight_page, _picker, _egg_page, _stats_page, _relic_page, _preview_page, _vfx_page]:
+	for other in [_main, _fight_page, _picker, _egg_page, _stats_page, _relic_page, _preview_page, _vfx_page, _reset_page]:
 		other.visible = other == page
 
 func _refresh_start() -> void:
@@ -879,3 +884,35 @@ func _wild_mon(mon_species: String, level: int) -> Monster:
 	Helper.add_egg_skill(mon)
 	mon.unlock_skills()
 	return mon
+
+# ─────────────────────────
+# Spielstand löschen
+
+## Sicherheitsabfrage: erst JA, LÖSCHEN setzt den Spielstand zurück
+func _build_reset_page() -> void:
+	_reset_page = VBoxContainer.new()
+	_reset_page.add_theme_constant_override("separation", 12)
+	add_footer(_reset_page)
+
+	_reset_page.add_child(_make_header("Spielstand wirklich löschen?"))
+	var info := Label.new()
+	info.text = "Gefangene Monster, freigeschaltete Ei-Attacken, Meilensteine, Boss Tränen und der laufende Run sind danach weg.\nDas Spiel startet neu bei der Ei-Auswahl. Einstellungen bleiben erhalten."
+	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info.custom_minimum_size.x = 600
+	info.add_theme_color_override("font_color", IronPlate.TEXT_COLOR)
+	_reset_page.add_child(info)
+
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 12)
+	row.add_child(_make_button("ZURÜCK", _show_page.bind(_main)))
+	var confirm := _make_button("JA, LÖSCHEN", _reset_save)
+	confirm.add_theme_color_override("font_color", ACCENT)
+	row.add_child(confirm)
+	_reset_page.add_child(row)
+
+func _reset_save() -> void:
+	SaveManager.reset_game()
+	State.reset()
+	State.boss_shards = 0
+	_change_scene(SELECTION_PATH)

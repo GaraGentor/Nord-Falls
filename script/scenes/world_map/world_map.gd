@@ -99,6 +99,8 @@ func _ready() -> void:
 	monster_shard_changed(State.boss_shards)
 	change_key_text(State.keys)
 	change_coupon_text(State.coupons)
+	# auf dem Handy per Finger scrollen, auch wenn der Finger auf einem Kartenfeld beginnt
+	DragScroll.attach(scroll_container)
 	weather = MapWeather.new()
 	weather.scroll_container = scroll_container
 	weather.z_index = -1
@@ -129,18 +131,29 @@ func _ready() -> void:
 	else:
 		change_position(State.current_map_position)
 	change_ep_text(State.ep)
+	add_settings_button()
 	if OS.is_debug_build():
 		add_debug_button()
 	show_pending_rewards()
 
-# Nur in Debug-Builds: links neben dem Legenden-Button im Header
+# Zahnrad im Header direkt links neben dem Legenden-Button, gleich groß wie dieser
+func add_settings_button() -> void:
+	var button := SettingsDialog.make_button(self)
+	button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	button.offset_left = -136.0
+	button.offset_top = -72.0
+	button.offset_right = -80.0
+	button.offset_bottom = -16.0
+	$HBoxContainer/Panel.add_child(button)
+
+# Nur in Debug-Builds: links neben dem Einstellungen-Button im Header
 func add_debug_button() -> void:
 	var button := RewardDialog.plate_button("DEBUG")
 	button.add_theme_font_size_override("font_size", 16)
 	button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-	button.offset_left = -172.0
+	button.offset_left = -236.0
 	button.offset_top = -60.0
-	button.offset_right = -80.0
+	button.offset_right = -144.0
 	button.offset_bottom = -16.0
 	button.pressed.connect(func():
 		var menu = DEBUG_MENU.new()

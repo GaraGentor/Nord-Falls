@@ -1,5 +1,9 @@
 shader_type canvas_item;
 
+// Bildschirmpixel pro Spielpixel (1280x720), setzt GameSettings: bei scharfer Darstellung (canvas_items) auf großen
+// Bildschirmen bleiben Partikel und Dithering so grob wie in der Grundauflösung
+global uniform float pixel_scale;
+
 // Bild als "Vorstellung": der Rand löst sich in eine ziehende Wolke auf, statt hart abzuschneiden.
 // Eine Welle läuft am Rand entlang und zieht dort ein paar Pixel nach außen.
 // Das Bild selbst besteht wie bei living_pixels aus zitternden Pixel-Partikeln mit Dithering.
@@ -99,7 +103,8 @@ float bayer(vec2 dp) {
 }
 
 void fragment() {
-	vec2 uv_per_px = vec2(dFdx(UV.x), dFdy(UV.y));
+	// UV pro Spielpixel (local_pos ist in Spielpixeln)
+	vec2 uv_per_px = vec2(dFdx(UV.x), dFdy(UV.y)) * max(pixel_scale, 0.01);
 	vec2 g = local_pos / pixel_size;
 	vec2 base = floor(g);
 	vec2 p = (base + 0.5) * pixel_size;
@@ -163,7 +168,7 @@ void fragment() {
 	float edge = dist - cloud * cloud_depth;
 	float alpha = smoothstep(0.0, cloud_softness, edge);
 
-	vec2 dp = floor(FRAGCOORD.xy / dither_scale);
+	vec2 dp = floor(FRAGCOORD.xy / (dither_scale * max(pixel_scale, 0.01)));
 	vec3 rgb = mix(particle, mist_color.rgb, mist_color.a * (1.0 - smoothstep(0.0, cloud_softness * 1.8, edge)));
 	// Muster verschiebt sich schrittweise -> animiertes Dithering
 	vec4 ds = hash4(vec2(floor(loop_pos * max(1.0, floor(loop_seconds * dither_fps))), 3.7));

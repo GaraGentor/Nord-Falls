@@ -15,7 +15,7 @@ CONFIGURATOR_SKILL_STATS,Cost {cost} · CD {cooldown} ·,Kosten {cost} · CD {co
 CONFIGURATOR_TIER,Tier {tier},Stufe {tier}
 CONFIGURATOR_LOCKED,Locked (catch & sacrifice),Gesperrt (fangen & opfern)
 CONFIGURATOR_LOCKED_MILESTONE,Locked (milestone),Gesperrt (Meilenstein)
-CONFIGURATOR_PICK_HINT,"Tap a move to see its card, drag it into a slot above to take it along","Tippe auf eine Attacke für ihre Karte, zieh sie oben in einen Platz, um sie mitzunehmen"
+CONFIGURATOR_PICK_HINT,"Tap a move or drag it into a slot above to take it along","Tippe eine Attacke an oder zieh sie oben in einen Platz, um sie mitzunehmen"
 EGG_SKILL_TAG,{skill} (Egg),{skill} (Ei)
 EGG_SKILL_HINT,"Egg move: catch this monster and sacrifice it to unlock this move permanently","Ei-Attacke: Fange dieses Monster und opfere es, um die Attacke dauerhaft freizuschalten"
 EGG_SKILL_UNLOCKED,{skill} unlocked for {mon}!,{skill} für {mon} freigeschaltet!
@@ -699,3 +699,10 @@ BOSS_RELIC_FORGOTTEN,The boss was so dumb it left its relic lying on the ground.
 BOSS_RELIC_FORGOTTEN_MANY,The boss was so dumb it left its relics lying on the ground.,Der Boss hat die Relikte durch seine Dummheit auf dem Boden vergessen.
 BOSS_RELIC_MISS,Missed!,Verfehlt!
 BOSS_RELIC_SILENCED,Drowned out!,Übertönt!
+SETTINGS_TITLE,Settings,Einstellungen
+SETTINGS_DISPLAY,Display,Anzeige
+SETTINGS_WINDOW_MODE,Window mode,Fenstermodus
+SETTINGS_WINDOWED,Window,Fenster
+SETTINGS_FULLSCREEN,Fullscreen,Vollbild
+SETTINGS_FULLSCREEN_HINT,You can also toggle fullscreen with F11 or Alt+Enter.,Vollbild lässt sich auch mit F11 oder Alt+Enter umschalten.
+SETTINGS_NONE,There are no settings on this device yet.,Auf diesem Gerät gibt es noch keine Einstellungen.

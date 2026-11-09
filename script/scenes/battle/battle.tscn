@@ -69,8 +69,9 @@ script = ExtResource("3_cggex")
 
 [node name="GameWindow" type="Control" parent="." unique_id=1169158061]
 layout_mode = 1
-anchor_right = 0.546875
+anchor_right = 1.0
 anchor_bottom = 1.0
+offset_right = -580.0
 
 [node name="TextureRect" type="TextureRect" parent="GameWindow" unique_id=1257679029]
 modulate = Color(0.73561597, 0.7273815, 0.62138367, 1)
@@ -84,6 +85,7 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("3_2nwnk")
 expand_mode = 1
+stretch_mode = 6
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="GameWindow" unique_id=285976807]
 layout_mode = 1
@@ -151,8 +153,9 @@ offset_right = 2.0
 [node name="Phase" type="Control" parent="." unique_id=1459139747]
 visible = false
 layout_mode = 1
-anchor_right = 0.546875
+anchor_right = 1.0
 anchor_bottom = 0.056
+offset_right = -580.0
 offset_bottom = -0.32
 
 [node name="ColorRect" type="ColorRect" parent="Phase" unique_id=141679833]
@@ -174,10 +177,11 @@ horizontal_alignment = 1
 
 [node name="UI" type="Control" parent="." unique_id=1082588571]
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = -1
+anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 700.0
+offset_left = -580.0
 grow_horizontal = 2
 grow_vertical = 2
 

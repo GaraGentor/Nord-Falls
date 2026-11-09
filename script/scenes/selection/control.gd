@@ -23,12 +23,26 @@ var common_egg_crack = preload("res://assets/ui/eggs/common_2.png")
 
 var selected_egg: int = 0
 
+## Zahnrad unten links (Größe und Abstand wie der Legenden-Button der Karte)
+const SETTINGS_BUTTON_SIZE := 56.0
+const SETTINGS_BUTTON_MARGIN := 16.0
+
 func _ready() -> void:
+	_add_settings_button()
 	load_eggs()
 	biome_path.show_path(Map.load_biome_path())
 	# display_mons()
 	Events.select_initial_mon.connect(select_egg)
 	# Events.select_initial_mon.emit(0)
+
+func _add_settings_button() -> void:
+	var button := SettingsDialog.make_button(self)
+	button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+	button.offset_left = SETTINGS_BUTTON_MARGIN
+	button.offset_right = SETTINGS_BUTTON_MARGIN + SETTINGS_BUTTON_SIZE
+	button.offset_top = -SETTINGS_BUTTON_MARGIN - SETTINGS_BUTTON_SIZE
+	button.offset_bottom = -SETTINGS_BUTTON_MARGIN
+	add_child(button)
 
 ## Eier aus dem Spielstand, neue gibt es nur ohne gespeicherte (erster Start oder nach einem Run-Ende)
 func load_eggs() -> void:

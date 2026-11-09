@@ -1,5 +1,9 @@
 shader_type canvas_item;
 
+// Bildschirmpixel pro Spielpixel (1280x720), setzt GameSettings: bei scharfer Darstellung (canvas_items) auf großen
+// Bildschirmen bleiben Partikel und Dithering so grob wie in der Grundauflösung
+global uniform float pixel_scale;
+
 // Legt den "Lebende Pixel"-Look aus Kampf und Start (living_pixels.gdshader) über alles, was
 // vorher auf den Bildschirm gezeichnet wurde: grobe Pixel, Flackern, wenige Farbstufen, Dithering.
 // Dazu wird das Bild abgedunkelt und entsättigt, damit die Karte düster wirkt.
@@ -40,12 +44,13 @@ vec4 hash4(vec2 p) {
 }
 
 void fragment() {
-	vec2 cell = floor(FRAGCOORD.xy / pixel_size);
+	float cell_px = pixel_size * max(pixel_scale, 0.01);
+	vec2 cell = floor(FRAGCOORD.xy / cell_px);
 	// Mittel aus vier Punkten, sonst fallen dünne Linien zwischen die Partikel
 	vec3 col = vec3(0.0);
 	for (int i = 0; i < 4; i++) {
 		vec2 sub = (vec2(float(i & 1), float(i >> 1)) + 0.5) * 0.5;
-		col += textureLod(screen_texture, (cell + sub) * pixel_size * SCREEN_PIXEL_SIZE, 0.0).rgb;
+		col += textureLod(screen_texture, (cell + sub) * cell_px * SCREEN_PIXEL_SIZE, 0.0).rgb;
 	}
 	col *= 0.25;
 
@@ -59,7 +64,7 @@ void fragment() {
 	float k = 1.0 + floor(h.y * 3.0);
 	col *= 1.0 + flicker * (sin((k + 2.0) * t + h.x * TAU) * 0.6 + (j.w - 0.5) * 0.8);
 
-	vec2 dp = floor(FRAGCOORD.xy / dither_scale);
+	vec2 dp = floor(FRAGCOORD.xy / (dither_scale * max(pixel_scale, 0.01)));
 	// Muster verschiebt sich schrittweise -> animiertes Dithering
 	vec4 ds = hash4(vec2(floor(loop_pos * max(1.0, floor(loop_seconds * dither_fps))), 3.7));
 	dp += floor(ds.xy * 4.0);

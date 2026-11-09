@@ -4,7 +4,8 @@ const SAVE_PATH := "user://savegame.json"
 # Biom-Boss-Siege, bis in der Ei-Auswahl der Neu-Würfeln-Button erscheint (für Spieler unsichtbar)
 const REROLL_CHARGES_NEEDED := 3
 
-var save_data := {
+## Leerer Spielstand: Vorlage für neue Spielstände und für "Spielstand löschen" (Debug-Menü)
+const DEFAULT_DATA := {
 	"version": 1,
 	"boss_shards": 0,
 	"monsters": {},
@@ -25,6 +26,8 @@ var save_data := {
 	"biome_path": [],
 	"biome_pools": [],
 }
+
+var save_data: Dictionary = DEFAULT_DATA.duplicate(true)
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -48,8 +51,14 @@ func load_game():
 	var parsed: Dictionary = JSON.parse_string(content)
 	if typeof(parsed) == TYPE_DICTIONARY:
 		# neue Felder in alten Spielständen ergänzen
-		parsed.merge(save_data)
+		parsed.merge(DEFAULT_DATA.duplicate(true))
 		save_data = parsed
+
+## Debug-Menü: Freigeschaltetes und der laufende Run sind weg, wie nach einer Neuinstallation.
+## Einstellungen (settings.cfg) und Debug-Einstellungen bleiben.
+func reset_game():
+	save_data = DEFAULT_DATA.duplicate(true)
+	save_game()
 
 func add_boss_shard(amount := 1):
 	save_data["boss_shards"] += amount

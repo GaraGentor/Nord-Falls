@@ -6,7 +6,7 @@ var current_map: Array = []
 var SETTING_LEVEL = 35
 # Startstufe der eigenen Monster und Mindeststufe aller Monster (Monster._init, battle.gd)
 var INITIAL_LEVEL = 5
-var INITIAL_MONS = ["2", "4", "5", "8"]
+var INITIAL_MONS = ["2", "4", "5", "11"]
 
 var mons: Array[Monster] = []
 # Art des Start-Monsters (Ei), sammelt den Meilenstein-Fortschritt
