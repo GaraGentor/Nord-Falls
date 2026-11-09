@@ -4,3 +4,5 @@
 .claude/
 /addons/
 .mcp.json
+/build/
+export_presets.cfg

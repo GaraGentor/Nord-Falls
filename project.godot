@@ -57,3 +57,7 @@ enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg")
 [internationalization]
 
 locale/translations=PackedStringArray("res://localization/translations.en.translation", "res://localization/translations.de.translation")
+
+[rendering]
+
+textures/vram_compression/import_etc2_astc=true
