@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <!-- Abgegriffenes Messing-Zahnrad für die Einstellungen: harte Kanten, Licht von oben links, wie das Pergament der Legende -->
+  <defs>
+    <g id="teeth">
+      <rect x="54" y="8" width="20" height="24" />
+      <rect x="54" y="8" width="20" height="24" transform="rotate(45 64 64)" />
+      <rect x="54" y="8" width="20" height="24" transform="rotate(90 64 64)" />
+      <rect x="54" y="8" width="20" height="24" transform="rotate(135 64 64)" />
+      <rect x="54" y="8" width="20" height="24" transform="rotate(180 64 64)" />
+      <rect x="54" y="8" width="20" height="24" transform="rotate(225 64 64)" />
+      <rect x="54" y="8" width="20" height="24" transform="rotate(270 64 64)" />
+      <rect x="54" y="8" width="20" height="24" transform="rotate(315 64 64)" />
+      <circle cx="64" cy="64" r="40" />
+    </g>
+  </defs>
+  <!-- Umriss: alles mit dicker dunkler Kontur, darüber die Füllung ohne Kontur, so entstehen keine inneren Linien -->
+  <use href="#teeth" fill="#06080c" stroke="#06080c" stroke-width="10" stroke-linejoin="bevel" />
+  <use href="#teeth" fill="#9a7d48" />
+  <!-- Licht oben links, Schatten unten rechts -->
+  <path d="M30 64 A34 34 0 0 1 64 30 V44 A20 20 0 0 0 44 64 Z" fill="#c9ab6c" />
+  <path d="M98 64 A34 34 0 0 1 64 98 V84 A20 20 0 0 0 84 64 Z" fill="#6f5630" />
+  <rect x="56" y="10" width="8" height="18" fill="#c9ab6c" />
+  <rect x="10" y="56" width="18" height="8" fill="#c9ab6c" />
+  <!-- Nabe -->
+  <circle cx="64" cy="64" r="16" fill="#1a1f26" stroke="#06080c" stroke-width="5" />
+  <circle cx="60" cy="60" r="5" fill="#3a434e" />
+</svg>

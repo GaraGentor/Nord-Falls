@@ -42,11 +42,13 @@ const STATS := {
 	"STAT_SPE": "speed",
 }
 
+var _mon: Monster
 var _skills: Array
 var _details: RichTextLabel
 var _slots: Array[SkillSlot] = []
 
 func _init(mon: Monster) -> void:
+	_mon = mon
 	_skills = mon._skills
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
@@ -92,7 +94,7 @@ func _skill_text(skill: Dictionary) -> String:
 		Helper.skill_description(skill),
 		"",
 		tr("TRAINER_ELEMENT").format({"element": element}),
-		"%s: %s" % [tr("SKILL_HEADER_POWER"), Helper.format_number(skill.value)],
+		"%s: %s" % [tr("SKILL_HEADER_POWER"), Skills.power_text(skill, _mon)],
 		"%s: %s" % [tr("SKILL_HEADER_COST"), skill.cost],
 		"%s: %s" % [tr("SKILL_INFO_COOLDOWN"), skill.cooldown],
 	]))
@@ -148,6 +150,7 @@ func _cards() -> Control:
 	scroll.add_child(row)
 	for i in _skills.size():
 		var card := BATTLE_CARD.instantiate()
+		card.mon = _mon
 		card.skill = _skills[i]
 		card.custom_minimum_size = SKILL_CARD_SIZE
 		card.mouse_filter = Control.MOUSE_FILTER_IGNORE

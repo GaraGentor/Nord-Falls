@@ -94,7 +94,8 @@ func init_skills(mon: Monster) -> void:
 			var dupe = (DuplicateFlags.DUPLICATE_USE_INSTANTIATION | DuplicateFlags.DUPLICATE_SCRIPTS | DuplicateFlags.DUPLICATE_SIGNALS) if st == "name" else DuplicateFlags.DUPLICATE_USE_INSTANTIATION
 			var name_label: Label = initial_skill_label.duplicate(dupe)
 			name_label.visible = true
-			name_label.text = display_skill_or_questionmark(skill, tr(skill[st]) if st == "name" else Helper.format_number(skill[st]))
+			var text: String = tr(skill[st]) if st == "name" else Skills.power_text(skill, mon) if st == "value" else Helper.format_number(skill[st])
+			name_label.text = display_skill_or_questionmark(skill, text)
 			if st == "name":
 				print(skill.nature)
 				var new_ls = name_label.label_settings.duplicate(DuplicateFlags.DUPLICATE_USE_INSTANTIATION)
@@ -106,14 +107,10 @@ func init_skills(mon: Monster) -> void:
 				name_label.label_settings = new_ls
 				name_label.skill = skill
 			if st == "damage_type":
-				if skill[st] == Enums.SKILL_DAMAGE_TYPE.PHYSICAL:
-					var y = type_splash.duplicate(DuplicateFlags.DUPLICATE_USE_INSTANTIATION)
-					y.visible = true
-					grid_container.add_child(y)
-				else:
-					var y = magic_splash.duplicate(DuplicateFlags.DUPLICATE_USE_INSTANTIATION)
-					y.visible = true
-					grid_container.add_child(y)
+				var y = (type_splash if Skills.is_physical(skill) else magic_splash).duplicate(DuplicateFlags.DUPLICATE_USE_INSTANTIATION)
+				y.texture = Skills.kind_icon(skill)
+				y.visible = true
+				grid_container.add_child(y)
 				continue
 			grid_container.add_child(name_label)
 		if not is_in_selection and not is_learning:

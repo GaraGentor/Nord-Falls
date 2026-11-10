@@ -1,0 +1,57 @@
+ENTSCHEIDUNG: GEGNER-KI
+=======================
+Stand: 08.11.2026
+Plan mit allen Schritten: ki_plan.txt (Projektordner)
+Code: script/scenes/battle/battle.gd, Abschnitt "Gegner-KI" (Konstanten oben, Funktionen ab _plan_intent)
+
+
+ENTSCHIEDEN UND UMGESETZT (Schritt 1-4)
+=======================================
+
+1. Bewertung + gewichteter Zufall
+  - Jede Kombination aus Skill und Ziel bekommt einen Score (_score_action).
+  - Gewürfelt wird mit Gewicht score ^ Schärfe (_weighted_pick). Der Zufall bleibt erhalten,
+    damit Gegner nicht berechenbar werden.
+  - Schärfe = 0,5 + 0,5 pro Biom-Tiefe, Bosse +1 (_ai_sharpness).
+    -> Biom 1 fühlt sich fast noch zufällig an, späte Gegner und Bosse spielen taktisch.
+  - Schadens-Skills: erwarteter Schaden über Skills.calc_damage (Element-Faktor und Buffs inklusive),
+    Flächen-Skills zählen alle Ziele zusammen.
+  - Schild/Buff: vorläufiger Grundwert (Schildmenge bzw. Wertzuwachs x Züge x 0,5), Ziel zufällig.
+
+2. Zielwahl
+  - Kill möglich: Score x2 (AI_KILL_BONUS)
+  - Schaden über die Rest-KP hinaus zählt nur zu 15 % (AI_OVERKILL_SHARE)
+  - Ziele mit überdurchschnittlichem (Sp.) Angriff werden leicht bevorzugt (AI_THREAT_WEIGHT 0,3)
+  - Das Neuwählen nach K.O. oder Fang (_retarget_intents, _ki_action) nutzt dieselbe Bewertung.
+
+3. Absprache
+  - Rest-KP = KP - verlorene KP - Schaden, den ALLE Gegner schon eingeplant haben (_remaining_hp).
+  - Folge: Die Gegner fokussieren gemeinsam und vermeiden Overkill.
+  - Schilde der eigenen Monster zählen beim Planen nicht, weil sie meist ablaufen, bevor der Gegner zuschlägt.
+
+4. Reihenfolge im Zug (_order_intent)
+  Buffs -> Schilde -> Schlamm-Angriffe -> übrige Angriffe, innerhalb einer Gruppe in geplanter Reihenfolge.
+
+Test (Headless, 2 Gegner mit je 2 Aktionen, Ziel A mit 11 KP, Ziel B mit 83 KP, 300 Planungen):
+  - Biom 1: 40 % der Angriffe auf A
+  - Biom 4: 25 % der Angriffe auf A (genau ein Angriff, um A zu erledigen, der Rest auf B)
+  - zum Vergleich der alte reine Zufall: 50 %
+
+
+ENTSCHIEDEN: VORERST NICHT UMSETZEN (Schritt 5-7)
+=================================================
+Grund: Erst Schritt 1-4 im Spiel testen und die Schärfe abstimmen.
+
+  Schritt 6 (Abwehr-Logik): als NÄCHSTES, nach den ersten Testkämpfen.
+    Schilde und Buffs sind der schwächste Teil der KI (Grundwert und zufälliges Ziel).
+  Schritt 5 (Element-Effekte nutzen): erst, wenn die Skills dafür existieren
+    (Schlamm, Staub, Dampf und Dreier-Kombis fehlen noch, siehe balancing_plan.txt).
+  Schritt 7 (Persönlichkeiten): zuletzt, er baut auf den Gewichten aus Schritt 1-6 auf.
+
+
+OFFEN
+=====
+  [ ] Schärfe im Spiel testen: Biom 1 locker genug? Bosse fair dank Absichten-Anzeige?
+  [ ] Schritt 6 nach den Testkämpfen angehen
+  [ ] Schritt 5, sobald die Element-Skills da sind
+  [ ] Schritt 7 zuletzt

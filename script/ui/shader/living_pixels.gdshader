@@ -1,5 +1,9 @@
 shader_type canvas_item;
 
+// Bildschirmpixel pro Spielpixel (1280x720), setzt GameSettings: bei scharfer Darstellung (canvas_items) auf großen
+// Bildschirmen bleiben Partikel und Dithering so grob wie in der Grundauflösung
+global uniform float pixel_scale;
+
 // "Lebende Pixel": das Bild wird in grobe Pixel-Partikel zerlegt, jedes Partikel
 // zittert mit eigener Phase, Frequenz und Amplitude um seinen Platz.
 // Danach animiertes Ordered Dithering (Bayer 4x4) für den flimmernden Retro-Look.
@@ -36,6 +40,10 @@ uniform vec4 outline_color : source_color = vec4(1.0, 1.0, 0.0, 0.0);
 uniform float outline_thickness : hint_range(0.0, 16.0) = 4.0;
 // Einfärbung nach Helligkeit (z. B. Eier nach Seltenheit), Alpha = Stärke, 0 = aus
 uniform vec4 tint_color : source_color = vec4(1.0, 1.0, 1.0, 0.0);
+// Halbtransparenz des Bilds behalten statt jedes Partikel deckend zu machen (z. B. Kampf-Effekte aus einem
+// SubViewport, siehe battle_vfx_layer.gd). Deren Farben liegen über transparentem Schwarz vormultipliziert vor
+// und werden hier zurückgerechnet.
+uniform bool keep_alpha = false;
 
 const float BAYER[16] = float[16](
 	0.0, 8.0, 2.0, 10.0,
@@ -63,6 +71,7 @@ void fragment() {
 		length(vec2(dFdx(UV.x), dFdy(UV.x))),
 		length(vec2(dFdx(UV.y), dFdy(UV.y)))
 	), vec2(1e-6));
+	px_per_uv /= max(pixel_scale, 0.01);
 	float cells_x = max(round(px_per_uv.x / pixel_size), min_cells);
 	vec2 cells = vec2(cells_x, max(1.0, round(cells_x * px_per_uv.y / px_per_uv.x)));
 	vec2 g = UV * cells;
@@ -85,6 +94,9 @@ void fragment() {
 			vec4 col = textureLod(TEXTURE, (cell + 0.5) / cells, 0.0);
 			if (col.a < alpha_cutoff) {
 				continue;
+			}
+			if (keep_alpha) {
+				col.rgb /= max(col.a, 1e-4);
 			}
 			if (tint_color.a > 0.0) {
 				float lum = dot(col.rgb, vec3(0.299, 0.587, 0.114));
@@ -117,7 +129,7 @@ void fragment() {
 			if (max(d.x, d.y) < half_size && h2.w > best_prio) {
 				best_prio = h2.w;
 				float bright = 1.0 + flicker * (sin((k1 + 2.0) * t + h.y * TAU) * 0.6 + (j.w - 0.5) * 0.8);
-				best = vec4(col.rgb * bright, 1.0);
+				best = vec4(col.rgb * bright, keep_alpha ? col.a : 1.0);
 			}
 		}
 	}
@@ -138,13 +150,13 @@ void fragment() {
 			COLOR = vec4(outline_color.rgb, outline_color.a * hit) * vertex_color;
 		}
 	} else {
-		vec2 dp = floor(FRAGCOORD.xy / dither_scale);
+		vec2 dp = floor(FRAGCOORD.xy / (dither_scale * max(pixel_scale, 0.01)));
 		// Muster verschiebt sich schrittweise -> animiertes Dithering
 		vec4 ds = hash4(vec2(floor(loop_pos * max(1.0, floor(loop_seconds * dither_fps))), 3.7));
 		dp += floor(ds.xy * 4.0);
 		int bi = int(mod(dp.x, 4.0)) + int(mod(dp.y, 4.0)) * 4;
 		float threshold = (BAYER[bi] + 0.5) / 16.0 - 0.5;
 		vec3 rgb = floor(best.rgb * color_levels + 0.5 + threshold * dither_strength) / color_levels;
-		COLOR = vec4(clamp(rgb, 0.0, 1.0), 1.0) * vertex_color;
+		COLOR = vec4(clamp(rgb, 0.0, 1.0), best.a) * vertex_color;
 	}
 }

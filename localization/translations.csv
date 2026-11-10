@@ -15,7 +15,7 @@ CONFIGURATOR_SKILL_STATS,Cost {cost} · CD {cooldown} ·,Kosten {cost} · CD {co
 CONFIGURATOR_TIER,Tier {tier},Stufe {tier}
 CONFIGURATOR_LOCKED,Locked (catch & sacrifice),Gesperrt (fangen & opfern)
 CONFIGURATOR_LOCKED_MILESTONE,Locked (milestone),Gesperrt (Meilenstein)
-CONFIGURATOR_PICK_HINT,Tap a move to see its card,Tippe auf eine Attacke für ihre Karte
+CONFIGURATOR_PICK_HINT,"Tap a move or drag it into a slot above to take it along","Tippe eine Attacke an oder zieh sie oben in einen Platz, um sie mitzunehmen"
 EGG_SKILL_TAG,{skill} (Egg),{skill} (Ei)
 EGG_SKILL_HINT,"Egg move: catch this monster and sacrifice it to unlock this move permanently","Ei-Attacke: Fange dieses Monster und opfere es, um die Attacke dauerhaft freizuschalten"
 EGG_SKILL_UNLOCKED,{skill} unlocked for {mon}!,{skill} für {mon} freigeschaltet!
@@ -47,7 +47,6 @@ BATTLE_MON_LEVEL,Lv,Lv
 BATTLE_MON_CATCH,Catch,Fang
 BATTLE_MON_MOVES,Moves,Züge
 BATTLE_MON_TYPE,Type,Typ
-BATTLE_STATS_FOR,Stats for {mon} Lv. {level},Stats für {mon} Lv. {level}
 BATTLE_SWITCH,Switch,Wechseln
 BATTLE_NEXT,next,weiter
 MONSTER_CLOSE_INFO,Close Info,Info schließen
@@ -651,13 +650,13 @@ TUT_MAP_INTRO,"This is the map of your first biome. The biome boss waits at the 
 TUT_MAP_TEAM,"Up here is your team. Lost HP does not come back on its own, only at a camp fire.","Hier oben steht dein Team. Verlorenes Leben kommt nicht von selbst zurück, nur am Lagerfeuer."
 TUT_MAP_LEGEND,"Not sure what a field means? The legend explains all of them.","Unsicher, was ein Feld bedeutet? Die Legende erklärt alle."
 TUT_MAP_START,"You always move one row up, along the paths. Pick your first field!","Du gehst immer eine Reihe weiter, den Wegen entlang. Wähle dein erstes Feld!"
-TUT_BAT_INTRO,"Your first fight! Don't worry, you can handle this one. I'll explain everything.","Dein erster Kampf! Keine Angst, den schaffst du. Ich erkläre dir alles."
+TUT_BAT_INTRO,"Before you set off, a practice fight! Nothing can go wrong here: nobody faints and nothing counts for your run. I will explain everything.","Bevor du aufbrichst, ein Übungskampf! Hier kann nichts schiefgehen: Niemand geht K.O. und nichts zählt für deinen Run. Ich erkläre dir alles."
 TUT_BAT_WHEEL,"The turn wheel shows the order. The monster with the highest speed goes first.","Das Zugrad zeigt die Reihenfolge. Das Monster mit der höchsten Initiative beginnt."
 TUT_BAT_INTENT,"This is what the enemy plans next: skill, target and damage. Use it to prepare.","Hier steht, was der Gegner als Nächstes vorhat: Skill, Ziel und Schaden. So kannst du dich darauf einstellen."
 TUT_BAT_CARD,"On your monster's turn you play its skill cards. Drag a card onto the enemy!","Ist dein Monster am Zug, spielst du seine Skill-Karten. Zieh eine Karte auf den Gegner!"
 TUT_BAT_END,"Every skill costs moves and has a cooldown afterwards. Out of moves? End your turn.","Jeder Skill kostet Züge und hat danach eine Abklingzeit. Keine Züge mehr? Beende deinen Zug."
-TUT_BAT_CATCH,"Now the important part: catching! The spiral above the enemy shows your chance, the less HP it has, the better. Use Hypnosis before playing a card this turn. This time it will surely work!","Jetzt das Wichtigste: Fangen! Die Spirale über dem Gegner zeigt deine Chance, je weniger Leben er hat, desto besser. Setz Hypnose ein, bevor du in diesem Zug eine Karte spielst. Diesmal klappt es bestimmt!"
-TUT_ELEMENTS,"Super effective! Water beats fire, fire beats air, air beats earth and earth beats water. A good match deals 50% more damage, a bad one 50% less.","Sehr effektiv! Wasser schlägt Feuer, Feuer schlägt Luft, Luft schlägt Erde und Erde schlägt Wasser. Passt das Element, gibt es 50 % mehr Schaden, sonst 50 % weniger."
+TUT_BAT_CATCH,"Now the important part: catching! The spiral above the enemy shows your chance, the less HP it has, the better. Use Hypnosis before playing a card this turn. In practice it always works, then we head to the map!","Jetzt das Wichtigste: Fangen! Die Spirale über dem Gegner zeigt deine Chance, je weniger Leben er hat, desto besser. Setz Hypnose ein, bevor du in diesem Zug eine Karte spielst. In der Übung klappt es immer, danach geht es zur Karte!"
+TUT_BAT_ELEMENTS,"Elements matter: water beats fire, fire beats air, air beats earth and earth beats water. A good match deals 50% more damage, a bad one 50% less.","Elemente zählen: Wasser schlägt Feuer, Feuer schlägt Luft, Luft schlägt Erde und Erde schlägt Wasser. Passt das Element, gibt es 50 % mehr Schaden, sonst 50 % weniger."
 TUT_JUD_CATCHES,"Welcome to the judgement. Here are the monsters you caught in the fight.","Willkommen im Gericht. Hier liegen die Monster, die du im Kampf gefangen hast."
 TUT_JUD_TEAM,"This is your team, two monsters at most. Drag a catch onto a slot to add it to your team.","Das ist dein Team, höchstens zwei Monster. Zieh einen Fang auf einen Platz, um ihn aufzunehmen."
 TUT_JUD_ZONES,"Or use the trays: Teach passes one of its moves on to your team, Sacrifice unlocks its egg move for good, Release lets it go.","Oder: Lehren gibt eine seiner Attacken an dein Team weiter, Opfern schaltet seine Ei-Attacke dauerhaft frei, Freilassen lässt ihn gehen."
@@ -676,16 +675,86 @@ TUT_CAMP_FEED,"Drag Monster Essence from the bag or the stacks into me. I turn e
 TUT_HUB,"The outpost before the boss. Rest, shop and trainer can each be used once. Prepare well!","Das Rastlager vor dem Boss. Ausruhen, Laden und Trainer kannst du je einmal nutzen. Bereite dich gut vor!"
 TUT_TREASURE,"A treasure chest! You need a key to open it. Keys drop as loot or are sold in the shop.","Eine Schatzkiste! Zum Öffnen brauchst du einen Schlüssel. Schlüssel gibt es als Beute oder im Laden."
 TUT_GEMS,"Trophies! Each raises a stat of one monster for the rest of the run. Pick one and drag it onto a monster.","Trophäen! Jede erhöht einen Wert eines Monsters für den restlichen Run. Wähl eine und zieh sie auf ein Monster."
-TUT_WHEEL,"The wheel of fortune: win the shown Essence or lose it. Feeling lucky?","Das Glücksrad: Du gewinnst die angezeigte Essenz dazu oder verlierst sie. Fühlst du dich glücklich?"
-TUT_VOID,"The void swaps one of your relics for a random one of the same rarity. Not interested? The arrow lets you move on.","Der Void tauscht eines deiner Relikte gegen ein zufälliges anderes gleicher Seltenheit. Kein Interesse? Mit dem Pfeil ziehst du weiter."
 TUT_RELIC_REWARD,"A relic! It gives a passive bonus for the whole run. Drag one into the bag.","Ein Relikt! Es gibt dir einen passiven Bonus für den ganzen Run. Zieh eines in die Tasche."
 TUT_SKILL_REWARD,"An envelope with unique skills, free of charge. Drag one onto a monster, but choose wisely: only one!","Ein Couvert mit einzigartigen Skills, ganz umsonst. Zieh einen auf ein Monster, aber wähl gut: nur einen!"
-TUT_BOSS,"A boss! It is stronger and has more actions per turn. In return it drops a relic chest and a skill envelope, and biome bosses also drop Boss Tears.","Ein Boss! Er ist stärker und hat mehr Aktionen pro Zug. Dafür lässt er eine Relikt-Kiste und ein Couvert mit Skills fallen, Biom-Bosse auch Boss Tränen."
-TUT_FAINTED,"Ouch, your monster has fallen! After the fight you can revive it once by giving up a new catch. Otherwise it leaves something to your team in its last will.","Autsch, dein Monster ist gefallen! Nach dem Kampf kannst du es einmal wiederbeleben, indem du dafür einen neuen Fang hergibst. Sonst hinterlässt es deinem Team einen Letzten Willen."
-HELP_TITLE,Help,Hilfe
-HELP_CLOSE,Close,Schließen
-HELP_TUTORIAL_RESET,Replay tutorial,Tutorial wiederholen
-HELP_TUTORIAL_OFF,Turn tutorial off,Tutorial ausschalten
-HELP_TUTORIAL_STATUS_ON,The tutorial explains every new field the first time you get there.,Das Tutorial erklärt jedes neue Feld beim ersten Besuch.
-HELP_TUTORIAL_STATUS_OFF,The tutorial is finished.,Das Tutorial ist beendet.
-HELP_TUTORIAL_RESET_DONE,"Done! From now on, everything is explained again the first time.","Erledigt! Ab jetzt wird alles beim ersten Mal wieder erklärt."
+TUT_BAT_BOSS,"Watch out for bosses: they are stronger, have more actions per turn and bring boss relics that empower them. In return they drop a relic chest and a skill envelope, and biome bosses also drop Boss Tears.","Vorsicht bei Bossen: Sie sind stärker, haben mehr Aktionen pro Zug und bringen Boss-Relikte mit, die sie stärken. Dafür lassen sie eine Relikt-Kiste und ein Couvert mit Skills fallen, Biom-Bosse auch Boss Tränen."
+TUT_BAT_FAINTED,"In real fights your monsters can fall. After the fight you can revive one once by giving up a new catch. Otherwise it leaves something to your team in its last will. If your whole team falls, the run is over.","In echten Kämpfen können deine Monster fallen. Nach dem Kampf kannst du eines einmal wiederbeleben, indem du dafür einen neuen Fang hergibst. Sonst hinterlässt es deinem Team einen Letzten Willen. Fällt dein ganzes Team, ist der Run vorbei."
+BIOME_INFO_HINT,Click: strengths & weaknesses of this biome,Klicken: Stärken & Schwächen dieses Bioms
+BIOME_INFO_ELEMENTS,Monsters here carry:,Monster hier tragen:
+BIOME_INFO_ATTACK,Your attacks,Deine Angriffe
+BIOME_INFO_STRONG,Hit hard,Treffen hart
+BIOME_INFO_WEAK,Bounce off,Prallen ab
+BIOME_INFO_NEUTRAL,Neutral,Neutral
+BIOME_INFO_DEFENSE,Your team,Dein Team
+BIOME_INFO_DANGER,In danger,In Gefahr
+BIOME_INFO_SAFE,Holds up well,Hält gut stand
+BIOME_INFO_BY,from {element},durch {element}
+BIOME_INFO_AGAINST,vs. {element},gegen {element}
+BIOME_INFO_NONE,none,keine
+BIOME_INFO_LEGEND,"Arrows point from the stronger to the weaker element. Green: your attacks deal +50 % per advantage. Red: attacks of the monsters here hit you harder. Each disadvantage halves the damage.","Pfeile zeigen vom stärkeren zum schwächeren Element. Grün: deine Angriffe machen +50 % pro Vorteil. Rot: Angriffe der Monster hier treffen dich härter. Jeder Nachteil halbiert den Schaden."
+BIOME_INFO_CLOSE,Close,Schließen
+ELEMENT_INFO_HINT,Click: what this element is made of,Klicken: woraus dieses Element besteht
+ELEMENT_INFO_LEVEL,Level {level} · {kind},Stufe {level} · {kind}
+ELEMENT_INFO_BASE,Base element,Grundelement
+ELEMENT_INFO_FUSION,Fusion of {count} elements,Verschmelzung aus {count} Elementen
+ELEMENT_INFO_BASE_DESC,"One of the four base elements, it cannot be split further. Fused with others it forms stronger combinations.","Eines der vier Grundelemente, es lässt sich nicht weiter zerlegen. Mit anderen verschmolzen entstehen daraus stärkere Kombinationen."
+ELEMENT_INFO_CONTAINS,Contains,Enthält
+ELEMENT_INFO_PART_OF,Part of,Steckt in
+EFFECT_LIGHTNING_DESC,Lightning: the user gains +{speed}% Initiative for {turns} turns,Blitz: Der Wirker erhält +{speed}% Initiative für {turns} Züge
+EFFECT_STEAM_DESC,Steam: the target loses {speed}% Initiative for {turns} turns,Dampf: Das Ziel verliert {speed}% Initiative für {turns} Züge
+EFFECT_MUD_DESC,Mud: the user gains +{attack}% Attack and Sp. Attack for {turns} turns,Schlamm: Der Wirker erhält +{attack}% Angriff und Sp. Angriff für {turns} Züge
+EFFECT_DUST_DESC,Dust: the target loses {attack}% Attack and Sp. Attack for {turns} turns,Staub: Das Ziel verliert {attack}% Angriff und Sp. Angriff für {turns} Züge
+EFFECT_MAGMA_DESC,Magma: hits drain shields {magma}x as fast,Magma: Treffer ziehen Schilde {magma}-fach ab
+EFFECT_ICE_DESC,Ice: the user gains a shield worth {ice}% of the damage dealt,Eis: Der Wirker erhält einen Schild in Höhe von {ice}% des verursachten Schadens
+EFFECT_SWAMP_DESC,Swamp: poisons the target. Before each of its turns it loses {poison}% max HP per stack (up to {stacks}) until the battle ends. Ignores magic shields.,Sumpf: Vergiftet das Ziel. Vor jedem seiner Züge verliert es {poison}% max. KP pro Stapel (bis {stacks}) bis Kampfende. Ignoriert Magie-Schilde.
+EFFECT_ASH_STORM_DESC,Ash Storm: burns the target. After each of its turns it loses {burn}% max HP and it has -{burn_attack}% Attack until the battle ends. Ignores armor.,Aschesturm: Verbrennt das Ziel. Nach jedem seiner Züge verliert es {burn}% max. KP und hat -{burn_attack}% Angriff bis Kampfende. Ignoriert Rüstung.
+EFFECT_THUNDERSTORM_DESC,Thunderstorm: paralyzes the target. Each turn it has a {paralysis}% chance to be stunned and lose its turn until the battle ends.,Gewitter: Lähmt das Ziel. Bis Kampfende ist es jeden Zug mit {paralysis}% Chance betäubt und setzt aus.
+EFFECT_VOLCANO_DESC,Volcano: {volcano}% chance to take effect twice,Vulkan: {volcano}% Chance doppelt zu wirken
+EFFECT_CHAOS_DESC,Chaos: +{chaos} element multiplier against all non-Chaos targets,Chaos: +{chaos} Element-Faktor gegen alle Nicht-Chaos-Ziele
+STATUS_POISON,Poison,Gift
+STATUS_BURN,Burn,Verbrennung
+STATUS_PARALYSIS,Paralysis,Paralyse
+STATUS_WEAKENED,Weakened,Geschwächt
+EFFECT_TEXT_STUNNED,Stunned!,Betäubt!
+EFFECT_TEXT_ERUPTION,Eruption!,Ausbruch!
+EFFECT_CHANCE_PREFIX,{chance}% chance - ,{chance}% Chance - 
+BOSS_RELIC_HEAL_MOSS,Healing Moss,Heilmösch
+BOSS_RELIC_HEAL_MOSS_DESC,Enemies heal for {value}% of the damage they deal.,"Gegner heilen sich um {value} % des Schadens, den sie zufügen."
+BOSS_RELIC_EMBER_FLOOR,Ember Floor,Glutboden
+BOSS_RELIC_EMBER_FLOOR_DESC,"At the start of every round, all your monsters lose {value}% of their max HP.","Zu Beginn jeder Runde verlieren alle deine Monster {value} % ihrer max. KP."
+BOSS_RELIC_FATE_MIRROR,Mirror of Fate,Fate-Spiegel
+BOSS_RELIC_FATE_MIRROR_DESC,"The damage an enemy deals becomes a shield of the same kind (physical or magic) on its next turn.","Der Schaden, den ein Gegner zufügt, wird in seinem nächsten Zug zum Schild gleicher Art (physisch oder magisch)."
+BOSS_RELIC_BONGOS,Bongos,Bongos
+BOSS_RELIC_BONGOS_DESC,"At the start of each turn, enemies alternately gain armor and magic armor ({value}% of their (Sp.) Defense).","Gegner bekommen zu Beginn jedes Zuges abwechselnd Rüstung und magische Rüstung ({value} % ihrer (Sp.) Verteidigung)."
+BOSS_RELIC_FOG_MACHINE,Fog Machine,Nebelmaschine
+BOSS_RELIC_FOG_MACHINE_DESC,Attacks against enemies have a {value}% chance to miss.,Angriffe auf Gegner verfehlen mit {value} % Wahrscheinlichkeit.
+BOSS_RELIC_SWIFT_WEASEL,Swift Weasel,Flinkes Wiesel
+BOSS_RELIC_SWIFT_WEASEL_DESC,"Enemies alternately act first and last: first in odd rounds, last in even rounds.","Gegner sind abwechselnd als Erste und als Letzte am Zug: in ungeraden Runden zuerst, in geraden zuletzt."
+BOSS_RELIC_MICROPHONE,Microphone,Mikrofon
+BOSS_RELIC_MICROPHONE_DESC,"In odd rounds every turn is skipped. Instead, every monster heals {value}% of its missing HP.","In ungeraden Runden fallen alle Züge aus. Stattdessen heilt sich jedes Monster um {value} % seiner fehlenden KP."
+BOSS_RELIC_MAGIC_THORNS,Magic Thorns,Magische Dornen
+BOSS_RELIC_MAGIC_THORNS_DESC,"Enemies reflect {value}% of the damage they take back to the attacker: physical damage in odd rounds, magic damage in even rounds.","Gegner werfen {value} % des erlittenen Schadens auf den Angreifer zurück: in ungeraden Runden physischen, in geraden magischen Schaden."
+BOSS_RELIC_INTRO_TITLE,Boss Relics,Boss-Relikte
+BOSS_RELIC_INTRO_HINT,They empower all enemies until the last one is defeated or caught.,"Sie stärken alle Gegner, bis der letzte besiegt oder gefangen ist."
+BOSS_RELIC_START,Let's go!,Los geht's!
+BOSS_RELIC_CLOSE,Close,Schließen
+BOSS_RELIC_BROKEN,You beat the boss so hard that its relic broke!,"Du hast den Boss so hart verprügelt, dass das Relikt dabei zerbrochen ist!"
+BOSS_RELIC_BROKEN_MANY,You beat the boss so hard that its relics broke!,"Du hast den Boss so hart verprügelt, dass die Relikte dabei zerbrochen sind!"
+BOSS_RELIC_FORGOTTEN,The boss was so dumb it left its relic lying on the ground.,Der Boss hat das Relikt durch seine Dummheit auf dem Boden vergessen.
+BOSS_RELIC_FORGOTTEN_MANY,The boss was so dumb it left its relics lying on the ground.,Der Boss hat die Relikte durch seine Dummheit auf dem Boden vergessen.
+BOSS_RELIC_MISS,Missed!,Verfehlt!
+BOSS_RELIC_SILENCED,Drowned out!,Übertönt!
+SETTINGS_TITLE,Settings,Einstellungen
+SETTINGS_DISPLAY,Display,Anzeige
+SETTINGS_WINDOW_MODE,Window mode,Fenstermodus
+SETTINGS_WINDOWED,Window,Fenster
+SETTINGS_FULLSCREEN,Fullscreen,Vollbild
+SETTINGS_FULLSCREEN_HINT,You can also toggle fullscreen with F11 or Alt+Enter.,Vollbild lässt sich auch mit F11 oder Alt+Enter umschalten.
+SETTINGS_TUTORIAL,Tutorial,Tutorial
+SETTINGS_TUTORIAL_TOGGLE,Show tutorial,Tutorial anzeigen
+SETTINGS_TUTORIAL_HINT,"When switched on, the trainer explains everything from the start, including a practice fight before the map.","Eingeschaltet erklärt dir der Trainer alles von Anfang an, auch in einem Übungskampf vor der Karte."
+SELECTION_GUIDE,How to play,Anleitung
+SELECTION_COLLECTION,Collection,Sammlung
+COLLECTION_TITLE,Collection,Sammlung
+COLLECTION_PROGRESS,{seen} of {total} species discovered,{seen} von {total} Arten entdeckt
+COLLECTION_FROM_BIOME,Common from biome {biome},Häufig ab Biom {biome}

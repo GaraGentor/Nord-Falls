@@ -57,8 +57,18 @@ var _shield: float = 0
 var _s_shield: float = 0
 # Buffs: Stat-Key (wie bei _gems) -> {"factor": 0.3 = +30 %, "turns": übrige eigene Züge}
 var _buffs: Dictionary = {}
+# Schwächungen (ElementEffects): Quelle -> {"stat": Stat-Key, "factor": 0.2 = -20 %, "turns": übrige eigene Züge, -1 = bis Kampfende}.
+# Nach Quelle getrennt, damit z. B. Staub (kurz) und Verbrennung (dauerhaft) auf Angriff sich nicht gegenseitig überschreiben.
+var _debuffs: Dictionary = {}
+# Statuseffekte bis Kampfende (ElementEffects): "poison"/"burn"/"paralysis" -> {"stacks": Anzahl, "from": Verursacher,
+# "power": Stärke-Faktor der stärksten Karte, die ihn ausgelöst hat (effect_power)}
+var _statuses: Dictionary = {}
+# Buffs und Schwächungen zusammen drücken einen Wert nie unter diesen Faktor
+const MIN_STAT_FACTOR := 0.25
 # Nur Gegner: geplanter nächster Zug als [{"skill": Dictionary, "target": Monster}], im Kampf als Absicht sichtbar (battle.gd _plan_intent)
 var _intent: Array = []
+# Zwischenstände der Boss-Relikte dieses Monsters im laufenden Kampf (z. B. Schaden für den Fate-Spiegel), siehe BossRelics
+var _relic_state: Dictionary = {}
 
 func _init(level: int, meta_data: Dictionary) -> void:
 	## get saved data and apply.
@@ -97,7 +107,10 @@ func reset_battle_state() -> void:
 	_shield = 0
 	_s_shield = 0
 	_buffs = {}
+	_debuffs = {}
+	_statuses = {}
 	_intent = []
+	_relic_state = {}
 	for skill in _skills:
 		skill.erase("_cooldown_left")
 	Events.monster_status_changed.emit(self)
@@ -113,6 +126,12 @@ func start_turn() -> void:
 		_buffs[stat].turns -= 1
 		if _buffs[stat].turns <= 0:
 			_buffs.erase(stat)
+	for key in _debuffs.keys():
+		if _debuffs[key].turns < 0:
+			continue
+		_debuffs[key].turns -= 1
+		if _debuffs[key].turns <= 0:
+			_debuffs.erase(key)
 	Events.monster_status_changed.emit(self)
 
 func add_shield(amount: float, physical: bool) -> void:
@@ -123,15 +142,16 @@ func add_shield(amount: float, physical: bool) -> void:
 	Events.monster_status_changed.emit(self)
 
 # Zieht den Schaden vom passenden Schild ab und liefert, was durchkommt.
-func absorb_damage(damage: float, physical: bool) -> float:
+# shield_cost: so viel Schild kostet jeder abgefangene Schadenspunkt (Magma: 2, siehe ElementEffects.shield_cost).
+func absorb_damage(damage: float, physical: bool, shield_cost := 1.0) -> float:
 	var shield = _shield if physical else _s_shield
-	var blocked = minf(shield, damage)
+	var blocked = minf(shield / shield_cost, damage)
 	if blocked <= 0:
 		return damage
 	if physical:
-		_shield -= blocked
+		_shield = maxf(_shield - blocked * shield_cost, 0.0)
 	else:
-		_s_shield -= blocked
+		_s_shield = maxf(_s_shield - blocked * shield_cost, 0.0)
 	Events.monster_status_changed.emit(self)
 	return damage - blocked
 
@@ -141,10 +161,44 @@ func add_buff(stat: String, factor: float, turns: int) -> void:
 	Events.monster_status_changed.emit(self)
 
 func buff_factor(stat: String) -> float:
-	return 1.0 + _buffs.get(stat, {}).get("factor", 0.0)
+	var factor: float = 1.0 + _buffs.get(stat, {}).get("factor", 0.0)
+	for debuff in _debuffs.values():
+		if debuff.stat == stat:
+			factor -= debuff.factor
+	return maxf(factor, MIN_STAT_FACTOR)
 
 func is_buffed() -> bool:
 	return not _buffs.is_empty()
+
+# Erneutes Schwächen aus derselben Quelle stapelt nicht, sondern frischt Stärke und Dauer auf (turns -1 = bis Kampfende).
+func add_debuff(key: String, stat: String, factor: float, turns: int) -> void:
+	var old: Dictionary = _debuffs.get(key, {})
+	var old_turns: int = old.get("turns", 0)
+	var new_turns := -1 if turns < 0 or old_turns < 0 else maxi(turns, old_turns)
+	_debuffs[key] = {"stat": stat, "factor": maxf(factor, old.get("factor", 0.0)), "turns": new_turns}
+	Events.monster_status_changed.emit(self)
+
+func is_debuffed() -> bool:
+	return not _debuffs.is_empty()
+
+# Statuseffekt bis Kampfende, erneutes Anwenden erhöht die Stapel bis max_stacks.
+# Die Stärke bleibt die der stärksten Karte, eine schwächere Karte senkt sie nicht.
+func add_status(status: String, from: Monster, max_stacks := 1, power := 1.0) -> void:
+	var entry: Dictionary = _statuses.get(status, {"stacks": 0, "power": 0.0})
+	entry.stacks = mini(entry.stacks + 1, max_stacks)
+	entry.power = maxf(entry.power, power)
+	entry.from = from
+	_statuses[status] = entry
+	Events.monster_status_changed.emit(self)
+
+func has_status(status: String) -> bool:
+	return _statuses.has(status)
+
+func status_stacks(status: String) -> int:
+	return _statuses.get(status, {}).get("stacks", 0)
+
+func status_power(status: String) -> float:
+	return _statuses.get(status, {}).get("power", 1.0)
 
 func reset_to_new_round():
 	Events.refresh_ui_for_monster.emit()
@@ -195,8 +249,10 @@ func _base_stat(stat: String) -> float:
 	return share * _level * Helper.points_per_level(_best_points) * STAT_SCALE
 
 func gem_bonus(stat: String) -> int:
-	# der Relikt-Bonus zählt pro Trophäe und wird nicht gespeichert, gilt also auch rückwirkend
-	return _gems.get(stat, 0) + gem_count(stat) * Relics.modify("trophy_bonus", 0)
+	# der Relikt-Bonus zählt pro Trophäe und wird nicht gespeichert, gilt also auch rückwirkend.
+	# Er gehört dem Spieler: Trophäen von Bossen bekommen ihn erst, wenn der Boss gefangen ist.
+	var relic_bonus: int = 0 if State.enemy_mons.has(self) else Relics.modify("trophy_bonus", 0)
+	return _gems.get(stat, 0) + gem_count(stat) * relic_bonus
 
 func gem_count(stat: String) -> int:
 	return _gem_counts.get(stat, 0)

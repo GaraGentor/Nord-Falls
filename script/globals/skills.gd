@@ -5,8 +5,13 @@ func deal_damage(props):
 	props.mon._last_hit_by = props.from
 	var full_damage = calc_damage(props.from, props.mon, props.skill)
 	reveal_stats_by_hit(props.from, props.mon, props.skill)
-	# Schilde fangen den Schaden zuerst ab
-	var damage = Tutorial.cap_damage(props.mon, props.mon.absorb_damage(full_damage, is_physical(props.skill)))
+	# Schilde fangen den Schaden zuerst ab (Magma zieht sie doppelt ab)
+	var absorbed = props.mon.absorb_damage(full_damage, is_physical(props.skill), ElementEffects.shield_cost(props.skill))
+	# Übungskampf: niemand geht K.O.
+	var damage = Tutorial.cap_damage(props.mon, absorbed)
+	# für Element-Effekte, die vom verursachten Schaden abhängen (Eis), siehe battle.gd _use_skill
+	props.dealt = props.get("dealt", 0.0) + damage
+	props.blocked = props.get("blocked", 0.0) + full_damage - absorbed
 	var multiplier = element_multiplier(props.skill.nature, props.mon._type)
 	print("lose:" + str(props.skill.value) + ":" + str(damage) + " (Element x" + str(multiplier) + ")")
 	Events.monster_hit_with_element.emit(props.mon, damage, multiplier, full_damage - damage)
@@ -86,11 +91,13 @@ func is_passive(skill: Dictionary) -> bool:
 	return skill.get("effect", "") == "passive"
 
 # +1 -> x1.5, +2 -> x2.0, ... / -1 -> x0.5, -2 -> x0.25, ...
+# Chaos-Skills bekommen gegen Nicht-Chaos-Ziele einen Zuschlag (ElementEffects.chaos_bonus).
 func element_multiplier(skill_nature: int, target_type: int) -> float:
 	var score = element_score(skill_nature, target_type)
+	var bonus = ElementEffects.chaos_bonus(skill_nature, target_type)
 	if score >= 0:
-		return 1.0 + ELEMENT_BONUS * score
-	return pow(1.0 - ELEMENT_BONUS, -score)
+		return 1.0 + ELEMENT_BONUS * score + bonus
+	return pow(1.0 - ELEMENT_BONUS, -score) + bonus
 
 # ─────────────────────────
 # Schilde halten bis zum nächsten eigenen Zug des geschützten Monsters oder bis sie aufgebraucht sind (siehe Monster.start_turn, Monster.absorb_damage).
@@ -131,11 +138,13 @@ func incoming_hits(target: Monster, attackers: Array) -> Array:
 				continue
 			var physical = is_physical(action.skill)
 			var full = calc_damage(attacker, target, action.skill)
-			var blocked = minf(shield if physical else s_shield, full)
+			# gleiche Rechnung wie Monster.absorb_damage, Magma zieht den Schild doppelt ab
+			var cost = ElementEffects.shield_cost(action.skill)
+			var blocked = minf((shield if physical else s_shield) / cost, full)
 			if physical:
-				shield -= blocked
+				shield -= blocked * cost
 			else:
-				s_shield -= blocked
+				s_shield -= blocked * cost
 			hits.append({"physical": physical, "full": full, "after": full - blocked})
 	return hits
 
@@ -348,8 +357,45 @@ const EGG_SKILL_CATEGORIES = [
 	{"key": "magic", "label": "EGG_CATEGORY_MAGIC", "icon": "res://assets/ui/icons/sparkle.svg"},
 	{"key": "shield", "label": "EGG_CATEGORY_SHIELD", "icon": "res://assets/ui/icons/battle/shield.svg"},
 	{"key": "buff", "label": "EGG_CATEGORY_BUFF", "icon": "res://assets/ui/icons/battle/buff.svg"},
-	{"key": "passive", "label": "EGG_CATEGORY_PASSIVE", "icon": "res://assets/ui/icons/parchment.svg"},
+	{"key": "passive", "label": "EGG_CATEGORY_PASSIVE", "icon": "res://assets/ui/icons/passive.svg"},
 ]
+
+const PHYSICAL_ICON := preload("res://assets/ui/icons/fist.svg")
+const MAGIC_ICON := preload("res://assets/ui/icons/sparkle.svg")
+const PASSIVE_ICON := preload("res://assets/ui/icons/passive.svg")
+
+## Icon der Skill-Art auf Karten und in Tabellen: passiv, sonst physisch (Faust) oder magisch.
+func kind_icon(skill: Dictionary) -> Texture2D:
+	if is_passive(skill):
+		return PASSIVE_ICON
+	return PHYSICAL_ICON if is_physical(skill) else MAGIC_ICON
+
+## Wert, der auf Karten und in Tabellen unter "Stärke" steht: bei Angriffen der Schaden gegen ein Ziel mit gleicher
+## (Sp.) Verteidigung und neutralem Element, bei Schilden die Schildstärke, beides aus den aktuellen Werten des Monsters.
+## Buffs, Passive und Skills ohne Monster zeigen ihren Grundwert. Ist der Wert eines Gegners noch nicht aufgedeckt,
+## steht der Prozentwert da, damit die Karte nichts verrät.
+func power_text(skill: Dictionary, mon: Monster) -> String:
+	var value = skill.get("value", skill.get("damage", ""))
+	if mon == null or not (value is float or value is int):
+		return Helper.format_number(value)
+	var physical := is_physical(skill)
+	var stat := ""
+	if is_damage_skill(skill):
+		stat = "atk" if physical else "s_atk"
+	elif egg_skill_category(skill) == "shield":
+		stat = "def" if physical else "s_def"
+	if stat == "":
+		return Helper.format_number(value)
+	if not _stat_visible(mon, stat):
+		return Helper.format_number(value) + "%"
+	var base: float = {"atk": mon.attack(), "s_atk": mon.s_attack(), "def": mon.defense(), "s_def": mon.s_defense()}[stat]
+	return str(int(ceilf(base * value / 100.0)))
+
+## Gegner im Kampf verraten ihre Werte erst, wenn sie aufgedeckt sind (siehe BattleInfoPanel._hidden_stats).
+func _stat_visible(mon: Monster, stat: String) -> bool:
+	if not State.enemy_mons.has(mon):
+		return true
+	return State.is_mon_known(mon._name) or Relics.works("all_stats") or State.is_mon_stat_revealed(mon._name, stat)
 
 func egg_skill_category(skill: Dictionary) -> String:
 	if is_passive(skill):

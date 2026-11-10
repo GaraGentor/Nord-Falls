@@ -15,8 +15,8 @@ const SWIPE_TO_DRAG := 40.0
 @export var type_icon: TextureRect
 @export var description_label: Label
 
-@export var physical_texture: Texture2D
-@export var magic_texture: Texture2D
+## Monster, aus dessen Werten Schaden bzw. Schildstärke unten auf der Karte berechnet wird (null = Grundwert)
+var mon: Monster
 
 var skill: Dictionary:
 	set(val):
@@ -50,20 +50,23 @@ func _init_card() -> void:
 	name_label.text = tr(skill.name)
 	name_label.self_modulate = SkillCardPaper.readable_color(Helper.color_by_type(skill.nature))
 	cost_badge.show_number(skill.cost, false)
-	value_label.text = Helper.format_number(skill.get("value", skill.get("damage", "")))
-	type_icon.texture = physical_texture if skill.damage_type == Enums.SKILL_DAMAGE_TYPE.PHYSICAL else magic_texture
+	value_label.text = Skills.power_text(skill, mon)
+	type_icon.texture = Skills.kind_icon(skill)
 	description_label.text = Helper.skill_description(skill)
 	description_label.self_modulate = Color.WHITE
 
 ## Fehlen dem Monster Elemente für diesen Skill oder läuft die Abklingzeit noch,
 ## steht das statt der Beschreibung auf der Karte
-func show_state(mon: Monster) -> void:
+func show_state(owner_mon: Monster) -> void:
+	mon = owner_mon
 	var text = Skills.missing_elements_text(mon, skill)
 	if text.is_empty() and not Skills.is_ready(skill):
 		text = tr("BATTLE_CARD_COOLDOWN").format({"turns": Skills.cooldown_left(skill)})
 	if text.is_empty():
 		_init_card()
 		return
+	# Werte können sich im Kampf ändern (Buffs), daher auch hier neu berechnen
+	value_label.text = Skills.power_text(skill, mon)
 	description_label.text = text
 	description_label.self_modulate = Color(1, 0.45, 0.45)
 

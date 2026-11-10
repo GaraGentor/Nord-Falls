@@ -1,5 +1,9 @@
 shader_type canvas_item;
 
+// Bildschirmpixel pro Spielpixel (1280x720), setzt GameSettings: bei scharfer Darstellung (canvas_items) auf großen
+// Bildschirmen bleiben Partikel und Dithering so grob wie in der Grundauflösung
+global uniform float pixel_scale;
+
 // Dunkle Eisenplatte für Textflächen in beliebiger Größe (auf einem ColorRect):
 // gleiche groben Pixel, gleiches Flackern und Dithering wie living_pixels.gdshader,
 // die Platte wird aber berechnet, damit sie sich beim Skalieren nicht verzerrt.
@@ -59,6 +63,7 @@ void fragment() {
 		length(vec2(dFdx(UV.x), dFdy(UV.x))),
 		length(vec2(dFdx(UV.y), dFdy(UV.y)))
 	), vec2(1e-6));
+	px_per_uv /= max(pixel_scale, 0.01);
 	vec2 cells = max(round(px_per_uv / pixel_size), vec2(1.0));
 	vec2 cell = floor(UV * cells);
 	vec2 from_start = cell;
@@ -90,7 +95,7 @@ void fragment() {
 		float k = 1.0 + floor(h.z * 3.0);
 		rgb *= 1.0 + flicker * sin((k + 2.0) * t + h.w * TAU);
 
-		vec2 dp = floor(FRAGCOORD.xy / dither_scale);
+		vec2 dp = floor(FRAGCOORD.xy / (dither_scale * max(pixel_scale, 0.01)));
 		// Muster verschiebt sich schrittweise -> animiertes Dithering
 		vec4 ds = hash4(vec2(floor(loop_pos * max(1.0, floor(loop_seconds * dither_fps))), 3.7));
 		dp += floor(ds.xy * 4.0);

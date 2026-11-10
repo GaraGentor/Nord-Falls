@@ -99,8 +99,11 @@ func generate_mons(props: Dictionary = {
 
 	# optional ein Kopfgeld-Monster (Eintrag aus Skills.BOUNTIES) als erster Gegner
 	var bounty: Dictionary = props.get("bounty", {})
+	# optional feste Arten der Reihe nach (Bosse, siehe BossRelics.roll_species), danach wieder aus dem Pool
+	var species: Array = props.get("species", [])
 	for i in default_props.count:
-		var mon_meta_data = Monmap.mon_metainfos_by_name(bounty.mon if i == 0 and not bounty.is_empty() else mons_to_pick.pick_random())
+		var species_name: String = species[i] if i < species.size() else mons_to_pick.pick_random()
+		var mon_meta_data = Monmap.mon_metainfos_by_name(bounty.mon if i == 0 and not bounty.is_empty() else species_name)
 		var newMon = Monster.new(default_props.level, mon_meta_data)
 		# eigene Kopfgeld-Arten (Monmap bounty_target) sind auch bei normalem Auftauchen das Kopfgeld-Monster
 		newMon._bounty = bounty.key if i == 0 and not bounty.is_empty() else mon_meta_data.get("bounty_target", "")
@@ -210,12 +213,15 @@ func format_number(v) -> String:
 		return str(roundi(v)) if is_equal_approx(v, roundf(v)) else str(snappedf(v, 0.1))
 	return str(v)
 
-## Skill-Beschreibung mit eingesetzten Werten, Zahlen wie in format_number
+## Skill-Beschreibung mit eingesetzten Werten, Zahlen wie in format_number,
+## bei Kombi-Elementen mit dem Element-Effekt als zweiter Zeile (ElementEffects)
 func skill_description(skill: Dictionary) -> String:
 	var values := {}
 	for key in skill:
 		values[key] = format_number(skill[key]) if skill[key] is float else skill[key]
-	return tr(skill.description).format(values)
+	var text := tr(skill.description).format(values)
+	var effect := ElementEffects.skill_effect_text(skill)
+	return text if effect == "" else text + "\n" + effect
 
 func between(v, min, max) -> bool:
 	return v >= min and v <= max

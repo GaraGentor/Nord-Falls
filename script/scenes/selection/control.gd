@@ -18,20 +18,52 @@ var common_egg_crack = preload("res://assets/ui/eggs/common_2.png")
 ## Ansicht des gewählten Eis wie im Kampf: Name, Bild, Typ, Werte, Skills
 @export var info_panel: Control
 @export var biome_path: Control
-## Erklärt das Spiel am selben Platz, solange noch kein Ei gewählt ist; nach dem interaktiven Tutorial nicht mehr
-@export var tutorial: Control
+## Am selben Platz, solange noch kein Ei gewählt ist: Knöpfe für Anleitung und Sammlung
+@export var menu: Control
 
 var selected_egg: int = 0
 
+## Zahnrad unten links (Größe und Abstand wie der Legenden-Button der Karte)
+const SETTINGS_BUTTON_SIZE := 56.0
+const SETTINGS_BUTTON_MARGIN := 16.0
+const MENU_BUTTON_WIDTH := 280.0
+const MENU_FONT_SIZE := 24
+
 func _ready() -> void:
+	_add_settings_button()
+	_build_menu()
 	load_eggs()
 	biome_path.show_path(Map.load_biome_path())
 	# display_mons()
 	Events.select_initial_mon.connect(select_egg)
 	# Events.select_initial_mon.emit(0)
 	_add_tutorial_targets()
-	tutorial.visible = not Tutorial.is_complete()
+	Tutorial.enabled_changed.connect(_on_tutorial_enabled_changed)
 	Tutorial.trigger("selection")
+
+func _exit_tree() -> void:
+	Tutorial.enabled_changed.disconnect(_on_tutorial_enabled_changed)
+
+## Im Einstellungen-Dialog eingeschaltet: von vorn, damit das Tutorial mit dem Ziehen der Eier beginnen kann
+func _on_tutorial_enabled_changed(on: bool) -> void:
+	if on:
+		get_tree().reload_current_scene.call_deferred()
+
+func _build_menu() -> void:
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 18)
+	menu.add_child(column)
+	column.add_child(_menu_button(tr("SELECTION_GUIDE"), func(): InfoDialog.present(self, GuideDialog.new())))
+	column.add_child(_menu_button(tr("SELECTION_COLLECTION"), func(): InfoDialog.present(self, CollectionDialog.new())))
+
+func _menu_button(text: String, on_pressed: Callable) -> Button:
+	var button := RewardDialog.plate_button(text)
+	button.add_theme_font_size_override("font_size", MENU_FONT_SIZE)
+	button.custom_minimum_size.x = MENU_BUTTON_WIDTH
+	button.focus_mode = FOCUS_NONE
+	button.mouse_default_cursor_shape = CURSOR_POINTING_HAND
+	button.pressed.connect(on_pressed)
+	return button
 
 ## Gruppen, die das interaktive Tutorial hervorhebt (siehe Tutorial.SEQUENCES)
 func _add_tutorial_targets() -> void:
@@ -40,6 +72,15 @@ func _add_tutorial_targets() -> void:
 	$Selection/MarginContainer/VBoxContainer/Button.add_to_group("tut_draw_egg")
 	info_panel.add_to_group("tut_starter_info")
 	go_button.add_to_group("tut_begin_journey")
+
+func _add_settings_button() -> void:
+	var button := SettingsDialog.make_button(self)
+	button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+	button.offset_left = SETTINGS_BUTTON_MARGIN
+	button.offset_right = SETTINGS_BUTTON_MARGIN + SETTINGS_BUTTON_SIZE
+	button.offset_top = -SETTINGS_BUTTON_MARGIN - SETTINGS_BUTTON_SIZE
+	button.offset_bottom = -SETTINGS_BUTTON_MARGIN
+	add_child(button)
 
 ## Eier aus dem Spielstand, neue gibt es nur ohne gespeicherte (erster Start oder nach einem Run-Ende)
 func load_eggs() -> void:
@@ -74,9 +115,11 @@ func select_egg(index):
 		egg_rect(i).material = Monmap.egg_material(Monmap.rarity_of(mons[i]._name), i == index)
 
 	selected_egg = index
-	tutorial.visible = false
+	menu.visible = false
 	info_panel.visible = true
 	info_panel.monster = mons[index]
+	# ausgebrütet gilt als gesehen (Sammlung)
+	SaveManager.add_seen_mon(mons[index]._name)
 
 func select_mon(mon):
 	State.mons = [mon]
@@ -122,4 +165,4 @@ func _on_reroll_button_pressed() -> void:
 	# die alte Wahl gilt nicht mehr
 	go_button.disabled = true
 	info_panel.visible = false
-	tutorial.visible = not Tutorial.is_complete()
+	menu.visible = true

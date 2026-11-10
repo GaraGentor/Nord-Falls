@@ -61,8 +61,6 @@ const DESK_WAVE_AMP := 0.025
 const DESK_WAVE_SPEED := 0.25
 const NOISE_SHADER := preload("res://script/scenes/world_map/map_noise.gdshader")
 const ENEMY_BADGE_NAME := "EnemyCount"
-## so groß wie der Legenden-Button daneben
-const HELP_BUTTON_SIZE := Vector2(56, 56)
 
 # Körniger, düsterer Look wie im Kampf über Papier, Deko und Wetter.
 # All das liegt auf z_index -1 (auch in world_map.tscn), damit Felder, Wege, Lager, Shop & Co. normal darüber bleiben.
@@ -91,9 +89,18 @@ func _ready() -> void:
 	Relics.relics_changed.connect(refresh_walkable_nodes)
 
 	show_biome()
+	# Klick auf ein Biom der Route bzw. das aktuelle Biom zeigt seine Stärken und Schwächen
+	biome_path_label.meta_clicked.connect(func(meta): _open_biome_info(int(str(meta))))
+	biome_path_label.tooltip_text = tr("BIOME_INFO_HINT")
+	depth_level.tooltip_text = tr("BIOME_INFO_HINT")
+	depth_level.gui_input.connect(func(event: InputEvent):
+		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			_open_biome_info(State.map_level))
 	monster_shard_changed(State.boss_shards)
 	change_key_text(State.keys)
 	change_coupon_text(State.coupons)
+	# auf dem Handy per Finger scrollen, auch wenn der Finger auf einem Kartenfeld beginnt
+	DragScroll.attach(scroll_container)
 	weather = MapWeather.new()
 	weather.scroll_container = scroll_container
 	weather.z_index = -1
@@ -124,27 +131,33 @@ func _ready() -> void:
 	else:
 		change_position(State.current_map_position)
 	change_ep_text(State.ep)
-	add_help_button()
+	add_settings_button()
 	if OS.is_debug_build():
 		add_debug_button()
 	show_pending_rewards()
 	team_bar.add_to_group("tut_map_team")
 	$HBoxContainer/Panel/LegendButton.add_to_group("tut_map_legend")
-	# erst zu Beginn eines Runs, wenn die erste Reihe noch frei wählbar ist
-	if State.current_map_position == State.NO_MAP_POSITION:
+	Tutorial.enabled_changed.connect(_on_tutorial_enabled_changed)
+	# zu Beginn eines Runs oder direkt nach dem Übungskampf, nie über Belohnungen hinweg
+	if State.current_map_position == State.NO_MAP_POSITION or Tutorial.take_back_from_practice():
 		Tutorial.trigger("map")
 
-## "?" links neben dem Legenden-Button im Header: Erklärungen nachlesen, Tutorial wiederholen oder ausschalten
-func add_help_button() -> void:
-	var button := HelpDialog.button(HELP_BUTTON_SIZE)
+## Im Einstellungen-Dialog eingeschaltet: es geht gleich mit dem Übungskampf los, danach erklärt sich die Karte
+func _on_tutorial_enabled_changed(on: bool) -> void:
+	if on and Tutorial.wants_practice():
+		Tutorial.start_practice()
+
+# Zahnrad im Header direkt links neben dem Legenden-Button, gleich groß wie dieser
+func add_settings_button() -> void:
+	var button := SettingsDialog.make_button(self)
 	button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-	button.offset_left = -80.0 - HELP_BUTTON_SIZE.x
-	button.offset_top = -16.0 - HELP_BUTTON_SIZE.y
+	button.offset_left = -136.0
+	button.offset_top = -72.0
 	button.offset_right = -80.0
 	button.offset_bottom = -16.0
 	$HBoxContainer/Panel.add_child(button)
 
-# Nur in Debug-Builds: links neben dem Hilfe-Button im Header
+# Nur in Debug-Builds: links neben dem Einstellungen-Button im Header
 func add_debug_button() -> void:
 	var button := RewardDialog.plate_button("DEBUG")
 	button.add_theme_font_size_override("font_size", 16)
@@ -163,6 +176,8 @@ func add_debug_button() -> void:
 #	Events.map_event_pressed.disconnect(_call_map_event)
 
 func _exit_tree() -> void:
+	if Tutorial.enabled_changed.is_connected(_on_tutorial_enabled_changed):
+		Tutorial.enabled_changed.disconnect(_on_tutorial_enabled_changed)
 	State.ep_changed.disconnect(change_ep_text)
 	State.boss_shards_changed.disconnect(monster_shard_changed)
 	State.keys_changed.disconnect(change_key_text)
@@ -550,7 +565,8 @@ func show_biome_path() -> void:
 	var passed := Color(IronPlate.TEXT_COLOR, 0.35).to_html()
 	for depth in State.biome_path.size():
 		var combo = ColorMap.get_combo(State.biome_path[depth])
-		var text = "%d %s" % [depth + 1, tr(combo.label)]
+		# jedes Biom ist ein Link auf seine Tiefe (siehe _open_biome_info)
+		var text = "[url=%d]%d %s[/url]" % [depth, depth + 1, tr(combo.label)]
 		if depth < State.map_level:
 			parts.append("[color=#%s]%s[/color]" % [passed, text])
 		elif depth == State.map_level:
@@ -558,6 +574,10 @@ func show_biome_path() -> void:
 		else:
 			parts.append("[color=#%s]%s[/color]" % [Color(combo.color).lightened(0.2).to_html(false), text])
 	biome_path_label.text = "[color=#%s]%s[/color] %s" % [SkillDetailPopup.GOLD.to_html(false), tr("MAP_HEADER_ROUTE"), (" [color=#%s]›[/color] " % passed).join(parts)]
+
+func _open_biome_info(depth: int) -> void:
+	if depth >= 0 and depth < State.biome_path.size():
+		BiomeInfoDialog.open(self, State.biome_path[depth], depth)
 
 func reset_animation_state(ele) -> void:
 	ele._ui_item.scale = Vector2(1,1)

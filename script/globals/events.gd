@@ -27,6 +27,8 @@ signal deal_damage_to_monster(mon)
 signal monster_hit_with_element(mon, damage, multiplier, blocked)
 # Schild, Buff oder Abklingzeit eines Monsters hat sich geändert
 signal monster_status_changed(mon)
+# schwebender Hinweis über dem Monster, z. B. "Gift -12", "Betäubt!", "Ausbruch!" (ElementEffects)
+signal monster_effect_text(mon, text, color)
 # geplante Züge der Gegner (Monster._intent) oder ihre Ziele haben sich geändert
 signal intents_changed()
 
@@ -41,6 +43,9 @@ signal damage_animation_done(mon)
 
 # hit anim
 signal monster_hit_monster(from, to)
+
+# Effekt eines ausgespielten Skills am Ziel (Hieb, Element-Treffer, Schild, Buff), blocked = vom Schild abgefangener Schaden
+signal skill_vfx(mon, skill, blocked)
 
 # upgrade status to make them upgraded on the run
 signal mon_upgraded(mon_name)

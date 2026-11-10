@@ -58,6 +58,7 @@ func _init() -> void:
 ## source_hint: [Label, Beschreibung], wie eine verfügbare Ei-Attacke freigeschaltet wurde, sonst leer.
 func show_skill(skill: Dictionary, mon: Monster, anchor: Control, lock_hint: Array = [], source_hint: Array = []) -> void:
 	_anchor = anchor
+	_card.mon = mon
 	_card.skill = skill
 	_card.modulate = Color(0.6, 0.6, 0.6) if not lock_hint.is_empty() else Color.WHITE
 	_stats.text = "%s · %s" % [tr("CONFIGURATOR_TIER").format({"tier": skill.get("tier", 1)}),

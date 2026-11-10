@@ -37,12 +37,18 @@ const FALLEN_GEM_BONUS := 20
 const LEVEL_UP_KILLS := 2
 ## So viele Gegner-Slots hat der Kampf (battle.tscn)
 const MAX_ENEMIES := 3
+## Trophäen-Zähler der Boss-Ausstattung
+const TROPHY_COLUMNS := 3
+const TROPHY_LABEL_WIDTH := 170
+const TROPHY_VALUE_WIDTH := 50
+const TROPHY_STEP_SIZE := Vector2(50, 40)
 
 const BATTLE_PATH := "res://script/scenes/battle/battle.tscn"
 const JUDGEMENT_PATH := "res://script/scenes/judgment/judgement.tscn"
 const LEVEL_UP_PATH := "res://script/scenes/level_up/level_up.tscn"
 const RUN_END_PATH := "res://script/scenes/run_end/run_end.tscn"
 const WORLD_MAP_PATH := "res://script/scenes/world_map/world_map.tscn"
+const SELECTION_PATH := "res://script/scenes/selection/selection.tscn"
 const RELIC_REWARD_SCENE := preload("res://script/scenes/relic_reward/relic_reward.tscn")
 
 ## Die Karte (world_map.gd), über die die Felder geöffnet werden
@@ -52,6 +58,14 @@ var _main: VBoxContainer
 var _fight_page: VBoxContainer
 ## Startet den Kampf, für den gerade die Gegnerzahl gewählt wird
 var _fight_start: Callable
+## Boss-Ausstattung auf der Gegnerzahl-Seite, nur bei Boss-Kämpfen sichtbar
+var _boss_options: VBoxContainer
+var _boss_relic_picks: Array = []
+var _trophy_mode_button: Button
+var _trophy_custom := false
+## Stat-Key -> Anzahl Trophäen dieser Art pro Boss
+var _trophy_counts := {}
+var _trophy_labels := {}
 var _picker: VBoxContainer
 ## Arten, die im Judgement als Fänge bereitliegen
 var _picked: Array[String] = []
@@ -73,6 +87,13 @@ var _preview_page: VBoxContainer
 var _preview_images := {}
 var _preview_back := false
 var _preview_view_button: Button
+var _vfx_page: VBoxContainer
+## Monster auf der VFX-Seite, an dem die Effekte abgespielt werden
+var _vfx_target: TextureRect
+var _vfx_back := false
+var _vfx_view_button: Button
+## Sicherheitsabfrage vor dem Löschen des Spielstands
+var _reset_page: VBoxContainer
 
 func _ready() -> void:
 	set_accent(ACCENT)
@@ -86,6 +107,8 @@ func _ready() -> void:
 	_build_stats_page()
 	_build_relic_page()
 	_build_preview_page()
+	_build_vfx_page()
+	_build_reset_page()
 	_show_page(_main)
 
 func _build_main() -> void:
@@ -96,8 +119,8 @@ func _build_main() -> void:
 	var is_last_biome: bool = State.map_level == Map.map_settings.size() - 1
 	_add_section(_main, "Kämpfe", [
 		[tr(Map.type_label(Map.PATH_TYPE.COMBAT)) + " ...", _open_fight_page.bind(_change_scene.bind(BATTLE_PATH))],
-		["BOSS-FELD ...", _open_fight_page.bind(_start_map_boss)],
-		["ENDBOSS ..." if is_last_biome else "BIOM-BOSS ...", _open_fight_page.bind(map.start_biome_boss)],
+		["BOSS-FELD ...", _open_fight_page.bind(_start_map_boss, true)],
+		["ENDBOSS ..." if is_last_biome else "BIOM-BOSS ...", _open_fight_page.bind(map.start_biome_boss, true)],
 	])
 
 	var fields := []
@@ -134,6 +157,8 @@ func _build_main() -> void:
 	extras.add_child(_make_button("WERTE-VERTEILUNG ...", func(): _show_page(_stats_page)))
 	extras.add_child(_make_button("RELIKTE ...", func(): _show_page(_relic_page)))
 	extras.add_child(_make_button("MONSTER-VORSCHAU ...", func(): _show_page(_preview_page)))
+	extras.add_child(_make_button("VFX-VORSCHAU ...", func(): _show_page(_vfx_page)))
+	extras.add_child(_make_button("SPIELSTAND LÖSCHEN ...", func(): _show_page(_reset_page)))
 
 	var close_button := _make_button("SCHLIESSEN", close)
 	close_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -149,6 +174,7 @@ func _build_fight_page() -> void:
 	for count in range(1, MAX_ENEMIES + 1):
 		entries.append([str(count), _start_fight.bind(count)])
 	_add_section(_fight_page, "Gegen wie viele Monster?", entries)
+	_build_boss_options()
 
 	var back_button := _make_button("ZURÜCK", _show_page.bind(_main))
 	back_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -280,18 +306,129 @@ func _refresh_preview() -> void:
 	for species in _preview_images:
 		Monmap.show_on(_preview_images[species], species, PREVIEW_IMAGE_SIZE.x, _preview_back)
 
+## Kampf-Effekte (BattleVfx) an einem Monster ansehen, ohne einen Kampf zu starten.
+## Größe wie im Kampf: Radius = 40 % des Monsterbilds (siehe MonsterScene._spawn_vfx).
+const BATTLE_VFX := preload("res://script/scenes/battle/battle_vfx.gd")
+const BATTLE_VFX_LAYER := preload("res://script/scenes/battle/battle_vfx_layer.gd")
+const VFX_TARGET_SIZE := Vector2(256, 256)
+## Platz um das Monster, damit überstehende Effekte (Brocken von oben, Funken) nicht in die Buttons ragen
+const VFX_STAGE_SIZE := Vector2(420, 420)
+## Buttons pro Reihe in der scrollbaren Liste links
+const VFX_COLUMNS := 3
+## Höhe der Liste, passt samt Titel und Steuerung oben in die 720 px hohe Ansicht
+const VFX_LIST_HEIGHT := 480
+## Pause zwischen zwei Effekten bei ALLE NACHEINANDER
+const VFX_SEQUENCE_PAUSE := 1.0
+
+## Oben die Steuerung, darunter links die Kategorien zum Scrollen, rechts das Monster als Bühne
+func _build_vfx_page() -> void:
+	_vfx_page = VBoxContainer.new()
+	_vfx_page.add_theme_constant_override("separation", 12)
+	add_footer(_vfx_page)
+
+	var controls := HBoxContainer.new()
+	controls.add_theme_constant_override("separation", 12)
+	controls.add_child(_make_button("ZURÜCK", _show_page.bind(_main)))
+	controls.add_child(_make_button("ALLE NACHEINANDER", _play_all_vfx))
+	_vfx_view_button = _make_button("", _toggle_vfx_view)
+	controls.add_child(_vfx_view_button)
+	_vfx_page.add_child(controls)
+	_vfx_page.add_child(_make_header("VFX-Vorschau: Effekte am Monster wie im Kampf"))
+
+	var body := HBoxContainer.new()
+	body.add_theme_constant_override("separation", 16)
+	_vfx_page.add_child(body)
+
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size.y = VFX_LIST_HEIGHT
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	body.add_child(scroll)
+	var list := VBoxContainer.new()
+	list.add_theme_constant_override("separation", 8)
+	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(list)
+
+	var kinds = BATTLE_VFX.Kind
+	_add_section(list, "Physischer Hieb (in der Elementfarbe)", [
+		["HIEB ERDE", _play_vfx.bind(kinds.SLASH, Enums.MON_TYPES.EARTH)],
+		["HIEB FEUER", _play_vfx.bind(kinds.SLASH, Enums.MON_TYPES.FIRE)],
+		["HIEB WASSER", _play_vfx.bind(kinds.SLASH, Enums.MON_TYPES.WATER)],
+		["HIEB LUFT", _play_vfx.bind(kinds.SLASH, Enums.MON_TYPES.AIR)],
+	], VFX_COLUMNS)
+	_add_section(list, "Magische Angriffe", [
+		["FEUER", _play_vfx.bind(kinds.FIRE)],
+		["WASSER", _play_vfx.bind(kinds.WATER)],
+		["ERDE", _play_vfx.bind(kinds.EARTH)],
+		["LUFT", _play_vfx.bind(kinds.AIR)],
+		["MAGMA (KOMBI)", _play_vfx_kinds.bind(BATTLE_VFX.element_kinds(Enums.MON_TYPES.EARTH | Enums.MON_TYPES.FIRE))],
+	], VFX_COLUMNS)
+	_add_section(list, "Schilde", [
+		["SCHILD", _play_vfx.bind(kinds.SHIELD)],
+		["MAG. SCHILD", _play_vfx.bind(kinds.S_SHIELD)],
+		["SCHILD-TREFFER", _play_vfx.bind(kinds.SHIELD_HIT)],
+		["MAG. SCHILD-TREFFER", _play_vfx.bind(kinds.S_SHIELD_HIT)],
+	], VFX_COLUMNS)
+	_add_section(list, "Buffs", [
+		["BUFF", _play_vfx.bind(kinds.BUFF)],
+	], VFX_COLUMNS)
+
+	var stage := CenterContainer.new()
+	stage.custom_minimum_size = VFX_STAGE_SIZE
+	stage.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	body.add_child(stage)
+	_vfx_target = TextureRect.new()
+	_vfx_target.custom_minimum_size = VFX_TARGET_SIZE
+	_vfx_target.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_vfx_target.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_vfx_target.material = Monmap.MONSTER_MATERIAL
+	stage.add_child(_vfx_target)
+	_refresh_vfx_target()
+
+## Erstes eigenes Monster, sonst das erste bekannte
+func _vfx_species() -> String:
+	return State.mons[0]._name if not State.mons.is_empty() else Monmap.mons[0].name
+
+func _toggle_vfx_view() -> void:
+	_vfx_back = not _vfx_back
+	_refresh_vfx_target()
+
+func _refresh_vfx_target() -> void:
+	_vfx_view_button.text = "ANSICHT: HINTEN" if _vfx_back else "ANSICHT: VORNE"
+	Monmap.show_on(_vfx_target, _vfx_species(), VFX_TARGET_SIZE.x, _vfx_back)
+
+## Wie im Kampf über die Effekt-Bühne mit "Lebende Pixel"-Shader (battle_vfx_layer.gd)
+func _play_vfx(kind: int, nature := 0) -> void:
+	var accent := Color(ColorMap.get_combo(nature).color) if nature != 0 else Color.WHITE
+	BATTLE_VFX_LAYER.for_target(_vfx_target, _vfx_target).play(kind, accent)
+
+func _play_vfx_kinds(kinds: Array) -> void:
+	for kind in kinds:
+		_play_vfx(kind)
+
+func _play_all_vfx() -> void:
+	var kinds = BATTLE_VFX.Kind
+	var sequence := [[kinds.SLASH, Enums.MON_TYPES.FIRE], [kinds.FIRE, 0], [kinds.WATER, 0], [kinds.EARTH, 0], [kinds.AIR, 0],
+		[kinds.SHIELD, 0], [kinds.SHIELD_HIT, 0], [kinds.S_SHIELD, 0], [kinds.S_SHIELD_HIT, 0], [kinds.BUFF, 0]]
+	for entry in sequence:
+		# Seite gewechselt oder Menü geschlossen: Abfolge abbrechen
+		if not is_inside_tree() or not _vfx_page.visible:
+			return
+		_play_vfx(entry[0], entry[1])
+		await get_tree().create_timer(VFX_SEQUENCE_PAUSE).timeout
+
 func _show_page(page: VBoxContainer) -> void:
-	for other in [_main, _fight_page, _picker, _egg_page, _stats_page, _relic_page, _preview_page]:
+	for other in [_main, _fight_page, _picker, _egg_page, _stats_page, _relic_page, _preview_page, _vfx_page, _reset_page]:
 		other.visible = other == page
 
 func _refresh_start() -> void:
 	# ohne Fang und Gefallenen würde das Judgement sofort zurück zur Karte springen
 	_start_button.disabled = _picked.is_empty() and not _fallen_check.button_pressed
 
-func _add_section(parent: Control, title: String, entries: Array) -> GridContainer:
+func _add_section(parent: Control, title: String, entries: Array, columns := COLUMNS) -> GridContainer:
 	parent.add_child(_make_header(title))
 	var grid := GridContainer.new()
-	grid.columns = COLUMNS
+	grid.columns = columns
 	grid.add_theme_constant_override("h_separation", 8)
 	grid.add_theme_constant_override("v_separation", 8)
 	parent.add_child(grid)
@@ -339,13 +476,88 @@ func _make_mon_button(mon_species: String) -> Button:
 func _change_scene(path: String) -> void:
 	get_tree().change_scene_to_file(path)
 
-func _open_fight_page(start: Callable) -> void:
+func _open_fight_page(start: Callable, boss := false) -> void:
 	_fight_start = start
+	_boss_options.visible = boss
 	_show_page(_fight_page)
 
 func _start_fight(enemy_count: int) -> void:
 	DebugSettings.next_enemy_count = enemy_count
+	var boss := _boss_options.visible
+	DebugSettings.next_boss_relics = _boss_relic_picks.duplicate() if boss and not _boss_relic_picks.is_empty() else null
+	DebugSettings.next_boss_trophies = _trophy_counts.duplicate() if boss and _trophy_custom else null
 	_fight_start.call()
+
+# ─────────────────────────
+# Boss-Ausstattung (nur für Boss-Kämpfe auf der Gegnerzahl-Seite)
+
+## Relikte als Schalter (keins = wie im Spiel), Trophäen pro Art mit Zähler (WIE IM SPIEL oder EIGENE)
+func _build_boss_options() -> void:
+	_boss_options = VBoxContainer.new()
+	_boss_options.add_theme_constant_override("separation", 8)
+	_fight_page.add_child(_boss_options)
+
+	_boss_options.add_child(_make_header("Boss-Relikte des Kampfs (keins gewählt = wie im Spiel, %d zufällig)" % BossRelics.RELICS_PER_BATTLE))
+	var relic_grid := GridContainer.new()
+	relic_grid.columns = COLUMNS
+	relic_grid.add_theme_constant_override("h_separation", 8)
+	relic_grid.add_theme_constant_override("v_separation", 8)
+	_boss_options.add_child(relic_grid)
+	for id in BossRelics.RELICS:
+		var button := _make_toggle_button(tr(BossRelics.get_relic(id).name))
+		button.custom_minimum_size = BUTTON_SIZE
+		button.tooltip_text = BossRelics.description(id)
+		button.toggled.connect(func(on: bool):
+			if on:
+				_boss_relic_picks.append(id)
+			else:
+				_boss_relic_picks.erase(id))
+		relic_grid.add_child(button)
+
+	var default_count: int = BossRelics.default_trophies(Map.encounter_depth()).values()[0]
+	_boss_options.add_child(_make_header("Trophäen pro Boss, Anzahl je Art (wie im Spiel in diesem Biom: je %dx)" % default_count))
+	_trophy_mode_button = _make_toggle_button("")
+	_trophy_mode_button.custom_minimum_size = BUTTON_SIZE
+	_trophy_mode_button.toggled.connect(func(on: bool):
+		_trophy_custom = on
+		_refresh_trophy_mode())
+	_boss_options.add_child(_trophy_mode_button)
+	var trophy_grid := GridContainer.new()
+	trophy_grid.columns = TROPHY_COLUMNS
+	trophy_grid.add_theme_constant_override("h_separation", 24)
+	trophy_grid.add_theme_constant_override("v_separation", 8)
+	_boss_options.add_child(trophy_grid)
+	for stat in DebugSettings.STATS:
+		_trophy_counts[stat] = default_count
+		var cell := HBoxContainer.new()
+		cell.add_theme_constant_override("separation", 6)
+		var label := _make_header(STAT_NAMES[stat])
+		label.custom_minimum_size.x = TROPHY_LABEL_WIDTH
+		cell.add_child(label)
+		cell.add_child(_make_trophy_step_button(stat, -1))
+		var value := _make_header("")
+		value.custom_minimum_size.x = TROPHY_VALUE_WIDTH
+		value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		cell.add_child(value)
+		_trophy_labels[stat] = value
+		cell.add_child(_make_trophy_step_button(stat, 1))
+		trophy_grid.add_child(cell)
+	_refresh_trophy_mode()
+
+## Ein Zähler schaltet auf eigene Trophäen um
+func _make_trophy_step_button(stat: String, step: int) -> Button:
+	var button := _make_button("%+d" % step, func():
+		_trophy_counts[stat] = maxi(_trophy_counts[stat] + step, 0)
+		_trophy_mode_button.button_pressed = true
+		_refresh_trophy_mode())
+	button.custom_minimum_size = TROPHY_STEP_SIZE
+	return button
+
+func _refresh_trophy_mode() -> void:
+	_trophy_mode_button.text = "TROPHÄEN: " + ("EIGENE" if _trophy_custom else "WIE IM SPIEL")
+	for stat in _trophy_labels:
+		_trophy_labels[stat].text = "%dx" % _trophy_counts[stat]
+		_trophy_labels[stat].modulate = Color.WHITE if _trophy_custom else UNPICKED_COLOR
 
 func _start_map_boss() -> void:
 	State.is_map_boss = true
@@ -672,3 +884,35 @@ func _wild_mon(mon_species: String, level: int) -> Monster:
 	Helper.add_egg_skill(mon)
 	mon.unlock_skills()
 	return mon
+
+# ─────────────────────────
+# Spielstand löschen
+
+## Sicherheitsabfrage: erst JA, LÖSCHEN setzt den Spielstand zurück
+func _build_reset_page() -> void:
+	_reset_page = VBoxContainer.new()
+	_reset_page.add_theme_constant_override("separation", 12)
+	add_footer(_reset_page)
+
+	_reset_page.add_child(_make_header("Spielstand wirklich löschen?"))
+	var info := Label.new()
+	info.text = "Gefangene Monster, freigeschaltete Ei-Attacken, Meilensteine, Boss Tränen und der laufende Run sind danach weg.\nDas Spiel startet neu bei der Ei-Auswahl. Einstellungen bleiben erhalten."
+	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info.custom_minimum_size.x = 600
+	info.add_theme_color_override("font_color", IronPlate.TEXT_COLOR)
+	_reset_page.add_child(info)
+
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 12)
+	row.add_child(_make_button("ZURÜCK", _show_page.bind(_main)))
+	var confirm := _make_button("JA, LÖSCHEN", _reset_save)
+	confirm.add_theme_color_override("font_color", ACCENT)
+	row.add_child(confirm)
+	_reset_page.add_child(row)
+
+func _reset_save() -> void:
+	SaveManager.reset_game()
+	State.reset()
+	State.boss_shards = 0
+	_change_scene(SELECTION_PATH)

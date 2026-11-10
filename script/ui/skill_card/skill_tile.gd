@@ -7,8 +7,6 @@ const HEIGHT := 118.0
 const TEXT_COLOR := IronPlate.TEXT_COLOR
 const LOCKED_COLOR := Color(0.65, 0.65, 0.65)
 const MISSING_COLOR := Color(1, 0.45, 0.45)
-const PHYSICAL_TEXTURE := preload("res://assets/ui/icons/fist.svg")
-const MAGIC_TEXTURE := preload("res://assets/ui/icons/sparkle.svg")
 
 ## locked_label: Text auf gesperrten Attacken (leer = nicht gesperrt)
 static func create(skill: Dictionary, mon: Monster, locked_label := "") -> Button:
@@ -42,14 +40,14 @@ static func create(skill: Dictionary, mon: Monster, locked_label := "") -> Butto
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	name_row.add_child(name_label)
-	name_row.add_child(_icon(PHYSICAL_TEXTURE if Skills.is_physical(skill) else MAGIC_TEXTURE, 20, tint))
+	name_row.add_child(_icon(Skills.kind_icon(skill), 20, tint))
 
 	var stats_row := HBoxContainer.new()
 	stats_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	stats_row.add_theme_constant_override("separation", 6)
 	lines.add_child(stats_row)
 	stats_row.add_child(_label(TranslationServer.translate("CONFIGURATOR_SKILL_STATS").format({"cost": skill.cost, "cooldown": skill.cooldown}), 16, tint))
-	stats_row.add_child(_label(Helper.format_number(skill.value), 16, tint))
+	stats_row.add_child(_label(Skills.power_text(skill, mon), 16, tint))
 
 	if locked:
 		lines.add_child(_label(TranslationServer.translate(locked_label), 15, LOCKED_COLOR))

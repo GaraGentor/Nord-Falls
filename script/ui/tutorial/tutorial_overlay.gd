@@ -31,6 +31,8 @@ const FADE_SECONDS := 0.25
 const DIM := Color(0, 0, 0, 0.65)
 ## bei offenen Schritten muss der Rest gut sichtbar bleiben
 const OPEN_DIM := Color(0, 0, 0, 0.25)
+const SKIP_FONT_SIZE := 16
+const NEXT_FONT_SIZE := 20
 
 ## Fläche über allem, schluckt Klicks außerhalb der Löcher
 class Blocker extends Control:
@@ -120,34 +122,36 @@ func _build(speaker: Dictionary) -> void:
 	_blocker.add_child(_box)
 	# die Höhe steht erst fest, wenn der Text umgebrochen ist
 	_box.minimum_size_changed.connect(_layout)
-	# eigene Platte, damit die Knöpfe auch über einem hellen Ziel lesbar bleiben
-	var button_plate := PanelContainer.new()
-	button_plate.size_flags_horizontal = Control.SIZE_SHRINK_END
+	# zwei eigene Knöpfe unter der Blase: Überspringen links, Weiter rechts
 	var buttons := HBoxContainer.new()
-	buttons.add_theme_constant_override("separation", 16)
-	IronPlate.frame(button_plate, buttons, 10, 2)
-	_box.add_child(button_plate)
-	var skip_button := _button(tr("TUTORIAL_SKIP"), 16, IronPlate.TEXT_COLOR)
+	_box.add_child(buttons)
+	var skip_button := _button(tr("TUTORIAL_SKIP"), SKIP_FONT_SIZE, IronPlate.TEXT_COLOR)
 	skip_button.pressed.connect(_on_skip_pressed)
 	buttons.add_child(skip_button)
-	_next_button = _button(tr("TUTORIAL_NEXT"), 22, GOLD)
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	buttons.add_child(spacer)
+	_next_button = _button(tr("TUTORIAL_NEXT"), NEXT_FONT_SIZE, GOLD)
 	_next_button.pressed.connect(_next)
 	buttons.add_child(_next_button)
 
+## Text-Knopf auf eigener Eisenplatte, damit er auch über einem hellen Ziel lesbar bleibt
 func _button(text: String, font_size: int, color: Color) -> Button:
-	var button := Button.new()
-	button.text = text
-	button.flat = true
+	var button := RewardDialog.plate_button(text)
 	button.focus_mode = Control.FOCUS_NONE
+	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	button.add_theme_font_size_override("font_size", font_size)
 	button.add_theme_color_override("font_color", color)
-	button.add_theme_color_override("font_hover_color", Color.WHITE)
 	return button
 
 func _show_step(index: int) -> void:
 	_stop_waiting()
 	_index = index
 	var step: Dictionary = _steps[index]
+	if step.get("if_present", false) and _find_all(_first_target(step)).is_empty():
+		_next()
+		return
 	var wait: String = step.get("wait", "next")
 	_next_button.visible = wait == "next"
 	_blocker.hole_clickable = wait != "next" or step.get("free", false)
@@ -232,9 +236,13 @@ func _close() -> void:
 	_stop_waiting()
 	queue_free()
 
+## Gehört die Sequenz zu einer Szene, die schon verlassen wurde?
+func is_stale() -> bool:
+	return get_tree().current_scene != _scene and get_tree().current_scene != null
+
 func _process(_delta: float) -> void:
 	# Szene wurde verlassen, bevor die Sequenz fertig war: abbrechen, sie kommt beim nächsten Mal wieder
-	if get_tree().current_scene != _scene and get_tree().current_scene != null:
+	if is_stale():
 		_close()
 		return
 	# Ziele können sich bewegen (fallende Eier, Scrollen), daher jedes Frame neu
@@ -324,6 +332,12 @@ func _covered_area(rect: Rect2) -> float:
 	for hole in _blocker.holes:
 		area += rect.intersection(hole).get_area()
 	return area
+
+func _first_target(step: Dictionary) -> String:
+	var targets = step.get("target", "")
+	if targets is Array:
+		return targets[0] if not targets.is_empty() else ""
+	return targets
 
 func _npc() -> Control:
 	var npcs := _find_all("npc")

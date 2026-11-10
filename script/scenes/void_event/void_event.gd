@@ -124,7 +124,6 @@ func _ready() -> void:
 	for id in State.relics:
 		_add_relic(id)
 	_build_skip_button()
-	Tutorial.trigger("void")
 
 ## Rechte Seite: die ganze Fläche nimmt das Relikt an, darunter liegt schon der Teppich bereit
 func _build_stage() -> void:

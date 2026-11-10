@@ -278,6 +278,15 @@ function collect() {
 	}
 	const knownHooks = [...relicsSrc.matchAll(/^##\s*-\s*"(\w+)":\s*(.+)$/gm)].map((m) => ({ key: m[1], desc: m[2] }));
 
+	// Boss-Relikte: Werte stehen als Ausdrücke aus den Konstanten der Datei (roundi(X_SHARE * 100))
+	const bossSrc = read("script/globals/boss_relics.gd");
+	const bossConsts = {};
+	for (const m of stripComments(bossSrc).matchAll(/^const\s+([A-Z_]+)\s*(?::\s*\w+\s*)?:?=\s*([-\d.]+|\[[^\]\n]*\])\s*$/gm)) {
+		bossConsts[m[1]] = evalGd(m[2], `BossRelics ${m[1]}`);
+	}
+	Object.assign(ctx.helpers, bossConsts, { roundi: Math.round });
+	const bossRelics = readVar(bossSrc, "RELICS", "BossRelics") ?? {};
+
 	return {
 		enums: ctx.enums,
 		elements: {
@@ -303,6 +312,11 @@ function collect() {
 		},
 		relics,
 		relicHooks: knownHooks,
+		bossRelics,
+		bossRelicSettings: {
+			perBattle: bossConsts.RELICS_PER_BATTLE,
+			rareChance: bossConsts.RARE_BOSS_CHANCE ?? [],
+		},
 		gems: {
 			stats: readVar(gemsSrc, "STATS", "Gems") ?? {},
 			bonusByDepth: readVar(gemsSrc, "BONUS_BY_DEPTH", "Gems") ?? [],
@@ -344,6 +358,7 @@ function build() {
 
 	console.log(`Wiki gebaut: ${path.relative(ROOT, path.join(OUT_DIR, "index.html"))}`);
 	console.log(`  ${data.mons.length} Monster, ${data.skills.length} Skills, ${Object.keys(data.relics).length} Relikte, ` +
+		`${Object.keys(data.bossRelics).length} Boss-Relikte, ` +
 		`${Object.keys(data.gems.stats).length} Trophäen, ${data.elements.combos.length} Elemente`);
 	for (const w of warnings) console.warn("  WARNUNG: " + w);
 }

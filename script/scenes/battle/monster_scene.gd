@@ -22,9 +22,11 @@ func _ready() -> void:
 	Events.deal_damage_to_monster.connect(_deal_damage)
 	Events.monster_hit_with_element.connect(_show_hit_text)
 	Events.monster_status_changed.connect(_on_status_changed)
+	Events.monster_effect_text.connect(_show_effect_text)
 	Events.monster_faints.connect(_remove_mon)
 	Events.mon_is_catched.connect(_remove_mon)
 	Events.intents_changed.connect(_refresh_intent)
+	Events.skill_vfx.connect(_play_skill_vfx)
 	var mons = State.mons if home_mons else State.enemy_mons
 	if mons.size() > mon_slot:
 		mon = mons[mon_slot]
@@ -36,6 +38,36 @@ func _ready() -> void:
 func _deal_damage(_mon: Monster) -> void:
 	if mon == _mon:
 		printStuff()
+
+const BattleVfxScript := preload("res://script/scenes/battle/battle_vfx.gd")
+const BattleVfxLayer := preload("res://script/scenes/battle/battle_vfx_layer.gd")
+## kurz nach dem Zusammenzucken des Angreifers, damit Angriff und Treffer nacheinander wirken
+const VFX_HIT_DELAY := 0.08
+
+# Effekte am Ziel eines Skills: physische Angriffe als Hieb in der Elementfarbe, magische je Element
+# (Feuer-Explosion, Wasser-Spritzer, Steinbrocken, Windwirbel), Schildtreffer, wenn der Schild etwas abfängt,
+# neue Schilde (physisch/magisch) und Buffs. Die passiven Element-Kräfte haben keine eigenen Effekte.
+func _play_skill_vfx(_mon: Monster, skill: Dictionary, blocked: float) -> void:
+	if mon != _mon or not is_inside_tree() or Skills.is_passive(skill):
+		return
+	var physical := Skills.is_physical(skill)
+	if Skills.is_damage_skill(skill):
+		if physical:
+			var accent := Color(ColorMap.get_combo(skill.nature).get("color", "#FFFFFF"))
+			_spawn_vfx(BattleVfxScript.Kind.SLASH, accent, VFX_HIT_DELAY)
+		else:
+			for kind in BattleVfxScript.element_kinds(skill.nature):
+				_spawn_vfx(kind, Color.WHITE, VFX_HIT_DELAY)
+		if blocked > 0:
+			_spawn_vfx(BattleVfxScript.Kind.SHIELD_HIT if physical else BattleVfxScript.Kind.S_SHIELD_HIT, Color.WHITE, VFX_HIT_DELAY)
+	elif skill.get("effect", "") == "buff":
+		_spawn_vfx(BattleVfxScript.Kind.BUFF)
+	else:
+		_spawn_vfx(BattleVfxScript.Kind.SHIELD if physical else BattleVfxScript.Kind.S_SHIELD)
+
+## Effekte laufen auf einer gemeinsamen Bühne über dem Monsterbild, mit "Lebende Pixel"-Shader (battle_vfx_layer.gd)
+func _spawn_vfx(kind: int, accent := Color.WHITE, delay := 0.0) -> void:
+	BattleVfxLayer.for_target(self, texture_rect).play(kind, accent, delay)
 
 const SUPER_EFFECTIVE_COLOR := Color(1.0, 0.55, 0.2)
 const NOT_EFFECTIVE_COLOR := Color(0.6, 0.65, 0.7)
@@ -81,6 +113,22 @@ func _show_hit_text(_mon: Monster, damage: float, multiplier: float, blocked: fl
 	tween.tween_property(box, "position:y", box.position.y - 60, 1.2)
 	tween.tween_property(box, "modulate:a", 0.0, 0.6).set_delay(0.6)
 	tween.chain().tween_callback(box.queue_free)
+
+# Schwebender Hinweis der Element-Effekte ("Gift -12", "Betäubt!", "Ausbruch!"), etwas höher als der Schadenstext,
+# damit sich beide nicht überdecken.
+func _show_effect_text(_mon: Monster, text: String, color: Color) -> void:
+	if mon != _mon or not is_inside_tree():
+		return
+	var row := _icon_row([text], color, 24)
+	row.z_index = 10
+	add_child(row)
+	row.size = row.get_combined_minimum_size()
+	row.position = _texture_offset() + Vector2((texture_rect.size.x - row.size.x) / 2, 0)
+	var tween := row.create_tween()
+	tween.set_parallel()
+	tween.tween_property(row, "position:y", row.position.y - 50, 1.4)
+	tween.tween_property(row, "modulate:a", 0.0, 0.6).set_delay(0.8)
+	tween.chain().tween_callback(row.queue_free)
 
 ## Zeile aus Symbolen und Text: Texture2D = Symbol in der Zeilenfarbe, String = Text,
 ## Monster = kleines Bild des Monsters (als Ziel einer Absicht).
@@ -155,6 +203,14 @@ func _refresh_status() -> void:
 		status_box.add_child(_icon_row([ICON_S_SHIELD, str(roundi(mon._s_shield))], SPECIAL_COLOR, STATUS_FONT_SIZE))
 	if mon.is_buffed():
 		status_box.add_child(_icon_row([ICON_BUFF], BUFF_COLOR, STATUS_FONT_SIZE))
+	if mon.is_debuffed():
+		status_box.add_child(_icon_row([tr("STATUS_WEAKENED")], ElementEffects.DEBUFF_COLOR, STATUS_FONT_SIZE))
+	# Statuseffekte der Element-Effekte bis Kampfende, Gift mit seinen Stapeln
+	for status in mon._statuses:
+		var text := tr(ElementEffects.STATUS_LABELS[status])
+		if status == ElementEffects.POISON:
+			text += " x%d" % mon.status_stacks(status)
+		status_box.add_child(_icon_row([text], ElementEffects.STATUS_COLORS[status], STATUS_FONT_SIZE))
 
 func printStuff() -> void:
 	if mon:

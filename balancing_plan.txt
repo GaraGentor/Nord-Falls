@@ -1,0 +1,143 @@
+UMSETZUNGSPLAN: ELEMENT-EFFEKTE
+===============================
+
+Ziel: Kombi-Elemente bekommen eigene Effekte, damit sich der Aufwand für mehrere Elemente lohnt
+und Team-Builds (Tempo, Tank, Dauerschaden ...) entstehen.
+
+Grundregeln
+-----------
+- Ein Effekt löst aus, wenn ein Skill AUSGESPIELT wird (nicht beim Auswählen der Karte).
+- Maßgeblich ist das Element des Skills (skill.nature), nicht das des Monsters.
+  Basis-Elemente (Erde, Feuer, Wasser, Luft) haben keinen Effekt.
+- Zweier-Kombis: kurze, taktische Effekte (2 Züge des betroffenen Monsters).
+- Dreier-Kombis: Statuseffekte, die bis zum Kampfende bleiben.
+- Gleicher Effekt erneut: frischt nur Dauer/Stärke auf, stapelt NICHT (Ausnahme: Gift).
+- Gegner nutzen dieselben Effekte.
+
+
+1. EFFEKTE (Startwerte, werden beim Testen angepasst)
+=====================================================
+
+Zweier-Kombis: drei Spiegelpaare (Gegner schwächen <-> sich selbst stärken)
+
+  Thema    | Gegner schwächen                     | Sich selbst stärken
+  ---------+--------------------------------------+----------------------------------------
+  Tempo    | DAMPF (Feuer+Wasser)                 | BLITZ (Feuer+Luft)
+		   | Ziel: Initiative -20 %, 2 Züge       | Wirker: Initiative +20 %, 2 Züge
+  Schilde  | MAGMA (Erde+Feuer)                   | EIS (Luft+Wasser)
+		   | Treffer zieht doppelt so viel        | Wirker bekommt Schild = 25 % des
+		   | Schild ab                            | verursachten Schadens ("Frostpanzer"),
+		   |                                      | Schildtyp passend zum Skill (phys./mag.)
+  Angriff  | STAUB (Erde+Luft)                    | SCHLAMM (Erde+Wasser)
+		   | Ziel: Angriff & Sp. Angriff -20 %,   | Wirker: Angriff & Sp. Angriff +20 %,
+		   | 2 Züge                               | 2 Züge
+
+  Schlamm und Dampf getauscht: Erde blockt viel und trifft schwach, daher bekommt eine Erd-Kombi
+  die Angriffsverstärkung.
+  Initiative wirkt ab der nächsten Runde (das Rad sortiert zu Rundenbeginn).
+
+  Hinweis Tempo: Initiative ist in Rundenkämpfen der stärkste Wert, daher eher niedrig ansetzen.
+  Hinweis Eis + Gift: starke Tank-Kombo, Frostpanzer-Wert nicht zu hoch wählen.
+
+Dreier-Kombis: Status bis Kampfende
+
+  SUMPF (Erde+Luft+Wasser): GIFT
+	- Schaden zu Beginn jedes Zuges des Ziels: 3 % max. KP pro Stapel
+	- stapelt mit jeder Anwendung, max. 5 Stapel
+	- ignoriert Magie-Schilde, Rüstung (phys. Schild) fängt ihn ab
+
+  ASCHESTURM (Erde+Luft+Feuer): VERBRENNUNG
+	- fester Schaden am Ende jedes Zuges des Ziels: 6 % max. KP, stapelt nicht
+	- zusätzlich Angriff -15 %, solange die Verbrennung anhält
+	- ignoriert Rüstung, Magie-Schild fängt sie ab
+
+  GEWITTER (Luft+Wasser+Feuer): PARALYSE
+	- 20 % Chance zu Beginn jedes Zuges: das Monster ist betäubt, der Zug endet sofort
+	- stapelt nicht, gewürfelt wird zu Zugbeginn (eigene Monster und Gegner)
+
+  VULKAN (Erde+Feuer+Wasser): AUSBRUCH
+	- 15 % Chance, dass der Skill ein zweites Mal mit gleicher Stärke wirkt
+	  (Angriff = zweiter Treffer, Schild = doppelter Schild)
+
+CHAOS (alle vier Elemente)
+  - ist durch element_score gegen alles neutral (keine Schwäche)
+  - Chaos-Skills: Element-Faktor +0,25 gegen alle Nicht-Chaos-Ziele
+  - kein weiterer Effekt, damit es nicht zu stark wird. Ziel: Spieler motivieren, Chaos für den
+	Endkampf zu erreichen
+
+
+2. TECHNISCHE UMSETZUNG
+=======================
+
+Schritt 1: Debuffs im Monster (script/classes/mon.gd)
+  - add_buff nimmt per maxf immer den größeren Wert -> negative Werte funktionieren so nicht.
+  - Neues Dict _debuffs {stat: {factor, turns}} neben _buffs.
+  - buff_factor(stat) = 1 + buff - debuff, nach unten begrenzen (z. B. min. 0.25).
+  - start_turn() zählt _debuffs genauso herunter wie _buffs.
+  - reset_battle_state() leert _debuffs.
+
+Schritt 2: Statuseffekte im Monster (mon.gd)
+  - Neues Dict _statuses, z. B.
+	  {"poison": {"stacks": n}, "burn": {}, "paralysis": {}, "armor_break": {}}
+  - Funktionen add_status / has_status / clear_statuses, Signal Events.monster_status_changed.
+  - Verbrennung/Rüstungsbruch als dauerhafte Debuffs (turns = -1 = bis Kampfende).
+  - reset_battle_state() leert _statuses.
+
+Schritt 3: Effekt-Zuordnung (neue Datei script/globals/element_effects.gd, Autoload "ElementEffects")
+  - Tabelle: Element-Maske -> {on_target: Callable, on_caster: Callable, label, description}
+  - apply(from, skill, targets, damage_dealt)
+	  * on_target pro getroffenem Gegner (Schlamm, Staub, Gift, Verbrennung, Paralyse, Vulkan)
+	  * on_caster einmal pro Einsatz (Blitz, Dampf, Eis)
+	  * Vulkan: 15 % Chance, den Skill ein zweites Mal wirken zu lassen
+	  * Chaos: +0,25 direkt in Skills.element_multiplier (wirkt damit auch in der Vorschau)
+  - Alle Werte als Konstanten oben in der Datei, damit das Balancing an EINER Stelle passiert.
+
+Schritt 4: Einbau in den Kampfablauf
+  - battle.gd _use_skill: nach skill.handle.call(...) ElementEffects.apply aufrufen.
+	Prüfen, dass _ki_action (Gegner) ebenfalls über _use_skill läuft.
+  - Eis braucht den verursachten Schaden: deal_damage (skills.gd) soll den Schaden zurückgeben.
+  - Magma: absorb_damage (mon.gd) bekommt einen Faktor für den Schildabzug
+	(Schild verliert 2x, durchgelassener Schaden entsprechend höher).
+	-> auch in Skills.incoming_hits berücksichtigen, sonst stimmt die Absichten-Vorschau nicht!
+  - Staub/Dampf laufen über attack()/s_attack() -> calc_damage und Vorschau passen automatisch,
+	wenn buff_factor dort genutzt wird (prüfen).
+  - Schlamm/Blitz: turn_wheel.gd sortiert nach speed() -> prüfen, ob die Reihenfolge nach einer
+	Änderung neu berechnet wird (sonst wirkt der Effekt erst in der nächsten Runde).
+
+Schritt 5: Gift/Verbrennung/Paralyse im Zugablauf (battle.gd _on_turn_for)
+  - Gift: zu Beginn des Zuges, VOR dem Zurücksetzen der Schilde (mon.start_turn setzt
+	_shield = 0), damit die Rüstung den Giftschaden noch abfangen kann.
+  - Verbrennung: am Ende des Zuges (vor turn_wheel.next_mon bzw. nach dem Spielerzug).
+  - Paralyse: zu Zugbeginn würfeln (20 %), kurze Anzeige "Betäubt!", Zug sofort beenden.
+  - K.O. durch Statusschaden: _last_hit_by = Verursacher setzen (Kopfgelder!),
+	State.record_own_faint und Events.monster_faints wie bei normalem Schaden auslösen.
+  - Schadenszahl anzeigen (eigenes Event oder monster_hit_with_element wiederverwenden,
+	Farbe je Status).
+
+Schritt 6: UI
+  - Status-/Debuff-Symbole am Monster (monster_scene.gd / battle_mon_card.gd), mit Tooltip
+	(Effekt, Stapel, verbleibende Züge).
+  - Absichten: Magma-Durchschlag in der Vorschau.
+  - Skill-Karten: Effekt-Zeile unter dem Skilltext (aus ElementEffects description).
+  - Element-Info-Dialog (script/ui/element_info_dialog): Effekt des Elements erklären.
+  - Übersetzungen in localization/translations.csv (DE + EN).
+
+Schritt 7: Testen & Balancing
+  - Debug-Schalter in debug_settings.gd: Effekte an/aus, Status direkt setzen.
+  - Testkämpfe je Effekt: Tempo-Team, Tank (Eis + Gift), Burst (Magma + Dampf).
+  - Prüfen: Kampflänge (Tank-Builds dürfen nicht ewig dauern), Gegner mit Dauerschaden nicht
+	zu frustrierend, Paralyse-Häufigkeit gefühlt fair.
+  - Werte nur in den Konstanten von element_effects.gd anpassen.
+
+
+3. ENTSCHEIDUNGEN
+=================
+  [x] Vulkan: 15 % Chance auf doppelte Wirkung
+  [x] Chaos: +0,25 Element-Faktor, kein Zufallseffekt
+  [x] Gift/Verbrennung: der jeweils andere Schild fängt den Schaden ab (Konterspiel)
+  [x] Paralyse: 20 % Chance, der Zug endet sofort
+  [x] Effekte hängen am Element des Skills
+  [ ] Sumpf/Aschesturm: Werte im Spiel testen
+  [ ] Heilmittel gegen Status: später über Skills oder Passive
+  [ ] Sollen Gegner Dreier-Effekte seltener bekommen als der Spieler?
+  [ ] Inhalte: Skills für Schlamm, Staub, Dampf und alle Dreier-Kombis fehlen noch

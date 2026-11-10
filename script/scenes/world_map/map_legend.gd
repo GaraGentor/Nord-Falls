@@ -72,6 +72,8 @@ func _ready() -> void:
 	scroll.size_flags_vertical = SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	box.add_child(scroll)
+	# auf dem Handy per Finger scrollen, auch wenn der Finger auf einem Eintrag beginnt
+	DragScroll.attach(scroll)
 
 	var list := VBoxContainer.new()
 	list.size_flags_horizontal = SIZE_EXPAND_FILL

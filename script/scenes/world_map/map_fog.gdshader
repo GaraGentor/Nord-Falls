@@ -1,5 +1,9 @@
 shader_type canvas_item;
 
+// Bildschirmpixel pro Spielpixel (1280x720), setzt GameSettings: bei scharfer Darstellung (canvas_items) auf großen
+// Bildschirmen bleiben Partikel und Dithering so grob wie in der Grundauflösung
+global uniform float pixel_scale;
+
 // Treibender Nebel/Staub über der Karte, grob gerastert passend zum Pixel-Look. Blitze hellen ihn auf.
 
 uniform vec4 fog_color : source_color = vec4(1.0);
@@ -28,7 +32,8 @@ float fbm(vec2 p) {
 }
 
 void fragment() {
-	vec2 p = floor(FRAGCOORD.xy / 3.0) * 3.0;
+	float fog_cell = 3.0 * max(pixel_scale, 0.01);
+	vec2 p = floor(FRAGCOORD.xy / fog_cell) * fog_cell;
 	float a = fbm(p / scale + drift);
 	float b = fbm(p / (scale * 0.55) - drift * 1.6 + 9.0);
 	float density = smoothstep(0.42, 0.78, a) * 0.75 + smoothstep(0.5, 0.8, b) * 0.35;

@@ -6,7 +6,7 @@ var current_map: Array = []
 var SETTING_LEVEL = 35
 # Startstufe der eigenen Monster und Mindeststufe aller Monster (Monster._init, battle.gd)
 var INITIAL_LEVEL = 5
-var INITIAL_MONS = ["2", "4", "5", "8"]
+var INITIAL_MONS = ["2", "4", "5", "11"]
 
 var mons: Array[Monster] = []
 # Art des Start-Monsters (Ei), sammelt den Meilenstein-Fortschritt
@@ -251,6 +251,7 @@ func record_own_faint(victim: Monster, killer: Monster, skill: Dictionary, damag
 
 # Merkt sich ein gegnerisches Monster für die Monster-Suche, spätere Sichtungen derselben Art überschreiben frühere.
 func record_sighting(mon: Monster, depth: int) -> void:
+	SaveManager.add_seen_mon(mon._name)
 	while run_sightings.size() <= depth:
 		run_sightings.append({})
 	var previous = run_sightings[depth].get(mon._name, {})

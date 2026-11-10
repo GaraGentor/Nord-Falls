@@ -11,6 +11,7 @@ extends Control
 
 # nicht erreichte Biome (Endbildschirm) werden abgedunkelt
 const UNREACHED_MODULATE := Color(0.55, 0.55, 0.55, 0.85)
+const HOVER_MODULATE := Color(1.25, 1.25, 1.15)
 const GOLD := SkillDetailPopup.GOLD
 const DEPTH_FONT_SIZE := 14
 const NAME_FONT_SIZE := 18
@@ -27,11 +28,17 @@ const HOP_STEP := 3.0
 const HOP_PAUSE := 0.12
 const LOOP_PAUSE := 1.2
 const LAND_SECONDS := 0.5
+## Stufen-Punkte oben auf den Feldern, der Hüpfer landet auf ihnen
+const GLYPH_DOT_RADIUS := 7.0
+const GLYPH_SPAN := 24.0
+const GLYPH_LINE_WIDTH := 1.0
+## so weit ragen sie in die Platte hinein
+const GLYPH_OVERLAP := 6.0
 
 # Anzahl erreichter Biome, -1 = alle (Ei-Auswahl)
 var _reached := -1
 var _hbox: HBoxContainer
-## je Feld: panel, plate, color
+## je Feld: panel, plate, color, glyph
 var _fields: Array[Dictionary] = []
 ## je Verbindung ihre Pixel
 var _chains: Array[Array] = []
@@ -103,6 +110,12 @@ func _create_biome(depth_index: int, mask: int) -> Control:
 	var holder := Control.new()
 	holder.custom_minimum_size = Vector2(0, node_height)
 	holder.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# Klick zeigt Stärken und Schwächen des Bioms, beim Drüberfahren hellt das Feld auf
+	holder.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	holder.tooltip_text = tr("BIOME_INFO_HINT")
+	holder.gui_input.connect(_on_biome_input.bind(depth_index, mask))
+	holder.mouse_entered.connect(func(): holder.modulate = HOVER_MODULATE)
+	holder.mouse_exited.connect(func(): holder.modulate = Color.WHITE)
 
 	var panel := PanelContainer.new()
 	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -115,12 +128,35 @@ func _create_biome(depth_index: int, mask: int) -> Control:
 	vbox.add_theme_constant_override("separation", 0)
 	var plate := IronPlate.frame(panel, vbox, PLATE_MARGIN, PLATE_MARGIN)
 	plate.set_rim(color)
+	var glyph := _create_glyph(mask)
+	plate.add_child(glyph)
 
 	vbox.add_child(_create_label(tr("BIOME_DEPTH").format({"depth": depth_index + 1}), DEPTH_FONT_SIZE, IronPlate.TEXT_COLOR))
 	vbox.add_child(_create_label(tr(combo["label"]), NAME_FONT_SIZE, color.lightened(0.25)))
 
-	_fields.append({"panel": panel, "plate": plate, "color": color})
+	_fields.append({"panel": panel, "plate": plate, "color": color, "glyph": glyph})
 	return holder
+
+## Stufe des Bioms als kleine Element-Platten (wie die Element-Chips), sitzt mittig auf dem oberen Rand.
+## Hängt an der Platte, damit es mit dem Feld einfliegt und federt.
+func _create_glyph(mask: int) -> ElementGlyph:
+	var glyph := ElementGlyph.new()
+	glyph.dot_radius = GLYPH_DOT_RADIUS
+	glyph.span = GLYPH_SPAN
+	glyph.line_width = GLYPH_LINE_WIDTH
+	glyph.line_color = IronPlate.TEXT_COLOR
+	glyph.plates = true
+	glyph.mask = mask
+	glyph.anchor_left = 0.5
+	glyph.anchor_right = 0.5
+	glyph.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	glyph.offset_bottom = GLYPH_OVERLAP
+	glyph.offset_top = GLYPH_OVERLAP - glyph.get_minimum_size().y
+	return glyph
+
+func _on_biome_input(event: InputEvent, depth_index: int, mask: int) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		BiomeInfoDialog.open(self, mask, depth_index)
 
 func _create_label(text: String, font_size: int, color: Color) -> Label:
 	var label := Label.new()
@@ -190,7 +226,8 @@ func _land(index: int) -> void:
 	tween.tween_property(panel, "scale", Vector2.ONE, LAND_SECONDS).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 	tween.tween_method(func(rim: Color): plate.set_rim(rim), GOLD, color, LAND_SECONDS)
 
-## Punkt, auf dem der Hüpfer auf dem oberen Rand des Feldes sitzt
+## Punkt, auf dem der Hüpfer oben auf den Stufen-Punkten des Feldes sitzt
 func _field_top(index: int) -> Vector2:
 	var holder: Control = _fields[index].panel.get_parent()
-	return Vector2(holder.position.x + (holder.size.x - HOPPER_SIZE) / 2, holder.position.y - HOPPER_SIZE)
+	var rise: float = -(_fields[index].glyph as Control).offset_top
+	return Vector2(holder.position.x + (holder.size.x - HOPPER_SIZE) / 2, holder.position.y - HOPPER_SIZE - rise)

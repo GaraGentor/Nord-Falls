@@ -2,6 +2,10 @@ extends Control
 
 const ENEMY_THINK_TIME := 0.6
 const ENEMY_ACTION_TIME := 0.9
+## Pause nach Gift/Verbrennung, länger als die KP-Animation: ein K.O. ist dann schon verarbeitet (turn_wheel.remove_mon)
+const STATUS_TICK_TIME := BattleMonCard.HP_TWEEN_TIME + 0.3
+## so lange steht "Betäubt!" über einem gelähmten Monster, bevor sein Zug endet
+const STUNNED_TIME := 0.9
 ## Chancen auf Zufallsbeute pro besiegtem Monster, gefangene Monster würfeln nicht. Jede Beute wird einzeln gewürfelt.
 const KEY_LOOT_CHANCE := 0.15
 const GEM_LOOT_CHANCE := 0.10
@@ -15,8 +19,25 @@ const GOLD_LOOT_PER_DEPTH := 5
 const BIOME_BOSS_SHARDS := 1
 const FINAL_BOSS_SHARDS := 3
 const NOISE_SHADER := preload("res://script/scenes/world_map/map_noise.gdshader")
-const HELP_BUTTON_SIZE := Vector2(48, 48)
-const HELP_BUTTON_MARGIN := 8
+const BossRelicOverlayScript := preload("res://script/scenes/battle/boss_relic_overlay.gd")
+
+# ─────────────────────────
+# Gegner-KI (siehe ki_plan.txt): jede Kombination aus Skill und Ziel bekommt einen Score, gewürfelt wird mit
+# Gewicht score ^ Schärfe. Schärfe 0 = reiner Zufall, je höher, desto öfter der beste Zug.
+## Schärfe in Biom 1, Zuschlag pro Biom-Tiefe und für Bosse
+const AI_SHARPNESS_BASE := 0.5
+const AI_SHARPNESS_PER_DEPTH := 0.5
+const AI_SHARPNESS_BOSS := 1.0
+## Score x so viel, wenn der Angriff das Ziel (zusammen mit den schon geplanten Angriffen) besiegt
+const AI_KILL_BONUS := 2.0
+## Anteil des Schadens, der über die Rest-KP hinausgeht oder ein schon verplantes Ziel trifft
+const AI_OVERKILL_SHARE := 0.15
+## wie stark Ziele mit hohem (Sp.) Angriff bevorzugt werden (0 = gar nicht)
+const AI_THREAT_WEIGHT := 0.3
+## Schild- und Buff-Skills: Grundwert = Schildmenge bzw. Wertzuwachs x Züge x dieses Gewicht (Ausbau in Schritt 6)
+const AI_DEFENSE_WEIGHT := 0.5
+## jeder Zug bleibt möglich
+const AI_MIN_SCORE := 0.1
 
 @export var catch_anim: Control
 @export var catch_button: Button
@@ -40,8 +61,22 @@ var active_mon: Monster
 ## Boss-Feld oder Biom-Boss: ein Sieg bringt eine Relic-Auswahl
 var is_boss_battle: bool = false
 
+## Vorstellung und Zerbrechen der Boss-Relikte, liegt über allem
+var _relic_overlay: BossRelicOverlayScript
+## Boss-Relikte des Kampfs am Rand des Kampffelds
+var _relic_bar: BossRelicBar
+## Szenenwechsel ist schon unterwegs: spätere K.O.-Meldungen ändern nichts mehr
+var _battle_over := false
+## Boss-Relikte, die gerade zerbrechen oder darauf warten
+var _pending_breaks := 0
+## Übungskampf (Tutorial.practice): Stand des Runs vorher, damit danach alles wie zuvor ist
+var _practice_snapshot := {}
+
 func _enter_tree() -> void:
-	_generate_battle()
+	if Tutorial.practice:
+		_generate_practice()
+	else:
+		_generate_battle()
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -72,22 +107,25 @@ func _ready() -> void:
 
 	# unsichtbar, blockiert aber Eingaben während der Gegner am Zug ist
 	$UI_Blocker.self_modulate = Color(1, 1, 1, 0)
-	turn_wheel.turn_for.connect(_on_turn_for)
 	card_hand.show_mon(State.mons[0])
+	_relic_bar = BossRelicBar.new()
+	$GameWindow.add_child(_relic_bar)
+	_relic_bar.pressed.connect(func(): _relic_overlay.play_intro(BossRelics.active, false))
+	_relic_overlay = BossRelicOverlayScript.new()
+	add_child(_relic_overlay)
+	# Boss-Relikte stellen sich vor, bevor die erste Runde beginnt
+	if not BossRelics.active.is_empty():
+		await _relic_overlay.play_intro(BossRelics.active)
+		if not is_inside_tree():
+			return
+	turn_wheel.round_started.connect(_on_round_started)
+	turn_wheel.turn_for.connect(_on_turn_for)
 	turn_wheel.start()
-	_add_help_button()
-	_add_tutorial_targets()
-	if Tutorial.teaching_enemy:
+	if Tutorial.practice:
+		_add_tutorial_targets()
+		# wer das Tutorial überspringt, hat auch mit dem Übungskampf nichts mehr zu tun
+		Tutorial.enabled_changed.connect(_on_tutorial_enabled_changed)
 		Tutorial.trigger("battle")
-	elif is_boss_battle:
-		Tutorial.trigger("boss")
-
-## "?" oben rechts im Infobereich: Erklärungen nachlesen, Tutorial wiederholen oder ausschalten
-func _add_help_button() -> void:
-	var button := HelpDialog.button(HELP_BUTTON_SIZE)
-	# direkt über dem Infobereich, Eingabe-Sperre und Fang-Animation liegen darüber
-	$UI.add_sibling(button)
-	button.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT, Control.PRESET_MODE_KEEP_SIZE, HELP_BUTTON_MARGIN)
 
 ## Gruppen, die das interaktive Tutorial hervorhebt (siehe Tutorial.SEQUENCES)
 func _add_tutorial_targets() -> void:
@@ -99,6 +137,9 @@ func _add_tutorial_targets() -> void:
 		if State.enemy_mons.has(scene.mon):
 			scene.add_to_group("tut_bat_enemies")
 			scene.intent_box.add_to_group("tut_bat_intent")
+
+func _on_round_started(_round_number: int) -> void:
+	BossRelics.on_round_started()
 
 ## Im schwarzen Infobereich zieht das Wetter des aktuellen Bioms durch, im selben Pixel-Look wie auf der Karte
 func _add_ambient() -> void:
@@ -119,7 +160,42 @@ func _is_own_turn() -> bool:
 
 func _on_turn_for(mon: Monster) -> void:
 	active_mon = mon
+	$UI_Blocker.visible = true
+	# ein zerbrechendes Boss-Relikt hält den Kampf an
+	await _relic_overlay.wait_idle()
+	if not is_inside_tree():
+		return
+	# Gift wirkt vor dem Zug, solange die Rüstung aus dem letzten Zug noch steht (start_turn lässt Schilde ablaufen)
+	if ElementEffects.tick_poison(mon):
+		await get_tree().create_timer(STATUS_TICK_TIME).timeout
+		if not is_inside_tree():
+			return
 	mon.start_turn()
+	# am Gift gestorben: das Rad hat das Monster schon entfernt, weiter zum nächsten
+	if not mon.is_alive():
+		turn_wheel.next_mon()
+		return
+	# Boss-Relikte zu Zugbeginn (Bongos, Fate-Spiegel), nach dem Ablaufen der alten Schilde
+	BossRelics.on_turn_start(mon, turn_wheel.round_number)
+	# Mikrofon: in ungeraden Runden fällt jeder Zug aus, dafür heilt sich das Monster etwas.
+	# Gegner behalten ihren angekündigten Zug für die nächste Runde.
+	if BossRelics.silences_round(turn_wheel.round_number):
+		BossRelics.microphone_turn(mon)
+		await get_tree().create_timer(STUNNED_TIME).timeout
+		if not is_inside_tree():
+			return
+		_end_turn(mon)
+		return
+	# Paralyse: betäubt, der Zug endet sofort
+	if ElementEffects.rolls_paralysis(mon):
+		await get_tree().create_timer(STUNNED_TIME).timeout
+		if not is_inside_tree():
+			return
+		if State.enemy_mons.has(mon):
+			_plan_intent(mon)
+			Events.intents_changed.emit()
+		_end_turn(mon)
+		return
 	var own_index = State.mons.find(mon)
 	if own_index > -1:
 		# Skillpunkte zu Beginn des eigenen Zuges auffüllen
@@ -143,8 +219,19 @@ func _on_turn_for(mon: Monster) -> void:
 		await get_tree().create_timer(ENEMY_ACTION_TIME).timeout
 		if not is_inside_tree():
 			return
+		await _relic_overlay.wait_idle()
+		if not is_inside_tree():
+			return
 	_plan_intent(mon)
 	Events.intents_changed.emit()
+	_end_turn(mon)
+
+## Ende eines Zuges: Verbrennung wirkt, danach ist das nächste Monster dran.
+func _end_turn(mon: Monster) -> void:
+	if ElementEffects.tick_burn(mon):
+		await get_tree().create_timer(STATUS_TICK_TIME).timeout
+		if not is_inside_tree():
+			return
 	turn_wheel.next_mon()
 
 func _monster_scenes() -> Array:
@@ -181,10 +268,15 @@ func _reselect_if_gone(gone: Monster) -> void:
 		_select_mon(alive[0])
 
 func _exit_tree() -> void:
-	Tutorial.teaching_enemy = null
+	if not _practice_snapshot.is_empty():
+		_restore_practice_snapshot()
+	if Tutorial.enabled_changed.is_connected(_on_tutorial_enabled_changed):
+		Tutorial.enabled_changed.disconnect(_on_tutorial_enabled_changed)
 	Events.mouse_event.disconnect(_catch_mouse_event)
 	Events.monster_faints.disconnect(_check_game_over)
 	Events.finish_catching.disconnect(_finish_catching)
+	# Boss-Relikte gelten nur für diesen Kampf
+	BossRelics.active = []
 	# Buffs sollen nach dem Kampf nicht in den Werten auf der Karte stehen bleiben
 	for mon in State.mons:
 		mon.reset_battle_state()
@@ -235,15 +327,37 @@ func _is_valid_target(from: Monster, skill: Dictionary, target: Monster) -> bool
 	return side.has(target)
 
 ## Setzt einen Skill ein: Flächen-Skills treffen die ganze Seite des Ziels, danach startet die Abklingzeit.
+## Element-Effekte (ElementEffects): Schwächungen und Status pro getroffenem Gegner, Verstärkungen einmal für den Wirker.
+## Vulkan wirkt mit etwas Glück ein zweites Mal mit gleicher Stärke (zweiter Treffer, doppelter Schild).
 func _use_skill(from: Monster, skill: Dictionary, target: Monster) -> void:
 	var targets = [target]
 	if Skills.targets_team(skill):
 		targets = _allies_of(target)
-	for mon in targets:
-		# Angriffsanimation nur gegen Gegner
-		if not Skills.targets_friends(skill):
-			Events.monster_hit_monster.emit(_scene_for(from), _scene_for(mon))
-		skill.handle.call({"from": from, "skill": skill, "mon": mon})
+	var repeats := 1
+	if ElementEffects.rolls_eruption(skill):
+		repeats = 2
+		Events.monster_effect_text.emit(from, tr("EFFECT_TEXT_ERUPTION"), ElementEffects.ERUPTION_COLOR)
+	var dealt := 0.0
+	var hostile := not Skills.targets_friends(skill)
+	for _i in repeats:
+		for mon in targets:
+			if not mon.is_alive():
+				continue
+			# Angriffsanimation nur gegen Gegner
+			if hostile:
+				Events.monster_hit_monster.emit(_scene_for(from), _scene_for(mon))
+				# Boss-Relikt Nebelmaschine: der Angriff kann ins Leere gehen
+				if Skills.is_damage_skill(skill) and BossRelics.dodges(mon):
+					continue
+			var props := {"from": from, "skill": skill, "mon": mon}
+			skill.handle.call(props)
+			Events.skill_vfx.emit(mon, skill, props.get("blocked", 0.0))
+			var hit: float = props.get("dealt", 0.0)
+			dealt += hit
+			if hostile:
+				ElementEffects.on_hit(from, mon, skill)
+				BossRelics.on_damage_dealt(from, mon, skill, hit, turn_wheel.round_number)
+	ElementEffects.on_cast(from, skill, dealt)
 	Skills.start_cooldown(skill)
 	Events.monster_status_changed.emit(from)
 	# Treffer decken Werte auf (Skills.reveal_stats_by_hit)
@@ -286,8 +400,6 @@ func _generate_battle():
 		level = roundi(lerpf(encounter.level[0], encounter.level[1], t))
 		State.biome_fight_index += 1
 	var ms := _take_enemies(fight_index)
-	if not is_boss_battle and Tutorial.is_teaching_fight():
-		ms = _teaching_enemies(ms)
 	# nie unter der Startstufe des eigenen Teams
 	for mon in ms:
 		mon._is_boss = is_boss_battle
@@ -296,21 +408,76 @@ func _generate_battle():
 			mon._level += Skills.get_bounty(mon._bounty).level_bonus
 		mon._initial_moves = maxi(Map.roll_weighted(encounter.moves, t), min_moves)
 		State.record_sighting(mon, depth)
-	if Tutorial.teaching_enemy:
-		Tutorial.teaching_enemy._level = State.INITIAL_LEVEL
-		Tutorial.teaching_enemy._initial_moves = Monster.BASE_MOVES
+	# Boss-Relikte gehören zum Kampf, nicht zu einem Boss: alle Bosse teilen sie
+	BossRelics.active = BossRelics.random_relics() if is_boss_battle else []
+	if is_boss_battle:
+		_apply_debug_boss_setup(ms)
 	print("encounter depth ", depth, " fight ", State.biome_fight_index, ": ", ms.size(), "x level ", level)
 	State.enemy_mons = ms
 
-## Lehrkampf (Tutorial): ein einzelner Gegner ohne Kopfgeld auf Startstufe mit einer Aktion.
-## Er geht nicht K.O. und wird sicher gefangen (Tutorial.cap_damage, Tutorial.catches_for_sure).
-func _teaching_enemies(ms: Array[Monster]) -> Array[Monster]:
-	var plain := ms.filter(func(mon: Monster): return mon._bounty == "")
-	var enemy: Monster = plain[0] if not plain.is_empty() else ms[0]
-	enemy._bounty = ""
-	Tutorial.teaching_enemy = enemy
-	var single: Array[Monster] = [enemy]
-	return single
+# ─────────────────────────
+# Übungskampf (Tutorial.practice): ein einzelner Gegner aus dem aktuellen Biom auf Startstufe mit einer Aktion.
+# Niemand geht K.O. und der Fang klappt sicher (Tutorial.cap_damage, Tutorial.catches_for_sure).
+# Er zählt nicht: kein Fortschritt im Biom, keine Beute, kein Fang, und das Team ist danach wie vorher.
+
+func _generate_practice() -> void:
+	_practice_snapshot = {
+		"lost_hp": State.mons.map(func(mon: Monster): return mon._lost_hp),
+		"run_catches": State.run_catches,
+		"caught_mon_names": State.caught_mon_names.duplicate(),
+		"defeated_mon_names": State.defeated_mon_names.duplicate(),
+		"revealed_mon_stats": State.revealed_mon_stats.duplicate(true),
+	}
+	var enemy: Monster = Helper.generate_mons({"count": 1, "species": [_practice_species()]})[0]
+	enemy._level = State.INITIAL_LEVEL
+	enemy._initial_moves = Monster.BASE_MOVES
+	var ms: Array[Monster] = [enemy]
+	BossRelics.active = []
+	State.enemy_mons = ms
+
+## Eine möglichst gewöhnliche Art aus dem Pool des aktuellen Bioms (ohne Pool aus allen Arten)
+func _practice_species() -> String:
+	var names: Array = Monmap.mons.filter(func(meta): return not meta.has("bounty_target")).map(func(meta): return meta.name)
+	if State.map_level < State.biome_pools.size() and not State.biome_pools[State.map_level].is_empty():
+		names = State.biome_pools[State.map_level].duplicate()
+	var lowest: int = names.map(Monmap.rarity_of).min()
+	return names.filter(func(mon_name): return Monmap.rarity_of(mon_name) == lowest).pick_random()
+
+func _restore_practice_snapshot() -> void:
+	for i in mini(State.mons.size(), _practice_snapshot.lost_hp.size()):
+		State.mons[i]._lost_hp = _practice_snapshot.lost_hp[i]
+	State.run_catches = _practice_snapshot.run_catches
+	State.caught_mon_names = _practice_snapshot.caught_mon_names
+	State.defeated_mon_names = _practice_snapshot.defeated_mon_names
+	State.revealed_mon_stats = _practice_snapshot.revealed_mon_stats
+	State.catched_mons = []
+	State.enemy_mons = []
+	_practice_snapshot = {}
+
+## Gefangen oder Tutorial ausgeschaltet: zurück zur Karte, der Kampf hinterlässt nichts
+func _end_practice() -> void:
+	if _battle_over:
+		return
+	_battle_over = true
+	# noch im Kampf zurücksetzen, die Lebensbalken hören dabei noch zu
+	_restore_practice_snapshot()
+	Tutorial.end_practice()
+
+func _on_tutorial_enabled_changed(on: bool) -> void:
+	if not on:
+		_end_practice()
+
+## Im Debug-Menü gewählte Relikte (für den Kampf) und Trophäen (für jeden Boss) ersetzen die gewürfelten
+func _apply_debug_boss_setup(bosses: Array[Monster]) -> void:
+	var relics = DebugSettings.take_boss_relics()
+	var trophies = DebugSettings.take_boss_trophies()
+	if relics != null:
+		BossRelics.active = relics.duplicate()
+	for boss in bosses:
+		if trophies != null:
+			boss._gems = {}
+			boss._gem_counts = {}
+			BossRelics.add_trophies(boss, trophies)
 
 ## Die Gegner des betretenen Felds. Kämpfe aus dem Debug-Menü kommen ohne Feld oder mit fester Anzahl und würfeln hier.
 func _take_enemies(fight_index: int) -> Array[Monster]:
@@ -332,6 +499,8 @@ func upgrade_mons():
 	pass
 
 func _check_game_over(last_fainted:Monster) -> void:
+	if _battle_over:
+		return
 	turn_wheel.remove_mon(last_fainted)
 	_reselect_if_gone(last_fainted)
 	_retarget_intents()
@@ -349,6 +518,13 @@ func _check_game_over(last_fainted:Monster) -> void:
 		var bounty_skill = Skills.claim_bounty(last_fainted)
 		if bounty_skill != "":
 			Helper.show_unlock_message(tr("BOUNTY_UNLOCKED").format({"skill": tr(bounty_skill), "mon": Helper.mon_display_name(last_fainted._last_hit_by._name)}))
+		# mit dem letzten Gegner zerbrechen die Relikte des Kampfs, erst danach geht es weiter
+		if not BossRelics.active.is_empty() and State.enemy_mons.all(func(mon: Monster): return not mon.is_alive()):
+			_pending_breaks += 1
+			await _break_relics(false)
+			_pending_breaks -= 1
+			if not is_inside_tree() or _battle_over:
+				return
 		print("State.mons.all(func(mon: Monster): return mon._hp <= 0 and not mon._new)",
 		State.mons.all(
 			func(mon: Monster):
@@ -359,11 +535,16 @@ func _check_game_over(last_fainted:Monster) -> void:
 			func(mon: Monster):
 			return not mon.is_alive()
 			):
+		_battle_over = true
 		State.end_run(false)
 		_clear_fainted_mons()
 		get_tree().change_scene_to_file("res://script/scenes/run_end/run_end.tscn")
 		return
 	if State.enemy_mons.all(func(mon: Monster): return not mon.is_alive()) or State.enemy_mons.size() == 0:
+		# zerbrechen die Relikte gerade noch, beendet erst deren Aufruf den Kampf
+		if _pending_breaks > 0:
+			return
+		_battle_over = true
 		print("will close battle")
 		State.stage_clear()
 		_add_boss_loot()
@@ -380,6 +561,12 @@ func _check_game_over(last_fainted:Monster) -> void:
 			get_tree().change_scene_to_file("res://script/scenes/judgment/judgement.tscn")
 			return
 		get_tree().change_scene_to_file("res://script/scenes/world_map/world_map.tscn")
+
+## Der letzte Gegner ist weg: die Relikte des Kampfs zerbrechen, forgotten = Fang mit vollen KP (sie bleiben liegen)
+func _break_relics(forgotten: bool) -> void:
+	var relics := BossRelics.take_active()
+	_relic_bar.refresh()
+	await _relic_overlay.play_break(relics, forgotten)
 
 ## Zufallsbeute für ein besiegtes Monster. Der finale Boss beendet den Run, danach bringt Beute nichts mehr.
 func _roll_kill_loot() -> void:
@@ -410,8 +597,9 @@ func _clear_fainted_mons() -> Array:
 		State.mons.erase(item)
 	return v
 
-## Plant den nächsten Zug eines Gegners (Monster._intent): zufällige Skills, bis seine Aktionen aufgebraucht sind,
-## jeweils auf ein zufälliges lebendes Ziel (Angriffe auf eigene Monster, Schilde und Buffs auf sich selbst oder einen Verbündeten).
+## Plant den nächsten Zug eines Gegners (Monster._intent): Skills, bis seine Aktionen aufgebraucht sind.
+## Jede Kombination aus Skill und Ziel wird bewertet (_score_action) und gewichtet gewürfelt (_weighted_pick),
+## dabei zählen die schon geplanten Angriffe aller Gegner mit (Fokus, kein Overkill). Zum Schluss wird sortiert (_order_intent).
 ## Gegner halten sich an dieselben Regeln wie der Spieler (Element, Kosten, Abklingzeit, Passive nicht ausspielbar).
 ## Nur Angriffe ohne Abklingzeit dürfen mehrfach im selben Zug vorkommen.
 ## Geplant wird vor dem Zug: Abklingzeiten zählen zu dessen Beginn noch einmal herunter, daher reicht <= 1.
@@ -425,20 +613,137 @@ func _plan_intent(emon: Monster) -> void:
 	while true:
 		var options = emon._skills.filter(func(skill): return _can_plan(emon, skill, moves) and not once_used.has(skill))
 		if options.is_empty():
-			return
-		var picked: Dictionary = options.pick_random()
-		moves -= maxi(picked.cost, 1)
-		if picked.get("cooldown", 0) > 0 or not Skills.is_damage_skill(picked):
-			once_used.append(picked)
-		emon._intent.append({"skill": picked, "target": _pick_target(emon, picked)})
+			break
+		var candidates = []
+		for skill in options:
+			for target in _candidate_targets(emon, skill):
+				candidates.append({"skill": skill, "target": target, "score": _score_action(emon, skill, target)})
+		var picked: Dictionary = _weighted_pick(candidates)
+		moves -= maxi(picked.skill.cost, 1)
+		if picked.skill.get("cooldown", 0) > 0 or not Skills.is_damage_skill(picked.skill):
+			once_used.append(picked.skill)
+		# sofort eintragen: die folgenden Aktionen sehen diesen Angriff schon bei den Rest-KP
+		emon._intent.append({"skill": picked.skill, "target": picked.target})
+	_order_intent(emon)
 
 func _can_plan(emon: Monster, skill: Dictionary, moves_left: int) -> bool:
 	return Skills.can_use(emon, skill) and not Skills.is_passive(skill) \
 		and Skills.cooldown_left(skill) <= 1 and maxi(skill.cost, 1) <= moves_left
 
+## Bestes Ziel für einen Skill (gewichtet gewürfelt), auch beim Neuwählen nach einem K.O.
 func _pick_target(emon: Monster, skill: Dictionary) -> Monster:
+	var candidates = []
+	for target in _candidate_targets(emon, skill):
+		candidates.append({"target": target, "score": _score_action(emon, skill, target)})
+	return _weighted_pick(candidates).target if not candidates.is_empty() else null
+
+## Mögliche Ziele: Flächen-Skills treffen ohnehin die ganze Seite, dort reicht ein Ziel.
+func _candidate_targets(emon: Monster, skill: Dictionary) -> Array:
 	var side = _allies_of(emon) if Skills.targets_friends(skill) else _opponents_of(emon)
-	return side.pick_random() if not side.is_empty() else null
+	if Skills.targets_team(skill) and not side.is_empty():
+		return [side[0]]
+	return side
+
+## Gewichteter Zufall über {"score": float, ...}: Gewicht = score ^ Schärfe
+func _weighted_pick(candidates: Array) -> Dictionary:
+	var sharpness := _ai_sharpness()
+	var weights = candidates.map(func(c): return pow(maxf(c.score, AI_MIN_SCORE), sharpness))
+	var total: float = 0.0
+	for w in weights:
+		total += w
+	var roll := randf() * total
+	for i in candidates.size():
+		roll -= weights[i]
+		if roll <= 0.0:
+			return candidates[i]
+	return candidates.back()
+
+## Je tiefer im Run, desto taktischer, Bosse noch etwas mehr
+func _ai_sharpness() -> float:
+	var sharpness := AI_SHARPNESS_BASE + AI_SHARPNESS_PER_DEPTH * Map.encounter_depth()
+	if is_boss_battle or State.is_final_boss:
+		sharpness += AI_SHARPNESS_BOSS
+	return sharpness
+
+## Wie gut ist dieser Skill gegen dieses Ziel? Schaden in KP, Schilde/Buffs als Grundwert (Ausbau in Schritt 6).
+func _score_action(emon: Monster, skill: Dictionary, target: Monster) -> float:
+	if Skills.targets_friends(skill):
+		if skill.has("buff_stat"):
+			var stat_value: float = _stat_value(target, skill.buff_stat)
+			return stat_value * skill.value / 100 * skill.get("buff_turns", 1) * AI_DEFENSE_WEIGHT
+		var physical := Skills.is_physical(skill)
+		var def: float = emon.defense() if physical else emon.s_defense()
+		return def * skill.value / 100 * AI_DEFENSE_WEIGHT
+	if not Skills.is_damage_skill(skill):
+		return AI_MIN_SCORE
+	var targets = _allies_of(target) if Skills.targets_team(skill) else [target]
+	var score := 0.0
+	for mon: Monster in targets:
+		score += _damage_value(emon, skill, mon)
+	return score
+
+## aktueller Wert zu einem Buff-Schlüssel (buff_stat)
+func _stat_value(mon: Monster, stat: String) -> float:
+	match stat:
+		"atk": return mon.attack()
+		"s_atk": return mon.s_attack()
+		"s_def": return mon.s_defense()
+		"speed": return mon.speed()
+	return mon.defense()
+
+## Schaden gegen ein Ziel, gemessen an seinen Rest-KP nach allen schon geplanten Angriffen:
+## Kill = Bonus, Schaden darüber hinaus zählt kaum, Ziele mit hohem Angriff werden leicht bevorzugt.
+## Schilde der Ziele zählen nicht: sie laufen meist ab, bevor der Gegner zuschlägt.
+func _damage_value(emon: Monster, skill: Dictionary, target: Monster) -> float:
+	var damage := Skills.calc_damage(emon, target, skill)
+	var remaining := _remaining_hp(target)
+	var value: float
+	if remaining <= 0.0:
+		value = damage * AI_OVERKILL_SHARE
+	else:
+		value = minf(damage, remaining) + maxf(damage - remaining, 0.0) * AI_OVERKILL_SHARE
+		if damage >= remaining:
+			value *= AI_KILL_BONUS
+	return value * _threat_factor(target)
+
+## KP nach allen Angriffen, die die Gegner (inklusive des gerade planenden) schon eingeplant haben
+func _remaining_hp(target: Monster) -> float:
+	var remaining: float = target.hp() - target._lost_hp
+	for hit in Skills.incoming_hits(target, State.enemy_mons):
+		remaining -= hit.full
+	return remaining
+
+## 1.0 für durchschnittlich starke Ziele, mehr für Ziele mit überdurchschnittlichem (Sp.) Angriff
+func _threat_factor(target: Monster) -> float:
+	var side = _allies_of(target)
+	if side.size() < 2 or AI_THREAT_WEIGHT <= 0.0:
+		return 1.0
+	var total := 0.0
+	for mon: Monster in side:
+		total += maxf(mon.attack(), mon.s_attack())
+	var average := total / side.size()
+	if average <= 0.0:
+		return 1.0
+	var threat := maxf(target.attack(), target.s_attack()) / average
+	return maxf(1.0 + AI_THREAT_WEIGHT * (threat - 1.0), 0.5)
+
+## Reihenfolge im Zug: Buffs (Verteidigung rauf -> größerer Schild), Schilde, Schlamm-Angriffe
+## (Angriff rauf für die folgenden Treffer), übrige Angriffe. Innerhalb einer Gruppe bleibt die Reihenfolge.
+func _order_intent(emon: Monster) -> void:
+	var entries = []
+	for i in emon._intent.size():
+		entries.append({"priority": _action_priority(emon._intent[i].skill), "index": i, "action": emon._intent[i]})
+	entries.sort_custom(func(a, b): return a.priority < b.priority or (a.priority == b.priority and a.index < b.index))
+	emon._intent = entries.map(func(e): return e.action)
+
+func _action_priority(skill: Dictionary) -> int:
+	if skill.has("buff_stat"):
+		return 0
+	if not Skills.is_damage_skill(skill):
+		return 1
+	if skill.nature == ElementEffects.MUD:
+		return 2
+	return 3
 
 ## Ziele, die inzwischen K.O. oder gefangen sind, werden durch ein anderes lebendes Ziel ersetzt.
 func _retarget_intents() -> void:
@@ -466,10 +771,19 @@ func _on_end_turn_pressed() -> void:
 		return
 	$UI_Blocker.visible = true
 	Events.mouse_event.emit({"action": Enums.MOUSE_ACTION.NONE})
-	turn_wheel.next_mon()
+	_end_turn(active_mon)
 
 func _finish_catching(catched: bool, mon: Monster) -> void:
+	if Tutorial.practice and catched:
+		_end_practice()
+		return
 	if catched:
+		# war es der letzte Gegner, gehen die Relikte verloren: zerbrochen, oder bei vollen KP einfach liegen gelassen
+		var last_enemy: bool = State.enemy_mons.all(func(m: Monster): return m == mon or not m.is_alive())
+		if last_enemy and not BossRelics.active.is_empty():
+			await _break_relics(mon._lost_hp <= 0)
+			if not is_inside_tree():
+				return
 		State.mark_mon_defeated(mon._name)
 		var index = State.enemy_mons.find(mon)
 		if index > -1:
