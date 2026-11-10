@@ -148,7 +148,7 @@ func generate_biome_pools(biomes: Array[int]) -> void:
 	for i in biomes.size():
 		var t = float(i) / max(biomes.size() - 1, 1)
 		var candidates = Monmap.mons.filter(func(meta): return not meta.has("bounty_target"))
-		var weights = candidates.map(func(meta): return 1.0 / (1.0 + 2.0 * meta.rarity * (1.0 - t)))
+		var weights = candidates.map(func(meta): return pool_weight(meta.rarity, t))
 		var elements = Enums.MON_TYPES.values().filter(func(element): return biomes[i] & element)
 		elements.shuffle()
 		var pool: Array[String] = []
@@ -162,6 +162,21 @@ func generate_biome_pools(biomes: Array[int]) -> void:
 			candidates.remove_at(index)
 			weights.remove_at(index)
 		State.biome_pools.append(pool)
+
+## Gewicht einer Art im Biom-Pool bei Fortschritt t (0 = erstes, 1 = letztes Biom), gewöhnlich = 1
+func pool_weight(rarity: int, t: float) -> float:
+	return 1.0 / (1.0 + 2.0 * rarity * (1.0 - t))
+
+## Ab dieser Gewichtung (im Vergleich zu gewöhnlichen Arten) gilt eine Art als häufig (Sammlung)
+const COMMON_POOL_SHARE := 1.0 / 3.0
+
+## Erstes Biom (0-basiert), in dem Arten dieser Seltenheit häufig im Pool landen (Sammlung)
+func usual_depth(rarity: int) -> int:
+	var depths := ENCOUNTERS.size()
+	for i in depths:
+		if pool_weight(rarity, float(i) / max(depths - 1, 1)) >= COMMON_POOL_SHARE - 0.0001:
+			return i
+	return depths - 1
 
 # Zieht einen der Indizes, gewichtet nach weights[index].
 func pick_weighted_index(indices: Array, weights: Array) -> int:

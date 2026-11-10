@@ -69,9 +69,14 @@ var _relic_bar: BossRelicBar
 var _battle_over := false
 ## Boss-Relikte, die gerade zerbrechen oder darauf warten
 var _pending_breaks := 0
+## Übungskampf (Tutorial.practice): Stand des Runs vorher, damit danach alles wie zuvor ist
+var _practice_snapshot := {}
 
 func _enter_tree() -> void:
-	_generate_battle()
+	if Tutorial.practice:
+		_generate_practice()
+	else:
+		_generate_battle()
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -116,6 +121,22 @@ func _ready() -> void:
 	turn_wheel.round_started.connect(_on_round_started)
 	turn_wheel.turn_for.connect(_on_turn_for)
 	turn_wheel.start()
+	if Tutorial.practice:
+		_add_tutorial_targets()
+		# wer das Tutorial überspringt, hat auch mit dem Übungskampf nichts mehr zu tun
+		Tutorial.enabled_changed.connect(_on_tutorial_enabled_changed)
+		Tutorial.trigger("battle")
+
+## Gruppen, die das interaktive Tutorial hervorhebt (siehe Tutorial.SEQUENCES)
+func _add_tutorial_targets() -> void:
+	turn_wheel.add_to_group("tut_bat_wheel")
+	card_hand.add_to_group("tut_bat_hand")
+	catch_button.add_to_group("tut_bat_catch")
+	$UI/HBoxContainer/TextureRect3/EndTurn.add_to_group("tut_bat_end_turn")
+	for scene in _monster_scenes():
+		if State.enemy_mons.has(scene.mon):
+			scene.add_to_group("tut_bat_enemies")
+			scene.intent_box.add_to_group("tut_bat_intent")
 
 func _on_round_started(_round_number: int) -> void:
 	BossRelics.on_round_started()
@@ -247,6 +268,10 @@ func _reselect_if_gone(gone: Monster) -> void:
 		_select_mon(alive[0])
 
 func _exit_tree() -> void:
+	if not _practice_snapshot.is_empty():
+		_restore_practice_snapshot()
+	if Tutorial.enabled_changed.is_connected(_on_tutorial_enabled_changed):
+		Tutorial.enabled_changed.disconnect(_on_tutorial_enabled_changed)
 	Events.mouse_event.disconnect(_catch_mouse_event)
 	Events.monster_faints.disconnect(_check_game_over)
 	Events.finish_catching.disconnect(_finish_catching)
@@ -389,6 +414,58 @@ func _generate_battle():
 		_apply_debug_boss_setup(ms)
 	print("encounter depth ", depth, " fight ", State.biome_fight_index, ": ", ms.size(), "x level ", level)
 	State.enemy_mons = ms
+
+# ─────────────────────────
+# Übungskampf (Tutorial.practice): ein einzelner Gegner aus dem aktuellen Biom auf Startstufe mit einer Aktion.
+# Niemand geht K.O. und der Fang klappt sicher (Tutorial.cap_damage, Tutorial.catches_for_sure).
+# Er zählt nicht: kein Fortschritt im Biom, keine Beute, kein Fang, und das Team ist danach wie vorher.
+
+func _generate_practice() -> void:
+	_practice_snapshot = {
+		"lost_hp": State.mons.map(func(mon: Monster): return mon._lost_hp),
+		"run_catches": State.run_catches,
+		"caught_mon_names": State.caught_mon_names.duplicate(),
+		"defeated_mon_names": State.defeated_mon_names.duplicate(),
+		"revealed_mon_stats": State.revealed_mon_stats.duplicate(true),
+	}
+	var enemy: Monster = Helper.generate_mons({"count": 1, "species": [_practice_species()]})[0]
+	enemy._level = State.INITIAL_LEVEL
+	enemy._initial_moves = Monster.BASE_MOVES
+	var ms: Array[Monster] = [enemy]
+	BossRelics.active = []
+	State.enemy_mons = ms
+
+## Eine möglichst gewöhnliche Art aus dem Pool des aktuellen Bioms (ohne Pool aus allen Arten)
+func _practice_species() -> String:
+	var names: Array = Monmap.mons.filter(func(meta): return not meta.has("bounty_target")).map(func(meta): return meta.name)
+	if State.map_level < State.biome_pools.size() and not State.biome_pools[State.map_level].is_empty():
+		names = State.biome_pools[State.map_level].duplicate()
+	var lowest: int = names.map(Monmap.rarity_of).min()
+	return names.filter(func(mon_name): return Monmap.rarity_of(mon_name) == lowest).pick_random()
+
+func _restore_practice_snapshot() -> void:
+	for i in mini(State.mons.size(), _practice_snapshot.lost_hp.size()):
+		State.mons[i]._lost_hp = _practice_snapshot.lost_hp[i]
+	State.run_catches = _practice_snapshot.run_catches
+	State.caught_mon_names = _practice_snapshot.caught_mon_names
+	State.defeated_mon_names = _practice_snapshot.defeated_mon_names
+	State.revealed_mon_stats = _practice_snapshot.revealed_mon_stats
+	State.catched_mons = []
+	State.enemy_mons = []
+	_practice_snapshot = {}
+
+## Gefangen oder Tutorial ausgeschaltet: zurück zur Karte, der Kampf hinterlässt nichts
+func _end_practice() -> void:
+	if _battle_over:
+		return
+	_battle_over = true
+	# noch im Kampf zurücksetzen, die Lebensbalken hören dabei noch zu
+	_restore_practice_snapshot()
+	Tutorial.end_practice()
+
+func _on_tutorial_enabled_changed(on: bool) -> void:
+	if not on:
+		_end_practice()
 
 ## Im Debug-Menü gewählte Relikte (für den Kampf) und Trophäen (für jeden Boss) ersetzen die gewürfelten
 func _apply_debug_boss_setup(bosses: Array[Monster]) -> void:
@@ -697,6 +774,9 @@ func _on_end_turn_pressed() -> void:
 	_end_turn(active_mon)
 
 func _finish_catching(catched: bool, mon: Monster) -> void:
+	if Tutorial.practice and catched:
+		_end_practice()
+		return
 	if catched:
 		# war es der letzte Gegner, gehen die Relikte verloren: zerbrochen, oder bei vollen KP einfach liegen gelassen
 		var last_enemy: bool = State.enemy_mons.all(func(m: Monster): return m == mon or not m.is_alive())

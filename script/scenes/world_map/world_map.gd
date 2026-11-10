@@ -135,6 +135,17 @@ func _ready() -> void:
 	if OS.is_debug_build():
 		add_debug_button()
 	show_pending_rewards()
+	team_bar.add_to_group("tut_map_team")
+	$HBoxContainer/Panel/LegendButton.add_to_group("tut_map_legend")
+	Tutorial.enabled_changed.connect(_on_tutorial_enabled_changed)
+	# zu Beginn eines Runs oder direkt nach dem Übungskampf, nie über Belohnungen hinweg
+	if State.current_map_position == State.NO_MAP_POSITION or Tutorial.take_back_from_practice():
+		Tutorial.trigger("map")
+
+## Im Einstellungen-Dialog eingeschaltet: es geht gleich mit dem Übungskampf los, danach erklärt sich die Karte
+func _on_tutorial_enabled_changed(on: bool) -> void:
+	if on and Tutorial.wants_practice():
+		Tutorial.start_practice()
 
 # Zahnrad im Header direkt links neben dem Legenden-Button, gleich groß wie dieser
 func add_settings_button() -> void:
@@ -165,6 +176,8 @@ func add_debug_button() -> void:
 #	Events.map_event_pressed.disconnect(_call_map_event)
 
 func _exit_tree() -> void:
+	if Tutorial.enabled_changed.is_connected(_on_tutorial_enabled_changed):
+		Tutorial.enabled_changed.disconnect(_on_tutorial_enabled_changed)
 	State.ep_changed.disconnect(change_ep_text)
 	State.boss_shards_changed.disconnect(monster_shard_changed)
 	State.keys_changed.disconnect(change_key_text)
@@ -203,6 +216,8 @@ func set_map():
 				d.material = Monmap.LIVING_MATERIAL
 				d.tooltip_text = tr(Map.type_label(y_path._type))
 				d.pressed.connect(func(): call_map_event(y_path))
+				if y_path._pos.y == 0:
+					d.add_to_group("tut_map_start")
 				d.visible = true
 				y_path._ui_item = d
 				g_container._path = y_path

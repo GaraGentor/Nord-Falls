@@ -38,6 +38,7 @@ func _ready() -> void:
 		add_skill_card(skill, _learn.bind(skill))
 	_build_skip_button()
 	play_chest_intro()
+	Tutorial.trigger("skill_reward")
 
 func _build_skip_button() -> void:
 	var footer := HBoxContainer.new()

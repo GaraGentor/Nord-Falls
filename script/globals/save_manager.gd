@@ -25,6 +25,9 @@ const DEFAULT_DATA := {
 	# Biom-Pfad und Monster-Pools pro Tiefe (Map.load_biome_path), bleiben ebenfalls bis zum nächsten Run-Ende gleich
 	"biome_path": [],
 	"biome_pools": [],
+	# interaktives Tutorial (siehe Tutorial): gesehene Sequenzen, done = ausgeschaltet (Standard), abgeschlossen oder übersprungen
+	"tutorial_seen": [],
+	"tutorial_done": true,
 }
 
 var save_data: Dictionary = DEFAULT_DATA.duplicate(true)
@@ -79,9 +82,11 @@ func add_mon_upgrade(monster_name = "1"):
 		}
 	save_game()
 
+## Sammlung: Art wurde gesehen (Gegner im Kampf oder ausgebrütetes Start-Ei)
 func add_seen_mon(monster_name = "1"):
-	if not save_data["seen_monsters"].has(monster_name):
-		save_data["seen_monsters"].append(monster_name)
+	if save_data["seen_monsters"].has(monster_name):
+		return
+	save_data["seen_monsters"].append(monster_name)
 	save_game()
 
 func unlock_egg_skill(monster_name: String, skill_name: String):

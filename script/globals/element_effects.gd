@@ -178,7 +178,7 @@ func rolls_paralysis(mon: Monster) -> bool:
 ## Zählt wie ein Treffer des Verursachers (Kopfgelder, Todesursache in der Run-Auswertung).
 func _status_damage(mon: Monster, status: String, share: float, physical: bool) -> void:
 	var full := ceilf(mon.hp() * share)
-	var damage := mon.absorb_damage(full, physical)
+	var damage := Tutorial.cap_damage(mon, mon.absorb_damage(full, physical))
 	var from: Monster = mon._statuses[status].get("from")
 	var text := tr(STATUS_LABELS[status]) + " -%d" % roundi(damage)
 	Events.monster_effect_text.emit(mon, text, STATUS_COLORS[status])

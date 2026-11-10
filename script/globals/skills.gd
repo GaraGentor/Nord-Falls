@@ -6,10 +6,12 @@ func deal_damage(props):
 	var full_damage = calc_damage(props.from, props.mon, props.skill)
 	reveal_stats_by_hit(props.from, props.mon, props.skill)
 	# Schilde fangen den Schaden zuerst ab (Magma zieht sie doppelt ab)
-	var damage = props.mon.absorb_damage(full_damage, is_physical(props.skill), ElementEffects.shield_cost(props.skill))
+	var absorbed = props.mon.absorb_damage(full_damage, is_physical(props.skill), ElementEffects.shield_cost(props.skill))
+	# Übungskampf: niemand geht K.O.
+	var damage = Tutorial.cap_damage(props.mon, absorbed)
 	# für Element-Effekte, die vom verursachten Schaden abhängen (Eis), siehe battle.gd _use_skill
 	props.dealt = props.get("dealt", 0.0) + damage
-	props.blocked = props.get("blocked", 0.0) + full_damage - damage
+	props.blocked = props.get("blocked", 0.0) + full_damage - absorbed
 	var multiplier = element_multiplier(props.skill.nature, props.mon._type)
 	print("lose:" + str(props.skill.value) + ":" + str(damage) + " (Element x" + str(multiplier) + ")")
 	Events.monster_hit_with_element.emit(props.mon, damage, multiplier, full_damage - damage)

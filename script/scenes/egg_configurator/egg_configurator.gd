@@ -69,6 +69,7 @@ func _ready() -> void:
 			filled += 1
 	_build()
 	_refresh()
+	Tutorial.trigger("egg_configurator")
 
 func _build() -> void:
 	var background := ColorRect.new()
@@ -118,6 +119,7 @@ func _build() -> void:
 	mon_box.add_theme_constant_override("separation", 4)
 	var mon_panel := PanelContainer.new()
 	IronPlate.frame(mon_panel, mon_box, 16, 16)
+	mon_panel.add_to_group("tut_cfg_mon")
 	left.add_child(mon_panel)
 	var texture := TextureRect.new()
 	Monmap.show_on(texture, _mon._name, Monmap.MEDIUM)
@@ -170,6 +172,7 @@ func _build() -> void:
 	_scroll = ScrollContainer.new()
 	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_scroll.add_to_group("tut_cfg_grid")
 	right.add_child(_scroll)
 	_grid = GridContainer.new()
 	_grid.columns = SKILLS_TO_PICK
@@ -221,6 +224,7 @@ func _build_top_row() -> Control:
 	_go_button.tooltip_text = tr("CONFIGURATOR_GO")
 	_go_button.focus_mode = Control.FOCUS_NONE
 	_go_button.pressed.connect(_on_go_pressed)
+	_go_button.add_to_group("tut_cfg_go")
 	row.add_child(_go_button)
 	return row
 
@@ -230,6 +234,7 @@ func _build_slot_box() -> Control:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", GRID_SEPARATION)
 	IronPlate.frame(panel, row, 12, 12)
+	panel.add_to_group("tut_cfg_slots")
 	var empty := StyleBoxFlat.new()
 	empty.bg_color = EMPTY_SLOT_COLOR
 	empty.border_color = EMPTY_SLOT_BORDER
@@ -474,4 +479,8 @@ func _on_go_pressed() -> void:
 		var skill = Skills.get_skill(skill_name)
 		skill.scouted = true
 		_mon._skills.append(skill)
+	# mit Tutorial erst der Übungskampf, er führt danach zur Karte
+	if Tutorial.wants_practice():
+		Tutorial.start_practice()
+		return
 	get_tree().change_scene_to_file("res://script/scenes/world_map/world_map.tscn")

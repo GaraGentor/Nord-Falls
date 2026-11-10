@@ -95,6 +95,11 @@ func _ready() -> void:
 	# Wiederbelebte gehören schon zur jetzigen Aufstellung
 	_initial_team = State.mons.duplicate()
 	_refresh()
+	catch_area.add_to_group("tut_jud_catches")
+	$Margin/VBox/Top/TeamFrame.add_to_group("tut_jud_team")
+	zone_row.add_to_group("tut_jud_zones")
+	confirm_button.add_to_group("tut_jud_confirm")
+	Tutorial.trigger("judgement")
 
 func _process(_delta: float) -> void:
 	if not _dragging:
@@ -119,6 +124,10 @@ func _set_zone_glow(zone: int, color: Color) -> void:
 
 func _input(event: InputEvent) -> void:
 	if dialog.visible:
+		return
+	# Karten werden hier vor der GUI ausgewertet, das Tutorial-Overlay würde sie sonst nicht abfangen
+	var mouse := event as InputEventMouse
+	if mouse and Tutorial.blocks_input(mouse.position):
 		return
 	var button := event as InputEventMouseButton
 	if button and button.button_index == MOUSE_BUTTON_LEFT:

@@ -36,6 +36,8 @@ func _ready() -> void:
 	continue_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	continue_button.pressed.connect(close)
 	add_footer(continue_button)
+	stations.add_to_group("tut_hub_stations")
+	Tutorial.trigger("hub")
 
 func _station(label: String, icon: Texture2D, scene: PackedScene) -> Button:
 	var button := plate_button(tr(label))

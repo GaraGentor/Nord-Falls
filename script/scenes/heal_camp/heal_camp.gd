@@ -206,7 +206,14 @@ func _build_feeding() -> void:
 
 	_bubble = SpeechBubble.new(BUBBLE_WIDTH, true, false, true)
 	add_child(_bubble)
-	_ask_for_food()
+	# beim ersten Besuch erklärt das Feuer im Tutorial, danach bittet es wie immer um Essenz
+	fire.add_to_group("tut_npc")
+	feed_row.add_to_group("tut_camp_feed")
+	# links und rechts vom Feuer: je eine eigene Gruppe, sonst läge das Feuer im selben Loch
+	for i in _camp_monsters.size():
+		_camp_monsters[i].add_to_group("tut_camp_mon_%d" % i)
+	if not Tutorial.trigger("camp", _ask_for_food):
+		_ask_for_food()
 
 	if not endless:
 		State.ep_changed.connect(_show_money)

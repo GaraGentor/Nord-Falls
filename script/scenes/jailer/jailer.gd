@@ -409,7 +409,22 @@ func _roll_offers() -> void:
 		_slots.append(slot)
 		lines.append({"slot": slot, "text": _intro_text(i, offers.size(), offers[i], tr("JAILER_PLACE_%d" % places[i]))})
 	_update_slots()
-	_start_intro(lines)
+	# beim ersten Besuch erklärt der Kerkermeister erst im Tutorial, danach stellt er die Gefangenen vor
+	_add_tutorial_targets()
+	if Tutorial.trigger("jailer", _start_intro.bind(lines)):
+		# im Tutorial sind die Gefangenen schon zu sehen, vorgestellt werden sie danach
+		for slot in _slots:
+			slot.reveal()
+	else:
+		_start_intro(lines)
+
+## Gruppen, die das interaktive Tutorial hervorhebt (siehe Tutorial.SEQUENCES)
+func _add_tutorial_targets() -> void:
+	jailer_image.add_to_group("tut_npc")
+	for slot in _slots:
+		slot.add_to_group("tut_jail_cages")
+	_bag.add_to_group("tut_jail_bag")
+	_reroll_button.add_to_group("tut_jail_reroll")
 
 ## Erster, mittlerer oder letzter Gefangener in der Vorstellung
 func _intro_text(index: int, count: int, mon_name: String, place: String) -> String:

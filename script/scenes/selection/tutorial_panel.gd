@@ -1,7 +1,7 @@
 class_name TutorialPanel
 extends ScrollContainer
 
-## Startbildschirm: rechts, solange noch kein Ei gewählt ist, erklärt eine scrollbare Liste das Spiel.
+## Anleitung (GuideDialog im Startbildschirm): eine scrollbare Liste erklärt das Spiel.
 ## Jeder Abschnitt steht auf einer Eisenplatte: Bild, Überschrift (TUTORIAL_<ID>_TITLE) und Text (TUTORIAL_<ID>).
 ## Seltenheit und Karte zeigen zusätzlich die Eier bzw. die Feld-Symbole.
 

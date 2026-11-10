@@ -16,6 +16,7 @@ func _ready() -> void:
 	offered.shuffle()
 	for id in offered.slice(0, RELIC_CHOICES):
 		add_relic_card(self, id)
+	Tutorial.trigger("relic_reward")
 	play_chest_intro()
 
 ## Relic-Karte, auch von Schatz und Shop genutzt: wird in die Tasche gezogen

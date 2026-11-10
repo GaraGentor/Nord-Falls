@@ -124,6 +124,12 @@ func _ready() -> void:
 	battlefield_image.resized.connect(_update_cloud_size)
 	_update_cloud_size()
 	_build_battlefield()
+	monster_scene1.add_to_group("tut_loot_team")
+	monster_scene2.add_to_group("tut_loot_team")
+	battlefield.add_to_group("tut_loot_field")
+	# die Sequenz erklärt vor allem die Beute, ohne Beute wartet sie auf den nächsten Kampf
+	if _loot_field.get_child_count() > 0:
+		Tutorial.trigger("loot")
 	_start()
 
 ## Der Wolkenrand rechnet in Pixeln und braucht dafür die Größe des Bildes
