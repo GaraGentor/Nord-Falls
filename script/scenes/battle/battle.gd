@@ -6,6 +6,8 @@ const ENEMY_ACTION_TIME := 0.9
 const STATUS_TICK_TIME := BattleMonCard.HP_TWEEN_TIME + 0.3
 ## so lange steht "Betäubt!" über einem gelähmten Monster, bevor sein Zug endet
 const STUNNED_TIME := 0.9
+## Auto-Zugende (BattleControls): so lange laufen die Animationen der letzten Karte noch, bevor der Zug endet
+const AUTO_END_DELAY := 0.6
 ## Chancen auf Zufallsbeute pro besiegtem Monster, gefangene Monster würfeln nicht. Jede Beute wird einzeln gewürfelt.
 const KEY_LOOT_CHANCE := 0.15
 const GEM_LOOT_CHANCE := 0.10
@@ -71,6 +73,8 @@ var _battle_over := false
 var _pending_breaks := 0
 ## Übungskampf (Tutorial.practice): Stand des Runs vorher, damit danach alles wie zuvor ist
 var _practice_snapshot := {}
+## zählt jeden Zug mit: ein verzögertes Auto-Zugende greift nur im Zug, in dem es angestoßen wurde
+var _turn_serial := 0
 
 func _enter_tree() -> void:
 	if Tutorial.practice:
@@ -110,6 +114,9 @@ func _ready() -> void:
 	card_hand.show_mon(State.mons[0])
 	_relic_bar = BossRelicBar.new()
 	$GameWindow.add_child(_relic_bar)
+	var controls := BattleControls.new()
+	$GameWindow.add_child(controls)
+	controls.auto_end_toggled.connect(func(_enabled): _try_auto_end())
 	_relic_bar.pressed.connect(func(): _relic_overlay.play_intro(BossRelics.active, false))
 	_relic_overlay = BossRelicOverlayScript.new()
 	add_child(_relic_overlay)
@@ -160,6 +167,7 @@ func _is_own_turn() -> bool:
 
 func _on_turn_for(mon: Monster) -> void:
 	active_mon = mon
+	_turn_serial += 1
 	$UI_Blocker.visible = true
 	# ein zerbrechendes Boss-Relikt hält den Kampf an
 	await _relic_overlay.wait_idle()
@@ -302,6 +310,7 @@ func _catch_mouse_event(event) -> void:
 			_use_skill(active_mon, event.skill, target)
 			Events.call_skill_card.emit(event.skill)
 			mouse_action = Enums.MOUSE_ACTION.NONE
+			_try_auto_end()
 	mouse_action = event.action
 
 ## lebende Monster auf der Seite von mon (inklusive mon selbst)
@@ -775,6 +784,30 @@ func _on_end_turn_pressed() -> void:
 	$UI_Blocker.visible = true
 	Events.mouse_event.emit({"action": Enums.MOUSE_ACTION.NONE})
 	_end_turn(active_mon)
+
+## Auto-Zugende (BattleControls.auto_end): ist keine Karte mehr spielbar, endet der eigene Zug von selbst.
+## Solange noch gefangen werden darf (noch keine Karte gespielt), bleibt die Entscheidung beim Spieler.
+func _try_auto_end() -> void:
+	if not _auto_end_ready():
+		return
+	var serial := _turn_serial
+	await get_tree().create_timer(AUTO_END_DELAY).timeout
+	if not is_inside_tree() or serial != _turn_serial:
+		return
+	await _relic_overlay.wait_idle()
+	if not is_inside_tree() or serial != _turn_serial or not _auto_end_ready():
+		return
+	_on_end_turn_pressed()
+
+func _auto_end_ready() -> bool:
+	if not BattleControls.auto_end or _battle_over or not _is_own_turn() or not active_mon.is_alive():
+		return false
+	if _opponents_of(active_mon).is_empty():
+		return false
+	if catch_button.is_visible_in_tree() and not catch_button.disabled:
+		return false
+	return not active_mon._skills.any(func(skill): return Skills.is_playable(active_mon, skill) \
+		and skill.cost <= active_mon._computed_moves)
 
 func _finish_catching(catched: bool, mon: Monster) -> void:
 	if Tutorial.practice and catched:

@@ -252,10 +252,12 @@ func _base_stat(stat: String) -> float:
 	# und dem Stufen-Sockel der Schadensformel (Standard 0 = linear)
 	return level_1 * DebugSettings.level_scale(_level)
 
-## Durchschnittlicher Wert dieses Monsters auf seiner Stufe (gleicher Anteil für alle Werte).
+## Durchschnittlicher Wert auf der Stufe dieses Monsters (gleicher Anteil für alle Werte).
 ## Grundschaden der symmetrischen Schadensformel, damit der Angriff dort nur im Verhältnis zur Verteidigung zählt.
+## Mit "feste BST" im Debug-Menü aus einer Referenz-BST statt der eigenen, damit die BST nicht doppelt zählt.
 func typical_stat() -> float:
-	return Helper.points_per_level(_best_points) * STAT_SCALE * DebugSettings.level_scale(_level) / DebugSettings.STATS.size()
+	var bst := DebugSettings.damage_base_bst(_best_points)
+	return Helper.points_per_level(bst) * STAT_SCALE * DebugSettings.level_scale(_level) / DebugSettings.STATS.size()
 
 func gem_bonus(stat: String) -> int:
 	# der Relikt-Bonus zählt pro Trophäe und wird nicht gespeichert, gilt also auch rückwirkend.

@@ -20,6 +20,8 @@ const PREVIEW_COLUMNS := 5
 const PREVIEW_IMAGE_SIZE := Vector2(210, 210)
 ## Höhe der Vorschau-Liste, zeigt zwei Reihen und passt samt Titel und Buttons in die 720 px hohe Ansicht
 const PREVIEW_LIST_HEIGHT := 480
+## Höhe der scrollbaren Liste im Hauptmenü, passt samt Titel und Schließen-Button in die 720 px hohe Ansicht
+const MAIN_LIST_HEIGHT := 480
 const UNPICKED_COLOR := Color(0.65, 0.65, 0.65)
 const EGG_LABEL_WIDTH := 170
 const EGG_BUTTON_SIZE := Vector2(300, 44)
@@ -92,6 +94,9 @@ var _damage_formula_buttons := {}
 ## Einstellungs-Key -> Label mit dem Wert
 var _damage_values := {}
 var _damage_summary: Label
+var _damage_fixed_base_button: Button
+## Tabellen der Live-Simulation
+var _damage_sim: Label
 var _relic_page: VBoxContainer
 var _relic_rows: VBoxContainer
 var _preview_page: VBoxContainer
@@ -129,8 +134,19 @@ func _build_main() -> void:
 	_main.add_theme_constant_override("separation", 8)
 	add_footer(_main)
 
+	# alle Bereiche in einer Liste zum Scrollen, der Schließen-Button bleibt darunter stehen
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size.y = MAIN_LIST_HEIGHT
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_main.add_child(scroll)
+	DragScroll.attach(scroll)
+	var list := VBoxContainer.new()
+	list.add_theme_constant_override("separation", 8)
+	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(list)
+
 	var is_last_biome: bool = State.map_level == Map.map_settings.size() - 1
-	_add_section(_main, "Kämpfe", [
+	_add_section(list, "Kämpfe", [
 		[tr(Map.type_label(Map.PATH_TYPE.COMBAT)) + " ...", _open_fight_page.bind(_change_scene.bind(BATTLE_PATH))],
 		["BOSS-FELD ...", _open_fight_page.bind(_start_map_boss, true)],
 		["ENDBOSS ..." if is_last_biome else "BIOM-BOSS ...", _open_fight_page.bind(map.start_biome_boss, true)],
@@ -142,9 +158,9 @@ func _build_main() -> void:
 	fields.append(["SCHATZ AUTOMATISCH", _collect_treasure])
 	fields.append(["GLÜCKSRAD", _open_wheel])
 	fields.append(["VOID", _open_void])
-	_add_section(_main, "Felder", fields)
+	_add_section(list, "Felder", fields)
 
-	_add_section(_main, "Nach dem Kampf", [
+	_add_section(list, "Nach dem Kampf", [
 		["JUDGEMENT ...", func(): _show_page(_picker)],
 		["LEVEL-UP", _open_level_up],
 		["RELIC-AUSWAHL", _open_relic_reward],
@@ -156,9 +172,9 @@ func _build_main() -> void:
 	var biomes := []
 	for depth in State.biome_path.size():
 		biomes.append(["%d %s" % [depth + 1, tr(ColorMap.get_combo(State.biome_path[depth]).label)], _switch_biome.bind(depth)])
-	_add_section(_main, "Biom wechseln (neue Karte)", biomes)
+	_add_section(list, "Biom wechseln (neue Karte)", biomes)
 
-	var extras := _add_section(_main, "Ressourcen und nächster Run", [
+	var extras := _add_section(list, "Ressourcen und nächster Run", [
 		["+%d ESSENZ" % DEBUG_ESSENCE, _add_essence],
 		["+%d BOSS TRÄNEN" % DEBUG_SHARDS, _add_shards],
 		["+%d SCHLÜSSEL" % DEBUG_KEYS, _add_keys],
@@ -167,12 +183,15 @@ func _build_main() -> void:
 	_rotten_eggs_button = _make_button(_rotten_eggs_text(), _toggle_rotten_eggs)
 	extras.add_child(_rotten_eggs_button)
 	extras.add_child(_make_button("EI-ATTACKEN ...", func(): _show_page(_egg_page)))
-	extras.add_child(_make_button("WERTE-VERTEILUNG ...", func(): _show_page(_stats_page)))
-	extras.add_child(_make_button("SCHADENSFORMEL ...", func(): _show_page(_damage_page)))
 	extras.add_child(_make_button("RELIKTE ...", func(): _show_page(_relic_page)))
-	extras.add_child(_make_button("MONSTER-VORSCHAU ...", func(): _show_page(_preview_page)))
-	extras.add_child(_make_button("VFX-VORSCHAU ...", func(): _show_page(_vfx_page)))
 	extras.add_child(_make_button("SPIELSTAND LÖSCHEN ...", func(): _show_page(_reset_page)))
+
+	_add_section(list, "Optimierung & Balancing", [
+		["WERTE-VERTEILUNG ...", func(): _show_page(_stats_page)],
+		["SCHADENSFORMEL ...", func(): _show_page(_damage_page)],
+		["MONSTER-VORSCHAU ...", func(): _show_page(_preview_page)],
+		["VFX-VORSCHAU ...", func(): _show_page(_vfx_page)],
+	])
 
 	var close_button := _make_button("SCHLIESSEN", close)
 	close_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -779,10 +798,11 @@ const DAMAGE_ROWS := [
 	["max_factor", "Deckel (symm.)", [0.5, 0.25], "x%.2f"],
 	["level_offset", "Stufen-Sockel", [5.0, 1.0], "%d"],
 	["hp_scale", "KP-Multiplikator", [1.0, 0.25], "x%.2f"],
+	["base_bst", "Referenz-BST (symm.)", [10.0, 5.0], "%d"],
 ]
-## Beispielmonster der Übersicht: alle Werte gleich verteilt bei 210 BST, Skill-Wert 40, Element neutral
-const DAMAGE_EXAMPLE_BST := 210
-const DAMAGE_EXAMPLE_VALUE := 40
+## Höhe der scrollbaren Liste, passt samt Titel und Buttons in die 720 px hohe Ansicht
+const DAMAGE_LIST_HEIGHT := 480
+const DAMAGE_SIM_FONT_SIZE := 15
 
 ## Formel umschalten und ihre Regler einstellen, darunter eine Live-Übersicht der Treffer bis K.O.
 func _build_damage_page() -> void:
@@ -791,6 +811,17 @@ func _build_damage_page() -> void:
 	add_footer(_damage_page)
 
 	_damage_page.add_child(_make_header("Schadensformel: gilt sofort für alle Kämpfe, auch im laufenden Run (Vorschau und KI rechnen mit)"))
+	# Regler und Übersicht scrollen, die Buttons darunter bleiben immer sichtbar (wie bei den Relikten)
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size.y = DAMAGE_LIST_HEIGHT
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_damage_page.add_child(scroll)
+	var body := VBoxContainer.new()
+	body.add_theme_constant_override("separation", 10)
+	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(body)
+	DragScroll.attach(scroll)
+
 	var formula_row := _make_stat_row("Formel")
 	for formula in DebugSettings.FORMULAS:
 		var button := _make_toggle_button(DAMAGE_FORMULA_LABELS[formula])
@@ -801,7 +832,16 @@ func _build_damage_page() -> void:
 			_refresh_damage_page())
 		_damage_formula_buttons[formula] = button
 		formula_row.add_child(button)
-	_damage_page.add_child(formula_row)
+	body.add_child(formula_row)
+
+	# Weg 2: Grundschaden aus fester Referenz-BST, damit die BST nicht doppelt zählt
+	var base_row := _make_stat_row("Grundwert (symm.)")
+	_damage_fixed_base_button = _make_toggle_button("FESTE BST")
+	_damage_fixed_base_button.toggled.connect(func(on: bool):
+		DebugSettings.set_damage_setting("fixed_base", on)
+		_refresh_damage_page())
+	base_row.add_child(_damage_fixed_base_button)
+	body.add_child(base_row)
 
 	for entry in DAMAGE_ROWS:
 		var key: String = entry[0]
@@ -812,10 +852,20 @@ func _build_damage_page() -> void:
 		_damage_values[key].custom_minimum_size.x = STAT_VALUE_WIDTH + 20
 		for i in range(entry[2].size() - 1, -1, -1):
 			row.add_child(_make_damage_step_button(key, entry[2][i]))
-		_damage_page.add_child(row)
+		body.add_child(row)
 
 	_damage_summary = _make_header("")
-	_damage_page.add_child(_damage_summary)
+	_damage_summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_damage_summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	body.add_child(_damage_summary)
+
+	# Live-Simulation (DamageSim, wie tools/damage_sim.js): bisher gegen eingestellt, mit Monospace-Schrift für die Tabellen
+	_damage_sim = Label.new()
+	var mono := SystemFont.new()
+	mono.font_names = PackedStringArray(["Consolas", "Courier New", "monospace"])
+	_damage_sim.add_theme_font_override("font", mono)
+	_damage_sim.add_theme_font_size_override("font_size", DAMAGE_SIM_FONT_SIZE)
+	body.add_child(_damage_sim)
 
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -843,31 +893,22 @@ func _refresh_damage_page() -> void:
 	for formula in _damage_formula_buttons:
 		_damage_formula_buttons[formula].set_pressed_no_signal(formula == current)
 		_damage_formula_buttons[formula].modulate = Color.WHITE if formula == current else UNPICKED_COLOR
+	var fixed_base: bool = DebugSettings.damage_setting("fixed_base")
+	_damage_fixed_base_button.set_pressed_no_signal(fixed_base)
+	_damage_fixed_base_button.modulate = Color.WHITE if fixed_base else UNPICKED_COLOR
 	for entry in DAMAGE_ROWS:
 		var value := float(DebugSettings.damage_setting(entry[0]))
 		_damage_values[entry[0]].text = entry[3] % (roundi(value) if entry[3] == "%d" else value)
 
-	var lines := ["Beispiel: ausgeglichenes Monster (%d BST), Skill-Wert %d, Treffer bis K.O. (Schaden/KP):" % [
-		DAMAGE_EXAMPLE_BST, DAMAGE_EXAMPLE_VALUE]]
-	var cells := []
-	for pair in [[5, 5], [7, 5], [5, 7], [10, 5], [15, 5], [5, 15], [21, 20], [35, 35]]:
-		cells.append("%d→%d: %s" % [pair[0], pair[1], _example_hits(pair[0], pair[1], 1.0)])
-	lines.append("   ".join(cells.slice(0, 4)))
-	lines.append("   ".join(cells.slice(4)))
-	lines.append("Tank auf Stufe 10 (Vert. des Ziels x2 / x3 / x4): %s   %s   %s" % [
-		_example_hits(10, 10, 2.0), _example_hits(10, 10, 3.0), _example_hits(10, 10, 4.0)])
-	lines.append("Stufen-Sockel 0 = Werte linear zur Stufe (wie bisher), höher = Stufenunterschiede zählen weniger. Startstufe bleibt gleich.")
-	lines.append("KP-Multiplikator: steuert die Kampflänge. Boden/Deckel/Exponent wirken nur bei SYMMETRISCH.")
-	_damage_summary.text = "\n".join(lines)
-
-## Treffer bis K.O. für das Beispielmonster, mit der aktuell gewählten Formel
-func _example_hits(attacker_level: int, target_level: int, def_factor: float) -> String:
-	var level_1 := Helper.points_per_level(DAMAGE_EXAMPLE_BST) * Monster.STAT_SCALE / DebugSettings.STATS.size()
-	var atk := level_1 * DebugSettings.level_scale(attacker_level)
-	var target_stat := level_1 * DebugSettings.level_scale(target_level)
-	var hp := roundi(target_stat * DebugSettings.hp_scale())
-	var damage := Skills.stat_damage(atk, target_stat * def_factor, attacker_level, atk, DAMAGE_EXAMPLE_VALUE, 1.0)
-	return "%d (%d/%d)" % [ceili(hp / maxf(damage, 1.0)), damage, hp]
+	_damage_summary.text = "\n".join([
+		"Stufen-Sockel: 0 = Werte wachsen linear mit der Stufe (wie bisher, Stufe 10 hat doppelt so viel wie Stufe 5). " +
+			"Höher = jede Stufe bringt anteilig weniger, Stufenunterschiede zählen weniger. Die Startstufe 5 bleibt immer gleich. " +
+			"Beispiel Sockel 10: Stufe 10 hat nur 1,33x so viel wie Stufe 5. Gilt für alle Werte und alle Formeln.",
+		"KP-Multiplikator: steuert die Kampflänge (Treffer bis K.O.), gilt für alle Formeln.",
+		"Nur bei SYMMETRISCH: Exponent, Boden, Deckel, FESTE BST und Referenz-BST. " +
+			"FESTE BST = Grundschaden aus der Referenz-BST statt der eigenen, die BST zählt dann nicht doppelt.",
+	])
+	_damage_sim.text = DamageSim.report()
 
 # ─────────────────────────
 # Relikte

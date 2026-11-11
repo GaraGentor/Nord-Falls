@@ -1,5 +1,5 @@
 // Simulation der Schadensformeln: aktuelle Formel vs. Pokémon-Formel vs. vorgeschlagene Variante.
-// Aufruf:  node tools/damage_sim.js [Skill-Wert=40] [KP-Multiplikator der Variante=3]
+// Aufruf:  node tools/damage_sim.js [Skill-Wert=40] [KP-Multiplikator der Variante=3] ["eigen" = Grundschaden aus eigener BST]
 // Liest die Arten (preferred_stats + stats) direkt aus script/globals/monmap.gd.
 // Vereinfachungen: keine Edelsteine, Buffs, Schilde, Relikte; Element neutral; Anteile ohne ±15 %-Zufall.
 
@@ -18,6 +18,8 @@ const HP_SCALE = Number(process.argv[3] || 3); // KP-Multiplikator der Variante:
 const EXPONENT = 2.0;        // k in 2·a^k/(a^k+d^k)
 const MIN_FACTOR = 0.25;     // Boden: sehr hohe Verteidigung drückt den Schaden höchstens auf 1/4
 const MAX_FACTOR = 2.0;      // Deckel
+const FIXED_BASE = process.argv[4] !== "eigen"; // "FESTE BST": Grundschaden aus Referenz-BST statt eigener BST
+const REF_BST = 210;
 
 // ── Arten aus monmap.gd lesen ────────────────────────────
 function loadSpecies() {
@@ -78,7 +80,7 @@ const FORMULAS = {
 		dmg(from, to, v) {
 			const [a, d] = pick(from, to);
 			// Grundschaden = typischer Angriffswert (1/6 Anteil) auf Stufe des Angreifers -> Angriff zählt nur im Verhältnis
-			const typical = (1 / 6) * (from.sp.bst / SETTING_LEVEL) * STAT_SCALE * INITIAL_LEVEL
+			const typical = (1 / 6) * ((FIXED_BASE ? REF_BST : from.sp.bst) / SETTING_LEVEL) * STAT_SCALE * INITIAL_LEVEL
 				* (from.level + LEVEL_OFFSET) / (INITIAL_LEVEL + LEVEL_OFFSET);
 			// wie Skills.stat_damage "symmetric": symmetrisch, begrenzt auf [Boden, Deckel]
 			const ak = Math.pow(a, EXPONENT);
@@ -117,7 +119,7 @@ const tank = [...species].sort((x, y) => defOf(y) - defOf(x))[0];
 const avg = [...species].sort((x, y) =>
 	Math.abs(atkOf(x) - defOf(x) / 1.5) - Math.abs(atkOf(y) - defOf(y) / 1.5))[0];
 
-console.log(`Arten geladen: ${species.length} | Skill-Wert: ${SKILL_VALUE} | LEVEL_OFFSET (Variante): ${LEVEL_OFFSET} | HP_SCALE (Variante): ${HP_SCALE}`);
+console.log(`Arten geladen: ${species.length} | Skill-Wert: ${SKILL_VALUE} | LEVEL_OFFSET (Variante): ${LEVEL_OFFSET} | HP_SCALE (Variante): ${HP_SCALE} | Grundschaden: ${FIXED_BASE ? "feste BST " + REF_BST : "eigene BST"}`);
 console.log(`Angreifer-Typ: Art ${glass.name}, Verteidiger-Typ: Art ${tank.name}, ausgeglichen: Art ${avg.name}\n`);
 
 // 1) Treffer bis K.O. bei Stufenunterschieden (ausgeglichenes Monster gegen sich selbst)
@@ -196,6 +198,21 @@ for (const x of [1, 1.5, 2, 3, 4]) {
 		const a = makeMon(avg, 10, f.stat), t = makeMon(avg, 10, f.stat, { def: x, s_def: x });
 		const d = f.dmg(a, t, SKILL_VALUE);
 		row += lpad(`${hitsToKo(d, t.hp)} (${d}/${Math.round(t.hp)})`, 18);
+	}
+	console.log(row);
+}
+
+// 7) Seltenheit: gleich verteilte Monster mit unterschiedlicher BST, Stufe 10, Vorteil im Duell (ungerundet)
+console.log("\n7) BST-Vorteil im Duell (Stufe 10, gleich verteilte Werte): wie viel schneller die höhere BST gewinnt");
+const even = (bst) => ({ name: "bst" + bst, bst, shares: { hp: 1 / 6, atk: 1 / 6, def: 1 / 6, s_atk: 1 / 6, s_def: 1 / 6, speed: 1 / 6 } });
+console.log(pad("Paarung", 22) + Object.keys(FORMULAS).map((k) => lpad(k, 12)).join(""));
+for (const [hi, lo, label] of [[220, 200, "Uncommon vs Common"], [240, 200, "Epic vs Common"], [255, 200, "255 vs Common"],
+	[270, 200, "Mythic vs Common"], [280, 200, "280 vs Common"]]) {
+	let row = pad(label, 22);
+	for (const f of Object.values(FORMULAS)) {
+		const H = makeMon(even(hi), 10, f.stat), L = makeMon(even(lo), 10, f.stat);
+		const speedH = f.dmg(H, L, SKILL_VALUE) / L.hp, speedL = f.dmg(L, H, SKILL_VALUE) / H.hp;
+		row += lpad((speedH / speedL).toFixed(2) + "x", 12);
 	}
 	console.log(row);
 }

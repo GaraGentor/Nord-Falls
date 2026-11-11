@@ -22,9 +22,14 @@ const MODE := "classic"
 ## pokemon   = (floor(2·L/5)+2) · Wert · atk/def / 50 + 2, mit floor wie im Original
 const FORMULAS := ["classic", "symmetric", "pokemon"]
 ## Standard = Verhalten wie bisher. level_offset 0 = Werte linear zur Stufe, hp_scale 1 = KP wie bisher.
-const DAMAGE_DEFAULTS := {"formula": "classic", "exponent": 2.0, "min_factor": 0.25, "max_factor": 2.0, "level_offset": 0.0, "hp_scale": 1.0}
-## Empfehlung aus tools/damage_sim.js: symmetrisch, Boden 0.25, Stufen-Sockel 10, KP x3 (etwa 7 Treffer bis K.O.)
-const DAMAGE_RECOMMENDED := {"formula": "symmetric", "exponent": 2.0, "min_factor": 0.25, "max_factor": 2.0, "level_offset": 10.0, "hp_scale": 3.0}
+## fixed_base: Grundschaden der symmetrischen Formel aus einer festen Referenz-BST (base_bst) statt aus der eigenen BST.
+## Dann zählt die BST nur noch über die Werte selbst und nicht doppelt (Mythic vs. Common ~2,5x statt ~3,3x).
+const DAMAGE_DEFAULTS := {"formula": "classic", "exponent": 2.0, "min_factor": 0.25, "max_factor": 2.0, "level_offset": 0.0, "hp_scale": 1.0,
+	"fixed_base": false, "base_bst": 210.0}
+## Empfehlung aus der Simulation im Debug-Menü: symmetrisch, Boden 0.25, Stufen-Sockel 10, feste Referenz-BST 210.
+## KP x1, weil 30 % KP-Reserve und Growth 3.5 die Kämpfe schon auf etwa 6-7 Treffer bringen (KP x3 wären ~20).
+const DAMAGE_RECOMMENDED := {"formula": "symmetric", "exponent": 2.0, "min_factor": 0.25, "max_factor": 2.0, "level_offset": 10.0, "hp_scale": 1.0,
+	"fixed_base": true, "base_bst": 210.0}
 ## [min, max, Schritt] pro Zahlen-Einstellung
 const DAMAGE_RANGES := {
 	"exponent": [0.5, 4.0, 0.25],
@@ -32,6 +37,7 @@ const DAMAGE_RANGES := {
 	"max_factor": [1.0, 4.0, 0.25],
 	"level_offset": [0.0, 50.0, 1.0],
 	"hp_scale": [0.5, 6.0, 0.25],
+	"base_bst": [150.0, 300.0, 5.0],
 }
 
 ## Kampfmodus -> Wert -> Prozent der BST, die fest diesem Wert gehören
@@ -40,6 +46,8 @@ var _reserved := {MODE: {}}
 var _growth := {}
 ## Kampfmodus -> Einstellungen der Schadensformel (fehlende Keys = DAMAGE_DEFAULTS)
 var _damage := {}
+## Vorübergehende Einstellungen für die Simulation (with_damage_settings), null = gespeicherte nutzen
+var _damage_override = null
 ## alles aus der Datei, auch Einträge, die dieser Branch nicht kennt
 var _other := {}
 
@@ -156,7 +164,23 @@ func level_scale(level: int) -> float:
 # Schadensformel
 
 func damage_setting(key: String):
+	if _damage_override != null:
+		return _damage_override.get(key, DAMAGE_DEFAULTS[key])
 	return _damage.get(MODE, {}).get(key, DAMAGE_DEFAULTS[key])
+
+## Alle Einstellungen der Schadensformel, fehlende mit Standardwerten
+func damage_settings() -> Dictionary:
+	var values := DAMAGE_DEFAULTS.duplicate()
+	values.merge(_damage.get(MODE, {}), true)
+	return values
+
+## Rechnet fn mit anderen Einstellungen, ohne sie zu speichern (für die Simulation im Debug-Menü)
+func with_damage_settings(values: Dictionary, fn: Callable):
+	var previous = _damage_override
+	_damage_override = values
+	var result = fn.call()
+	_damage_override = previous
+	return result
 
 func set_damage_setting(key: String, value) -> void:
 	if DAMAGE_RANGES.has(key):
@@ -181,3 +205,7 @@ func damage_formula() -> String:
 
 func hp_scale() -> float:
 	return float(damage_setting("hp_scale"))
+
+## BST für den Grundschaden der symmetrischen Formel: feste Referenz oder die eigene BST des Angreifers
+func damage_base_bst(own_bst: int) -> int:
+	return roundi(float(damage_setting("base_bst"))) if damage_setting("fixed_base") else own_bst

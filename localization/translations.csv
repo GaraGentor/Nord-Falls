@@ -758,6 +758,8 @@ BOSS_RELIC_INTRO_TITLE,Boss Relics,Boss-Relikte
 BOSS_RELIC_INTRO_HINT,They empower all enemies until the last one is defeated or caught.,"Sie stärken alle Gegner, bis der letzte besiegt oder gefangen ist."
 BOSS_RELIC_START,Let's go!,Los geht's!
 BOSS_RELIC_CLOSE,Close,Schließen
+BATTLE_SPEED_TOOLTIP,"Battle speed (left click: faster, right click: slower)","Kampfgeschwindigkeit (Linksklick: schneller, Rechtsklick: langsamer)"
+BATTLE_AUTO_END_TOOLTIP,"Auto end turn: ends your turn as soon as no card can be played","Auto-Zugende: beendet deinen Zug, sobald keine Karte mehr spielbar ist"
 BOSS_RELIC_BROKEN,You beat the boss so hard that its relic broke!,"Du hast den Boss so hart verprügelt, dass das Relikt dabei zerbrochen ist!"
 BOSS_RELIC_BROKEN_MANY,You beat the boss so hard that its relics broke!,"Du hast den Boss so hart verprügelt, dass die Relikte dabei zerbrochen sind!"
 BOSS_RELIC_FORGOTTEN,The boss was so dumb it left its relic lying on the ground.,Der Boss hat das Relikt durch seine Dummheit auf dem Boden vergessen.

@@ -38,17 +38,21 @@ func get_labels() -> Array[String]:
 	var old_speed = mon.speed()
 	mon.upgrade_by_level(Relics.modify("level_up_levels", 1, mon))
 	grid.init_with_mon(mon)
-	var hp_diff = mon.hp() - old_hp
-	var attack_diff = mon.attack() - old_attack
-	var defense_diff = mon.defense() - old_defense
-	var s_attack_diff = mon.s_attack() - old_s_attack
-	var s_defense_diff = mon.s_defense() - old_s_defense
-	var speed_diff = mon.speed() - old_speed
-	
-	return [floor_val(hp_diff),floor_val(attack_diff),floor_val(defense_diff),floor_val(s_attack_diff),floor_val(s_defense_diff), floor_val(speed_diff), ""]
+	return [
+		gain_text(old_hp, mon.hp()),
+		gain_text(old_attack, mon.attack()),
+		gain_text(old_defense, mon.defense()),
+		gain_text(old_s_attack, mon.s_attack()),
+		gain_text(old_s_defense, mon.s_defense()),
+		gain_text(old_speed, mon.speed()),
+		"",
+	]
 
-func floor_val(_val: float) -> String:
-	return " + %d" % floori(_val)
+## Das Grid zeigt die Werte abgeschnitten (int), also zählt der Unterschied der angezeigten Zahlen.
+## Springt die angezeigte Zahl nicht, bleibt das Feld leer.
+func gain_text(old_val: float, new_val: float) -> String:
+	var shown_diff := int(new_val) - int(old_val)
+	return " %+d" % shown_diff if shown_diff != 0 else ""
 
 func _play() -> bool:
 	mon._level_progress += 1

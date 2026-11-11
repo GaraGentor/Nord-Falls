@@ -2,19 +2,17 @@ class_name MonsterInfoDialog
 extends Control
 
 ## Details eines eigenen Monsters über der ganzen Kartenfläche (der Header der Karte bleibt sichtbar):
-## links Bild, Name, Typ und die Karte der gewählten Attacke, rechts Werte, gesammelte Edelsteine
-## und die Attacken als Kacheln wie in der Ei-Attacken-Auswahl.
+## links Bild, Name und Typ, rechts Werte, gesammelte Edelsteine und darunter alle Attacken
+## als große Karten wie im Kampf in einer waagerechten Scrollview (reine Anzeige, ohne Klick).
 
 const GemField = preload("res://script/scenes/gems/gems.gd")
 const BATTLE_CARD := preload("res://script/scenes/battle/battle_card.tscn")
 const LEFT_WIDTH := 300.0
 const PORTRAIT_SIZE := Vector2(0, 150)
-const SKILL_COLUMNS := 3
+const SKILL_CARD_SIZE := Vector2(220, 260)
 const BACK_ICON := preload("res://assets/ui/icons/icon_back.svg")
 
 var _mon: Monster
-var _tiles: Array[Button] = []
-var _detail_card: Control
 
 func _init(mon: Monster) -> void:
 	_mon = mon
@@ -33,8 +31,6 @@ func _ready() -> void:
 	IronPlate.frame(panel, columns, 24, 20)
 	columns.add_child(_left_side())
 	columns.add_child(_right_side())
-	if not _mon._skills.is_empty():
-		_select_skill(0)
 
 func _left_side() -> Control:
 	var box := VBoxContainer.new()
@@ -54,13 +50,6 @@ func _left_side() -> Control:
 	chip_row.custom_minimum_size.y = 32
 	RewardDialog.add_element_chip(chip_row, _mon._type)
 	box.add_child(chip_row)
-	_detail_card = BATTLE_CARD.instantiate()
-	_detail_card.custom_minimum_size = Vector2(220, 200)
-	_detail_card.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	_detail_card.size_flags_vertical = Control.SIZE_EXPAND | Control.SIZE_SHRINK_CENTER
-	_detail_card.mouse_filter = MOUSE_FILTER_IGNORE
-	_detail_card.visible = false
-	box.add_child(_detail_card)
 	return box
 
 func _right_side() -> Control:
@@ -82,29 +71,24 @@ func _right_side() -> Control:
 	back.size_flags_vertical = SIZE_SHRINK_BEGIN
 	back.pressed.connect(queue_free)
 	top.add_child(back)
-
-	var scroll := ScrollContainer.new()
-	scroll.size_flags_vertical = SIZE_EXPAND_FILL
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	box.add_child(scroll)
-	var grid := GridContainer.new()
-	grid.columns = SKILL_COLUMNS
-	grid.size_flags_horizontal = SIZE_EXPAND_FILL
-	grid.add_theme_constant_override("h_separation", 12)
-	grid.add_theme_constant_override("v_separation", 12)
-	scroll.add_child(grid)
-	for i in _mon._skills.size():
-		var tile := SkillTile.create(_mon._skills[i], _mon)
-		tile.toggle_mode = true
-		tile.pressed.connect(_select_skill.bind(i))
-		grid.add_child(tile)
-		_tiles.append(tile)
+	box.add_child(_skill_cards())
 	return box
 
-## Es ist immer genau eine Attacke gewählt, links steht ihre Karte
-func _select_skill(index: int) -> void:
-	for i in _tiles.size():
-		_tiles[i].set_pressed_no_signal(i == index)
-	_detail_card.mon = _mon
-	_detail_card.skill = _mon._skills[index]
-	_detail_card.visible = true
+## Alle Attacken als Kampfkarten nebeneinander. Die Karten nehmen keine Eingabe an,
+## so landen Mausrad und Wischen direkt bei der Scrollview und ein Klick bewirkt nichts.
+func _skill_cards() -> Control:
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = SIZE_EXPAND_FILL
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	scroll.add_child(row)
+	for skill in _mon._skills:
+		var card := BATTLE_CARD.instantiate()
+		card.mon = _mon
+		card.skill = skill
+		card.custom_minimum_size = SKILL_CARD_SIZE
+		card.size_flags_vertical = SIZE_SHRINK_BEGIN
+		card.mouse_filter = MOUSE_FILTER_IGNORE
+		row.add_child(card)
+	return scroll

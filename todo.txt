@@ -1,13 +1,20 @@
-1. Prüfe die Monster Appearance der seltenheit. Eigentlich müsste es so Funktionieren:
-	Alle Monster pro Biom landen in einem Pool.
-	Hier können sofern vorhanden 5-12 verschiedene Monster auftauchen (pro Härteres Biom paar mehr)
-	Dabei soll die niedrigste seltenheit immer beovrzugt werden. D.h. wenn ich in Biom 1 bin
-	erscheinen mehr gewöhnliche monster in einem Run als seltene.
-	Derzeit ist mir aufgefallen, wenn einmal ein seltenes erscheint, ist es fast in jedem kampf.
-	So sollen seltenere Monster gelegentlich mal erscheinen und nicht die ganze Zeit. Prüf das bitte nochmal
-	Beispiel: Es gibt 25 Kämpfe, davon sind dann 12 mit gewöhnlichen monstern, 6 mit ungewöhnlichen, 3 mit seltenen, 2 episch, 1 legendäres und für boss ab und zu mal ein mytisches, dass natürlich nur extrem schwer zu fangen ist.
-2. Prüfe auch nochmal die Fang chance. Monster unter 10% leben sollen eine höhere chance haben und Monster unter 5% leben sogar noch mehr. Die Seltenheit spielt auch eine Rolle und mytische (die nur bei bossen erscheinen sollen) sogar noch seltener zu fangen sein, aber nicht ganz unmöglich.
-3. Es gibt auch neue Monster Bilder etc. pflege Sie ein und gibt denen beispiele. Das Balancing (typ auswahl sowie fähigkeiten kommen noch). Binde die nur so ein, dass die im wiki erscnehinen und im spiel. Das muss erstmal keinen sinn haben.
-4. Füge auch die Mytische Farbe hinzu, (Dunkel Rot bis Schwarz)
-5. Im Debug Menü bei der Werte Verteilung möchte ich auch die "Growth" angeben können, da ich finde die Monster Skalieren Pro level zu stark.
-Was sollte danach passieren? Balancing oder weitere Features? Du kannst auch kurz mal in die Tasks lurken.
+Schadensformel
+Berechne den Schaden einer Attacke anhand folgender Parameter:
+
+Eingabeparameter:
+
+level: Level des angreifenden Pokémon
+attack: Angriffswert des angreifenden Pokémon (bei physischen Attacken)
+defense: Verteidigungswert des gegnerischen Pokémon (bei physischen Attacken)
+power: Basiskraft der verwendeten Attacke
+typeEffectiveness: 2.0 bei sehr effektiv, 0.5 bei nicht sehr effektiv, 1.0 bei neutraler Wirkung
+Grundformel:
+
+Berechne den Level-Faktor: levelFactor = floor((2 * level) / 5) + 2
+Berechne den Basis-Schaden: baseDamage = floor(floor(levelFactor * power * attack / defense) / 50) + 2
+Multipliziere mit Typeneffektivität: damage = floor(damage * typeEffectiveness)
+Wichtig:
+
+Physische Attacken verwenden Angriff und Verteidigung.
+Spezielle Attacken verwenden S-Angriff und S-Verteidigung.
+Der Level-Faktor basiert auf dem Level des angreifenden Pokémon, nicht auf dem Level des Verteidigers.
