@@ -41,6 +41,10 @@ const STATS := {
 	"STAT_SPD": "s_defense",
 	"STAT_SPE": "speed",
 }
+## Anzeige -> Stat-Key (StatsGrid.ICONS)
+const STAT_KEYS := {
+	"STAT_HP": "hp", "STAT_ATK": "atk", "STAT_DEF": "def", "STAT_SPA": "s_atk", "STAT_SPD": "s_def", "STAT_SPE": "speed",
+}
 
 var _mon: Monster
 var _skills: Array
@@ -139,7 +143,10 @@ func _stats(mon: Monster) -> Control:
 		label.add_theme_font_size_override("font_size", STAT_FONT_SIZE)
 		label.add_theme_color_override("font_color", IronPlate.TEXT_COLOR)
 		label.text = "%s %d" % [tr(key), roundi(mon.call(STATS[key]))]
-		grid.add_child(label)
+		# Symbol davor wie in allen Werte-Tabellen, ein Klick erklärt die Werte
+		var cell := StatsGrid.name_cell(self, STAT_KEYS[key], label, false)
+		cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		grid.add_child(cell)
 	return plate
 
 func _cards() -> Control:

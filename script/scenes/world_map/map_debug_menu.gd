@@ -97,6 +97,9 @@ var _damage_summary: Label
 var _damage_fixed_base_button: Button
 ## Tabellen der Live-Simulation
 var _damage_sim: Label
+var _trophy_page: VBoxContainer
+## Biom-Tiefe -> Label mit dem Trophäen-Bonus
+var _trophy_bonus_values := {}
 var _relic_page: VBoxContainer
 var _relic_rows: VBoxContainer
 var _preview_page: VBoxContainer
@@ -123,6 +126,7 @@ func _ready() -> void:
 	_build_egg_page()
 	_build_stats_page()
 	_build_damage_page()
+	_build_trophy_page()
 	_build_relic_page()
 	_build_preview_page()
 	_build_vfx_page()
@@ -186,12 +190,24 @@ func _build_main() -> void:
 	extras.add_child(_make_button("RELIKTE ...", func(): _show_page(_relic_page)))
 	extras.add_child(_make_button("SPIELSTAND LÖSCHEN ...", func(): _show_page(_reset_page)))
 
-	_add_section(list, "Optimierung & Balancing", [
+	var balancing := _add_section(list, "Optimierung & Balancing", [
 		["WERTE-VERTEILUNG ...", func(): _show_page(_stats_page)],
 		["SCHADENSFORMEL ...", func(): _show_page(_damage_page)],
+		["TROPHÄEN-WERTE ...", func(): _show_page(_trophy_page)],
 		["MONSTER-VORSCHAU ...", func(): _show_page(_preview_page)],
 		["VFX-VORSCHAU ...", func(): _show_page(_vfx_page)],
 	])
+	# Bosse mit oder ohne Trophäen, gespeichert wie die anderen Balancing-Werte
+	var boss_trophies_button := _make_toggle_button("")
+	boss_trophies_button.custom_minimum_size = BUTTON_SIZE
+	boss_trophies_button.toggled.connect(func(on: bool):
+		DebugSettings.set_boss_trophies_enabled(on)
+		boss_trophies_button.text = "BOSS-TROPHÄEN: " + ("AN" if on else "AUS"))
+	boss_trophies_button.button_pressed = DebugSettings.boss_trophies_enabled()
+	boss_trophies_button.text = "BOSS-TROPHÄEN: " + ("AN" if boss_trophies_button.button_pressed else "AUS")
+	boss_trophies_button.modulate = Color.WHITE if boss_trophies_button.button_pressed else UNPICKED_COLOR
+	boss_trophies_button.tooltip_text = "Bosse (Boss-Felder und Biom-Bosse) tragen zusätzlich Trophäen"
+	balancing.add_child(boss_trophies_button)
 
 	var close_button := _make_button("SCHLIESSEN", close)
 	close_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -445,7 +461,7 @@ func _play_all_vfx() -> void:
 		await get_tree().create_timer(VFX_SEQUENCE_PAUSE).timeout
 
 func _show_page(page: VBoxContainer) -> void:
-	for other in [_main, _fight_page, _picker, _egg_page, _stats_page, _damage_page, _relic_page, _preview_page, _vfx_page, _reset_page]:
+	for other in [_main, _fight_page, _picker, _egg_page, _stats_page, _damage_page, _trophy_page, _relic_page, _preview_page, _vfx_page, _reset_page]:
 		other.visible = other == page
 
 func _refresh_start() -> void:
@@ -786,6 +802,47 @@ func _refresh_stats_page() -> void:
 		"%s Stufe 1 bleibt gleich. Gilt sofort, auch im laufenden Run.") % [
 		total, 100 - total, STATS_EXAMPLE_BST, STATS_EXAMPLE_BST * total / 100, STATS_EXAMPLE_BST * (100 - total) / 100,
 		growth_text]
+
+# ─────────────────────────
+# Trophäen-Werte
+
+## Eine Zeile pro Biom: so viele Punkte gibt jede Trophäe (alle Arten gleich), gespeichert in DebugSettings
+func _build_trophy_page() -> void:
+	_trophy_page = VBoxContainer.new()
+	_trophy_page.add_theme_constant_override("separation", 10)
+	add_footer(_trophy_page)
+
+	_trophy_page.add_child(_make_header("Trophäen-Werte: Punkte pro Trophäe je Biom (gilt für alle Arten, Feld, Beute und Shop)"))
+	for depth in DebugSettings.DEFAULT_TROPHY_BONUS.size():
+		var row := _make_stat_row("Biom %d" % (depth + 1))
+		for step in [-3, -1]:
+			row.add_child(_make_trophy_bonus_button(depth, step))
+		_trophy_bonus_values[depth] = _make_stat_value(row)
+		for step in [1, 3]:
+			row.add_child(_make_trophy_bonus_button(depth, step))
+		_trophy_page.add_child(row)
+	_trophy_page.add_child(_make_header("Standard: %s. Boss-Trophäen zählen mit dem Wert von Biom 1." % ", ".join(DebugSettings.DEFAULT_TROPHY_BONUS.map(func(v): return str(v)))))
+
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 12)
+	row.add_child(_make_button("ZURÜCK", _show_page.bind(_main)))
+	row.add_child(_make_button("STANDARD", func():
+		DebugSettings.reset_trophy_bonus()
+		_refresh_trophy_page()))
+	_trophy_page.add_child(row)
+	_refresh_trophy_page()
+
+func _make_trophy_bonus_button(depth: int, step: int) -> Button:
+	var button := _make_button("%+d" % step, func():
+		DebugSettings.set_trophy_bonus(depth, DebugSettings.trophy_bonus(depth) + step)
+		_refresh_trophy_page())
+	button.custom_minimum_size = STAT_STEP_SIZE
+	return button
+
+func _refresh_trophy_page() -> void:
+	for depth in _trophy_bonus_values:
+		_trophy_bonus_values[depth].text = "+%d" % DebugSettings.trophy_bonus(depth)
 
 # ─────────────────────────
 # Schadensformel

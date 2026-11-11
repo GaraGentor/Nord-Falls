@@ -19,3 +19,7 @@ PT 1 Done muss man testen.
 
 - Konzept durchgehen
 - Playtests
+
+MM Feedback
+5. One Use Items..
+7. Heilungs Optionen nochmal überdneken

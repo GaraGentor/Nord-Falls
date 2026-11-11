@@ -17,6 +17,8 @@ const DEFAULT_DATA := {
 	# Meilenstein-Fortschritt pro Art als Start-Monster: Monster-Name -> {Zähler -> Anzahl} (siehe Skills.MILESTONES)
 	# freigeschaltete Meilenstein-Ei-Attacken landen wie die anderen in egg_skills
 	"milestones": {},
+	# zuletzt im Ei-Konfigurator gewählte Ei-Attacken pro Art: Monster-Name -> [Skill-Namen], nächstes Mal vorausgewählt
+	"egg_loadouts": {},
 	"reroll_charges": 0,
 	# wurden die gespeicherten Eier neu gewürfelt? Dann verbraucht der nächste Aufbruch die Ladungen
 	"eggs_rerolled": false,
@@ -98,6 +100,14 @@ func unlock_egg_skill(monster_name: String, skill_name: String):
 
 func lock_egg_skill(monster_name: String, skill_name: String):
 	save_data["egg_skills"].get(monster_name, []).erase(skill_name)
+	save_game()
+
+## Zuletzt gewählte Ei-Attacken der Art (leer = noch nie gewählt)
+func get_egg_loadout(monster_name: String) -> Array:
+	return save_data["egg_loadouts"].get(monster_name, []).duplicate()
+
+func set_egg_loadout(monster_name: String, skill_names: Array) -> void:
+	save_data["egg_loadouts"][monster_name] = skill_names.duplicate()
 	save_game()
 
 func is_egg_skill_unlocked(monster_name: String, skill_name: String) -> bool:

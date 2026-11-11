@@ -6,6 +6,7 @@ extends Control
 ## verschwinden hinter ihm. Tooltip mit Name und Wirkung; ein Klick öffnet die Übersicht wie im Kampf
 ## (BossRelicOverlay), solange die Maus auf einem Relikt ist, hält die Bahn an.
 ## Hängt am Boss-Button und legt die Relikte direkt daneben ab, nur sie nehmen Klicks an.
+## Auch die Boss-Felder der Karte (halb so groß) zeigen so ihre Relikte, dann mit kleinerem orbit_scale.
 
 const ICON_SIZE := Vector2(46, 46)
 ## Halbachsen der Bahn um die Mitte des Boss-Symbols (128 px)
@@ -24,13 +25,16 @@ const BACK_SHADE := 0.6
 const OVERLAY_LAYER := 60
 
 var _relics: Array = []
+## Größe von Bahn und Relikten relativ zum Biom-Boss (Boss-Felder sind kleiner)
+var _orbit_scale := 1.0
 var _icons: Array[TextureRect] = []
 var _angle := 0.0
 var _time := 0.0
 var _hovered := false
 var _overlay: BossRelicOverlay
 
-func _init(relics: Array) -> void:
+func _init(relics: Array, orbit_scale := 1.0) -> void:
+	_orbit_scale = orbit_scale
 	_relics = relics
 
 func _ready() -> void:
@@ -52,8 +56,8 @@ func _icon(id: String) -> TextureRect:
 	icon.texture = load(relic.icon)
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	icon.size = ICON_SIZE
-	icon.pivot_offset = ICON_SIZE / 2
+	icon.size = ICON_SIZE * _orbit_scale
+	icon.pivot_offset = ICON_SIZE * _orbit_scale / 2
 	# eigene Kopie: der goldene Umriss beim Drüberfahren gilt nur für dieses Relikt
 	icon.material = BossRelics.RELIC_MATERIAL.duplicate()
 	icon.tooltip_text = tr(relic.name) + "\n" + BossRelics.description(id)
@@ -85,7 +89,7 @@ func _place() -> void:
 		var a := _angle + TAU * i / _icons.size()
 		var depth := (sin(a) + 1.0) / 2.0
 		var bob := sin(_time * BOB_SPEED + i) * BOB_HEIGHT
-		icon.position = center + Vector2(cos(a) * RADIUS.x, sin(a) * RADIUS.y + bob) - ICON_SIZE / 2
+		icon.position = center + Vector2(cos(a) * RADIUS.x, sin(a) * RADIUS.y + bob) * _orbit_scale - ICON_SIZE * _orbit_scale / 2
 		icon.scale = Vector2.ONE * lerpf(BACK_SCALE, FRONT_SCALE, depth)
 		icon.show_behind_parent = depth < 0.5
 		var shade := lerpf(BACK_SHADE, 1.0, depth)

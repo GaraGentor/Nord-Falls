@@ -36,6 +36,8 @@ const WHEEL_EVENT := preload("res://script/scenes/wheel_event/wheel_event.gd")
 const VOID_EVENT := preload("res://script/scenes/void_event/void_event.gd")
 const HUB_CAMP := preload("res://script/scenes/hub_camp/hub_camp.gd")
 const DEBUG_MENU := preload("res://script/scenes/world_map/map_debug_menu.gd")
+## Boss-Felder sind halb so groß wie der Biom-Boss (64 statt 128 px), ihre Relikt-Bahn auch
+const MAP_BOSS_ORBIT_SCALE := 0.55
 
 @export var view_container: Panel
 
@@ -228,6 +230,9 @@ func set_map():
 				# todo
 				if State.current_map_position.y >= y_path._pos.y:
 					reset_animation_state(y_path)
+				# Boss-Felder vor einem zeigen ihre Relikte wie der Biom-Boss, nur kleiner
+				elif y_path._type == Map.PATH_TYPE.BOSS and not y_path._boss_relics.is_empty():
+					d.add_child(BossRelicOrbit.new(y_path._boss_relics, MAP_BOSS_ORBIT_SCALE))
 			g_container.add_child(d)
 	# reverse...
 	var children = grid_container.get_children()

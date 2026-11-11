@@ -171,7 +171,7 @@ func add_trophies(mon: Monster, trophies: Dictionary) -> void:
 	for stat in trophies:
 		var count: int = trophies[stat]
 		if count > 0:
-			mon.add_gem(stat, GemField.BONUS_BY_DEPTH[0] * count, count)
+			mon.add_gem(stat, DebugSettings.trophy_bonus(0) * count, count)
 
 # ─────────────────────────
 # Wirkungen im Kampf

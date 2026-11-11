@@ -1,7 +1,12 @@
 1. Beim Judgement muss noch das Level von den Monstern stehen. Das wäre cool
-2. 
-3. Im Tutorial die EI Attacken nicht vorauswählen
-4. Lebens anzeige beim Levelup
-5. One Use Items..
-6. Der aller erste Kampf muiss immer ein Kampf sein in der Map
-7. Heilungs Optionen nochmal überdneken
+2. Bei mini Bossen können auch die Boss Relikte rund um fliegen wie beim Hauptboss
+3. Im Tutorial die EI Attacken nicht vorauswählen sondern den SPieler hochziehen lassen
+4. Lebens-anzeige beim Levelup für die Monster, damit ich sehe wie viel leben die Left haben
+5. Der aller erste Kampf muiss immer ein Kampf sein in der Map
+6. Mach die Level Up Balken Fanzy und mit dem living pixel shader. Einfach so ein Kasten ist irgendwie langeweilig für ein Level Up
+7. Debug Menü bei der Optimierung möchte ich Werte eingeben können, die die Trophähen für jedes Biom geben an Boni (für jedes alle gemeinsamen) d.h. 5 Zeilen Je jede trophäe mit -1 -3 [TROPHÄE_WERT] -3 -1
+8. Mach im Debug Modus ein Toggle rein, ob Bosse zusätzlich mit Trophäen Spawnen oder nicht
+9. Füg beim Kampf und bei der Initialen Monster auswahl in den Stats nochmal die Icons für Physisch und Magisch hinzu. Ich denke jeweils immer über der beschriftung (kp, ang, ver, san etc.) Für die Leben füge ein ähnliches Herz hinzu für Initiative ein mini Pentagram (wie im Initiativen Rad aber simpel in der gleichen farbe) und für BST ein Pfeil nach oben im gleichen Stil wie die anderen (weiße linien, durchsichtig.).
+10. Füg eine Neue Erklärung hinzu, wenn man auf die Stats drückt, die erklären wofür KP Stehen, ATK, SATK etc. und wodrauf man beim Spielen von Karten achten sollte. Die erklärung soll sich in einem Dialog öffnen wenn man drauf klickt wo auch SAN und so ausgeschrieben ist.
+11. Ergänze für punkt 9 mit den additions das auch im Kampf, Trainer, Map, Level Up & da wo man überall stats sehen kann.
+12. Im Kampf möchte ich das ausgewählte Monster auf dem schlachtfeld präsenter "Ausgewählt" makieren, mach die Goldene Linie doch vill wieder etwas dicker

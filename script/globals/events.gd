@@ -14,6 +14,8 @@ signal select_widget_monster(mon)
 signal refresh_ui_for_monster()
 
 signal select_initial_mon(index)
+# Ei-Konfigurator: alle Plätze sind belegt (wartet das Tutorial drauf)
+signal egg_loadout_complete()
 
 signal mouse_event(props)
 

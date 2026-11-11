@@ -231,6 +231,8 @@ class MonField extends RewardDialog.DropTarget:
 			column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			column.add_theme_constant_override("separation", -4)
 			stats.add_child(column)
+			# Symbol über der Beschriftung wie in den Werte-Tabellen (StatsGrid)
+			column.add_child(StatsGrid.stat_icon(stat, roundf(STAT_FONT_SIZE * StatsGrid.ICON_SCALE)))
 			var stat_name := _stat_label(column)
 			stat_name.text = tr(GemField.STATS[stat].stat).trim_suffix(":")
 			_stat_labels[stat] = {"name": stat_name, "value": _stat_label(column)}
@@ -537,7 +539,7 @@ func _depth() -> int:
 	return clampi(State.map_level, 0, GEM_PRICES.size() - 1)
 
 func _add_gem_offers() -> void:
-	var bonus: int = GemField.BONUS_BY_DEPTH[_depth()]
+	var bonus: int = DebugSettings.trophy_bonus(_depth())
 	var stats = GemField.STATS.keys()
 	stats.shuffle()
 	for stat in stats.slice(0, GEM_OFFERS):

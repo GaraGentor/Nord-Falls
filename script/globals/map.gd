@@ -379,7 +379,8 @@ func roll_boss_enemies(forced_count := 0) -> Array[Monster]:
 		species.append(BossRelics.roll_species(depth, i == mythic_slot))
 	var bosses := Helper.generate_mons({"count": count, "species": species})
 	for boss in bosses:
-		BossRelics.add_trophies(boss, BossRelics.default_trophies(depth))
+		if DebugSettings.boss_trophies_enabled():
+			BossRelics.add_trophies(boss, BossRelics.default_trophies(depth))
 	return bosses
 
 ## Nur solange ein Team-Monster mit dem Kopfgeld noch etwas freischalten kann (sonst kommen sie nur noch von selbst).
@@ -460,9 +461,11 @@ func generate_additional_nodes_per_path(grid: Array):
 func generate_specials(grid: Array):
 	var map_setting = map_settings[State.map_level]
 	var special_nodes = map_setting["special_nodes"]
+	# Der Run beginnt immer mit einem Kampf: im ersten Biom bleibt der Einstieg (Zeile 0) ein Kampf-Feld
+	var first_row := 1 if State.map_level == 0 else 0
 	for i in starting_nodes:
 		for j in special_nodes:
-			var all_nodes_that_can_be_transformed = all_nodes.filter(func(_path: path): return _path._pos.z == i and _path._type == PATH_TYPE.COMBAT)
+			var all_nodes_that_can_be_transformed = all_nodes.filter(func(_path: path): return _path._pos.z == i and _path._type == PATH_TYPE.COMBAT and _path._pos.y >= first_row)
 			if all_nodes_that_can_be_transformed.size() >= 1:
 				var what_special_node = randi_range(1, PATH_TYPE.GEM)
 				var np = all_nodes_that_can_be_transformed.pick_random()

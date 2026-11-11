@@ -484,9 +484,11 @@ func _apply_debug_boss_setup(bosses: Array[Monster]) -> void:
 	if relics != null:
 		BossRelics.active = relics.duplicate()
 	for boss in bosses:
-		if trophies != null:
+		# Bosse ohne Trophäen (Schalter im Debug-Menü): auch die schon beim Betreten des Bioms gewürfelten fallen weg
+		if trophies != null or not DebugSettings.boss_trophies_enabled():
 			boss._gems = {}
 			boss._gem_counts = {}
+		if trophies != null:
 			BossRelics.add_trophies(boss, trophies)
 
 ## Die Gegner des betretenen Felds. Kämpfe aus dem Debug-Menü kommen ohne Feld oder mit fester Anzahl und würfeln hier.

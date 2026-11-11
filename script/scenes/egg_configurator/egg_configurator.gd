@@ -61,12 +61,17 @@ func _ready() -> void:
 	_mon = State.mons[0]
 	_slot_skills.resize(SKILLS_TO_PICK)
 	_slot_skills.fill("")
-	# Vorauswahl: die beim Ei gewürfelten Attacken
-	var filled := 0
-	for skill in _mon._skills:
-		if filled < SKILLS_TO_PICK and not _slot_skills.has(skill.name):
-			_slot_skills[filled] = skill.name
-			filled += 1
+	# Im Tutorial bleiben die Plätze leer, der Spieler zieht die Attacken selbst hoch.
+	# Sonst die zuletzt für diese Art gewählten Attacken, Lücken füllen die beim Ei gewürfelten.
+	if not Tutorial.should_show("egg_configurator"):
+		var available := Skills.get_available_egg_skills(_mon._name)
+		var preselect: Array = SaveManager.get_egg_loadout(_mon._name).filter(func(skill_name): return available.has(skill_name))
+		preselect.append_array(_mon._skills.map(func(skill): return skill.name))
+		var filled := 0
+		for skill_name in preselect:
+			if filled < SKILLS_TO_PICK and not _slot_skills.has(skill_name):
+				_slot_skills[filled] = skill_name
+				filled += 1
 	_build()
 	_refresh()
 	Tutorial.trigger("egg_configurator")
@@ -472,8 +477,11 @@ func _refresh() -> void:
 	if selected.size() == SKILLS_TO_PICK and not has_usable:
 		_counter_label.text = tr("CONFIGURATOR_NEED_USABLE")
 	_go_button.disabled = selected.size() != SKILLS_TO_PICK or not has_usable
+	if selected.size() == SKILLS_TO_PICK:
+		Events.egg_loadout_complete.emit()
 
 func _on_go_pressed() -> void:
+	SaveManager.set_egg_loadout(_mon._name, _selected())
 	_mon._skills = []
 	for skill_name in _selected():
 		var skill = Skills.get_skill(skill_name)

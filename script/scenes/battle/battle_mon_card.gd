@@ -105,14 +105,14 @@ func _update_hp_bar() -> void:
 	var share := clampf(_shown_hp / max_hp, 0.0, 1.0) if max_hp > 0 else 0.0
 	hp_clip.size = Vector2(hp_bar.size.x * share, hp_bar.size.y)
 	hp_fill.size = hp_bar.size
-	hp_fill.color = _hp_color(share)
+	hp_fill.color = hp_color(share)
 	# genaue HP von Gegnern nur bei Arten, die man hat oder in diesem Run gefangen hat, sonst bleibt der Balken ohne Zahl
 	if State.mons.has(mon) or State.is_mon_known(mon._name):
 		hp_label.text = "%d / %d" % [roundi(_shown_hp), roundi(max_hp)]
 	else:
 		hp_label.text = ""
 
-func _hp_color(share: float) -> Color:
+static func hp_color(share: float) -> Color:
 	if share > HEALTHY_SHARE:
 		return HEALTHY_COLOR
 	if share >= CRITICAL_SHARE:

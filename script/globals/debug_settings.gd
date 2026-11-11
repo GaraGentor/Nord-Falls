@@ -54,6 +54,14 @@ var _other := {}
 ## IDs der Relics, die im Debug-Menü ausgeschaltet wurden (siehe Relics.is_active)
 var _disabled_relics := []
 
+## Trophäen-Bonus pro Biom-Tiefe in festen Punkten auf den Wert, gilt für alle Arten gleich (Feld, Beute, Shop, Bosse).
+## Leer = DEFAULT_TROPHY_BONUS, im Debug-Menü pro Biom änderbar.
+const DEFAULT_TROPHY_BONUS := [15, 20, 25, 30, 35]
+const TROPHY_BONUS_RANGE := [0, 200]
+var _trophy_bonus: Array = []
+## Tragen Bosse (Boss-Felder und Biom-Bosse) zusätzlich Trophäen? Im Debug-Menü abschaltbar.
+var _boss_trophies := true
+
 ## Im Debug-Menü gewählte Gegnerzahl für den nächsten Kampf, 0 = wie im normalen Spiel. Wird nicht gespeichert.
 var next_enemy_count := 0
 ## Im Debug-Menü gewählte Boss-Relikte (Array von IDs) des nächsten Boss-Kampfs und Trophäen
@@ -71,13 +79,16 @@ func _ready() -> void:
 		_growth.merge(parsed.get("growth_per_level", {}), true)
 		_damage.merge(parsed.get("damage_formula", {}), true)
 		_disabled_relics = parsed.get("disabled_relics", [])
+		_trophy_bonus = parsed.get("trophy_bonus", [])
+		_boss_trophies = bool(parsed.get("boss_trophies", true))
 
 func save() -> void:
 	var file := FileAccess.open(PATH, FileAccess.WRITE)
 	if file:
 		# fremde Einträge (z. B. "growth_stats" vom Branch new-conzept) bleiben erhalten
 		var data := _other.duplicate()
-		data.merge({"reserved_stats": _reserved, "growth_per_level": _growth, "damage_formula": _damage, "disabled_relics": _disabled_relics}, true)
+		data.merge({"reserved_stats": _reserved, "growth_per_level": _growth, "damage_formula": _damage, "disabled_relics": _disabled_relics,
+			"trophy_bonus": _trophy_bonus, "boss_trophies": _boss_trophies}, true)
 		file.store_string(JSON.stringify(data))
 
 func is_relic_disabled(id: String) -> bool:
@@ -87,6 +98,38 @@ func set_relic_disabled(id: String, disabled: bool) -> void:
 	_disabled_relics.erase(id)
 	if disabled:
 		_disabled_relics.append(id)
+	save()
+
+# ─────────────────────────
+# Trophäen
+
+## Bonus einer Trophäe in dieser Biom-Tiefe (0-4) für alle Arten, ohne eigenen Wert gilt DEFAULT_TROPHY_BONUS
+func trophy_bonus(depth: int) -> int:
+	var defaults: Array = DEFAULT_TROPHY_BONUS
+	depth = clampi(depth, 0, defaults.size() - 1)
+	if depth < _trophy_bonus.size():
+		return int(_trophy_bonus[depth])
+	return defaults[depth]
+
+func set_trophy_bonus(depth: int, value: int) -> void:
+	var defaults: Array = DEFAULT_TROPHY_BONUS
+	if _trophy_bonus.size() != defaults.size():
+		var filled := []
+		for i in defaults.size():
+			filled.append(trophy_bonus(i))
+		_trophy_bonus = filled
+	_trophy_bonus[clampi(depth, 0, defaults.size() - 1)] = clampi(value, TROPHY_BONUS_RANGE[0], TROPHY_BONUS_RANGE[1])
+	save()
+
+func reset_trophy_bonus() -> void:
+	_trophy_bonus = []
+	save()
+
+func boss_trophies_enabled() -> bool:
+	return _boss_trophies
+
+func set_boss_trophies_enabled(on: bool) -> void:
+	_boss_trophies = on
 	save()
 
 ## Gewählte Gegnerzahl, sonst usual_count. Die Wahl gilt nur für einen Kampf.

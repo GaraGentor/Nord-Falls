@@ -36,10 +36,10 @@ const MONSTER_MATERIAL := preload("res://script/ui/shader/monster_living_materia
 const SELECTED_OUTLINE_COLOR := Color(0.858824, 0.717647, 0.45098)
 ## wie MONSTER_MATERIAL, zusätzlich mit goldenem Umriss (ausgewähltes Monster)
 var monster_selected_material: ShaderMaterial
-## Dezenter Umriss im Kampf: dünn und halbtransparent, das Monster bleibt im Vordergrund
-const BATTLE_OUTLINE_COLOR := Color(0.858824, 0.717647, 0.45098, 0.5)
-const BATTLE_OUTLINE_THICKNESS := 2.0
-## wie MONSTER_MATERIAL, zusätzlich mit dezentem Umriss (Monster, dessen Werte im Kampf angezeigt werden)
+## Umriss des ausgewählten Monsters im Kampf: kräftiger goldener Rand, damit die Auswahl klar zu sehen ist
+const BATTLE_OUTLINE_COLOR := Color(0.858824, 0.717647, 0.45098, 0.9)
+const BATTLE_OUTLINE_THICKNESS := 4.0
+## wie MONSTER_MATERIAL, zusätzlich mit goldenem Umriss (Monster, dessen Werte im Kampf angezeigt werden)
 var monster_battle_selected_material: ShaderMaterial
 
 func _init() -> void:

@@ -485,6 +485,8 @@ func _fill_badges(row: HBoxContainer, mon: Monster, slot: int = -1) -> void:
 		row.add_child(_badge(tr("JUDGEMENT_BADGE_SLOT").format({"slot": slot + 1}), Color(0.0934, 0.0873, 0.0837), GOLD))
 	if mon == null:
 		return
+	# Stufe immer sichtbar, damit sich Fänge und Team vergleichen lassen
+	row.add_child(_badge(tr("BATTLE_MON_LEVEL") + " " + str(mon._level), Color(0.0934, 0.0873, 0.0837), IronPlate.TEXT_COLOR))
 	if _new_mons.has(mon):
 		row.add_child(_badge(tr("JUDGEMENT_BADGE_NEW"), GOLD, Color.BLACK))
 		var egg_skill = mon.get_unlockable_egg_skill()

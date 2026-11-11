@@ -18,9 +18,6 @@ const STATS := {
 	"speed": {"name": "GEM_SPEED", "desc": "GEM_SPEED_DESC", "stat": "STAT_SPE", "icon": "res://assets/ui/trophies/storm_feather.svg"},
 }
 
-## Bonus pro Biom-Tiefe (State.map_level) in festen Punkten auf den Wert
-const BONUS_BY_DEPTH := [15, 20, 25, 30, 35]
-
 const COUNT_ICON_SIZE := Vector2(20, 20)
 const COUNT_FONT_SIZE := 16
 ## noch nicht gesammelte Trophäen treten zurück
@@ -36,7 +33,7 @@ func _ready() -> void:
 	set_drag_hint("GEM_HINT")
 	show_fixed_targets(State.mons, false)
 	show_gem_info(self)
-	_bonus = BONUS_BY_DEPTH[clampi(State.map_level, 0, BONUS_BY_DEPTH.size() - 1)]
+	_bonus = DebugSettings.trophy_bonus(State.map_level)
 	var stats = STATS.keys()
 	stats.shuffle()
 	for stat in stats.slice(0, gem_choices):
