@@ -12,6 +12,10 @@ const HEADER_FONT_SIZE := 18
 const MON_COLUMNS := 8
 const MON_BUTTON_SIZE := Vector2(130, 120)
 const MON_ICON_SIZE := 72
+## Höhe der Monster-Liste im Judgement (drei Reihen), passt samt Titel, Haken und Buttons in die 720 px hohe Ansicht
+const PICKER_LIST_HEIGHT := 400
+## Höhe der Monster-Liste bei den Ei-Attacken (zwei Reihen), darunter brauchen die Attacken der Art Platz
+const EGG_LIST_HEIGHT := 260
 const PREVIEW_COLUMNS := 5
 const PREVIEW_IMAGE_SIZE := Vector2(210, 210)
 ## Höhe der Vorschau-Liste, zeigt zwei Reihen und passt samt Titel und Buttons in die 720 px hohe Ansicht
@@ -189,11 +193,7 @@ func _build_picker() -> void:
 	add_footer(_picker)
 
 	_picker.add_child(_make_header("Judgement: Welche Monster liegen als neue Fänge bereit?"))
-	var grid := GridContainer.new()
-	grid.columns = MON_COLUMNS
-	grid.add_theme_constant_override("h_separation", 8)
-	grid.add_theme_constant_override("v_separation", 8)
-	_picker.add_child(grid)
+	var grid := _make_mon_grid(_picker, PICKER_LIST_HEIGHT)
 	for meta in Monmap.mons:
 		var button := _make_mon_button(meta.name)
 		button.toggled.connect(func(on: bool):
@@ -226,11 +226,7 @@ func _build_egg_page() -> void:
 	add_footer(_egg_page)
 
 	_egg_page.add_child(_make_header("Ei-Attacken (dauerhaft im Spielstand, Gold = freigeschaltet)"))
-	var grid := GridContainer.new()
-	grid.columns = MON_COLUMNS
-	grid.add_theme_constant_override("h_separation", 8)
-	grid.add_theme_constant_override("v_separation", 8)
-	_egg_page.add_child(grid)
+	var grid := _make_mon_grid(_egg_page, EGG_LIST_HEIGHT)
 	_egg_rows = VBoxContainer.new()
 	_egg_rows.add_theme_constant_override("separation", 8)
 	var species_group := ButtonGroup.new()
@@ -267,6 +263,7 @@ func _build_preview_page() -> void:
 	scroll.custom_minimum_size.y = PREVIEW_LIST_HEIGHT
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_preview_page.add_child(scroll)
+	DragScroll.attach(scroll)
 	var grid := GridContainer.new()
 	grid.columns = PREVIEW_COLUMNS
 	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -346,6 +343,7 @@ func _build_vfx_page() -> void:
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	body.add_child(scroll)
+	DragScroll.attach(scroll)
 	var list := VBoxContainer.new()
 	list.add_theme_constant_override("separation", 8)
 	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -461,6 +459,22 @@ func _make_toggle_button(text: String) -> Button:
 	button.modulate = UNPICKED_COLOR
 	button.toggled.connect(func(on: bool): button.modulate = Color.WHITE if on else UNPICKED_COLOR)
 	return button
+
+## Raster für Monster-Buttons in einer scrollbaren Liste fester Höhe, damit Titel und Buttons darunter
+## auch bei vielen Arten sichtbar bleiben. Auf dem Handy scrollt Wischen auch auf den Buttons (DragScroll).
+func _make_mon_grid(page: VBoxContainer, height: int) -> GridContainer:
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size.y = height
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	page.add_child(scroll)
+	DragScroll.attach(scroll)
+	var grid := GridContainer.new()
+	grid.columns = MON_COLUMNS
+	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid.add_theme_constant_override("h_separation", 8)
+	grid.add_theme_constant_override("v_separation", 8)
+	scroll.add_child(grid)
+	return grid
 
 func _make_mon_button(mon_species: String) -> Button:
 	var button := _make_toggle_button(Helper.mon_display_name(mon_species))
@@ -764,6 +778,7 @@ func _build_relic_page() -> void:
 	_relic_rows.add_theme_constant_override("separation", 8)
 	_relic_rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(_relic_rows)
+	DragScroll.attach(scroll)
 
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
