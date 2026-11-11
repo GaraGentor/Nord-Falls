@@ -408,8 +408,9 @@ func _generate_battle():
 			mon._level += Skills.get_bounty(mon._bounty).level_bonus
 		mon._initial_moves = maxi(Map.roll_weighted(encounter.moves, t), min_moves)
 		State.record_sighting(mon, depth)
-	# Boss-Relikte gehören zum Kampf, nicht zu einem Boss: alle Bosse teilen sie
-	BossRelics.active = BossRelics.random_relics() if is_boss_battle else []
+	# Boss-Relikte gehören zum Kampf, nicht zu einem Boss: alle Bosse teilen sie. Gewürfelt mit den Gegnern (Map.generate_encounters)
+	var relics := Map.take_pending_relics()
+	BossRelics.active = relics if is_boss_battle else []
 	if is_boss_battle:
 		_apply_debug_boss_setup(ms)
 	print("encounter depth ", depth, " fight ", State.biome_fight_index, ": ", ms.size(), "x level ", level)
@@ -565,6 +566,8 @@ func _check_game_over(last_fainted:Monster) -> void:
 ## Der letzte Gegner ist weg: die Relikte des Kampfs zerbrechen, forgotten = Fang mit vollen KP (sie bleiben liegen)
 func _break_relics(forgotten: bool) -> void:
 	var relics := BossRelics.take_active()
+	# einmal zerbrochen, kommen sie in diesem Run nicht wieder
+	BossRelics.mark_used(relics)
 	_relic_bar.refresh()
 	await _relic_overlay.play_break(relics, forgotten)
 

@@ -21,6 +21,8 @@ class path:
 	var _ui_item = null
 	# Gegner dieses Felds, stehen seit dem Betreten des Bioms fest (generate_encounters). Stufe und Aktionen kommen erst im Kampf.
 	var _enemies: Array[Monster] = []
+	# Boss-Felder: Boss-Relikte des Kampfs (BossRelics), ebenfalls seit dem Betreten des Bioms bekannt
+	var _boss_relics: Array = []
 	var _name_map = {
 		0: "COMBAT",
 		1: "BOSS",
@@ -243,11 +245,34 @@ const BOSS_ENCOUNTERS := [
 
 # Gegner des Biom-Bosses, stehen wie die der Felder seit dem Betreten des Bioms fest
 var boss_enemies: Array[Monster] = []
+# Boss-Relikte des Biom-Boss-Kampfs, kreisen auf der Karte um den Boss (BossRelicOrbit)
+var boss_relics: Array = []
 # Gegner des gerade betretenen Felds, der Kampf holt sie sich beim Start ab (battle.gd _generate_battle)
 var pending_enemies: Array[Monster] = []
+# Boss-Relikte des gerade betretenen Felds bzw. des Biom-Bosses (Array), der Kampf holt sie sich ab (take_pending_relics).
+# null = nichts geplant (Kampf aus dem Debug-Menü)
+var pending_relics = null
 
 func encounter_depth() -> int:
 	return clampi(State.map_level, 0, ENCOUNTERS.size() - 1)
+
+## battle.gd: die vorab gewürfelten Boss-Relikte des Kampfs (auch leer, wenn keine mehr übrig waren).
+## Kämpfe ohne Feld (Debug-Menü) würfeln sie hier, ohne die schon an das Biom vergebenen.
+func take_pending_relics() -> Array:
+	var planned = pending_relics
+	pending_relics = null
+	if planned != null:
+		return planned.duplicate()
+	return BossRelics.random_relics(BossRelics.RELICS_PER_BATTLE, _planned_relics())
+
+## Alle Boss-Relikte, die im aktuellen Biom noch an einen Kampf vergeben sind
+func _planned_relics() -> Array:
+	var planned: Array = boss_relics.duplicate()
+	for column in State.current_map:
+		for node in column:
+			if node != null:
+				planned.append_array(node._boss_relics)
+	return planned
 
 # Fortschritt im Biom 0..1 nach so vielen normalen Kämpfen
 func fight_progress(fight_index: int) -> float:
@@ -265,9 +290,12 @@ func roll_weighted(counts: Array, t: float) -> int:
 			return i + 1
 	return 1
 
-# Würfelt die Gegner aller Kampf- und Boss-Felder und des Biom-Bosses
+# Würfelt die Gegner aller Kampf- und Boss-Felder und des Biom-Bosses, dazu die Boss-Relikte der Boss-Kämpfe
 func generate_encounters(grid: Array) -> void:
 	boss_enemies = roll_boss_enemies()
+	# jedes Relikt nur einmal pro Run: der Biom-Boss wählt zuerst, die Boss-Felder teilen sich den Rest
+	boss_relics = BossRelics.random_relics()
+	var taken: Array = boss_relics.duplicate()
 	for column in grid:
 		for node in column:
 			if node == null:
@@ -276,6 +304,8 @@ func generate_encounters(grid: Array) -> void:
 				node._enemies = roll_fight_enemies(_fights_before(grid, node))
 			elif node._type == PATH_TYPE.BOSS:
 				node._enemies = roll_boss_enemies()
+				node._boss_relics = BossRelics.random_relics(BossRelics.RELICS_PER_BATTLE, taken)
+				taken.append_array(node._boss_relics)
 
 # Wie viele normale Kämpfe auf dem Weg zu diesem Feld höchstens liegen (Zeilen des Pfads, in denen ein Kampf-Feld liegt).
 # Die Anzahl der Gegner steigt damit wie bisher, solange man Kämpfe nicht ausweicht.
@@ -297,7 +327,7 @@ func roll_fight_enemies(fight_index: int, forced_count := 0) -> Array[Monster]:
 			enemies[0] = Helper.generate_mons({"count": 1, "bounty": bounty})[0]
 	return enemies
 
-## Bosse sind immer seltene oder legendäre Arten und tragen Trophäen. Die Boss-Relikte würfelt erst der Kampf (BossRelics).
+## Bosse sind immer seltene oder legendäre Arten und tragen Trophäen. Die Boss-Relikte würfelt generate_encounters dazu.
 func roll_boss_enemies(forced_count := 0) -> Array[Monster]:
 	var depth := encounter_depth()
 	var count: int = forced_count if forced_count > 0 else BOSS_ENCOUNTERS[depth].count

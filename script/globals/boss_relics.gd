@@ -1,7 +1,8 @@
 extends Node
 
 ## Boss-Relikte: gehören zum Boss-Kampf (active), nicht zu einem Monster, getrennt von den Relikten
-## des Spielers (Relics). Jeder Boss-Kampf würfelt sie einmal (battle.gd), sie wirken für alle lebenden
+## des Spielers (Relics). Jeder Boss-Kampf würfelt sie schon beim Betreten des Bioms (Map.generate_encounters), auf der
+## Karte kreisen sie um den Biom-Boss (BossRelicOrbit), im Kampf (battle.gd) wirken sie für alle lebenden
 ## Gegner gleich. Ist der letzte Gegner besiegt oder gefangen, zerbrechen sie (BossRelicOverlay), ein
 ## gefangener Boss behält nur seine Werte, Fähigkeiten und Trophäen. Angezeigt werden sie in der
 ## Relikt-Leiste am Rand des Kampffelds (BossRelicBar).
@@ -136,10 +137,19 @@ func _top_rarity() -> int:
 			top = maxi(top, meta.get("rarity", Enums.MON_RARITY.COMMON))
 	return top
 
-func random_relics(count := RELICS_PER_BATTLE) -> Array:
-	var ids = RELICS.keys()
+## Zufällige Relikte für einen Boss-Kampf. Jedes Relikt kommt pro Run nur einmal zum Einsatz: schon zerbrochene
+## (State.used_boss_relics) und die in exclude (z. B. schon an andere Kämpfe des Bioms vergeben) fallen weg.
+## Sind keine mehr übrig, kämpft der Boss ohne Relikt.
+func random_relics(count := RELICS_PER_BATTLE, exclude: Array = []) -> Array:
+	var ids = RELICS.keys().filter(func(id): return not State.used_boss_relics.has(id) and not exclude.has(id))
 	ids.shuffle()
 	return ids.slice(0, count)
+
+## Die Relikte haben ihren Kampf hinter sich (zerbrochen oder liegen gelassen) und kommen in diesem Run nicht wieder
+func mark_used(ids: Array) -> void:
+	for id in ids:
+		if not State.used_boss_relics.has(id):
+			State.used_boss_relics.append(id)
 
 ## Vorläufig: in Tiefe 1 jede Trophäen-Art 1x, in Tiefe 5 jede 5x
 func default_trophies(depth: int) -> Dictionary:

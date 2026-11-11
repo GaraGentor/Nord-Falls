@@ -40,6 +40,8 @@ var defeated_mon_names: Array[String] = []
 var caught_mon_names: Array[String] = []
 # Im Kampf durch Treffer aufgedeckte Einzelwerte pro Art: name -> Array der Stat-Keys (siehe Skills.reveal_stats_by_hit)
 var revealed_mon_stats: Dictionary = {}
+# Boss-Relikte, die in diesem Run schon zerbrochen sind: sie kommen nicht noch einmal vor (BossRelics.random_relics)
+var used_boss_relics: Array = []
 
 var is_boss_fight: bool = false
 var is_final_boss: bool = false
@@ -156,6 +158,7 @@ func reset() -> void:
 	fainted_own_mons = []
 	fainted_enemy_mons = []
 	killed_monsters = 0
+	used_boss_relics = []
 	clear_pending_loot()
 	current_map_position = NO_MAP_POSITION
 	is_boss_fight = false

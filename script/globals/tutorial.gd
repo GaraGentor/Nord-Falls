@@ -3,7 +3,7 @@ extends Node
 ## Interaktives Tutorial: Szenen rufen trigger("<id>") auf, beim ersten Mal spielt ein TutorialOverlay die Sequenz ab.
 ## Jede Sequenz läuft nur einmal (SaveManager "tutorial_seen"). Sind alle gesehen oder hat der Spieler
 ## übersprungen, ist das Tutorial abgeschlossen ("tutorial_done") und erscheint nicht mehr.
-## Neue Spielstände starten ohne Tutorial; eingeschaltet wird es im Einstellungen-Dialog (set_enabled).
+## Neue Spielstände starten mit Tutorial; ein- und ausschalten lässt es sich im Einstellungen-Dialog (set_enabled).
 ##
 ## Echte Kämpfe bleiben frei vom Tutorial: der Kampf wird in einem eigenen Übungskampf erklärt (start_practice),
 ## der vor der Karte läuft und nichts am Run oder Spielstand ändert.

@@ -132,6 +132,9 @@ func _ready() -> void:
 		change_position(State.current_map_position)
 	change_ep_text(State.ep)
 	add_settings_button()
+	# die Boss-Relikte stehen seit dem Betreten des Bioms fest und kreisen um den Boss
+	if not Map.boss_relics.is_empty():
+		boss_button.add_child(BossRelicOrbit.new(Map.boss_relics))
 	if OS.is_debug_build():
 		add_debug_button()
 	show_pending_rewards()
@@ -339,11 +342,13 @@ func call_map_event(path_type) -> void:
 	if path_type:
 		if State.current_map_position == State.NO_MAP_POSITION and path_type._pos.y == 0:
 			Map.pending_enemies = path_type._enemies
+			Map.pending_relics = path_type._boss_relics
 			call_event_by_type(path_type._type)
 			State.current_map_position = path_type._pos
 			#reset_animation_state(path_type)
 		if can_walk_to(path_type, State.current_map_position):
 			Map.pending_enemies = path_type._enemies
+			Map.pending_relics = path_type._boss_relics
 			call_event_by_type(path_type._type)
 			State.current_map_position = path_type._pos
 			#reset_animation_state(path_type)
@@ -441,6 +446,7 @@ func _finish_biome() -> void:
 func start_biome_boss() -> void:
 	State.is_boss_fight = true
 	Map.pending_enemies = Map.boss_enemies
+	Map.pending_relics = Map.boss_relics
 	if State.map_level == Map.map_settings.size() - 1:
 		State.is_final_boss = true
 	get_tree().change_scene_to_file("res://script/scenes/battle/battle.tscn")

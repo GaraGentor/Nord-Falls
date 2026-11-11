@@ -25,9 +25,9 @@ const DEFAULT_DATA := {
 	# Biom-Pfad und Monster-Pools pro Tiefe (Map.load_biome_path), bleiben ebenfalls bis zum nächsten Run-Ende gleich
 	"biome_path": [],
 	"biome_pools": [],
-	# interaktives Tutorial (siehe Tutorial): gesehene Sequenzen, done = ausgeschaltet (Standard), abgeschlossen oder übersprungen
+	# interaktives Tutorial (siehe Tutorial): gesehene Sequenzen, done = ausgeschaltet, abgeschlossen oder übersprungen (neue Spielstände starten mit Tutorial)
 	"tutorial_seen": [],
-	"tutorial_done": true,
+	"tutorial_done": false,
 }
 
 var save_data: Dictionary = DEFAULT_DATA.duplicate(true)

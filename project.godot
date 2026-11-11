@@ -36,6 +36,9 @@ Tutorial="*res://script/globals/tutorial.gd"
 ElementEffects="*res://script/globals/element_effects.gd"
 BossRelics="*res://script/globals/boss_relics.gd"
 GameSettings="*res://script/globals/game_settings.gd"
+MCPScreenshot="*res://addons/godot_mcp/mcp_screenshot_service.gd"
+MCPInputService="*res://addons/godot_mcp/mcp_input_service.gd"
+MCPGameInspector="*res://addons/godot_mcp/mcp_game_inspector_service.gd"
 
 [display]
 
