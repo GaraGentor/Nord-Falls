@@ -246,8 +246,9 @@ func is_alive() -> bool:
 # Die Reserve wird erst hier verrechnet: gespeicherte Eier bleiben gültig und Änderungen im Debug-Menü wirken sofort.
 func _base_stat(stat: String) -> float:
 	var share := DebugSettings.effective_share(stat, _growth[stat])
-	# Wachstum pro Stufe aus dem Debug-Menü (Standard 100 % = linear mit der Stufe)
-	return share * DebugSettings.growth_level(stat, _level) * Helper.points_per_level(_best_points) * STAT_SCALE
+	var level_1 := share * Helper.points_per_level(_best_points) * STAT_SCALE
+	# jede weitere Stufe bringt so viel wie Stufe 1, skaliert mit dem Growth aus dem Debug-Menü (Standard = Faktor 1)
+	return level_1 + (_level - 1) * level_1 * DebugSettings.growth_factor()
 
 func gem_bonus(stat: String) -> int:
 	# der Relikt-Bonus zählt pro Trophäe und wird nicht gespeichert, gilt also auch rückwirkend.

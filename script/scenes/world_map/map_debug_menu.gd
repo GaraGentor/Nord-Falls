@@ -81,7 +81,7 @@ var _stats_summary: Label
 ## Wert -> Label mit dem reservierten Anteil
 var _stat_values := {}
 ## Wert -> Label mit dem Wachstum pro Stufe ("all" = Zeile für alle Werte)
-var _growth_values := {}
+var _growth_value: Label
 var _relic_page: VBoxContainer
 var _relic_rows: VBoxContainer
 var _preview_page: VBoxContainer
@@ -668,7 +668,7 @@ func _build_stats_page() -> void:
 	_stats_page.add_theme_constant_override("separation", 10)
 	add_footer(_stats_page)
 
-	_stats_page.add_child(_make_header("Werte-Verteilung: links fester Anteil der BST, rechts Growth (Wachstum pro Stufe)"))
+	_stats_page.add_child(_make_header("Werte-Verteilung: fester Anteil der BST pro Wert, darunter Growth (Wachstum pro Stufe, gilt für alle)"))
 	for stat in DebugSettings.STATS:
 		var row := _make_stat_row(STAT_NAMES[stat])
 		for step in [-5, -1]:
@@ -676,15 +676,15 @@ func _build_stats_page() -> void:
 		_stat_values[stat] = _make_stat_value(row)
 		for step in [1, 5]:
 			row.add_child(_make_step_button(stat, step))
-		_add_growth_controls(row, stat)
 		_stats_page.add_child(row)
-	# Growth für alle Werte auf einmal
-	var all_row := _make_stat_row("Alle")
-	var spacer := Control.new()
-	spacer.custom_minimum_size.x = STAT_STEP_SIZE.x * 4 + STAT_VALUE_WIDTH + 8 * 4
-	all_row.add_child(spacer)
-	_add_growth_controls(all_row, "all")
-	_stats_page.add_child(all_row)
+	# ein Growth für alle Monster und Werte
+	var growth_row := _make_stat_row("Growth")
+	for step in [-5, -1, -DebugSettings.GROWTH_STEP]:
+		growth_row.add_child(_make_growth_button(step))
+	_growth_value = _make_stat_value(growth_row)
+	for step in [DebugSettings.GROWTH_STEP, 1, 5]:
+		growth_row.add_child(_make_growth_button(step))
+	_stats_page.add_child(growth_row)
 	_stats_summary = _make_header("")
 	_stats_page.add_child(_stats_summary)
 
@@ -714,23 +714,13 @@ func _make_stat_value(row: HBoxContainer) -> Label:
 	row.add_child(value)
 	return value
 
-## Growth-Knöpfe hinter der Reserve, stat = "all" stellt alle Werte gleich ein (ausgehend von KP)
-func _add_growth_controls(row: HBoxContainer, stat: String) -> void:
-	var gap := Control.new()
-	gap.custom_minimum_size.x = 24
-	row.add_child(gap)
-	for step in [-10, -5]:
-		row.add_child(_make_growth_button(stat, step))
-	_growth_values[stat] = _make_stat_value(row)
-	for step in [5, 10]:
-		row.add_child(_make_growth_button(stat, step))
+## 8 statt 8.0, aber 7.5 mit Nachkommastelle
+func _format_growth(value: float) -> String:
+	return "%d" % value if value == roundf(value) else "%.1f" % value
 
-func _make_growth_button(stat: String, step: int) -> Button:
-	var button := _make_button("%+d" % step, func():
-		var stats: Array = DebugSettings.STATS if stat == "all" else [stat]
-		var base := DebugSettings.growth(stats[0])
-		for s in stats:
-			DebugSettings.set_growth(s, base + step if stat == "all" else DebugSettings.growth(s) + step)
+func _make_growth_button(step: float) -> Button:
+	var button := _make_button(("%+.1f" if step != roundf(step) else "%+d") % step, func():
+		DebugSettings.set_growth(DebugSettings.growth() + step)
 		_refresh_stats_page())
 	button.custom_minimum_size = STAT_STEP_SIZE
 	return button
@@ -745,16 +735,16 @@ func _make_step_button(stat: String, step: int) -> Button:
 func _refresh_stats_page() -> void:
 	for stat in DebugSettings.STATS:
 		_stat_values[stat].text = "%d %%" % DebugSettings.reserved(stat)
-		_growth_values[stat].text = "%d %%" % DebugSettings.growth(stat)
-	var growths := DebugSettings.STATS.map(DebugSettings.growth)
-	_growth_values.all.text = "%d %%" % growths[0] if growths.min() == growths.max() else "gemischt"
+	var growth := DebugSettings.growth()
+	_growth_value.text = _format_growth(growth)
 	var total := DebugSettings.reserved_total()
-	var hp_growth := DebugSettings.growth("hp")
+	var growth_text := "Growth %s (Standard %s = wie gewohnt, 0 = kein Wachstum): jede Stufe bringt %d %% des üblichen Zuwachses." % [
+		_format_growth(growth), _format_growth(DebugSettings.DEFAULT_GROWTH), roundi(DebugSettings.growth_factor() * 100)]
 	_stats_summary.text = ("Reserviert: %d %%, üblicher Weg: %d %%. Bei %d BST: %d fest, %d werden wie gewohnt verteilt.
 " +
-		"Growth: 100 %% = linear wie bisher, Stufe 1 bleibt gleich. KP mit %d %%: Stufe %d rechnet wie Stufe %.1f. Gilt sofort, auch im laufenden Run.") % [
+		"%s Stufe 1 bleibt gleich. Gilt sofort, auch im laufenden Run.") % [
 		total, 100 - total, STATS_EXAMPLE_BST, STATS_EXAMPLE_BST * total / 100, STATS_EXAMPLE_BST * (100 - total) / 100,
-		hp_growth, State.SETTING_LEVEL, DebugSettings.growth_level("hp", State.SETTING_LEVEL)]
+		growth_text]
 
 # ─────────────────────────
 # Relikte

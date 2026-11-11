@@ -6,17 +6,22 @@ extends Node
 const PATH := "user://debug_settings.json"
 const STATS := ["hp", "atk", "def", "s_atk", "s_def", "speed"]
 const MAX_RESERVED := 100
-## Wachstum pro Stufe in Prozent (Mon._base_stat): 100 = wie bisher linear, 60 = jede Stufe bringt nur 60 % dazu.
-## Stufe 1 bleibt immer gleich. Bereich für das Debug-Menü:
-const DEFAULT_GROWTH := 100
-const GROWTH_RANGE := [10, 200]
+## Globales Wachstum pro Stufe (Mon._base_stat), skaliert den Zuwachs aller Werte aller Monster im gleichen Verhältnis:
+## DEFAULT_GROWTH = Wachstum wie gewohnt aus der BST, 0 = kein Wachstum, halber Wert = halber Zuwachs, doppelter = doppelter.
+## Stufe 1 bleibt immer gleich.
+const DEFAULT_GROWTH := 8.0
+## Bereich und kleinster Schritt im Debug-Menü
+const GROWTH_RANGE := [0.0, 100.0]
+const GROWTH_STEP := 0.5
 ## Die Datei ist nach Kampfmodus gegliedert, weil der Branch new-conzept dieselbe Datei nutzt. Hier gibt es nur diesen Modus.
 const MODE := "classic"
 
 ## Kampfmodus -> Wert -> Prozent der BST, die fest diesem Wert gehören
 var _reserved := {MODE: {}}
-## Kampfmodus -> Wert -> Wachstum pro Stufe in Prozent (fehlt = DEFAULT_GROWTH)
-var _growth := {MODE: {}}
+## Kampfmodus -> globales Wachstum pro Stufe (fehlt = DEFAULT_GROWTH)
+var _growth := {}
+## alles aus der Datei, auch Einträge, die dieser Branch nicht kennt
+var _other := {}
 
 ## IDs der Relics, die im Debug-Menü ausgeschaltet wurden (siehe Relics.is_active)
 var _disabled_relics := []
@@ -33,14 +38,18 @@ func _ready() -> void:
 		return
 	var parsed = JSON.parse_string(FileAccess.get_file_as_string(PATH))
 	if parsed is Dictionary:
+		_other = parsed
 		_reserved.merge(parsed.get("reserved_stats", {}), true)
-		_growth.merge(parsed.get("growth_stats", {}), true)
+		_growth.merge(parsed.get("growth_per_level", {}), true)
 		_disabled_relics = parsed.get("disabled_relics", [])
 
 func save() -> void:
 	var file := FileAccess.open(PATH, FileAccess.WRITE)
 	if file:
-		file.store_string(JSON.stringify({"reserved_stats": _reserved, "growth_stats": _growth, "disabled_relics": _disabled_relics}))
+		# fremde Einträge (z. B. "growth_stats" vom Branch new-conzept) bleiben erhalten
+		var data := _other.duplicate()
+		data.merge({"reserved_stats": _reserved, "growth_per_level": _growth, "disabled_relics": _disabled_relics}, true)
+		file.store_string(JSON.stringify(data))
 
 func is_relic_disabled(id: String) -> bool:
 	return _disabled_relics.has(id)
@@ -94,18 +103,19 @@ func reset_reserved() -> void:
 func effective_share(stat: String, usual_share: float) -> float:
 	return reserved(stat) / 100.0 + (1.0 - reserved_total() / 100.0) * usual_share
 
-## Wachstum pro Stufe eines Werts in Prozent
-func growth(stat: String) -> int:
-	return int(_growth[MODE].get(stat, DEFAULT_GROWTH))
+## Globales Wachstum pro Stufe (fehlt = DEFAULT_GROWTH)
+func growth() -> float:
+	return float(_growth.get(MODE, DEFAULT_GROWTH))
 
-func set_growth(stat: String, percent: int) -> void:
-	_growth[MODE][stat] = clampi(percent, GROWTH_RANGE[0], GROWTH_RANGE[1])
+func set_growth(value: float) -> void:
+	_growth[MODE] = clampf(snappedf(value, GROWTH_STEP), GROWTH_RANGE[0], GROWTH_RANGE[1])
 	save()
 
 func reset_growth() -> void:
-	_growth[MODE] = {}
+	_growth.erase(MODE)
 	save()
 
-## Stufe, mit der ein Wert rechnet: 1 + (Stufe - 1) * Wachstum. Bei 100 % genau die Stufe.
-func growth_level(stat: String, level: float) -> float:
-	return 1.0 + (level - 1.0) * growth(stat) / 100.0
+## Faktor auf den üblichen Zuwachs pro Stufe. Beispiel: bei 8 bekommt ATK +10 und Initiative +20 pro Stufe,
+## bei 4 dann +5 und +10, bei 0 nichts mehr.
+func growth_factor() -> float:
+	return growth() / DEFAULT_GROWTH
