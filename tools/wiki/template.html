@@ -199,7 +199,7 @@ const UI = {
 		components: "Besteht aus", weight: "Spawn-Gewicht", noResults: "Keine Treffer.", warnings: "Warnungen beim Generieren",
 		strongVs: "stark gegen", maxSkills: "Max. Skills pro Monster", tierWeights: "Stufen-Gewichte (Spawn-Häufigkeit)",
 		onlyBase: "Nur Grund-Elemente", allCombos: "Alle Kombinationen", catchHint: "bei 0 HP und gleicher Stufe",
-		bossRelics: "Boss-Relikte", relicsPerBattle: "Relikte pro Boss-Kampf", rareBossChance: "Chance auf seltenen Boss (sonst legendär)",
+		bossRelics: "Boss-Relikte", relicsPerBattle: "Relikte pro Boss-Kampf", rareBossChance: "Chance auf seltenen Boss (sonst legendär)", mythicBossChance: "Chance auf einen mythischen Boss pro Boss-Kampf",
 		mon: "Monster", lists: {
 			attack_skills: "Basis-Angriff", defensive_skills: "Basis-Block", buff_skills: "Buff", passive_skills: "Passiv", area_skills: "Flächenangriff", reward_skills: "Belohnung",
 			egg_skills: "Ei-Attacke", milestone_skills: "Meilenstein", bounty_skills: "Kopfgeld",
@@ -231,7 +231,7 @@ const UI = {
 		components: "Made of", weight: "Spawn weight", noResults: "No results.", warnings: "Warnings during generation",
 		strongVs: "strong against", maxSkills: "Max skills per monster", tierWeights: "Tier weights (spawn frequency)",
 		onlyBase: "Base elements only", allCombos: "All combinations", catchHint: "at 0 HP and same level",
-		bossRelics: "Boss relics", relicsPerBattle: "Relics per boss battle", rareBossChance: "Chance for a rare boss (otherwise legendary)",
+		bossRelics: "Boss relics", relicsPerBattle: "Relics per boss battle", rareBossChance: "Chance for a rare boss (otherwise legendary)", mythicBossChance: "Chance for one mythic boss per boss battle",
 		mon: "Monster", lists: {
 			attack_skills: "Basic attack", defensive_skills: "Basic block", buff_skills: "Buff", passive_skills: "Passive", area_skills: "Area attack", reward_skills: "Reward",
 			egg_skills: "Egg move", milestone_skills: "Milestone", bounty_skills: "Bounty",
@@ -266,6 +266,9 @@ const ui = (key) => (UI[state.lang] || UI.en)[key] ?? UI.en[key] ?? key;
 // wie Helper.mon_display_name
 const monName = (n) => (tr("MONSTER_" + n) === "MONSTER_" + n ? ui("mon") + " " + n : tr("MONSTER_" + n));
 const rarityName = (r) => tr("RARITY_" + r);
+// wie Monmap.RARITY_COLORS, mythisch als Verlauf Dunkelrot -> Schwarz
+const RARITY_STYLE = { COMMON: "color:#bfbfbf", UNCOMMON: "color:#59d959", RARE: "color:#4d99ff", EPIC: "color:#bf59ff", LEGENDARY: "color:#ffa626",
+	MYTHIC: "color:#fff;background:linear-gradient(90deg,#9a0d12,#0d0002);border-color:#5a0008" };
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 function tr(key, args = {}) {
 	const text = DATA.tr[state.lang]?.[key] || DATA.tr.en?.[key] || key;
@@ -382,7 +385,7 @@ function renderMonsters() {
 				<img class="mon-img" src="${esc(res(m.image))}" alt="${esc(monName(m.name))}" loading="lazy" onerror="this.style.visibility='hidden'">
 				<div style="min-width:0">
 					<h3>${hl(monName(m.name))}</h3>
-					<div class="row" style="margin-top:4px">${chip(m.initial_type)} <span class="tag">${esc(rarityName(m.rarity))}</span></div>
+					<div class="row" style="margin-top:4px">${chip(m.initial_type)} <span class="tag" style="${RARITY_STYLE[m.rarity] || ""}">${esc(rarityName(m.rarity))}</span></div>
 					<dl class="kv">
 						<dt>${ui("bst")}</dt><dd>${(m.stats || []).join(" – ")}</dd>
 						<dt>${ui("maxUpgrades")}</dt><dd>${m.max_upgrades ?? ui("none")}</dd>
@@ -562,6 +565,7 @@ function renderBossRelics() {
 	const settings = `<div class="card wide"><dl class="kv">
 		<dt>${ui("relicsPerBattle")}</dt><dd>${s.perBattle ?? "?"}</dd>
 		<dt>${ui("rareBossChance")}</dt><dd>${(s.rareChance || []).map((c, i) => `${ui("depth")} ${i + 1}: ${pct(c)}`).join(" · ") || ui("none")}</dd>
+		<dt>${ui("mythicBossChance")}</dt><dd>${(s.mythicChance || []).map((c, i) => `${ui("depth")} ${i + 1}: ${pct(c)}`).join(" · ") || ui("none")}</dd>
 	</dl></div>`;
 	return header("bossRelics") + (cards.length ? `<div class="grid">${cards.join("")}${settings}</div>` : `<div class="empty">${ui("noResults")}</div>`);
 }

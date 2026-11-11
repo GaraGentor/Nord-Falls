@@ -17,36 +17,45 @@ const CATCH_RARITY_BASE := {
 	Enums.MON_RARITY.RARE: 0.5,
 	Enums.MON_RARITY.EPIC: 0.3,
 	Enums.MON_RARITY.LEGENDARY: 0.15,
+	# nur Bosse: mit sehr wenig KP um 7 %, mit vollen KP praktisch nie
+	Enums.MON_RARITY.MYTHIC: 0.05,
 }
 ## Anteil der Chance, der bei vollen HP wegfällt (0.75 = volle HP ergeben nur 25 % der Grundchance)
 const CATCH_HP_WEIGHT := 0.75
 ## Chance-Abzug pro Stufe, die das Monster über dem eigenen Team liegt (darunter entsprechend Bonus)
 const CATCH_LEVEL_STEP := 0.08
 const CATCH_LEVEL_FACTOR_RANGE := [0.25, 1.3]
-const CATCH_CHANCE_RANGE := [0.02, 0.95]
-## Letzte Not: normale wilde Monster (kein Boss, kein Kopfgeld) mit höchstens so vielen KP ...
-const CATCH_LAST_STAND_HP := 8.0
-## ... sind um so viele Prozentpunkte leichter zu fangen
-const CATCH_LAST_STAND_BONUS := 0.25
+## Untergrenze 1 %: auch ein mythischer Boss mit vollen KP ist nicht ganz unmöglich
+const CATCH_CHANCE_RANGE := [0.01, 0.95]
+## Letzte Not: Monster mit höchstens so viel Anteil KP sind leichter zu fangen (Faktor auf die Chance).
+## Wirkt für alle, auch Bosse und Kopfgeld-Monster; die Seltenheit steckt schon in der Grundchance,
+## seltene Arten profitieren daher absolut weniger (gewöhnlich 10 %: 0.83 -> 0.95, mythisch 5 %: 0.05 -> 0.07).
+const CATCH_LOW_HP_TIERS := [
+	{"hp_share": 0.05, "factor": 1.5},
+	{"hp_share": 0.10, "factor": 1.25},
+]
 
 ## Fangchance 0..1: je weniger HP, desto leichter; höhere Stufe und Seltenheit machen es schwerer.
 func catch_chance(mon: Monster) -> float:
-	var rarity: int = Monmap.mon_metainfos_by_name(mon._name).get("rarity", Enums.MON_RARITY.COMMON)
-	# Kopfgeld-Monster sind eine Seltenheitsstufe schwerer zu fangen
-	if mon._bounty != "":
-		rarity = mini(rarity + 1, Enums.MON_RARITY.LEGENDARY)
+	var rarity: int = Monmap.rarity_of(mon._name)
+	# Kopfgeld-Monster sind eine Seltenheitsstufe schwerer zu fangen (höchstens legendär, mythisch bleibt mythisch)
+	if mon._bounty != "" and rarity < Enums.MON_RARITY.LEGENDARY:
+		rarity += 1
 	var hp_left = clampf(1.0 - mon._lost_hp / mon.hp(), 0.0, 1.0)
 	var hp_factor = 1.0 - CATCH_HP_WEIGHT * hp_left
 	var level_factor = clampf(1.0 - CATCH_LEVEL_STEP * (mon._level - _team_level()),
 		CATCH_LEVEL_FACTOR_RANGE[0], CATCH_LEVEL_FACTOR_RANGE[1])
-	var chance = Relics.modify("catch_chance", CATCH_RARITY_BASE[rarity] * hp_factor * level_factor, mon)
-	if _is_last_stand(mon):
-		chance += CATCH_LAST_STAND_BONUS
+	var chance = CATCH_RARITY_BASE[rarity] * hp_factor * level_factor * low_hp_factor(hp_left)
+	chance = Relics.modify("catch_chance", chance, mon)
 	return clampf(chance,
 		CATCH_CHANCE_RANGE[0], CATCH_CHANCE_RANGE[1])
 
-func _is_last_stand(mon: Monster) -> bool:
-	return mon._bounty == "" and not mon._is_boss and mon._lost_hp > 0 and mon.hp() - mon._lost_hp <= CATCH_LAST_STAND_HP
+## Bonus-Faktor der Fangchance bei so viel Anteil verbleibender KP (CATCH_LOW_HP_TIERS), sonst 1
+func low_hp_factor(hp_left: float) -> float:
+	for tier in CATCH_LOW_HP_TIERS:
+		if hp_left <= tier.hp_share:
+			return tier.factor
+	return 1.0
 
 ## Durchschnittsstufe der noch kämpfenden eigenen Monster
 func _team_level() -> float:
@@ -72,7 +81,7 @@ func generate_mons(props: Dictionary = {
 	default_props.merge(props, true)
 	print(OS.get_user_data_dir())
 	# wilde Monster: Pool des aktuellen Bioms, ohne gewürfelte Pools alle Arten aus Monmap
-	var mons_to_pick = Monmap.mons.map(func(meta): return meta.name)
+	var mons_to_pick = Map.wild_species().map(func(meta): return meta.name)
 	if State.map_level < State.biome_pools.size() and not State.biome_pools[State.map_level].is_empty():
 		mons_to_pick = State.biome_pools[State.map_level]
 	var mons: Array[Monster] = []
@@ -101,8 +110,13 @@ func generate_mons(props: Dictionary = {
 	var bounty: Dictionary = props.get("bounty", {})
 	# optional feste Arten der Reihe nach (Bosse, siehe BossRelics.roll_species), danach wieder aus dem Pool
 	var species: Array = props.get("species", [])
+	# Das erste wilde Monster würfelt seine Seltenheit (Map.RARITY_SPAWN_WEIGHTS), die Begleiter sind nie seltener.
+	# So ist ein seltenes Monster ein Ereignis des Kampfs und nicht in jedem zweiten Kampf irgendwo dabei.
+	var max_rarity: int = Enums.MON_RARITY.LEGENDARY
 	for i in default_props.count:
-		var species_name: String = species[i] if i < species.size() else mons_to_pick.pick_random()
+		var species_name: String = species[i] if i < species.size() else Map.pick_wild_species(mons_to_pick, max_rarity)
+		if i >= species.size() and i == 0:
+			max_rarity = Monmap.rarity_of(species_name)
 		var mon_meta_data = Monmap.mon_metainfos_by_name(bounty.mon if i == 0 and not bounty.is_empty() else species_name)
 		var newMon = Monster.new(default_props.level, mon_meta_data)
 		# eigene Kopfgeld-Arten (Monmap bounty_target) sind auch bei normalem Auftauchen das Kopfgeld-Monster

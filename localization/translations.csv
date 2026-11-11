@@ -24,6 +24,7 @@ RARITY_UNCOMMON,Uncommon,Ungewöhnlich
 RARITY_RARE,Rare,Selten
 RARITY_EPIC,Epic,Episch
 RARITY_LEGENDARY,Legendary,Legendär
+RARITY_MYTHIC,Mythic,Mythisch
 BATTLE_PHASE,Battle Phase,Kampfphase
 BATTLE_HYPNOSIS,"
 
@@ -273,6 +274,25 @@ MONSTER_13,Crystalback,Kristallwühler
 MONSTER_14,Frostvixen,Frostfähe
 MONSTER_15,Mistwraith,Nebelspuk
 MONSTER_16,Sparkhog,Funkenigel
+MONSTER_17,Magmascorp,Glutskorpion
+MONSTER_18,Dunehorn,Dünenhorn
+MONSTER_19,Rimewolf,Reifwolf
+MONSTER_20,Steamhorn,Dampfhorn
+MONSTER_21,Dunestinger,Dünenstachler
+MONSTER_22,Mudmaw,Schlammschlund
+MONSTER_23,Cinderback,Aschrücken
+MONSTER_24,Voltbeetle,Voltkäfer
+MONSTER_25,Bogshell,Moorpanzer
+MONSTER_26,Ashwhirl,Aschwirbel
+MONSTER_27,Thunderhorn,Donnerhorn
+MONSTER_28,Dunecrusher,Dünenbrecher
+MONSTER_29,Tempest Djinn,Sturmdschinn
+MONSTER_30,Volcafist,Vulkanfaust
+MONSTER_31,Dust Monarch,Staubkönig
+MONSTER_32,Nighthydra,Nachthydra
+MONSTER_33,Bloodmane,Blutmähne
+MONSTER_34,Hellwarden,Höllenwächter
+MONSTER_35,Voidwyrm,Leerwurm
 TURN_WHEEL_ROUND,Round {round},Runde {round}
 SKILL_RAPTOR_DIVE,raptor dive,Raubvogelsturz
 SKILL_HUNTERS_GALE,hunter's gale,Jägerböe
@@ -621,7 +641,7 @@ TUTORIAL_BATTLE,"The turn wheel shows the order, the fastest monster (speed) goe
 TUTORIAL_ELEMENTS_TITLE,Elements,Elemente
 TUTORIAL_ELEMENTS,"There are four base elements: earth, fire, water and air. Combined they form mixed elements like ice, steam or magma. A monster can only use a skill if it has all of its elements. A good element match hits super effectively, a bad one is weaker. Element potions from the shop give a monster an additional element.","Es gibt vier Grundelemente: Erde, Feuer, Wasser und Luft. Zusammen ergeben sie Mischelemente wie Eis, Dampf oder Magma. Ein Monster kann einen Skill nur einsetzen, wenn es alle seine Elemente hat. Passt das Element gut gegen das Ziel, ist der Treffer sehr effektiv, sonst schwächer. Element-Tränke aus dem Laden geben einem Monster ein weiteres Element."
 TUTORIAL_CATCH_TITLE,Catching,Fangen
-TUTORIAL_CATCH,"Wild monsters can be caught with hypnosis. The spiral above an enemy shows your chance: the less HP it has left, the better. A high level and rarity make it harder.","Wilde Monster kannst du mit Hypnose fangen. Die Spirale über dem Gegner zeigt deine Chance: Je weniger Leben er noch hat, desto besser. Hohe Stufe und Seltenheit machen es schwerer."
+TUTORIAL_CATCH,"Wild monsters can be caught with hypnosis. The spiral above an enemy shows your chance: the less HP it has left, the better. Below 10 % HP it gets easier, below 5 % even more. A high level and rarity make it harder.","Wilde Monster kannst du mit Hypnose fangen. Die Spirale über dem Gegner zeigt deine Chance: Je weniger Leben er noch hat, desto besser. Unter 10 % Leben wird es leichter, unter 5 % noch mehr. Hohe Stufe und Seltenheit machen es schwerer."
 TUTORIAL_TEAM_TITLE,Your team,Dein Team
 TUTORIAL_TEAM,"Your team holds at most two monsters. After a fight with catches you decide in the judgement: take a catch into the team (swapping out another one), let it pass a move on to your team, sacrifice it or release it. Whatever is left gets released. If one of your monsters has fallen, you can revive it once by giving up a new catch. New team members start with full HP.","Dein Team hat höchstens zwei Monster. Nach einem Kampf mit Fängen entscheidest du im Gericht: einen Fang ins Team holen (dafür geht ein anderes), ihn eine Attacke an dein Team weitergeben lassen, ihn opfern oder freilassen. Was übrig bleibt, wird freigelassen. Ist eines deiner Monster gefallen, kannst du es einmalig wiederbeleben, indem du dafür einen neuen Fang hergibst. Neue Teammitglieder starten mit vollem Leben."
 TUTORIAL_EGG_MOVES_TITLE,Egg moves,Ei-Attacken
@@ -758,3 +778,4 @@ SELECTION_COLLECTION,Collection,Sammlung
 COLLECTION_TITLE,Collection,Sammlung
 COLLECTION_PROGRESS,{seen} of {total} species discovered,{seen} von {total} Arten entdeckt
 COLLECTION_FROM_BIOME,Common from biome {biome},Häufig ab Biom {biome}
+COLLECTION_BOSS_ONLY,Bosses only,Nur bei Bossen

@@ -1,8 +1,13 @@
-1. Heilmösch: Heilt das Monster um 20% des zugefügten Schadens
-2. Glutboden: Gibt 5% der Maximale HP als schaden Pro Runde
-3. Fate-Spiegel: Bekommt in der nächsten Runde den zugefügten schaden als Schild und Typ des schildes
-4. Bongos: Bekommt bei jedem Kampfbeginn abwechselnd 25 Rüstung und 25 Magische Rüstung
-5. Nebelmaschine: Fähigkeiten haben eine 50% wahrscheinlichkeit nicht zu treffen
-6. Flinkerwiesel: Ist abwechselnd immer erster am Zug und in der anderen Runde letzter
-7. Mikrofon: lässt in ungeraden Runden alle züge ausfallen. Dabei heilen sich ALLE um 10% des fehlenden Lebens
-8. Magische Dornen: lässt abwechselnd immer magischen oder physischen schaden zu einem gewissen prozentsatz abprallen (15%)
+1. Prüfe die Monster Appearance der seltenheit. Eigentlich müsste es so Funktionieren:
+	Alle Monster pro Biom landen in einem Pool.
+	Hier können sofern vorhanden 5-12 verschiedene Monster auftauchen (pro Härteres Biom paar mehr)
+	Dabei soll die niedrigste seltenheit immer beovrzugt werden. D.h. wenn ich in Biom 1 bin
+	erscheinen mehr gewöhnliche monster in einem Run als seltene.
+	Derzeit ist mir aufgefallen, wenn einmal ein seltenes erscheint, ist es fast in jedem kampf.
+	So sollen seltenere Monster gelegentlich mal erscheinen und nicht die ganze Zeit. Prüf das bitte nochmal
+	Beispiel: Es gibt 25 Kämpfe, davon sind dann 12 mit gewöhnlichen monstern, 6 mit ungewöhnlichen, 3 mit seltenen, 2 episch, 1 legendäres und für boss ab und zu mal ein mytisches, dass natürlich nur extrem schwer zu fangen ist.
+2. Prüfe auch nochmal die Fang chance. Monster unter 10% leben sollen eine höhere chance haben und Monster unter 5% leben sogar noch mehr. Die Seltenheit spielt auch eine Rolle und mytische (die nur bei bossen erscheinen sollen) sogar noch seltener zu fangen sein, aber nicht ganz unmöglich.
+3. Es gibt auch neue Monster Bilder etc. pflege Sie ein und gibt denen beispiele. Das Balancing (typ auswahl sowie fähigkeiten kommen noch). Binde die nur so ein, dass die im wiki erscnehinen und im spiel. Das muss erstmal keinen sinn haben.
+4. Füge auch die Mytische Farbe hinzu, (Dunkel Rot bis Schwarz)
+5. Im Debug Menü bei der Werte Verteilung möchte ich auch die "Growth" angeben können, da ich finde die Monster Skalieren Pro level zu stark.
+Was sollte danach passieren? Balancing oder weitere Features? Du kannst auch kurz mal in die Tasks lurken.

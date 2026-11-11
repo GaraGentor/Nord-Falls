@@ -74,6 +74,7 @@ func _entry(meta: Dictionary, seen: bool) -> Control:
 	column.add_child(title)
 	var rarity: int = meta.get("rarity", Enums.MON_RARITY.COMMON)
 	column.add_child(_text(tr(Monmap.RARITY_LABELS[rarity]), Monmap.RARITY_COLORS[rarity], INFO_FONT_SIZE))
-	column.add_child(_text(tr("COLLECTION_FROM_BIOME").format({"biome": Map.usual_depth(rarity) + 1}),
-		IronPlate.TEXT_COLOR, INFO_FONT_SIZE))
+	var where := tr("COLLECTION_BOSS_ONLY") if rarity == Enums.MON_RARITY.MYTHIC \
+		else tr("COLLECTION_FROM_BIOME").format({"biome": Map.usual_depth(rarity) + 1})
+	column.add_child(_text(where, IronPlate.TEXT_COLOR, INFO_FONT_SIZE))
 	return panel

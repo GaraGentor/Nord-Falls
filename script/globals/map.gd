@@ -139,22 +139,63 @@ func generate_biome_path() -> Array[int]:
 	generate_biome_pools(biomes)
 	return biomes
 
-# Arten, die pro Biom wild auftauchen können
-const BIOME_POOL_SIZE = 4
+# Verschiedene Arten, die pro Biom wild auftauchen können (je Tiefe, tiefere Biome haben mehr Abwechslung).
+# Gibt es nicht genug Arten, bleibt der Pool kleiner.
+const BIOME_POOL_SIZES := [5, 7, 9, 10, 12]
+
+## Wie oft eine Seltenheit wild auftaucht, relativ zueinander (pro Kampf, siehe pick_wild_species).
+## 12:6:3:2:1 heißt bei 24 Kämpfen etwa 12 gewöhnliche, 6 ungewöhnliche, 3 seltene, 2 epische und 1 legendärer.
+## Das Gewicht gilt für die ganze Seltenheit und wird auf ihre Arten im Pool aufgeteilt: Viele seltene Arten im Pool
+## machen seltene Monster also nicht häufiger, nur abwechslungsreicher. Fehlt eine Seltenheit im Pool, verteilt sich
+## ihr Anteil anteilig auf die anderen. Mythische Arten tauchen nie wild auf, nur als Boss (BossRelics.roll_species).
+const RARITY_SPAWN_WEIGHTS := {
+	Enums.MON_RARITY.COMMON: 12.0,
+	Enums.MON_RARITY.UNCOMMON: 6.0,
+	Enums.MON_RARITY.RARE: 3.0,
+	Enums.MON_RARITY.EPIC: 2.0,
+	Enums.MON_RARITY.LEGENDARY: 1.0,
+}
+
+## Arten, die wild auftauchen dürfen: keine eigenen Kopfgeld-Arten, keine mythischen (nur Bosse)
+func wild_species() -> Array:
+	return Monmap.mons.filter(func(meta): return not meta.has("bounty_target") and meta.rarity != Enums.MON_RARITY.MYTHIC)
+
+## Zieht eine wilde Art aus dem Pool, gewichtet nach RARITY_SPAWN_WEIGHTS.
+## max_rarity begrenzt die Seltenheit (Begleiter sind nie seltener als das erste Monster des Kampfs).
+func pick_wild_species(pool: Array, max_rarity: int = Enums.MON_RARITY.LEGENDARY) -> String:
+	var candidates = pool.filter(func(mon_name): return RARITY_SPAWN_WEIGHTS.has(Monmap.rarity_of(mon_name)))
+	if candidates.is_empty():
+		candidates = wild_species().map(func(meta): return meta.name)
+	var allowed = candidates.filter(func(mon_name): return Monmap.rarity_of(mon_name) <= max_rarity)
+	if allowed.is_empty():
+		# nichts so Gewöhnliches im Pool: die gewöhnlichste vorhandene Seltenheit
+		var lowest: int = candidates.map(Monmap.rarity_of).min()
+		allowed = candidates.filter(func(mon_name): return Monmap.rarity_of(mon_name) == lowest)
+	var per_rarity := {}
+	for mon_name in allowed:
+		var rarity := Monmap.rarity_of(mon_name)
+		per_rarity[rarity] = per_rarity.get(rarity, 0) + 1
+	var weights = allowed.map(func(mon_name):
+		var rarity := Monmap.rarity_of(mon_name)
+		return RARITY_SPAWN_WEIGHTS[rarity] / per_rarity[rarity])
+	return allowed[pick_weighted_index(range(allowed.size()), weights)]
+
 # Würfelt für jede Tiefe einen Pool an Monster-Arten (State.biome_pools).
-# Die Plätze werden reihum auf die Elemente des Bioms verteilt (Dampf: 2x Wasser, 2x Feuer), damit die Basis-Arten
-# des Bioms auftauchen. Gibt es für ein Element keine Art mehr, wird mit beliebigen Arten aufgefüllt.
-# Seltene Arten sind am Anfang unwahrscheinlicher (episch in Tiefe 1: 1/7), in der letzten Tiefe zählt nur noch das Element.
+# Die Plätze werden reihum auf die Elemente des Bioms verteilt (Dampf: abwechselnd Wasser und Feuer), damit die
+# Basis-Arten des Bioms auftauchen. Gibt es für ein Element keine Art mehr, wird mit beliebigen Arten aufgefüllt.
+# Seltene Arten landen am Anfang seltener im Pool (episch in Tiefe 1: 1/7), in der letzten Tiefe zählt nur noch das Element.
+# Wie oft eine Art im Pool dann wirklich auftaucht, regelt RARITY_SPAWN_WEIGHTS.
 func generate_biome_pools(biomes: Array[int]) -> void:
 	State.biome_pools = []
 	for i in biomes.size():
 		var t = float(i) / max(biomes.size() - 1, 1)
-		var candidates = Monmap.mons.filter(func(meta): return not meta.has("bounty_target"))
+		var candidates = wild_species()
 		var weights = candidates.map(func(meta): return pool_weight(meta.rarity, t))
 		var elements = Enums.MON_TYPES.values().filter(func(element): return biomes[i] & element)
 		elements.shuffle()
+		var pool_size: int = BIOME_POOL_SIZES[clampi(i, 0, BIOME_POOL_SIZES.size() - 1)]
 		var pool: Array[String] = []
-		while pool.size() < BIOME_POOL_SIZE and not candidates.is_empty():
+		while pool.size() < pool_size and not candidates.is_empty():
 			var element = elements[pool.size() % elements.size()] if not elements.is_empty() else 0
 			var indices = range(candidates.size()).filter(func(index): return candidates[index].initial_type & element)
 			if indices.is_empty():
@@ -327,13 +368,15 @@ func roll_fight_enemies(fight_index: int, forced_count := 0) -> Array[Monster]:
 			enemies[0] = Helper.generate_mons({"count": 1, "bounty": bounty})[0]
 	return enemies
 
-## Bosse sind immer seltene oder legendäre Arten und tragen Trophäen. Die Boss-Relikte würfelt generate_encounters dazu.
+## Bosse sind immer seltene oder legendäre Arten (selten auch eine mythische) und tragen Trophäen. Die Boss-Relikte würfelt generate_encounters dazu.
 func roll_boss_enemies(forced_count := 0) -> Array[Monster]:
 	var depth := encounter_depth()
 	var count: int = forced_count if forced_count > 0 else BOSS_ENCOUNTERS[depth].count
+	# ab und zu ist einer der Bosse mythisch, nie mehrere
+	var mythic_slot := randi() % count if BossRelics.roll_mythic(depth) else -1
 	var species := []
 	for i in count:
-		species.append(BossRelics.roll_species(depth))
+		species.append(BossRelics.roll_species(depth, i == mythic_slot))
 	var bosses := Helper.generate_mons({"count": count, "species": species})
 	for boss in bosses:
 		BossRelics.add_trophies(boss, BossRelics.default_trophies(depth))

@@ -15,7 +15,7 @@ PT 1 Done muss man testen.
 > Was mit One Way Use Items?
 > EI Attacke für das erste mal Chaos erreicht (Meilenstein)
 > Battle animationen. (Slash Heal etc.)
+	> fehlen noch die spezial dinger...
 
-- Tutorial Checken obs fine ist?
 - Konzept durchgehen
 - Playtests

@@ -51,4 +51,6 @@ enum MON_RARITY {
 	RARE,
 	EPIC,
 	LEGENDARY,
+	# nur bei Bossen, extrem schwer zu fangen
+	MYTHIC,
 }

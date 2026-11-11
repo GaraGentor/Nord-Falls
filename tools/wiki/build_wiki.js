@@ -77,7 +77,7 @@ function rawValue(src, name) {
 function parseEnum(src, name) {
 	const m = new RegExp(`enum\\s+${name}\\s*\\{`).exec(src);
 	if (!m) return {};
-	const body = readBracketed(src, m.index + m[0].length - 1).slice(1, -1);
+	const body = stripComments(readBracketed(src, m.index + m[0].length - 1).slice(1, -1));
 	const result = {};
 	let next = 0;
 	for (const part of body.split(",").map((s) => s.trim()).filter(Boolean)) {
@@ -316,6 +316,7 @@ function collect() {
 		bossRelicSettings: {
 			perBattle: bossConsts.RELICS_PER_BATTLE,
 			rareChance: bossConsts.RARE_BOSS_CHANCE ?? [],
+			mythicChance: bossConsts.MYTHIC_BOSS_CHANCE ?? [],
 		},
 		gems: {
 			stats: readVar(gemsSrc, "STATS", "Gems") ?? {},

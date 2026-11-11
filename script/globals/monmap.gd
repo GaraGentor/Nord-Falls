@@ -61,13 +61,18 @@ const RARITY_COLORS := {
 	Enums.MON_RARITY.RARE: Color(0.3, 0.6, 1.0),
 	Enums.MON_RARITY.EPIC: Color(0.75, 0.35, 1.0),
 	Enums.MON_RARITY.LEGENDARY: Color(1.0, 0.65, 0.15),
+	# Dunkelrot bis Schwarz: als Text noch lesbar, das Ei wird fast schwarz (egg_material)
+	Enums.MON_RARITY.MYTHIC: Color(0.6, 0.05, 0.07),
 }
+## Ei-Färbung mythischer Arten: Blutrot, das ins Schwarze geht
+const MYTHIC_EGG_TINT := Color(0.25, 0.0, 0.02)
 const RARITY_LABELS := {
 	Enums.MON_RARITY.COMMON: "RARITY_COMMON",
 	Enums.MON_RARITY.UNCOMMON: "RARITY_UNCOMMON",
 	Enums.MON_RARITY.RARE: "RARITY_RARE",
 	Enums.MON_RARITY.EPIC: "RARITY_EPIC",
 	Enums.MON_RARITY.LEGENDARY: "RARITY_LEGENDARY",
+	Enums.MON_RARITY.MYTHIC: "RARITY_MYTHIC",
 }
 
 func rarity_of(name: String) -> int:
@@ -80,8 +85,8 @@ func egg_material(rarity: int, selected := false) -> ShaderMaterial:
 	var key = rarity * 2 + int(selected)
 	if not _egg_materials.has(key):
 		var mat: ShaderMaterial = LIVING_MATERIAL.duplicate()
-		var tint: Color = RARITY_COLORS[rarity]
-		tint.a = 0.0 if rarity == Enums.MON_RARITY.COMMON else 0.45 + 0.1 * rarity
+		var tint: Color = MYTHIC_EGG_TINT if rarity == Enums.MON_RARITY.MYTHIC else RARITY_COLORS[rarity]
+		tint.a = 0.0 if rarity == Enums.MON_RARITY.COMMON else minf(0.45 + 0.1 * rarity, 0.95)
 		mat.set_shader_parameter("tint_color", tint)
 		if selected:
 			mat.set_shader_parameter("outline_color", SELECTED_OUTLINE_COLOR)
@@ -301,5 +306,214 @@ var mons = [
 		"unlockable_egg_skills": ["SKILL_WIND_BLADE", "SKILL_THUNDER_STRIKE", "SKILL_FLAME_CLAW"],
 		"milestone_egg_skills": {"boss_1": "SKILL_STATIC_ROLL", "boss_5": "SKILL_VOLT_QUILLS", "game_win": "SKILL_BALL_LIGHTNING"},
 		"bounty_egg_skills": {"alpha_1": "SKILL_SHOCK_NIP", "alpha_2": "SKILL_HUNTERS_SPARK", "northern_warden": "SKILL_TROPHY_SURGE"},
+	},
+	# Glutskorpion: Lavaskorpion mit brennendem Stachel (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
+	{
+		"name": "17",
+		"rarity": Enums.MON_RARITY.UNCOMMON,
+		"initial_type": Enums.MON_TYPES.FIRE,
+		"stats": [200, 220],
+		"preferred_stats": {"hp": 16, "atk": 24, "def": 22, "s_atk": 14, "s_def": 12, "speed": 12},
+		"max_upgrades": 2,
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_FIRE", "SKILL_BASIC_BLOCK_FIRE", "SKILL_EMBER"],
+		"unlockable_egg_skills": ["SKILL_FLAME_CLAW", "SKILL_MAGMA_BURST", "SKILL_ROCK_CRUSH"],
+	},
+	# Dünenhorn: Sandkäfer mit Bernsteinhörnern (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
+	{
+		"name": "18",
+		"rarity": Enums.MON_RARITY.COMMON,
+		"initial_type": Enums.MON_TYPES.EARTH,
+		"stats": [190, 210],
+		"preferred_stats": {"hp": 15, "atk": 22, "def": 18, "s_atk": 10, "s_def": 13, "speed": 22},
+		"max_upgrades": 2,
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_EARTH", "SKILL_BASIC_BLOCK_EARTH", "SKILL_PEBBLE_THROW"],
+		"unlockable_egg_skills": ["SKILL_ROCK_CRUSH", "SKILL_MAGMA_BURST", "SKILL_TIDAL_SLAM"],
+	},
+	# Reifwolf: Eiswolf mit Kristallmähne (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
+	{
+		"name": "19",
+		"rarity": Enums.MON_RARITY.RARE,
+		"initial_type": Enums.MON_TYPES.WATER,
+		"stats": [215, 235],
+		"preferred_stats": {"hp": 14, "atk": 24, "def": 12, "s_atk": 18, "s_def": 12, "speed": 20},
+		"max_upgrades": 2,
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_WATER", "SKILL_BASIC_BLOCK_WATER", "SKILL_SPLASH"],
+		"unlockable_egg_skills": ["SKILL_TIDAL_SLAM", "SKILL_ICE_SPEAR", "SKILL_WIND_BLADE"],
+	},
+	# Dampfhorn: Steinstier mit Dampfwolken (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
+	{
+		"name": "20",
+		"rarity": Enums.MON_RARITY.UNCOMMON,
+		"initial_type": Enums.MON_TYPES.WATER,
+		"stats": [200, 220],
+		"preferred_stats": {"hp": 22, "atk": 14, "def": 22, "s_atk": 18, "s_def": 16, "speed": 8},
+		"max_upgrades": 2,
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_WATER", "SKILL_BASIC_BLOCK_WATER", "SKILL_SPLASH"],
+		"unlockable_egg_skills": ["SKILL_TIDAL_SLAM", "SKILL_ICE_SPEAR", "SKILL_WIND_BLADE"],
+	},
+	# Dünenstachler: Sandskorpion im Staubwirbel (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
+	{
+		"name": "21",
+		"rarity": Enums.MON_RARITY.COMMON,
+		"initial_type": Enums.MON_TYPES.EARTH,
+		"stats": [190, 210],
+		"preferred_stats": {"hp": 14, "atk": 22, "def": 16, "s_atk": 12, "s_def": 14, "speed": 22},
+		"max_upgrades": 2,
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_EARTH", "SKILL_BASIC_BLOCK_EARTH", "SKILL_PEBBLE_THROW"],
+		"unlockable_egg_skills": ["SKILL_ROCK_CRUSH", "SKILL_MAGMA_BURST", "SKILL_TIDAL_SLAM"],
+	},
+	# Schlammschlund: Moorkröte mit Wurzelschwanz (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
+	{
+		"name": "22",
+		"rarity": Enums.MON_RARITY.COMMON,
+		"initial_type": Enums.MON_TYPES.WATER,
+		"stats": [190, 210],
+		"preferred_stats": {"hp": 24, "atk": 18, "def": 18, "s_atk": 12, "s_def": 18, "speed": 10},
+		"max_upgrades": 2,
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_WATER", "SKILL_BASIC_BLOCK_WATER", "SKILL_SPLASH"],
+		"unlockable_egg_skills": ["SKILL_TIDAL_SLAM", "SKILL_ICE_SPEAR", "SKILL_WIND_BLADE"],
+	},
+	# Aschrücken: Magmaechse mit Lavaschwanz (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
+	{
+		"name": "23",
+		"rarity": Enums.MON_RARITY.RARE,
+		"initial_type": Enums.MON_TYPES.FIRE,
+		"stats": [215, 235],
+		"preferred_stats": {"hp": 20, "atk": 26, "def": 22, "s_atk": 12, "s_def": 12, "speed": 8},
+		"max_upgrades": 2,
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_FIRE", "SKILL_BASIC_BLOCK_FIRE", "SKILL_EMBER"],
+		"unlockable_egg_skills": ["SKILL_FLAME_CLAW", "SKILL_MAGMA_BURST", "SKILL_ROCK_CRUSH"],
+	},
+	# Voltkäfer: Panzerkäfer unter Strom (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
+	{
+		"name": "24",
+		"rarity": Enums.MON_RARITY.UNCOMMON,
+		"initial_type": Enums.MON_TYPES.AIR,
+		"stats": [200, 220],
+		"preferred_stats": {"hp": 14, "atk": 22, "def": 24, "s_atk": 14, "s_def": 12, "speed": 14},
+		"max_upgrades": 2,
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_AIR", "SKILL_BASIC_BLOCK_AIR", "SKILL_GUST"],
+		"unlockable_egg_skills": ["SKILL_WIND_BLADE", "SKILL_THUNDER_STRIKE", "SKILL_ICE_SPEAR"],
+	},
+	# Moorpanzer: uralte Sumpfschildkröte mit Teich auf dem Rücken (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
+	{
+		"name": "25",
+		"rarity": Enums.MON_RARITY.EPIC,
+		"initial_type": Enums.MON_TYPES.EARTH,
+		"stats": [230, 250],
+		"preferred_stats": {"hp": 26, "atk": 14, "def": 26, "s_atk": 12, "s_def": 16, "speed": 6},
+		"max_upgrades": 2,
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_EARTH", "SKILL_BASIC_BLOCK_EARTH", "SKILL_PEBBLE_THROW"],
+		"unlockable_egg_skills": ["SKILL_ROCK_CRUSH", "SKILL_MAGMA_BURST", "SKILL_TIDAL_SLAM"],
+	},
+	# Aschwirbel: Rauchgeist im Glutsturm (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
+	{
+		"name": "26",
+		"rarity": Enums.MON_RARITY.UNCOMMON,
+		"initial_type": Enums.MON_TYPES.AIR,
+		"stats": [200, 220],
+		"preferred_stats": {"hp": 12, "atk": 10, "def": 12, "s_atk": 26, "s_def": 18, "speed": 22},
+		"max_upgrades": 2,
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_AIR", "SKILL_BASIC_BLOCK_AIR", "SKILL_GUST"],
+		"unlockable_egg_skills": ["SKILL_WIND_BLADE", "SKILL_THUNDER_STRIKE", "SKILL_ICE_SPEAR"],
+	},
+	# Donnerhorn: gehörnte Gewitterwolke (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
+	{
+		"name": "27",
+		"rarity": Enums.MON_RARITY.RARE,
+		"initial_type": Enums.MON_TYPES.AIR,
+		"stats": [215, 235],
+		"preferred_stats": {"hp": 16, "atk": 12, "def": 14, "s_atk": 26, "s_def": 18, "speed": 14},
+		"max_upgrades": 2,
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_AIR", "SKILL_BASIC_BLOCK_AIR", "SKILL_GUST"],
+		"unlockable_egg_skills": ["SKILL_WIND_BLADE", "SKILL_THUNDER_STRIKE", "SKILL_ICE_SPEAR"],
+	},
+	# Dünenbrecher: Sandsteinnashorn (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
+	{
+		"name": "28",
+		"rarity": Enums.MON_RARITY.EPIC,
+		"initial_type": Enums.MON_TYPES.EARTH,
+		"stats": [230, 250],
+		"preferred_stats": {"hp": 20, "atk": 28, "def": 24, "s_atk": 6, "s_def": 12, "speed": 10},
+		"max_upgrades": 2,
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_EARTH", "SKILL_BASIC_BLOCK_EARTH", "SKILL_PEBBLE_THROW"],
+		"unlockable_egg_skills": ["SKILL_ROCK_CRUSH", "SKILL_MAGMA_BURST", "SKILL_TIDAL_SLAM"],
+	},
+	# Sturmdschinn: gepanzerter Wirbelsturm mit Blitzklauen (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
+	{
+		"name": "29",
+		"rarity": Enums.MON_RARITY.LEGENDARY,
+		"initial_type": Enums.MON_TYPES.AIR,
+		"stats": [245, 265],
+		"preferred_stats": {"hp": 14, "atk": 16, "def": 12, "s_atk": 26, "s_def": 14, "speed": 18},
+		"max_upgrades": 2,
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_AIR", "SKILL_BASIC_BLOCK_AIR", "SKILL_GUST"],
+		"unlockable_egg_skills": ["SKILL_WIND_BLADE", "SKILL_THUNDER_STRIKE", "SKILL_ICE_SPEAR"],
+	},
+	# Vulkanfaust: Vulkangolem mit Lavafäusten (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
+	{
+		"name": "30",
+		"rarity": Enums.MON_RARITY.LEGENDARY,
+		"initial_type": Enums.MON_TYPES.FIRE,
+		"stats": [245, 265],
+		"preferred_stats": {"hp": 22, "atk": 28, "def": 22, "s_atk": 8, "s_def": 12, "speed": 8},
+		"max_upgrades": 2,
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_FIRE", "SKILL_BASIC_BLOCK_FIRE", "SKILL_EMBER"],
+		"unlockable_egg_skills": ["SKILL_FLAME_CLAW", "SKILL_MAGMA_BURST", "SKILL_ROCK_CRUSH"],
+	},
+	# Staubkönig: gekrönter Sandgeist mit rotem Herz (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
+	{
+		"name": "31",
+		"rarity": Enums.MON_RARITY.LEGENDARY,
+		"initial_type": Enums.MON_TYPES.EARTH,
+		"stats": [245, 265],
+		"preferred_stats": {"hp": 14, "atk": 10, "def": 14, "s_atk": 26, "s_def": 20, "speed": 16},
+		"max_upgrades": 2,
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_EARTH", "SKILL_BASIC_BLOCK_EARTH", "SKILL_PEBBLE_THROW"],
+		"unlockable_egg_skills": ["SKILL_ROCK_CRUSH", "SKILL_MAGMA_BURST", "SKILL_TIDAL_SLAM"],
+	},
+	# Nachthydra: dreiköpfiger Schattendrache (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
+	{
+		"name": "32",
+		"rarity": Enums.MON_RARITY.MYTHIC,
+		"initial_type": Enums.MON_TYPES.WATER,
+		"stats": [260, 280],
+		"preferred_stats": {"hp": 20, "atk": 20, "def": 16, "s_atk": 18, "s_def": 14, "speed": 12},
+		"max_upgrades": 2,
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_WATER", "SKILL_BASIC_BLOCK_WATER", "SKILL_SPLASH"],
+		"unlockable_egg_skills": ["SKILL_TIDAL_SLAM", "SKILL_ICE_SPEAR", "SKILL_CHAOS_NOVA"],
+	},
+	# Blutmähne: Mantikor mit Runenpanzer (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
+	{
+		"name": "33",
+		"rarity": Enums.MON_RARITY.MYTHIC,
+		"initial_type": Enums.MON_TYPES.EARTH,
+		"stats": [260, 280],
+		"preferred_stats": {"hp": 16, "atk": 26, "def": 16, "s_atk": 12, "s_def": 12, "speed": 18},
+		"max_upgrades": 2,
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_EARTH", "SKILL_BASIC_BLOCK_EARTH", "SKILL_PEBBLE_THROW"],
+		"unlockable_egg_skills": ["SKILL_ROCK_CRUSH", "SKILL_MAGMA_BURST", "SKILL_CHAOS_NOVA"],
+	},
+	# Höllenwächter: dreiköpfiger Schattenhund (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
+	{
+		"name": "34",
+		"rarity": Enums.MON_RARITY.MYTHIC,
+		"initial_type": Enums.MON_TYPES.FIRE,
+		"stats": [260, 280],
+		"preferred_stats": {"hp": 18, "atk": 24, "def": 16, "s_atk": 14, "s_def": 12, "speed": 16},
+		"max_upgrades": 2,
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_FIRE", "SKILL_BASIC_BLOCK_FIRE", "SKILL_EMBER"],
+		"unlockable_egg_skills": ["SKILL_FLAME_CLAW", "SKILL_MAGMA_BURST", "SKILL_CHAOS_NOVA"],
+	},
+	# Leerwurm: Schuppenwyrm mit violetten Flammen (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
+	{
+		"name": "35",
+		"rarity": Enums.MON_RARITY.MYTHIC,
+		"initial_type": Enums.MON_TYPES.AIR,
+		"stats": [260, 280],
+		"preferred_stats": {"hp": 14, "atk": 16, "def": 12, "s_atk": 24, "s_def": 16, "speed": 18},
+		"max_upgrades": 2,
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_AIR", "SKILL_BASIC_BLOCK_AIR", "SKILL_GUST"],
+		"unlockable_egg_skills": ["SKILL_WIND_BLADE", "SKILL_THUNDER_STRIKE", "SKILL_CHAOS_NOVA"],
 	},
 ]
