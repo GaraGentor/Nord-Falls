@@ -16,10 +16,30 @@ const GROWTH_STEP := 0.5
 ## Die Datei ist nach Kampfmodus gegliedert, weil der Branch new-conzept dieselbe Datei nutzt. Hier gibt es nur diesen Modus.
 const MODE := "classic"
 
+## Schadensformel (Skills.calc_damage), im Debug-Menü umschaltbar:
+## classic   = atk · 2·atk/(atk+def)  (bisher: Angriff zählt etwa 3x so viel wie Verteidigung)
+## symmetric = Grundwert der Stufe · 2·a^k/(a^k+d^k), begrenzt auf [min_factor, max_factor]
+## pokemon   = (floor(2·L/5)+2) · Wert · atk/def / 50 + 2, mit floor wie im Original
+const FORMULAS := ["classic", "symmetric", "pokemon"]
+## Standard = Verhalten wie bisher. level_offset 0 = Werte linear zur Stufe, hp_scale 1 = KP wie bisher.
+const DAMAGE_DEFAULTS := {"formula": "classic", "exponent": 2.0, "min_factor": 0.25, "max_factor": 2.0, "level_offset": 0.0, "hp_scale": 1.0}
+## Empfehlung aus tools/damage_sim.js: symmetrisch, Boden 0.25, Stufen-Sockel 10, KP x3 (etwa 7 Treffer bis K.O.)
+const DAMAGE_RECOMMENDED := {"formula": "symmetric", "exponent": 2.0, "min_factor": 0.25, "max_factor": 2.0, "level_offset": 10.0, "hp_scale": 3.0}
+## [min, max, Schritt] pro Zahlen-Einstellung
+const DAMAGE_RANGES := {
+	"exponent": [0.5, 4.0, 0.25],
+	"min_factor": [0.0, 1.0, 0.05],
+	"max_factor": [1.0, 4.0, 0.25],
+	"level_offset": [0.0, 50.0, 1.0],
+	"hp_scale": [0.5, 6.0, 0.25],
+}
+
 ## Kampfmodus -> Wert -> Prozent der BST, die fest diesem Wert gehören
 var _reserved := {MODE: {}}
 ## Kampfmodus -> globales Wachstum pro Stufe (fehlt = DEFAULT_GROWTH)
 var _growth := {}
+## Kampfmodus -> Einstellungen der Schadensformel (fehlende Keys = DAMAGE_DEFAULTS)
+var _damage := {}
 ## alles aus der Datei, auch Einträge, die dieser Branch nicht kennt
 var _other := {}
 
@@ -41,6 +61,7 @@ func _ready() -> void:
 		_other = parsed
 		_reserved.merge(parsed.get("reserved_stats", {}), true)
 		_growth.merge(parsed.get("growth_per_level", {}), true)
+		_damage.merge(parsed.get("damage_formula", {}), true)
 		_disabled_relics = parsed.get("disabled_relics", [])
 
 func save() -> void:
@@ -48,7 +69,7 @@ func save() -> void:
 	if file:
 		# fremde Einträge (z. B. "growth_stats" vom Branch new-conzept) bleiben erhalten
 		var data := _other.duplicate()
-		data.merge({"reserved_stats": _reserved, "growth_per_level": _growth, "disabled_relics": _disabled_relics}, true)
+		data.merge({"reserved_stats": _reserved, "growth_per_level": _growth, "damage_formula": _damage, "disabled_relics": _disabled_relics}, true)
 		file.store_string(JSON.stringify(data))
 
 func is_relic_disabled(id: String) -> bool:
@@ -119,3 +140,44 @@ func reset_growth() -> void:
 ## bei 4 dann +5 und +10, bei 0 nichts mehr.
 func growth_factor() -> float:
 	return growth() / DEFAULT_GROWTH
+
+## Faktor einer Stufe auf den Wert von Stufe 1 (Mon._base_stat).
+## Ohne Sockel wächst er linear (Stufe 10 = 10x Stufe 1). Mit Sockel ist er so normiert, dass die Startstufe gleich bleibt,
+## danach wächst er langsamer: bei Sockel 10 hat Stufe 7 nur 17/15 der Werte von Stufe 5 statt 7/5.
+func level_scale(level: int) -> float:
+	var offset := float(damage_setting("level_offset"))
+	var curve := float(level)
+	if offset > 0.0:
+		var start := float(State.INITIAL_LEVEL)
+		curve = start * (level + offset) / (start + offset)
+	return 1.0 + (curve - 1.0) * growth_factor()
+
+# ─────────────────────────
+# Schadensformel
+
+func damage_setting(key: String):
+	return _damage.get(MODE, {}).get(key, DAMAGE_DEFAULTS[key])
+
+func set_damage_setting(key: String, value) -> void:
+	if DAMAGE_RANGES.has(key):
+		var r: Array = DAMAGE_RANGES[key]
+		value = clampf(snappedf(float(value), r[2]), r[0], r[1])
+	if not _damage.has(MODE):
+		_damage[MODE] = {}
+	_damage[MODE][key] = value
+	save()
+
+func set_damage_settings(values: Dictionary) -> void:
+	_damage[MODE] = values.duplicate()
+	save()
+
+func reset_damage() -> void:
+	_damage.erase(MODE)
+	save()
+
+func damage_formula() -> String:
+	var formula = damage_setting("formula")
+	return formula if FORMULAS.has(formula) else DAMAGE_DEFAULTS.formula
+
+func hp_scale() -> float:
+	return float(damage_setting("hp_scale"))

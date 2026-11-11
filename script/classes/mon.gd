@@ -218,7 +218,8 @@ func get_unlockable_egg_skill() -> Dictionary:
 
 func hp():
 	# passive Skills im Team (z. B. +15 KP) kommen obendrauf
-	return _base_stat("hp") + gem_bonus("hp") + Skills.passive_bonus(self, "hp")
+	# KP-Multiplikator aus dem Debug-Menü (Schadensformel) steuert die Kampflänge, Standard 1
+	return _base_stat("hp") * DebugSettings.hp_scale() + gem_bonus("hp") + Skills.passive_bonus(self, "hp")
 
 func attack():
 	return (_base_stat("atk") + gem_bonus("atk")) * buff_factor("atk")
@@ -248,7 +249,13 @@ func _base_stat(stat: String) -> float:
 	var share := DebugSettings.effective_share(stat, _growth[stat])
 	var level_1 := share * Helper.points_per_level(_best_points) * STAT_SCALE
 	# jede weitere Stufe bringt so viel wie Stufe 1, skaliert mit dem Growth aus dem Debug-Menü (Standard = Faktor 1)
-	return level_1 + (_level - 1) * level_1 * DebugSettings.growth_factor()
+	# und dem Stufen-Sockel der Schadensformel (Standard 0 = linear)
+	return level_1 * DebugSettings.level_scale(_level)
+
+## Durchschnittlicher Wert dieses Monsters auf seiner Stufe (gleicher Anteil für alle Werte).
+## Grundschaden der symmetrischen Schadensformel, damit der Angriff dort nur im Verhältnis zur Verteidigung zählt.
+func typical_stat() -> float:
+	return Helper.points_per_level(_best_points) * STAT_SCALE * DebugSettings.level_scale(_level) / DebugSettings.STATS.size()
 
 func gem_bonus(stat: String) -> int:
 	# der Relikt-Bonus zählt pro Trophäe und wird nicht gespeichert, gilt also auch rückwirkend.

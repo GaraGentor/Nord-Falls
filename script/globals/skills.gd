@@ -40,9 +40,29 @@ func calc_damage(from: Monster, to: Monster, skill: Dictionary) -> float:
 	var physical = is_physical(skill)
 	var atk = from.attack() if physical else from.s_attack()
 	var def = to.defense() if physical else to.s_defense()
-	var stat_factor = 2.0 * atk / max(atk + def, 0.001)
-	# aufrunden, damit angezeigter und abgezogener Schaden gleich sind (jeder Treffer macht mind. 1)
-	return ceilf(atk * (skill.value / 100) * stat_factor * element_multiplier(skill.nature, to._type))
+	return stat_damage(atk, def, from._level, from.typical_stat(), skill.value, element_multiplier(skill.nature, to._type))
+
+## Schaden aus den beteiligten Werten, je nach Formel im Debug-Menü (siehe DebugSettings.FORMULAS).
+## typical: Grundwert des Angreifers auf seiner Stufe (Monster.typical_stat), nur für die symmetrische Formel.
+## Getrennt von calc_damage, damit das Debug-Menü Beispiele ohne echte Monster rechnen kann.
+func stat_damage(atk: float, def: float, level: int, typical: float, value: float, element: float) -> float:
+	def = maxf(def, 0.001)
+	match DebugSettings.damage_formula():
+		"symmetric":
+			# Angriff und Verteidigung zählen gleich viel, der Faktor ist nach oben und unten begrenzt
+			var k := float(DebugSettings.damage_setting("exponent"))
+			var a := pow(atk, k)
+			var stat_factor := clampf(2.0 * a / maxf(a + pow(def, k), 0.001),
+				DebugSettings.damage_setting("min_factor"), DebugSettings.damage_setting("max_factor"))
+			return ceilf(typical * (value / 100) * stat_factor * element)
+		"pokemon":
+			var level_factor := floorf(2.0 * level / 5.0) + 2.0
+			var base := floorf(floorf(level_factor * value * atk / def) / 50.0) + 2.0
+			return maxf(floorf(base * element), 1.0)
+		_:
+			var stat_factor = 2.0 * atk / max(atk + def, 0.001)
+			# aufrunden, damit angezeigter und abgezogener Schaden gleich sind (jeder Treffer macht mind. 1)
+			return ceilf(atk * (value / 100) * stat_factor * element)
 
 # ─────────────────────────
 # Element-Kreis: Wasser > Feuer > Luft > Erde > Wasser

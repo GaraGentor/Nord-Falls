@@ -86,6 +86,12 @@ var _stats_summary: Label
 var _stat_values := {}
 ## Wert -> Label mit dem Wachstum pro Stufe ("all" = Zeile für alle Werte)
 var _growth_value: Label
+var _damage_page: VBoxContainer
+## Formel-Key -> Schalter
+var _damage_formula_buttons := {}
+## Einstellungs-Key -> Label mit dem Wert
+var _damage_values := {}
+var _damage_summary: Label
 var _relic_page: VBoxContainer
 var _relic_rows: VBoxContainer
 var _preview_page: VBoxContainer
@@ -111,6 +117,7 @@ func _ready() -> void:
 	_build_picker()
 	_build_egg_page()
 	_build_stats_page()
+	_build_damage_page()
 	_build_relic_page()
 	_build_preview_page()
 	_build_vfx_page()
@@ -161,6 +168,7 @@ func _build_main() -> void:
 	extras.add_child(_rotten_eggs_button)
 	extras.add_child(_make_button("EI-ATTACKEN ...", func(): _show_page(_egg_page)))
 	extras.add_child(_make_button("WERTE-VERTEILUNG ...", func(): _show_page(_stats_page)))
+	extras.add_child(_make_button("SCHADENSFORMEL ...", func(): _show_page(_damage_page)))
 	extras.add_child(_make_button("RELIKTE ...", func(): _show_page(_relic_page)))
 	extras.add_child(_make_button("MONSTER-VORSCHAU ...", func(): _show_page(_preview_page)))
 	extras.add_child(_make_button("VFX-VORSCHAU ...", func(): _show_page(_vfx_page)))
@@ -418,7 +426,7 @@ func _play_all_vfx() -> void:
 		await get_tree().create_timer(VFX_SEQUENCE_PAUSE).timeout
 
 func _show_page(page: VBoxContainer) -> void:
-	for other in [_main, _fight_page, _picker, _egg_page, _stats_page, _relic_page, _preview_page, _vfx_page, _reset_page]:
+	for other in [_main, _fight_page, _picker, _egg_page, _stats_page, _damage_page, _relic_page, _preview_page, _vfx_page, _reset_page]:
 		other.visible = other == page
 
 func _refresh_start() -> void:
@@ -759,6 +767,107 @@ func _refresh_stats_page() -> void:
 		"%s Stufe 1 bleibt gleich. Gilt sofort, auch im laufenden Run.") % [
 		total, 100 - total, STATS_EXAMPLE_BST, STATS_EXAMPLE_BST * total / 100, STATS_EXAMPLE_BST * (100 - total) / 100,
 		growth_text]
+
+# ─────────────────────────
+# Schadensformel
+
+const DAMAGE_FORMULA_LABELS := {"classic": "AKTUELL", "symmetric": "SYMMETRISCH", "pokemon": "POKÉMON"}
+## Zahlen-Einstellungen: Key, Titel, Schritte (negativ und positiv), Format des Werts
+const DAMAGE_ROWS := [
+	["exponent", "Exponent k (symm.)", [0.5, 0.25], "%.2f"],
+	["min_factor", "Boden (symm.)", [0.1, 0.05], "x%.2f"],
+	["max_factor", "Deckel (symm.)", [0.5, 0.25], "x%.2f"],
+	["level_offset", "Stufen-Sockel", [5.0, 1.0], "%d"],
+	["hp_scale", "KP-Multiplikator", [1.0, 0.25], "x%.2f"],
+]
+## Beispielmonster der Übersicht: alle Werte gleich verteilt bei 210 BST, Skill-Wert 40, Element neutral
+const DAMAGE_EXAMPLE_BST := 210
+const DAMAGE_EXAMPLE_VALUE := 40
+
+## Formel umschalten und ihre Regler einstellen, darunter eine Live-Übersicht der Treffer bis K.O.
+func _build_damage_page() -> void:
+	_damage_page = VBoxContainer.new()
+	_damage_page.add_theme_constant_override("separation", 10)
+	add_footer(_damage_page)
+
+	_damage_page.add_child(_make_header("Schadensformel: gilt sofort für alle Kämpfe, auch im laufenden Run (Vorschau und KI rechnen mit)"))
+	var formula_row := _make_stat_row("Formel")
+	for formula in DebugSettings.FORMULAS:
+		var button := _make_toggle_button(DAMAGE_FORMULA_LABELS[formula])
+		button.toggled.connect(func(on: bool):
+			# wie Radio-Buttons: die aktive Formel lässt sich nicht abwählen
+			if on and DebugSettings.damage_formula() != formula:
+				DebugSettings.set_damage_setting("formula", formula)
+			_refresh_damage_page())
+		_damage_formula_buttons[formula] = button
+		formula_row.add_child(button)
+	_damage_page.add_child(formula_row)
+
+	for entry in DAMAGE_ROWS:
+		var key: String = entry[0]
+		var row := _make_stat_row(entry[1])
+		for step in entry[2]:
+			row.add_child(_make_damage_step_button(key, -step))
+		_damage_values[key] = _make_stat_value(row)
+		_damage_values[key].custom_minimum_size.x = STAT_VALUE_WIDTH + 20
+		for i in range(entry[2].size() - 1, -1, -1):
+			row.add_child(_make_damage_step_button(key, entry[2][i]))
+		_damage_page.add_child(row)
+
+	_damage_summary = _make_header("")
+	_damage_page.add_child(_damage_summary)
+
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 12)
+	row.add_child(_make_button("ZURÜCK", _show_page.bind(_main)))
+	row.add_child(_make_button("EMPFEHLUNG", func():
+		DebugSettings.set_damage_settings(DebugSettings.DAMAGE_RECOMMENDED)
+		_refresh_damage_page()))
+	row.add_child(_make_button("STANDARD", func():
+		DebugSettings.reset_damage()
+		_refresh_damage_page()))
+	_damage_page.add_child(row)
+	_refresh_damage_page()
+
+func _make_damage_step_button(key: String, step: float) -> Button:
+	var text := ("%+d" % step) if step == roundf(step) else ("%+.2f" % step).rstrip("0")
+	var button := _make_button(text, func():
+		DebugSettings.set_damage_setting(key, float(DebugSettings.damage_setting(key)) + step)
+		_refresh_damage_page())
+	button.custom_minimum_size = STAT_STEP_SIZE
+	return button
+
+func _refresh_damage_page() -> void:
+	var current := DebugSettings.damage_formula()
+	for formula in _damage_formula_buttons:
+		_damage_formula_buttons[formula].set_pressed_no_signal(formula == current)
+		_damage_formula_buttons[formula].modulate = Color.WHITE if formula == current else UNPICKED_COLOR
+	for entry in DAMAGE_ROWS:
+		var value := float(DebugSettings.damage_setting(entry[0]))
+		_damage_values[entry[0]].text = entry[3] % (roundi(value) if entry[3] == "%d" else value)
+
+	var lines := ["Beispiel: ausgeglichenes Monster (%d BST), Skill-Wert %d, Treffer bis K.O. (Schaden/KP):" % [
+		DAMAGE_EXAMPLE_BST, DAMAGE_EXAMPLE_VALUE]]
+	var cells := []
+	for pair in [[5, 5], [7, 5], [5, 7], [10, 5], [15, 5], [5, 15], [21, 20], [35, 35]]:
+		cells.append("%d→%d: %s" % [pair[0], pair[1], _example_hits(pair[0], pair[1], 1.0)])
+	lines.append("   ".join(cells.slice(0, 4)))
+	lines.append("   ".join(cells.slice(4)))
+	lines.append("Tank auf Stufe 10 (Vert. des Ziels x2 / x3 / x4): %s   %s   %s" % [
+		_example_hits(10, 10, 2.0), _example_hits(10, 10, 3.0), _example_hits(10, 10, 4.0)])
+	lines.append("Stufen-Sockel 0 = Werte linear zur Stufe (wie bisher), höher = Stufenunterschiede zählen weniger. Startstufe bleibt gleich.")
+	lines.append("KP-Multiplikator: steuert die Kampflänge. Boden/Deckel/Exponent wirken nur bei SYMMETRISCH.")
+	_damage_summary.text = "\n".join(lines)
+
+## Treffer bis K.O. für das Beispielmonster, mit der aktuell gewählten Formel
+func _example_hits(attacker_level: int, target_level: int, def_factor: float) -> String:
+	var level_1 := Helper.points_per_level(DAMAGE_EXAMPLE_BST) * Monster.STAT_SCALE / DebugSettings.STATS.size()
+	var atk := level_1 * DebugSettings.level_scale(attacker_level)
+	var target_stat := level_1 * DebugSettings.level_scale(target_level)
+	var hp := roundi(target_stat * DebugSettings.hp_scale())
+	var damage := Skills.stat_damage(atk, target_stat * def_factor, attacker_level, atk, DAMAGE_EXAMPLE_VALUE, 1.0)
+	return "%d (%d/%d)" % [ceili(hp / maxf(damage, 1.0)), damage, hp]
 
 # ─────────────────────────
 # Relikte
