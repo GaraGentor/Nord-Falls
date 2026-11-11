@@ -8,9 +8,9 @@
 [ext_resource type="Script" uid="uid://degyfi6ckr318" path="res://script/scenes/selection/ui.gd" id="5_aea4x"]
 [ext_resource type="PackedScene" path="res://script/scenes/selection/starter_info_panel.tscn" id="7_f6ddp"]
 [ext_resource type="Script" uid="uid://bsftl68bgh2n1" path="res://script/scenes/selection/biome_path.gd" id="8_biome"]
-[ext_resource type="Theme" path="res://script/ui/materials/pixel_font_theme.tres" id="99_font_theme"]
 [ext_resource type="Theme" uid="uid://b5pomesyumr6n" path="res://script/scenes/battle/flat_button_theme.tres" id="10_flat_btn"]
 [ext_resource type="Script" uid="uid://o0lwh6vlyh25" path="res://script/ui/shader/iron_plate.gd" id="11_plate"]
+[ext_resource type="Theme" uid="uid://s3xpo0m4ka8" path="res://script/ui/materials/pixel_font_theme.tres" id="99_font_theme"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_k0ik4"]
 shader = ExtResource("2_7l32t")
@@ -32,6 +32,7 @@ shader_parameter/reveal = 1.0
 shader_parameter/outline_color = Color(1, 1, 0, 0)
 shader_parameter/outline_thickness = 4.0
 shader_parameter/tint_color = Color(1, 1, 1, 0)
+shader_parameter/keep_alpha = false
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_button"]
 content_margin_left = 16.0
@@ -200,17 +201,17 @@ layout_mode = 2
 size_flags_horizontal = 4
 theme = ExtResource("10_flat_btn")
 theme_override_colors/font_color = Color(0.86, 0.83, 0.72, 1)
-theme_override_colors/font_hover_color = Color(0.858824, 0.717647, 0.45098, 1)
 theme_override_colors/font_pressed_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_colors/font_hover_color = Color(0.858824, 0.717647, 0.45098, 1)
 theme_override_fonts/font = ExtResource("4_tpsnj")
 theme_override_font_sizes/font_size = 32
 theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_button")
 text = "SELECTION_DRAW_EGG"
 
-[node name="Plate" type="ColorRect" parent="Selection/MarginContainer/VBoxContainer/Button"]
+[node name="Plate" type="ColorRect" parent="Selection/MarginContainer/VBoxContainer/Button" unique_id=1356434382]
 show_behind_parent = true
 layout_mode = 1
 anchors_preset = 15
@@ -228,17 +229,17 @@ layout_mode = 2
 size_flags_horizontal = 4
 theme = ExtResource("10_flat_btn")
 theme_override_colors/font_color = Color(0.86, 0.83, 0.72, 1)
-theme_override_colors/font_hover_color = Color(0.858824, 0.717647, 0.45098, 1)
 theme_override_colors/font_pressed_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_colors/font_hover_color = Color(0.858824, 0.717647, 0.45098, 1)
 theme_override_fonts/font = ExtResource("4_tpsnj")
 theme_override_font_sizes/font_size = 32
 theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_button")
 text = "SELECTION_REROLL_EGGS"
 
-[node name="Plate" type="ColorRect" parent="Selection/MarginContainer/VBoxContainer/RerollButton"]
+[node name="Plate" type="ColorRect" parent="Selection/MarginContainer/VBoxContainer/RerollButton" unique_id=1716830709]
 show_behind_parent = true
 layout_mode = 1
 anchors_preset = 15
@@ -255,18 +256,18 @@ layout_mode = 2
 size_flags_horizontal = 4
 theme = ExtResource("10_flat_btn")
 theme_override_colors/font_color = Color(0.86, 0.83, 0.72, 1)
-theme_override_colors/font_hover_color = Color(0.858824, 0.717647, 0.45098, 1)
 theme_override_colors/font_pressed_color = Color(0.858824, 0.717647, 0.45098, 1)
+theme_override_colors/font_hover_color = Color(0.858824, 0.717647, 0.45098, 1)
 theme_override_fonts/font = ExtResource("4_tpsnj")
 theme_override_font_sizes/font_size = 32
 theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_button")
 disabled = true
 text = "SELECTION_BEGIN_JOURNEY"
 
-[node name="Plate" type="ColorRect" parent="Selection/MarginContainer/VBoxContainer/Button2"]
+[node name="Plate" type="ColorRect" parent="Selection/MarginContainer/VBoxContainer/Button2" unique_id=617409485]
 show_behind_parent = true
 layout_mode = 1
 anchors_preset = 15
@@ -305,7 +306,7 @@ texture = SubResource("GradientTexture2D_p4ys2")
 visible = false
 layout_mode = 1
 
-[node name="Menu" type="CenterContainer" parent="UI"]
+[node name="Menu" type="CenterContainer" parent="UI" unique_id=902572504]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

@@ -1,20 +1,7 @@
-Schadensformel
-Berechne den Schaden einer Attacke anhand folgender Parameter:
-
-Eingabeparameter:
-
-level: Level des angreifenden Pokémon
-attack: Angriffswert des angreifenden Pokémon (bei physischen Attacken)
-defense: Verteidigungswert des gegnerischen Pokémon (bei physischen Attacken)
-power: Basiskraft der verwendeten Attacke
-typeEffectiveness: 2.0 bei sehr effektiv, 0.5 bei nicht sehr effektiv, 1.0 bei neutraler Wirkung
-Grundformel:
-
-Berechne den Level-Faktor: levelFactor = floor((2 * level) / 5) + 2
-Berechne den Basis-Schaden: baseDamage = floor(floor(levelFactor * power * attack / defense) / 50) + 2
-Multipliziere mit Typeneffektivität: damage = floor(damage * typeEffectiveness)
-Wichtig:
-
-Physische Attacken verwenden Angriff und Verteidigung.
-Spezielle Attacken verwenden S-Angriff und S-Verteidigung.
-Der Level-Faktor basiert auf dem Level des angreifenden Pokémon, nicht auf dem Level des Verteidigers.
+1. Beim Judgement muss noch das Level von den Monstern stehen. Das wäre cool
+2. 
+3. Im Tutorial die EI Attacken nicht vorauswählen
+4. Lebens anzeige beim Levelup
+5. One Use Items..
+6. Der aller erste Kampf muiss immer ein Kampf sein in der Map
+7. Heilungs Optionen nochmal überdneken
