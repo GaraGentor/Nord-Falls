@@ -16,7 +16,7 @@ const PILES_MAX := 4
 const PILE_GOLD_MIN := 10
 const PILE_GOLD_MAX := 25
 const PILE_GOLD_PER_DEPTH := 5
-## so oft liegt zusätzlich ein Element-Trank mit zufälligem Element darin.
+## so oft liegt zusätzlich ein Element-Trank mit zufälligem Element darin (leicht gewichtet, siehe pick_potion_element).
 ## Gezielt ein bestimmtes Element gibt es nur im Shop.
 const POTION_CHANCE := 0.35
 
@@ -47,7 +47,7 @@ func _ready() -> void:
 		var gold := randi_range(PILE_GOLD_MIN, PILE_GOLD_MAX) + State.map_level * PILE_GOLD_PER_DEPTH
 		add_bag_card(tr("TREASURE_GOLD"), Helper.me_text(gold), texture_icon(ESSENCE_ICON), _on_gold_taken.bind(gold))
 	if with_potion:
-		var element: int = drinkable.pick_random()
+		var element: int = pick_potion_element(drinkable)
 		# nach der Kiste fällt er wie eine Trophäe aus der Tasche auf den Teppich (world_map.gd show_pending_rewards)
 		add_bag_card(potion_title(self, element), tr("TREASURE_POTION_BAG_DESC"), potion_art(element), func(): State.pending_potions.append(element))
 	_build_buttons()
@@ -104,12 +104,31 @@ static func add_potion_card(dialog: RewardDialog, element: int) -> RewardDialog.
 	var give := func(mon: Monster):
 		var old_type: int = mon._type
 		mon.gain_element(element)
+		Skills.announce_awakened(mon, old_type)
 		# Aufstieg in ein Kombi-Element: das Monster lernt dessen Aufstiegs-Skill (läuft für sich, auch wenn der Dialog schließt)
 		ElementGainOverlayScript.reward(mon, old_type)
 	return dialog.add_mon_card(potion_title(dialog, element), text, potion_art(element), dialog.tr("TREASURE_POTION_CHOOSE_MON"), func(): return mons_without(element), give, Callable(), {"element": element})
 
 static func potion_title(dialog: Node, element: int) -> String:
 	return dialog.tr("TREASURE_POTION").format({"element": dialog.tr(ColorMap.get_combo(element).label)})
+
+## Gewicht eines Trank-Elements, das einem Monster im Team für einen seiner Skills fehlt
+## (weckt eine schlummernde Attacke bzw. macht eine unspielbare spielbar). Alle anderen zählen 1.
+const NEEDED_POTION_WEIGHT := 2.0
+
+## Zufälliges Trank-Element, leicht bevorzugt die, die eine Attacke im Team voranbringen
+static func pick_potion_element(elements: Array) -> int:
+	var weights := elements.map(func(element):
+		var needed: bool = mons_without(element).any(func(mon: Monster):
+			return mon._skills.any(func(skill): return Skills.missing_elements(mon, skill).has(element)))
+		return NEEDED_POTION_WEIGHT if needed else 1.0)
+	var total: float = weights.reduce(func(sum, weight): return sum + weight, 0.0)
+	var roll := randf() * total
+	for i in elements.size():
+		roll -= weights[i]
+		if roll <= 0.0:
+			return elements[i]
+	return elements.back()
 
 static func mons_without(element: int) -> Array:
 	return State.mons.filter(func(mon): return not ColorMap.has_element(mon._type, element))

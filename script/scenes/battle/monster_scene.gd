@@ -262,7 +262,8 @@ func _update_drag_preview(drag_data) -> void:
 		if _preview_label:
 			_preview_label.visible = false
 		return
-	var multiplier = Skills.element_multiplier(drag_data.skill.nature, mon._type)
+	# schlummernde Skills treffen nur mit den Elementen des Wirkers (Skills.effective_skill)
+	var multiplier = Skills.element_multiplier(Skills.effective_skill(drag_data.get("mon"), drag_data.skill).nature, mon._type)
 	if _preview_label == null:
 		_preview_label = Label.new()
 		_preview_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

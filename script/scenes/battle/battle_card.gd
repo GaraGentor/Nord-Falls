@@ -14,6 +14,8 @@ const SWIPE_TO_DRAG := 40.0
 @export var type_icon: TextureRect
 ## Beschreibung mit gelb hervorgehobenen Werten (Helper.skill_description rich)
 @export var description_label: RichTextLabel
+## passt die Beschreibung nicht auf die Karte, scrollt sie von selbst runter und wieder hoch
+@export var description_scroll: AutoScrollContainer
 
 ## Monster, dem die Karte gehört (show_state)
 var mon: Monster
@@ -40,6 +42,8 @@ var _paper: SkillCardPaper
 func _ready() -> void:
 	# RichTextLabel nutzt sonst nicht die Label-Schrift aus dem Theme
 	description_label.add_theme_font_override("normal_font", name_label.get_theme_font("font"))
+	# auf der ganzen Karte gedrückt halten hält den Text an
+	description_scroll.hold_area = self
 	_init_card()
 
 func _init_card() -> void:
@@ -53,8 +57,16 @@ func _init_card() -> void:
 	name_label.self_modulate = SkillCardPaper.readable_color(Helper.color_by_type(skill.nature))
 	cost_badge.show_number(skill.cost, false)
 	type_icon.texture = Skills.kind_icon(skill)
-	description_label.text = Helper.skill_description(skill, true)
-	description_label.self_modulate = Color.WHITE
+	# schlummert der Skill bei seinem Monster: abgeschwächte Werte, Element-Effekt durchgestrichen
+	_set_description(Helper.skill_description(skill, true, mon), Color.WHITE)
+
+## Neuer Text beginnt wieder oben, gleicher Text (z. B. erneutes show_state) scrollt einfach weiter
+func _set_description(text: String, color: Color) -> void:
+	description_label.self_modulate = color
+	if description_label.text == text:
+		return
+	description_label.text = text
+	description_scroll.restart()
 
 ## Fehlen dem Monster Elemente für diesen Skill oder läuft die Abklingzeit noch,
 ## steht das statt der Beschreibung auf der Karte
@@ -66,8 +78,7 @@ func show_state(owner_mon: Monster) -> void:
 	if text.is_empty():
 		_init_card()
 		return
-	description_label.text = text
-	description_label.self_modulate = Color(1, 0.45, 0.45)
+	_set_description(text, Color(1, 0.45, 0.45))
 
 ## Ausgewählte Karte leuchtet am Rahmen (erst möglich, wenn die Karte im Baum ist)
 func set_selected(selected: bool) -> void:
@@ -115,7 +126,7 @@ func _start_drag() -> void:
 	var holder := Control.new()
 	holder.add_child(preview)
 	preview.position = -size / 2
-	force_drag({"type": "skill_card", "skill": skill}, holder)
+	force_drag({"type": "skill_card", "skill": skill, "mon": mon}, holder)
 	modulate.a = 0.3
 
 func _notification(what: int) -> void:

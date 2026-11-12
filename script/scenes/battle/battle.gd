@@ -338,7 +338,9 @@ func _is_valid_target(from: Monster, skill: Dictionary, target: Monster) -> bool
 ## Setzt einen Skill ein: Flächen-Skills treffen die ganze Seite des Ziels, danach startet die Abklingzeit.
 ## Element-Effekte (ElementEffects): Schwächungen und Status pro getroffenem Gegner, Verstärkungen einmal für den Wirker.
 ## Vulkan wirkt mit etwas Glück ein zweites Mal mit gleicher Stärke (zweiter Treffer, doppelter Schild).
-func _use_skill(from: Monster, skill: Dictionary, target: Monster) -> void:
+func _use_skill(from: Monster, card: Dictionary, target: Monster) -> void:
+	# schlummernde Skills wirken schwächer und ohne Element-Effekt (Skills.effective_skill), die Abklingzeit läuft auf der Karte
+	var skill := Skills.effective_skill(from, card)
 	var targets = [target]
 	if Skills.targets_team(skill):
 		targets = _allies_of(target)
@@ -367,7 +369,7 @@ func _use_skill(from: Monster, skill: Dictionary, target: Monster) -> void:
 				ElementEffects.on_hit(from, mon, skill)
 				BossRelics.on_damage_dealt(from, mon, skill, hit, turn_wheel.round_number)
 	ElementEffects.on_cast(from, skill, dealt)
-	Skills.start_cooldown(skill)
+	Skills.start_cooldown(card)
 	Events.monster_status_changed.emit(from)
 	# Treffer decken Werte auf (Skills.reveal_stats_by_hit)
 	if selected_mon == from or targets.has(selected_mon):

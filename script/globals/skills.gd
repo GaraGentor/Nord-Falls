@@ -37,6 +37,8 @@ func is_physical(skill: Dictionary) -> bool:
 	return skill.get("damage_type", Enums.SKILL_DAMAGE_TYPE.PHYSICAL) == Enums.SKILL_DAMAGE_TYPE.PHYSICAL
 
 func calc_damage(from: Monster, to: Monster, skill: Dictionary) -> float:
+	# schlummernde Skills schwächer und nur mit den Elementen des Angreifers
+	skill = effective_skill(from, skill)
 	var physical = is_physical(skill)
 	var atk = from.attack() if physical else from.s_attack()
 	var def = to.defense() if physical else to.s_defense()
@@ -158,8 +160,8 @@ func incoming_hits(target: Monster, attackers: Array) -> Array:
 				continue
 			var physical = is_physical(action.skill)
 			var full = calc_damage(attacker, target, action.skill)
-			# gleiche Rechnung wie Monster.absorb_damage, Magma zieht den Schild doppelt ab
-			var cost = ElementEffects.shield_cost(action.skill)
+			# gleiche Rechnung wie Monster.absorb_damage, Magma zieht den Schild doppelt ab (schlummernd nicht)
+			var cost = ElementEffects.shield_cost(effective_skill(attacker, action.skill))
 			var blocked = minf((shield if physical else s_shield) / cost, full)
 			if physical:
 				shield -= blocked * cost
@@ -169,14 +171,14 @@ func incoming_hits(target: Monster, attackers: Array) -> Array:
 	return hits
 
 # Bonus aller passiven Skills im Team auf einen Wert (z. B. +15 KP für jedes Monster im Team).
-# Es gilt die Element-Regel: nur Monster, die den Skill einsetzen könnten, geben den Bonus.
+# Es gilt die Element-Regel: nur Monster, die den Skill einsetzen könnten, geben den Bonus (schlummernd abgeschwächt).
 func passive_bonus(mon: Monster, stat: String) -> float:
 	var team = State.mons if State.mons.has(mon) else State.enemy_mons if State.enemy_mons.has(mon) else [mon]
 	var bonus = 0.0
 	for member in team:
 		for skill in member._skills:
 			if is_passive(skill) and skill.passive_stat == stat and can_use(member, skill):
-				bonus += skill.value
+				bonus += effective_skill(member, skill).value
 	return bonus
 
 # ─────────────────────────
@@ -269,29 +271,96 @@ func knows_skill(mon: Monster, skill_name: String) -> bool:
 	return mon._skills.any(func(skill): return skill.name == skill_name)
 
 # ─────────────────────────
-# Element-Regel: Ein Monster kann einen Skill nur einsetzen, wenn sein Typ alle Elemente des Skills enthält
-# (Vulkan = Erde+Feuer+Wasser kann z. B. Erde, Feuer, Wasser, Magma, Schlamm, Dampf und Vulkan spielen).
+# Element-Regel: Ein Monster kann einen Skill einsetzen, sobald es mindestens ein Element des Skills hat
+# (ein Luft-Monster kann keine Magma-Attacke spielen, ein Erde-Monster schon).
+# Hat es alle Elemente, ist der Skill wach: volle Stärke und Element-Effekt
+# (Vulkan = Erde+Feuer+Wasser spielt z. B. Erde, Feuer, Wasser, Magma, Schlamm, Dampf und Vulkan wach).
+# Fehlen ihm welche, schlummert der Skill (effective_skill): weniger Wert, kein Element-Effekt, und er trifft nur mit
+# den Elementen, die das Monster hat. Jeder Trank mit einem fehlenden Element macht ihn stärker, mit dem letzten erwacht er.
+
+## Stärke eines schlummernden Skills: DORMANT_BASE_POWER + Rest anteilig nach vorhandenen Elementen
+## (Magma-Attacke mit Erde: 1 von 2 -> 70 %, Vulkan-Attacke mit Erde: 1 von 3 -> 60 %, mit Magma: 2 von 3 -> 80 %)
+const DORMANT_BASE_POWER := 0.4
 
 func covers(type_mask: int, nature: int) -> bool:
 	return nature & ~type_mask == 0
 
+func shares_element(type_mask: int, nature: int) -> bool:
+	return nature == 0 or nature & type_mask != 0
+
 func can_use(mon: Monster, skill: Dictionary) -> bool:
-	return covers(mon._type, skill.nature)
+	return shares_element(mon._type, skill.nature)
 
 func can_use_name(mon: Monster, skill_name: String) -> bool:
+	return shares_element(mon._type, get_skill(skill_name).nature)
+
+## Hat das Monster alle Elemente des Skills? (Gegner und wilde Monster bekommen nur solche Skills)
+func is_awake(mon: Monster, skill: Dictionary) -> bool:
+	return covers(mon._type, skill.nature)
+
+func is_awake_name(mon: Monster, skill_name: String) -> bool:
 	return covers(mon._type, get_skill(skill_name).nature)
 
-# Einzelne Elemente, die dem Monster für diesen Skill noch fehlen.
+## Einsetzbar, aber noch nicht alle Elemente da
+func is_dormant(mon: Monster, skill: Dictionary) -> bool:
+	return mon != null and can_use(mon, skill) and not is_awake(mon, skill)
+
+## 1.0 für wache Skills, sonst siehe DORMANT_BASE_POWER
+func dormant_power(mon: Monster, skill: Dictionary) -> float:
+	if not is_dormant(mon, skill):
+		return 1.0
+	var share := float(Map.count_elements(skill.nature & mon._type)) / Map.count_elements(skill.nature)
+	return DORMANT_BASE_POWER + (1.0 - DORMANT_BASE_POWER) * share
+
+## Der Skill so, wie das Monster ihn gerade einsetzt. Wach: der Skill selbst. Schlummernd: eine Kopie mit
+## abgeschwächtem Wert, nur den eigenen Elementen (für den Element-Faktor) und "_dormant" (ElementEffects wirkt nicht).
+## Mehrfach anwenden schadet nicht.
+func effective_skill(mon: Monster, skill: Dictionary) -> Dictionary:
+	if skill.get("_dormant", false) or not is_dormant(mon, skill):
+		return skill
+	var copy := skill.duplicate()
+	copy._dormant = true
+	copy.nature = skill.nature & mon._type
+	var value = skill.get("value")
+	if value is float or value is int:
+		copy.value = maxf(roundf(value * dormant_power(mon, skill)), 1.0)
+	return copy
+
+# Einzelne Elemente, die dem Monster für diesen Skill noch fehlen (zum Einsetzen bzw. zum Erwachen).
 func missing_elements(mon: Monster, skill: Dictionary) -> Array:
 	return Enums.MON_TYPES.values().filter(func(element): return skill.nature & element and not mon._type & element)
 
-# "Benötigt: Erde, Luft" für die Elemente, die dem Monster für diesen Skill noch fehlen ("" wenn spielbar).
+func _element_list(elements: Array) -> String:
+	var labels = elements.map(func(element): return tr(ColorMap.get_combo(element).label))
+	return ", ".join(PackedStringArray(labels))
+
+# Warum das Monster den Skill nicht einsetzen kann: "Benötigt: Feuer" bzw. "Benötigt eins von: Erde, Feuer"
+# ("" wenn einsetzbar, auch schlummernd).
 func missing_elements_text(mon: Monster, skill: Dictionary) -> String:
-	var missing = missing_elements(mon, skill)
-	if missing.is_empty():
+	if can_use(mon, skill):
 		return ""
-	var labels = missing.map(func(element): return tr(ColorMap.get_combo(element).label))
-	return tr("SKILL_NEEDS_ELEMENTS").format({"elements": ", ".join(PackedStringArray(labels))})
+	var missing = missing_elements(mon, skill)
+	var key := "SKILL_NEEDS_ELEMENTS" if missing.size() == 1 else "SKILL_NEEDS_ONE_ELEMENT"
+	return tr(key).format({"elements": _element_list(missing)})
+
+# Schlummernder Skill: "Schlummert: 70 % Stärke, trifft als Erde" und darunter "Erwacht mit: Feuer" ("" sonst).
+# Mit [hl]-Markierungen wie die Skill-Beschreibungen (Helper.highlight).
+func dormant_text(mon: Monster, skill: Dictionary) -> String:
+	if not is_dormant(mon, skill):
+		return ""
+	var dormant := tr("SKILL_DORMANT").format({
+		"power": roundi(dormant_power(mon, skill) * 100),
+		"element": tr(ColorMap.get_combo(skill.nature & mon._type).label)})
+	return dormant + "\n" + tr("SKILL_AWAKENS_WITH").format({"elements": _element_list(missing_elements(mon, skill))})
+
+## Nach einem neuen Element (Trank): kurz oben einblenden, welche Skills des Monsters dadurch erwacht sind
+func announce_awakened(mon: Monster, old_type: int) -> void:
+	var awakened = mon._skills.filter(func(skill): return covers(mon._type, skill.nature) and not covers(old_type, skill.nature))
+	if awakened.is_empty():
+		return
+	var names = awakened.map(func(skill): return tr(skill.name))
+	Helper.show_unlock_message(tr("SKILL_AWAKENED").format({
+		"mon": Helper.mon_battle_name(mon), "skills": ", ".join(PackedStringArray(names))}))
 
 # Lern-Buttons: gesperrt, wenn das Monster den Skill schon kennt; fehlende Elemente werden als Hinweis angehängt
 # (gelernt werden darf trotzdem, spielbar wird der Skill erst mit den passenden Elementen).
@@ -413,7 +482,7 @@ func affected_stat(skill: Dictionary) -> String:
 ## Buffs, Passive und Skills ohne Monster zeigen ihren Grundwert. Ist der Wert eines Gegners noch nicht aufgedeckt,
 ## steht der Prozentwert da, damit die Karte nichts verrät.
 func power_text(skill: Dictionary, mon: Monster) -> String:
-	var value = skill.get("value", skill.get("damage", ""))
+	var value = effective_skill(mon, skill).get("value", skill.get("damage", ""))
 	if mon == null or not (value is float or value is int):
 		return Helper.format_number(value)
 	var physical := is_physical(skill)

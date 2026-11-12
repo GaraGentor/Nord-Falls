@@ -10,6 +10,8 @@ extends Node
 ## Dreier-Kombis, bis Kampfende: Sumpf = Gift, Aschesturm = Verbrennung, Gewitter = Paralyse,
 ## Vulkan = Chance auf doppelte Wirkung. Chaos: höherer Element-Faktor gegen alle Nicht-Chaos-Ziele.
 ##
+## Schlummernde Skills (Skills.effective_skill, "_dormant") haben keinen Effekt, erst wenn sie erwacht sind.
+##
 ## Alle Werte stehen hier, damit das Balancing an einer Stelle passiert.
 ##
 ## Einzelne Karten können die Werte ihres Elements anpassen (optionale Felder im Skill, ohne sie gilt 1.0):
@@ -116,11 +118,11 @@ func on_cast(from: Monster, skill: Dictionary, dealt: float) -> void:
 
 ## Vulkan: wirkt der Skill diesmal doppelt?
 func rolls_eruption(skill: Dictionary) -> bool:
-	return skill.nature == VOLCANO and randf() < effect_chance(skill) * VOLCANO_CHANCE * effect_power(skill)
+	return skill.nature == VOLCANO and is_active(skill) and randf() < effect_chance(skill) * VOLCANO_CHANCE * effect_power(skill)
 
 ## Magma: so viel Schild kostet jeder abgefangene Schadenspunkt (auch in der Absichten-Vorschau)
 func shield_cost(skill: Dictionary) -> float:
-	if skill.get("nature", 0) != MAGMA:
+	if skill.get("nature", 0) != MAGMA or not is_active(skill):
 		return 1.0
 	return 1.0 + (MAGMA_SHIELD_COST - 1.0) * effect_power(skill)
 
@@ -136,8 +138,12 @@ func effect_chance(skill: Dictionary) -> float:
 func effect_power(skill: Dictionary) -> float:
 	return skill.get("effect_power", 1.0)
 
+## Schlummernde Skills wirken ohne Element-Effekt
+func is_active(skill: Dictionary) -> bool:
+	return not skill.get("_dormant", false)
+
 func _triggers(skill: Dictionary) -> bool:
-	return randf() < effect_chance(skill)
+	return is_active(skill) and randf() < effect_chance(skill)
 
 func _apply_status(target: Monster, status: String, from: Monster, power: float, max_stacks := 1) -> void:
 	var is_new := not target.has_status(status)

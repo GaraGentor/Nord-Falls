@@ -537,7 +537,9 @@ func _skill_target_tooltip(mon: Monster, skill: Dictionary) -> String:
 	if Skills.knows_skill(mon, skill.name):
 		return tr("TRAINER_ALREADY_KNOWS")
 	var lines := PackedStringArray()
-	if Skills.can_use(mon, skill):
+	if Skills.is_dormant(mon, skill):
+		lines.append(tr("TRAINER_CAN_USE_DORMANT").format({"power": roundi(Skills.dormant_power(mon, skill) * 100)}))
+	elif Skills.can_use(mon, skill):
 		lines.append(tr("TRAINER_CAN_USE"))
 	if mon._skills.size() >= Skills.MAX_SKILLS:
 		lines.append(tr("TRAINER_REPLACES"))

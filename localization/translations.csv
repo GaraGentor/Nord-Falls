@@ -125,6 +125,11 @@ LAST_WILL_DECLINE_TITLE,Leave nothing behind?,Wirklich nichts hinterlassen?
 LAST_WILL_DECLINE_TEXT,Everything {mon} gathered will be lost.,"Alles, was {mon} gesammelt hat, geht verloren."
 LAST_WILL_INHERITED,{mon} inherited {gift}!,{mon} hat {gift} geerbt!
 SKILL_NEEDS_ELEMENTS,Needs: {elements},Benötigt: {elements}
+SKILL_NEEDS_ONE_ELEMENT,"Needs one of: {elements}","Benötigt eins von: {elements}"
+SKILL_DORMANT,"Dormant: [hl]{power}% strength[/hl], hits as [hl]{element}[/hl]","Schlummert: [hl]{power}% Stärke[/hl], trifft als [hl]{element}[/hl]"
+SKILL_AWAKENS_WITH,"Awakens with [hl]{elements}[/hl]: full strength and element effect","Erwacht mit [hl]{elements}[/hl]: volle Stärke und Element-Effekt"
+SKILL_EFFECT_INACTIVE,"Inactive: {effect}","Inaktiv: {effect}"
+SKILL_AWAKENED,"{mon}: {skills} awakened!","{mon}: {skills} erwacht!"
 CONFIGURATOR_NEED_USABLE,Pick at least one move your monster can use!,"Wähle mindestens eine Attacke, die dein Monster einsetzen kann!"
 JUDGEMENT_REPLACE_TITLE,All {max} slots are full. Which move should be forgotten?,Alle {max} Plätze sind belegt. Welche Attacke soll vergessen werden?
 JUDGEMENT_REPLACE,Forget {skill},{skill} vergessen
@@ -512,6 +517,7 @@ SKILL_INFO_COOLDOWN,Cooldown,Abklingzeit
 TRAINER_FITS,Fits: {mons},Passt zu: {mons}
 TRAINER_FITS_NONE,None of your monsters can use it yet,Noch kann keins deiner Monster ihn einsetzen
 TRAINER_CAN_USE,Can use it right away,Kann ihn sofort einsetzen
+TRAINER_CAN_USE_DORMANT,"Can use it dormant ({power}% strength)","Kann ihn schlummernd einsetzen ({power}% Stärke)"
 TRAINER_REPLACES,Has to forget another skill for it,Muss dafür einen anderen Skill vergessen
 TRAINER_ALL_KNOW,Your monsters already know this skill.,Deine Monster kennen diesen Skill schon.
 TRAINER_ALREADY_KNOWS,Already knows this skill,Kennt diesen Skill schon

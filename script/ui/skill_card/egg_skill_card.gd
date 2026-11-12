@@ -15,23 +15,9 @@ const SUBTLE_COLOR := Color(0.7, 0.68, 0.64)
 const MISSING_COLOR := Color(1, 0.45, 0.45)
 const LOCKED_TINT := Color(0.5, 0.5, 0.5)
 const GOLD := SkillCardPaper.GOLD
-## Pixel pro Sekunde beim automatischen Scrollen nach unten, zurück nach oben geht es schneller
-const AUTO_SCROLL_SPEED := 14.0
-const AUTO_SCROLL_BACK_FACTOR := 4.0
-## Pause oben und unten, bevor es weitergeht
-const AUTO_SCROLL_PAUSE := 1.6
-## so viele Sekunden nach dem letzten eigenen Scrollen setzt das automatische wieder ein
-const AUTO_SCROLL_RESUME := 4.0
 
-var _scroll: ScrollContainer
+var _scroll: AutoScrollContainer
 var _paper: SkillCardPaper
-## genaue Position des automatischen Scrollens (scroll_vertical kennt nur ganze Pixel)
-var _auto_pos := 0.0
-## zuletzt selbst gesetzter Wert, weicht scroll_vertical davon ab, hat der Spieler gescrollt
-var _set_value := 0
-var _direction := 1
-var _wait := AUTO_SCROLL_PAUSE
-var _idle := AUTO_SCROLL_RESUME
 
 ## locked_label/locked_hint: gesperrte Attacke, Texte mittig auf den Ketten (leer = nicht gesperrt)
 static func create(skill: Dictionary, mon: Monster, locked_label := "", locked_hint := "") -> EggSkillCard:
@@ -93,9 +79,10 @@ func _build(skill: Dictionary, mon: Monster, locked_label: String, locked_hint: 
 	lines.add_child(info)
 
 	# Mitte: nur die Beschreibung scrollt
-	_scroll = ScrollContainer.new()
+	_scroll = AutoScrollContainer.new()
 	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	# auf der ganzen Karte gedrückt halten hält den Text an
+	_scroll.hold_area = self
 	# PASS: Klick und Ziehen gehen weiter an die Karte (Drag & Drop), das Mausrad scrollt den Text
 	_scroll.mouse_filter = Control.MOUSE_FILTER_PASS
 	lines.add_child(_scroll)
@@ -108,7 +95,8 @@ func _build(skill: Dictionary, mon: Monster, locked_label: String, locked_hint: 
 	description.add_theme_font_override("normal_font", THEME.get_font("font", "Label"))
 	description.add_theme_font_size_override("normal_font_size", 13)
 	description.add_theme_color_override("default_color", TEXT_COLOR)
-	description.text = Helper.skill_description(skill, true)
+	# schlummernd: abgeschwächte Werte, Element-Effekt durchgestrichen, darunter was die Attacke weckt
+	description.text = Helper.skill_description(skill, true, null if locked else mon)
 	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	description.custom_minimum_size.x = 1
 	description.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -123,7 +111,7 @@ func _build(skill: Dictionary, mon: Monster, locked_label: String, locked_hint: 
 		lines.add_child(missing)
 
 	if locked:
-		set_process(false)
+		_scroll.set_process(false)
 		add_child(_build_lock(locked_label, locked_hint))
 
 ## Zwei gekreuzte Ketten über der Karte, mittig eine Plakette mit dem Freischalt-Hinweis
@@ -166,32 +154,6 @@ func _build_lock(locked_label: String, locked_hint: String) -> Control:
 ## Angeklickte Karte leuchtet am Rahmen
 func set_selected(selected: bool) -> void:
 	_paper.set_glow(SkillCardPaper.SELECTED_GLOW if selected else 0.0)
-
-func _process(delta: float) -> void:
-	var bar := _scroll.get_v_scroll_bar()
-	var max_scroll := maxf(bar.max_value - bar.page, 0.0)
-	if max_scroll < 1.0:
-		return
-	if _scroll.scroll_vertical != _set_value:
-		# der Spieler hat selbst gescrollt: von dort aus später weiter
-		_idle = 0.0
-		_wait = 0.0
-		_set_value = _scroll.scroll_vertical
-		_auto_pos = _set_value
-		return
-	_idle += delta
-	if _idle < AUTO_SCROLL_RESUME:
-		return
-	if _wait > 0.0:
-		_wait -= delta
-		return
-	var speed := AUTO_SCROLL_SPEED * (1.0 if _direction > 0 else AUTO_SCROLL_BACK_FACTOR)
-	_auto_pos = clampf(_auto_pos + _direction * speed * delta, 0.0, max_scroll)
-	if (_direction > 0 and _auto_pos >= max_scroll) or (_direction < 0 and _auto_pos <= 0.0):
-		_direction = -_direction
-		_wait = AUTO_SCROLL_PAUSE
-	_scroll.scroll_vertical = int(_auto_pos)
-	_set_value = _scroll.scroll_vertical
 
 func _label(text: String, font_size: int, color: Color) -> Label:
 	var label := Label.new()

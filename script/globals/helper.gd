@@ -94,9 +94,9 @@ func generate_mons(props: Dictionary = {
 			var mon_meta_data = Monmap.mon_metainfos_by_name(i)
 			var newMon = Monster.new(default_props.level, mon_meta_data)
 			# Vorschlag aus den verfügbaren Ei-Attacken, im Konfigurator noch änderbar
-			# spielbare Attacken zuerst, nicht spielbare nur zum Auffüllen
+			# wache Attacken zuerst, schlummernde und nicht spielbare nur zum Auffüllen
 			var available = Skills.get_available_egg_skills(i)
-			var usable = available.filter(func(skill_name): return Skills.can_use_name(newMon, skill_name))
+			var usable = available.filter(func(skill_name): return Skills.is_awake_name(newMon, skill_name))
 			var proposal = Skills.pick_weighted_unique(usable, 3)
 			proposal.append_array(Skills.pick_weighted_unique(available.filter(func(skill_name): return not proposal.has(skill_name)), 3 - proposal.size()))
 			for skill_name in proposal:
@@ -149,9 +149,9 @@ func add_biome_element(mon: Monster) -> void:
 const WILD_SKILL_COUNT := 3
 
 # Wilde Monster: ein Skill ihrer Art, der Rest aus dem Pool des aktuellen Bioms (tiefere Biome -> stärkere Skills).
-# Gezogen werden nur Skills, die das Monster mit seinem Typ auch einsetzen kann.
+# Gezogen werden nur Skills, die das Monster mit seinem Typ wach einsetzen kann (Gegner schlummern nie, Skills.is_awake).
 func roll_wild_skills(mon: Monster, mon_meta_data: Dictionary) -> void:
-	var usable = func(skill_name): return Skills.can_use_name(mon, skill_name)
+	var usable = func(skill_name): return Skills.is_awake_name(mon, skill_name)
 	var species_pool = mon_meta_data.default_egg_skills.filter(usable)
 	var skill_names = [Skills.pick_weighted(species_pool)]
 	var not_picked = func(skill_name): return not skill_names.has(skill_name)
@@ -174,8 +174,8 @@ func add_egg_skill(mon: Monster) -> void:
 	var locked = Skills.get_locked_egg_skills(mon._name)
 	if locked.is_empty():
 		return
-	# bevorzugt Ei-Attacken, die das Monster selbst einsetzen kann
-	var usable_locked = locked.filter(func(skill_name): return Skills.can_use_name(mon, skill_name))
+	# bevorzugt Ei-Attacken, die das Monster selbst wach einsetzen kann
+	var usable_locked = locked.filter(func(skill_name): return Skills.is_awake_name(mon, skill_name))
 	var skill = Skills.get_skill(Skills.pick_weighted(usable_locked if not usable_locked.is_empty() else locked, State.map_level))
 	skill.egg_skill = true
 	# trägt das Monster den Skill schon (aus dem Biom-Pool), wird genau dieser markiert
@@ -237,16 +237,39 @@ func highlight(text: String, rich := false) -> String:
 		return text.replace("[hl]", "[color=#%s]" % HIGHLIGHT_COLOR.to_html(false)).replace("[/hl]", "[/color]")
 	return text.replace("[hl]", "").replace("[/hl]", "")
 
+## Grau für Werte und Element-Effekte, die ein schlummernder Skill nicht hat (skill_description)
+const INACTIVE_COLOR := Color(0.55, 0.53, 0.5)
+
 ## Skill-Beschreibung mit eingesetzten Werten, Zahlen wie in format_number,
 ## bei Kombi-Elementen mit dem Element-Effekt als zweiter Zeile (ElementEffects).
 ## rich = wichtige Stellen als BBCode gelb (für RichTextLabel mit bbcode_enabled)
-func skill_description(skill: Dictionary, rich := false) -> String:
+## mon: Besitzer. Schlummert der Skill bei ihm (Skills.effective_skill), steht der volle Wert grau durchgestrichen
+## vor dem abgeschwächten, der Element-Effekt ist grau durchgestrichen und darunter steht, was ihn weckt.
+## Ohne rich gibt es kein Durchstreichen: dann nur der abgeschwächte Wert und "Inaktiv: ..." vor dem Effekt.
+func skill_description(skill: Dictionary, rich := false, mon: Monster = null) -> String:
+	var used := Skills.effective_skill(mon, skill)
+	var dormant: bool = used.get("_dormant", false)
 	var values := {}
-	for key in skill:
-		values[key] = format_number(skill[key]) if skill[key] is float else skill[key]
-	var text := tr(skill.description).format(values)
+	for key in used:
+		values[key] = format_number(used[key]) if used[key] is float else used[key]
+	if dormant and rich and used.has("value") and used.value != skill.value:
+		values.value = _inactive(format_number(skill.value)) + " " + values.value
+	var lines := PackedStringArray([tr(skill.description).format(values)])
 	var effect := ElementEffects.skill_effect_text(skill)
-	return highlight(text if effect == "" else text + "\n" + effect, rich)
+	if effect != "":
+		if not dormant:
+			lines.append(effect)
+		elif rich:
+			lines.append(_inactive(highlight(effect)))
+		else:
+			lines.append(tr("SKILL_EFFECT_INACTIVE").format({"effect": effect}))
+	if dormant:
+		lines.append(Skills.dormant_text(mon, skill))
+	return highlight("\n".join(lines), rich)
+
+## grau und durchgestrichen (BBCode)
+func _inactive(text: String) -> String:
+	return "[color=#%s][s]%s[/s][/color]" % [INACTIVE_COLOR.to_html(false), text]
 
 func between(v, min, max) -> bool:
 	return v >= min and v <= max

@@ -1,11 +1,12 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://script/scenes/battle/battle_card.gd" id="1_card"]
 [ext_resource type="Theme" uid="uid://bqwc2gott07le" path="res://script/ui/materials/battle_labels.tres" id="3_theme"]
 [ext_resource type="Texture2D" uid="uid://yg6oxnmiu0pd" path="res://assets/ui/icons/fist.svg" id="4_phys"]
 [ext_resource type="PackedScene" path="res://script/ui/moves_badge/moves_badge.tscn" id="6_moves"]
+[ext_resource type="Script" path="res://script/ui/auto_scroll_container.gd" id="7_autoscroll"]
 
-[node name="BattleCard" type="PanelContainer" node_paths=PackedStringArray("name_label", "cost_badge", "type_icon", "description_label")]
+[node name="BattleCard" type="PanelContainer" node_paths=PackedStringArray("name_label", "cost_badge", "type_icon", "description_label", "description_scroll")]
 custom_minimum_size = Vector2(150, 0)
 size_flags_vertical = 3
 mouse_filter = 0
@@ -14,7 +15,8 @@ script = ExtResource("1_card")
 name_label = NodePath("MarginContainer/VBoxContainer/NameLabel")
 cost_badge = NodePath("MarginContainer/VBoxContainer/TopRow/CostBadge")
 type_icon = NodePath("MarginContainer/VBoxContainer/TopRow/TypeIcon")
-description_label = NodePath("MarginContainer/VBoxContainer/DescriptionLabel")
+description_label = NodePath("MarginContainer/VBoxContainer/DescriptionScroll/DescriptionLabel")
+description_scroll = NodePath("MarginContainer/VBoxContainer/DescriptionScroll")
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 2
@@ -61,14 +63,22 @@ text = "SKILL"
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="DescriptionLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(1, 0)
+[node name="DescriptionScroll" type="ScrollContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
+mouse_filter = 2
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 3
+script = ExtResource("7_autoscroll")
+
+[node name="DescriptionLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer/DescriptionScroll"]
+custom_minimum_size = Vector2(1, 0)
+layout_mode = 2
+size_flags_horizontal = 3
 mouse_filter = 2
 theme_override_font_sizes/normal_font_size = 12
 bbcode_enabled = true
 text = "Description"
+fit_content = true
 scroll_active = false
 autowrap_mode = 3
-

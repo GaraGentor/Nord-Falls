@@ -49,6 +49,7 @@ const STAT_KEYS := {
 var _mon: Monster
 var _skills: Array
 var _details: RichTextLabel
+var _details_scroll: AutoScrollContainer
 var _slots: Array[SkillSlot] = []
 
 func _init(mon: Monster) -> void:
@@ -73,18 +74,27 @@ func _ready() -> void:
 	if not _skills.is_empty():
 		_select(0)
 
+## Infos zum Skill: zu lange Texte scrollen von selbst, gedrückt halten hält sie an,
+## per Mausrad / Leiste lässt sich auch selbst scrollen
 func _build_details() -> Control:
+	_details_scroll = AutoScrollContainer.new()
+	_details_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_details = RichTextLabel.new()
 	_details.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_details.bbcode_enabled = true
+	_details.fit_content = true
+	_details.scroll_active = false
+	_details.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_details.add_theme_font_size_override("normal_font_size", DESCRIPTION_FONT_SIZE)
-	return _details
+	_details_scroll.add_child(_details)
+	return _details_scroll
 
 ## Karte hervorheben und ihre Infos anzeigen, es ist immer genau ein Skill gewählt
 func _select(index: int) -> void:
 	for i in _slots.size():
 		_slots[i].card.set_selected(i == index)
 	_details.text = _skill_text(_skills[index])
+	_details_scroll.restart()
 
 func _skill_text(skill: Dictionary) -> String:
 	var color := SkillCardPaper.readable_color(Helper.color_by_type(skill.nature))
@@ -95,7 +105,7 @@ func _skill_text(skill: Dictionary) -> String:
 		title,
 		"%s · %s" % [_kind_text(skill), damage_type],
 		"",
-		Helper.skill_description(skill),
+		Helper.skill_description(skill, true, _mon),
 		"",
 		tr("TRAINER_ELEMENT").format({"element": element}),
 		"%s: %s" % [tr("SKILL_HEADER_POWER"), Skills.power_text(skill, _mon)],
