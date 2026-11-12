@@ -1,8 +1,10 @@
 extends ChestRewardDialog
 
 ## Schatz: die Truhe öffnet sich nur mit einem Schlüssel. Darin liegen Häufchen Monster Essenz,
-## die einzeln in die Tasche gezogen werden. Ohne Schlüssel oder wenn man ihn behalten will, geht man weiter.
-## Die Trank-Karte nutzt der Shop.
+## die einzeln in die Tasche gezogen werden, manchmal auch ein Element-Trank. Der fällt nach der Kiste
+## aus der Tasche (potion_reward.gd) und wird dort einem Monster gegeben.
+## Ohne Schlüssel oder wenn man ihn behalten will, geht man weiter.
+## Die Trank-Karte nutzen Shop und Trank-Belohnung.
 
 signal _opened
 
@@ -14,6 +16,9 @@ const PILES_MAX := 4
 const PILE_GOLD_MIN := 10
 const PILE_GOLD_MAX := 25
 const PILE_GOLD_PER_DEPTH := 5
+## so oft liegt zusätzlich ein Element-Trank mit zufälligem Element darin.
+## Gezielt ein bestimmtes Element gibt es nur im Shop.
+const POTION_CHANCE := 0.35
 
 const ELEMENTS := [Enums.MON_TYPES.EARTH, Enums.MON_TYPES.AIR, Enums.MON_TYPES.WATER, Enums.MON_TYPES.FIRE]
 
@@ -24,6 +29,7 @@ const LIQUID_TEXTURE = preload("res://assets/ui/shop/potion_liquid.svg")
 const PROPS_MATERIAL = preload("res://script/scenes/jailer/jailer_props_material.tres")
 
 var _buttons: HBoxContainer
+var _is_open := false
 
 func _ready() -> void:
 	use_chest_layout()
@@ -31,9 +37,17 @@ func _ready() -> void:
 	set_title(tr("TREASURE_LOCKED"))
 	set_drag_hint("TREASURE_KEY_HINT" if State.keys > 0 else "TREASURE_NO_KEY")
 	show_fixed_targets([], true)
-	for i in randi_range(PILES_MIN, PILES_MAX):
+	# nur Elemente, die noch jemand im Team trinken kann
+	var drinkable := ELEMENTS.filter(func(element): return not mons_without(element).is_empty())
+	var with_potion := not drinkable.is_empty() and randf() < POTION_CHANCE
+	# der Teppich hat höchstens PILES_MAX Liegeplätze, der Trank nimmt einen davon
+	for i in randi_range(PILES_MIN, PILES_MAX - (1 if with_potion else 0)):
 		var gold := randi_range(PILE_GOLD_MIN, PILE_GOLD_MAX) + State.map_level * PILE_GOLD_PER_DEPTH
 		add_bag_card(tr("TREASURE_GOLD"), Helper.me_text(gold), texture_icon(ESSENCE_ICON), _on_gold_taken.bind(gold))
+	if with_potion:
+		var element: int = drinkable.pick_random()
+		# nach der Kiste fällt er wie eine Trophäe aus der Tasche auf den Teppich (world_map.gd show_pending_rewards)
+		add_bag_card(potion_title(self, element), tr("TREASURE_POTION_BAG_DESC"), potion_art(element), func(): State.pending_potions.append(element))
 	_build_buttons()
 	play_chest_intro()
 	_buttons.add_to_group("tut_treasure_buttons")
@@ -59,10 +73,13 @@ func _open() -> void:
 	_buttons.queue_free()
 	set_title(tr("TREASURE_CHOOSE"))
 	set_drag_hint("TREASURE_HINT")
+	_is_open = true
 	_opened.emit()
 
 func _wait_before_burst() -> void:
-	await _opened
+	# schon offen, wenn der Schlüssel benutzt wurde, bevor die Kiste fertig aufgesprungen ist: dann kommt kein Signal mehr
+	if not _is_open:
+		await _opened
 
 func _on_gold_taken(gold: int) -> void:
 	State.ep += gold
@@ -82,10 +99,12 @@ func _taken(card: RewardCard) -> void:
 static func add_potion_card(dialog: RewardDialog, element: int) -> RewardDialog.RewardCard:
 	var element_name = dialog.tr(ColorMap.get_combo(element).label)
 	var text = dialog.tr("TREASURE_POTION_DESC").format({"element": element_name})
-	var potion_title = dialog.tr("TREASURE_POTION").format({"element": element_name})
 	var give := func(mon: Monster):
 		mon.gain_element(element)
-	return dialog.add_mon_card(potion_title, text, potion_art(element), dialog.tr("TREASURE_POTION_CHOOSE_MON"), func(): return mons_without(element), give, Callable(), {"element": element})
+	return dialog.add_mon_card(potion_title(dialog, element), text, potion_art(element), dialog.tr("TREASURE_POTION_CHOOSE_MON"), func(): return mons_without(element), give, Callable(), {"element": element})
+
+static func potion_title(dialog: Node, element: int) -> String:
+	return dialog.tr("TREASURE_POTION").format({"element": dialog.tr(ColorMap.get_combo(element).label)})
 
 static func mons_without(element: int) -> Array:
 	return State.mons.filter(func(mon): return not ColorMap.has_element(mon._type, element))

@@ -56,6 +56,12 @@ static func show_gem_info(dialog: RewardDialog) -> void:
 ## Trophäen-Karte, auch vom Shop genutzt: wird auf ein Monster gezogen.
 ## Die Änderung zeigen die Werte am Ziel (show_gem_info).
 static func add_gem_card(dialog: RewardDialog, stat: String, bonus: int, with_desc := true) -> RewardDialog.RewardCard:
+	var parts := gem_card_parts(dialog, stat, bonus, with_desc)
+	return dialog.add_mon_card(parts.title, parts.text, gem_icon(stat), dialog.tr("GEM_CHOOSE_MON"), State.mons, parts.drag.on_drop, Callable(), {"stat": stat, "bonus": parts.drag.bonus})
+
+## Titel, Text und die Drag-Einträge (stat, bonus, on_drop) einer Trophäe. Der Shop tauscht damit
+## den Wert einer Karte aus, ohne sie neu anzulegen.
+static func gem_card_parts(dialog: Node, stat: String, bonus: int, with_desc := true) -> Dictionary:
 	var info: Dictionary = STATS[stat]
 	var stat_name = dialog.tr(info.stat).trim_suffix(":")
 	# Karte und Vorschau zeigen den Relikt-Bonus mit, gespeichert wird nur bonus (siehe Monster.gem_bonus)
@@ -65,4 +71,4 @@ static func add_gem_card(dialog: RewardDialog, stat: String, bonus: int, with_de
 		text = dialog.tr(info.desc) + "\n" + text
 	var give := func(mon: Monster):
 		mon.add_gem(stat, bonus)
-	return dialog.add_mon_card(dialog.tr(info.name), text, gem_icon(stat), dialog.tr("GEM_CHOOSE_MON"), State.mons, give, Callable(), {"stat": stat, "bonus": shown_bonus})
+	return {"title": dialog.tr(info.name), "text": text, "drag": {"stat": stat, "bonus": shown_bonus, "on_drop": give}}

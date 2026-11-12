@@ -51,6 +51,8 @@ var is_map_boss: bool = false
 var pending_relic_reward: bool = false
 var pending_skill_reward: bool = false
 var pending_gem_rewards: int = 0
+# Element-Tränke aus einer Schatzkiste (Elemente), fallen nach der Kiste aus der Tasche (potion_reward.gd)
+var pending_potions: Array[int] = []
 # Einzigartige Skills, die in diesem Run schon jemand gelernt hat, sie kommen kein zweites Mal (Skills.reward_offers)
 var taught_reward_skills: Array[String] = []
 
@@ -167,6 +169,7 @@ func reset() -> void:
 	pending_relic_reward = false
 	pending_skill_reward = false
 	pending_gem_rewards = 0
+	pending_potions = []
 	taught_reward_skills = []
 	rolled_mon_stats = {}
 	defeated_mon_names = []

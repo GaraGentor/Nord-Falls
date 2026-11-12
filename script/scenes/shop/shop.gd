@@ -22,14 +22,17 @@ const NO_OUTLINE := Color(1, 1, 0, 0)
 ## Preise: grob ein Kampf bringt 10-30 EP, ein Biom also etwa 100-150 EP.
 ## Elemente sind die günstigste Ware, damit sich ein zweites Element früh lohnt. Edelsteine steigen
 ## mit der Tiefe (wie ihr Bonus). Relics sind die teuerste Ware, weil es sie sonst nur als Boss-Belohnung gibt.
+## Der Laden lohnt sich durch die Wahl: Tränke mit gezieltem Element (Schatzkisten haben nur zufällige),
+## Trophäen mit frei wählbarem Wert (Beute ist zufällig) und mehrere Relikte, von denen eins gekauft wird.
 const ELEMENT_PRICE := 45
 ## pro Biom-Tiefe (State.map_level)
 const GEM_PRICES := [50, 65, 80, 100, 120]
-const RELIC_PRICES := [150, 175, 200, 225, 250]
-## vorläufig, bis feststeht, was ein Schlüssel öffnet
-const KEY_PRICE := 75
+const RELIC_PRICES := [120, 140, 160, 180, 200]
+## eine Kiste bringt im Schnitt etwa so viel Essenz zurück, dazu manchmal einen Trank (Treasure.POTION_CHANCE)
+const KEY_PRICE := 60
 const GEM_OFFERS := 2
-const RELIC_OFFERS := 1
+## so viele Relikte zur Auswahl, nur eins davon lässt sich kaufen
+const RELIC_OFFERS := 2
 
 ## Regale, alle Maße in Bühnen-Pixeln: innere Kante neben der Kasse, von dort gehen sie nach außen
 const SHELF_INNER_GAP := 128.0
@@ -38,7 +41,8 @@ const SHELF_LAYOUT := [
 	{"side": -1, "y": 90.0, "width": 370.0},
 	{"side": 1, "y": 90.0, "width": 370.0},
 	{"side": -1, "y": 296.0, "width": 345.0},
-	{"side": 1, "y": 296.0, "width": 345.0},
+	# breiter: zwei Relikte und der Schlüssel brauchen Platz für ihre Preise
+	{"side": 1, "y": 296.0, "width": 440.0},
 ]
 const SHELF_POTIONS_LEFT := 0
 const SHELF_POTIONS_RIGHT := 1
@@ -83,6 +87,9 @@ class ShelfItem extends RewardDialog.RewardCard:
 	const TITLE_FONT_SIZE := 16
 	const PRICE_FONT_SIZE := 17
 	const TAG_MARGIN := 7
+	const SWITCH_SIZE := Vector2(30, 34)
+	const SWITCH_FONT_SIZE := 26
+	const SWITCH_Y := 16.0
 
 	var art: Control
 	var title: String
@@ -94,6 +101,8 @@ class ShelfItem extends RewardDialog.RewardCard:
 	var _price_label: Label
 	## Material des Bildes, darin wird es golden
 	var _gold_target: ShaderMaterial
+	## Pfeile links und rechts vom Bild (Trophäen: Wert umschalten), leer bei anderer Ware
+	var _switch_buttons: Array[Button] = []
 
 	func _init(owner_dialog: RewardDialog, card_title: String, text: String, icon: Control, drag_data: Dictionary) -> void:
 		dialog = owner_dialog
@@ -134,18 +143,60 @@ class ShelfItem extends RewardDialog.RewardCard:
 		parent.add_child(label)
 		return label
 
-	## Bild tauschen, es bekommt den Pixel-Look mit eigenem Umriss
+	## Bild tauschen, es bekommt den Pixel-Look mit eigenem Umriss und bleibt an der Stelle des alten
 	func set_art(icon: Control) -> void:
+		var index := -1
+		var spot := Vector2.ZERO
 		if art:
+			index = art.get_index()
+			spot = art.position
+			_holder.remove_child(art)
 			art.queue_free()
 		art = icon
 		art.custom_minimum_size = ART_SIZE
 		art.size = ART_SIZE
+		art.position = spot
 		art.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_holder.add_child(art)
+		if index >= 0:
+			_holder.move_child(art, index)
 		_gold_target = PROPS_MATERIAL.duplicate()
 		art.material = _gold_target
+		_ignore_mouse_below()
+
+	## Kinder fangen keine Maus ab, nur die Pfeile bleiben anklickbar
+	func _ignore_mouse_below() -> void:
 		RewardDialog.ignore_mouse_below(self)
+		for button in _switch_buttons:
+			button.mouse_filter = Control.MOUSE_FILTER_STOP
+
+	func set_text(card_title: String, text: String) -> void:
+		title = card_title
+		description = text
+		drag.title = card_title
+		_title_label.text = card_title
+
+	## Pfeile neben dem Bild, on_switch(step) mit -1 (links) bzw. +1 (rechts)
+	func add_switch(on_switch: Callable, tooltip: String) -> void:
+		for step in [-1, 1]:
+			var button := Button.new()
+			button.text = "<" if step < 0 else ">"
+			button.tooltip_text = tooltip
+			button.focus_mode = Control.FOCUS_NONE
+			button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+			button.size = SWITCH_SIZE
+			button.add_theme_font_override("font", PIXEL_FONT)
+			button.add_theme_font_size_override("font_size", SWITCH_FONT_SIZE)
+			RewardDialog.clear_button_styles(button, StyleBoxEmpty.new())
+			button.add_theme_color_override("font_color", IronPlate.TEXT_COLOR)
+			button.add_theme_color_override("font_hover_color", GOLD)
+			button.add_theme_color_override("font_pressed_color", GOLD)
+			button.add_theme_color_override("font_outline_color", Color.BLACK)
+			button.add_theme_constant_override("outline_size", 6)
+			button.pressed.connect(on_switch.bind(step))
+			_holder.add_child(button)
+			_switch_buttons.append(button)
+		_ignore_mouse_below()
 
 	func set_gold(gold: bool) -> void:
 		_gold_target.set_shader_parameter("outline_color", GOLD if gold else NO_OUTLINE)
@@ -161,7 +212,7 @@ class ShelfItem extends RewardDialog.RewardCard:
 		_price_label.add_theme_color_override("font_outline_color", Color.BLACK)
 		_price_label.add_theme_constant_override("outline_size", 4)
 		_holder.add_child(_price_label)
-		RewardDialog.ignore_mouse_below(self)
+		_ignore_mouse_below()
 
 	## center: Mitte des Brettes unter der Ware, Bild steht darauf, Schild hängt darunter
 	func place_on_shelf(center: Vector2, width: float) -> void:
@@ -170,6 +221,10 @@ class ShelfItem extends RewardDialog.RewardCard:
 		art.position = Vector2((width - ART_SIZE.x) / 2, ART_SINK)
 		if _price_label:
 			_price_label.position = Vector2(art.position.x + ART_SIZE.x, ART_SIZE.y - 26)
+		# Pfeile auf halber Höhe des Bildes, oberhalb des Preises
+		for i in _switch_buttons.size():
+			var x := art.position.x - SWITCH_SIZE.x if i == 0 else art.position.x + ART_SIZE.x
+			_switch_buttons[i].position = Vector2(x, SWITCH_Y)
 		_tag.position = Vector2(0, ART_SIZE.y + SHELF_HEIGHT / 2)
 		size = Vector2(width, _tag.position.y + _tag.size.y)
 
@@ -410,6 +465,8 @@ var _line_tween: Tween
 ## noch offene Sätze der Erklärung
 var _lines: Array = []
 var _explaining := false
+## Bonus der Trophäen im Regal, hängt von der Biom-Tiefe ab
+var _trophy_bonus := 0
 
 func _ready() -> void:
 	use_scene_layout(background)
@@ -538,19 +595,42 @@ func _fill_shelves() -> void:
 func _depth() -> int:
 	return clampi(State.map_level, 0, GEM_PRICES.size() - 1)
 
+## Trophäen starten mit verschiedenen Werten, die Pfeile schalten den Wert frei um
 func _add_gem_offers() -> void:
-	var bonus: int = DebugSettings.trophy_bonus(_depth())
+	_trophy_bonus = DebugSettings.trophy_bonus(_depth())
 	var stats = GemField.STATS.keys()
 	stats.shuffle()
 	for stat in stats.slice(0, GEM_OFFERS):
-		var card: ShelfItem = GemField.add_gem_card(self, stat, bonus)
+		var card: ShelfItem = GemField.add_gem_card(self, stat, _trophy_bonus)
+		card.add_switch(_switch_trophy.bind(card), tr("SHOP_TROPHY_SWITCH"))
 		set_price(card, GEM_PRICES[_depth()])
 
+## Nächster bzw. vorheriger Wert: Name, Text, Bild und was beim Ablegen passiert wechseln mit
+func _switch_trophy(step: int, item: ShelfItem) -> void:
+	if item.sold:
+		return
+	var stats: Array = GemField.STATS.keys()
+	var stat: String = stats[posmod(stats.find(item.drag.stat) + step, stats.size())]
+	var parts := GemField.gem_card_parts(self, stat, _trophy_bonus)
+	item.drag.merge(parts.drag, true)
+	item.set_text(parts.title, parts.text)
+	item.set_art(GemField.gem_icon(stat))
+	# der neue Name kann anders umbrechen, das Schild passt sich an
+	_layout_stage()
+	item.set_gold(item == _selected or item.get_global_rect().has_point(get_global_mouse_position()))
+	if item == _selected:
+		_popup.show_item(item, _stage.size.x / 2, POPUP_TOP)
+	_update_previews()
+
+## Mehrere Relikte zur Wahl, wer eins kauft, lässt die anderen stehen (_taken)
 func _add_relic_offers() -> void:
 	var unowned = Relics.get_unowned()
 	unowned.shuffle()
 	for id in unowned.slice(0, RELIC_OFFERS):
-		set_price(RelicReward.add_relic_card(self, id), RELIC_PRICES[_depth()])
+		var card: ShelfItem = RelicReward.add_relic_card(self, id)
+		card.drag.relic_choice = true
+		card.description += "\n" + tr("SHOP_RELIC_PICK_ONE")
+		set_price(card, RELIC_PRICES[_depth()])
 
 func _add_key_offer() -> void:
 	var take := func(): State.keys += 1
@@ -672,6 +752,12 @@ func mark_sold(card: RewardCard) -> void:
 func _taken(card: RewardCard) -> void:
 	var mouse := get_global_mouse_position()
 	pay(card)
+	# nur ein Relikt pro Besuch: die anderen sind damit weg
+	if card.drag.get("relic_choice", false):
+		for shelf in _shelves:
+			for other: ShelfItem in shelf.items:
+				if other != card and other.drag.get("relic_choice", false) and not other.sold:
+					mark_sold(other)
 	for field in _mon_fields:
 		if field.covers(mouse):
 			field.celebrate()

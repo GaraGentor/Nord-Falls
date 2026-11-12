@@ -651,6 +651,7 @@ func _prepare_relic_swap() -> bool:
 func _collect_treasure() -> void:
 	close()
 	var treasure: RewardDialog = map.treasure_scene.instantiate()
+	treasure.tree_exited.connect(map.show_pending_rewards, CONNECT_DEFERRED | CONNECT_ONE_SHOT)
 	map.view_container.add_child(treasure)
 	Helper.show_unlock_message("Schatz: " + ", ".join(treasure.take_all()))
 

@@ -458,8 +458,8 @@ GEM_SPEED_DESC,Weighs almost nothing and carries the storm within.,Wiegt fast ni
 SHOP_BOUGHT,{item} bought!,{item} gekauft!
 SHOP_SAY_WELCOME,Welcome to self-checkout! There are no staff here. You serve yourself.,Willkommen an der Selbstzahler-Kasse! Personal gibt es hier nicht. Sie bedienen sich selbst.
 SHOP_SAY_POTIONS,"Potions are on the top shelves. Drag one onto a monster: it gains the element and can use more skills.","Tränke stehen oben im Regal. Auf ein Monster gezogen, bekommt es das Element dazu und kann mehr Skills einsetzen."
-SHOP_SAY_GEMS,Trophies are on the lower left. Drag one onto a monster to raise a stat for the rest of the run.,"Trophäen liegen links unten. Auf ein Monster gezogen, erhöhen sie einen Wert für den restlichen Lauf."
-SHOP_SAY_RELICS,Relics and keys are on the lower right. Please place them in the bag below.,Relikte und Schlüssel finden Sie rechts unten. Legen Sie diese bitte in die Tasche unter mir.
+SHOP_SAY_GEMS,"Trophies are on the lower left. Pick a stat with the arrows, then drag it onto a monster.","Trophäen liegen links unten. Mit den Pfeilen wählen Sie den Wert, dann ziehen Sie sie auf ein Monster."
+SHOP_SAY_RELICS,"Relics and keys are on the lower right, please place them in the bag below. Only one relic per visit.","Relikte und Schlüssel finden Sie rechts unten, legen Sie diese bitte in die Tasche unter mir. Pro Besuch nur ein Relikt."
 SHOP_SAY_CLICK,Click an item for details. Payment is automatic once you put it down.,"Klicken Sie eine Ware für Details an. Bezahlt wird automatisch, sobald Sie sie ablegen."
 SHOP_SAY_THANKS_0,Thank you for your purchase! Enjoy your {item}.,Vielen Dank für Ihren Einkauf! Viel Freude mit: {item}.
 SHOP_SAY_THANKS_1,Beep! {item} scanned successfully. Thank you!,Piep! {item} erfolgreich gescannt. Danke!
@@ -804,3 +804,7 @@ STAT_INFO_TIP_ELEMENT,"The element counts on top: Water > Fire > Air > Earth > W
 STAT_INFO_TIP_SPEED,"Watch the wheel and the enemies' announced moves: act before a dangerous enemy to knock it out or shield the target in time.","Behalte Rad und angekündigte Gegner-Züge im Blick: Ist dein Monster vorher dran, kannst du einen gefährlichen Gegner noch erledigen oder das Ziel rechtzeitig schützen."
 STAT_INFO_TIP_HIDDEN,"Enemy stats start hidden (?) and are revealed by landing hits.","Werte der Gegner sind anfangs verdeckt (?) und werden durch Treffer aufgedeckt."
 STAT_TROPHY_BONUS_HINT,{bonus} of it from trophies,davon {bonus} durch Trophäen
+TREASURE_POTION_BAG_DESC,"Into the bag! Afterwards you can give it to a monster.","Ab in die Tasche! Danach kannst du ihn einem Monster geben."
+SHOP_TROPHY_SWITCH,Choose another stat,Anderen Wert wählen
+SHOP_RELIC_PICK_ONE,Only one of the relics can be bought.,Von den Relikten gibt es nur eins.
+POTION_REWARD_TITLE,A potion falls out of your bag!,Ein Trank fällt aus der Tasche!

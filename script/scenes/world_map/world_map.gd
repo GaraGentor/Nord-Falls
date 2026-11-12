@@ -36,6 +36,7 @@ const WHEEL_EVENT := preload("res://script/scenes/wheel_event/wheel_event.gd")
 const VOID_EVENT := preload("res://script/scenes/void_event/void_event.gd")
 const HUB_CAMP := preload("res://script/scenes/hub_camp/hub_camp.gd")
 const DEBUG_MENU := preload("res://script/scenes/world_map/map_debug_menu.gd")
+const POTION_REWARD := preload("res://script/scenes/potion_reward/potion_reward.gd")
 ## Boss-Felder sind halb so groß wie der Biom-Boss (64 statt 128 px), ihre Relikt-Bahn auch
 const MAP_BOSS_ORBIT_SCALE := 0.55
 
@@ -387,6 +388,8 @@ func call_event_by_type(type) -> void:
 		pass
 	if type == Map.PATH_TYPE.TREASURE:
 		var treasure = treasure_scene.instantiate()
+		# gefundene Tränke fallen danach aus der Tasche
+		treasure.tree_exited.connect(show_pending_rewards, CONNECT_DEFERRED | CONNECT_ONE_SHOT)
 		view_container.add_child(treasure)
 		treasure.visible = true
 		pass
@@ -595,7 +598,8 @@ func reset_animation_state(ele) -> void:
 	ele._ui_item.modulate = PASSED_MODULATE
 
 # Geloottes nacheinander abhandeln, erst hier, damit Level-Up und Boss-Belohnung vorher durch sind:
-# Relic-Kiste, Skill-Couvert, dann einzelne Edelsteine. Schließt ein Dialog, kommt der nächste.
+# Relic-Kiste, Skill-Couvert, dann einzelne Edelsteine, zuletzt Tränke aus einer Schatzkiste.
+# Schließt ein Dialog, kommt der nächste.
 func show_pending_rewards() -> void:
 	var dialog := _next_pending_reward()
 	if dialog == null:
@@ -618,4 +622,8 @@ func _next_pending_reward() -> Control:
 		var gem := GEM_SCENE.instantiate()
 		gem.gem_choices = 1
 		return gem
+	if not State.pending_potions.is_empty():
+		var potion = POTION_REWARD.new()
+		potion.element = State.pending_potions.pop_front()
+		return potion
 	return null
