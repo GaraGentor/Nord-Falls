@@ -7,16 +7,20 @@ extends GridContainer
 @export var horizontal: bool = false
 ## Eine Spalte pro Wert: oben der Name in Gold, darunter die Zahl (Kampf, Ei-Auswahl)
 @export var stacked: bool = false
+## Nur bei stacked (Map-Header-Dialog, Trophäen-Feld): hinter jeder Zahl der Trophäen-Anteil "(N)" und darunter
+## die Trophäen dieses Werts (Symbol und Anzahl)
+@export var show_trophies: bool = false
 
 const GAIN_COLOR := Color(0.45, 0.85, 0.45)
 
-## Symbol pro Wert (weiße Linien wie die Schadensart auf den Karten): Faust = physisch, Funken = magisch
+## Symbol pro Wert (weiße Linien), auch oben rechts auf den Fähigkeiten (Skills.kind_icon):
+## Faust = physischer Angriff, Funken = magischer Angriff, Schild = Verteidigung, Schild mit Funken = Sp. Verteidigung
 const ICONS := {
 	"hp": preload("res://assets/ui/icons/stat_heart.svg"),
 	"atk": preload("res://assets/ui/icons/fist.svg"),
-	"def": preload("res://assets/ui/icons/fist.svg"),
+	"def": preload("res://assets/ui/icons/stat_shield.svg"),
 	"s_atk": preload("res://assets/ui/icons/sparkle.svg"),
-	"s_def": preload("res://assets/ui/icons/sparkle.svg"),
+	"s_def": preload("res://assets/ui/icons/stat_s_shield.svg"),
 	"speed": preload("res://assets/ui/icons/stat_pentagram.svg"),
 	"bst": preload("res://assets/ui/icons/stat_arrow_up.svg"),
 }
@@ -24,15 +28,20 @@ const ICON_ALPHA := 0.8
 ## Symbolgröße relativ zur Schriftgröße der Beschriftung
 const ICON_SCALE := 1.15
 const DEFAULT_FONT_SIZE := 16
+## Trophäen-Bonus hinter der Zahl ("+6" in Grün), etwas kleiner als die Zahl
+const TROPHY_BONUS_FONT_SCALE := 0.8
+const TROPHY_ICON_SCALE := 1.1
+const GEM_FIELD_PATH := "res://script/scenes/gems/gems.gd"
 
 var plabels: Array[Label] = []
 ## nur bei stacked: Stat-Key -> Label mit der Zahl
 var _value_labels := {}
 
-## Werte-Tabelle ohne eigene Szene, mit stacked-Layout
-static func stacked_for(monster: Monster, font_size := 15) -> StatsGrid:
+## Werte-Tabelle ohne eigene Szene, mit stacked-Layout (trophies: Trophäen-Anteil und Trophäen unter den Werten)
+static func stacked_for(monster: Monster, font_size := 15, trophies := false) -> StatsGrid:
 	var grid := StatsGrid.new()
 	grid.stacked = true
+	grid.show_trophies = trophies
 	grid.add_theme_constant_override("h_separation", 3)
 	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var template := Label.new()
@@ -113,7 +122,7 @@ func init_with_mon(monster, hidden: Array = []) -> void:
 		tlabel.visible = true
 		vlabel.visible = true
 		add_child(name_cell(self, obj.key, tlabel, false))
-		add_child(vlabel)
+		add_child(_with_trophy_bonus(vlabel, obj.key, monster, hidden))
 
 		if is_leveling:
 			var plabel = label.duplicate()
@@ -137,8 +146,11 @@ func _init_stacked(monster, hidden: Array) -> void:
 	for obj in map:
 		var value_label = _horizontal_label(_value_text(obj, monster, hidden), IronPlate.TEXT_COLOR)
 		value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		add_child(value_label)
+		add_child(_with_trophy_bonus(value_label, obj.key, monster, hidden))
 		_value_labels[obj.key] = value_label
+	if show_trophies:
+		for obj in map:
+			add_child(_trophy_cell(obj.key, monster, hidden))
 
 ## Zeigt, wie ein Edelstein den Wert verändern würde (stat "" = nur der aktuelle Stand)
 func show_gem_preview(monster: Monster, stat := "", bonus := 0) -> void:
@@ -155,7 +167,7 @@ func _init_horizontal(monster, hidden: Array = []) -> void:
 		var tlabel = _horizontal_label(tr(obj.label).trim_suffix(":"), SkillDetailPopup.GOLD)
 		tlabel.size_flags_horizontal = Control.SIZE_FILL
 		add_child(name_cell(self, obj.key, tlabel, false))
-		add_child(_horizontal_label(_value_text(obj, monster, hidden), IronPlate.TEXT_COLOR))
+		add_child(_with_trophy_bonus(_horizontal_label(_value_text(obj, monster, hidden), IronPlate.TEXT_COLOR), obj.key, monster, hidden))
 
 func _horizontal_label(text: String, color: Color) -> Label:
 	var new_label = label.duplicate()
@@ -211,3 +223,61 @@ static func make_clickable(control: Control, host: Node, key: String) -> void:
 		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 			control.accept_event()
 			StatInfoDialog.open(host, key))
+
+# ─────────────────────────
+# Trophäen
+
+## Punkte, die Trophäen zu diesem Wert beitragen (0 = keine oder verdeckt). Bei Gegnern erst, wenn der Wert aufgedeckt ist.
+static func trophy_bonus(monster, key: String, hidden: Array = []) -> int:
+	if not monster is Monster or hidden.has(key) or not ICONS.has(key) or key == "bst":
+		return 0
+	return monster.gem_bonus(key)
+
+## Mit show_trophies: Zahl mit grünem "(N)" dahinter, wenn Trophäen auf dem Wert liegen (N ist schon in der Zahl enthalten)
+func _with_trophy_bonus(value_label: Label, key: String, monster, hidden: Array) -> Control:
+	var bonus := trophy_bonus(monster, key, hidden)
+	if not show_trophies or bonus <= 0:
+		return value_label
+	var cell := HBoxContainer.new()
+	cell.add_theme_constant_override("separation", 3)
+	cell.alignment = BoxContainer.ALIGNMENT_CENTER if stacked else BoxContainer.ALIGNMENT_BEGIN
+	cell.size_flags_horizontal = value_label.size_flags_horizontal
+	cell.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	value_label.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	cell.add_child(value_label)
+	var bonus_label := value_label.duplicate() as Label
+	bonus_label.text = "(%d)" % bonus
+	bonus_label.add_theme_color_override("font_color", GAIN_COLOR)
+	var font_size := value_label.get_theme_font_size("font_size")
+	bonus_label.add_theme_font_size_override("font_size", roundi((font_size if font_size > 0 else DEFAULT_FONT_SIZE) * TROPHY_BONUS_FONT_SCALE))
+	bonus_label.tooltip_text = tr("STAT_TROPHY_BONUS_HINT").format({"bonus": bonus})
+	bonus_label.mouse_filter = Control.MOUSE_FILTER_PASS
+	cell.add_child(bonus_label)
+	return cell
+
+## Unter der Zahl: Trophäen dieses Werts als Bild mit Anzahl, leer ohne Trophäen (bzw. solange der Wert verdeckt ist)
+func _trophy_cell(key: String, monster, hidden: Array) -> Control:
+	var cell := HBoxContainer.new()
+	cell.alignment = BoxContainer.ALIGNMENT_CENTER
+	cell.add_theme_constant_override("separation", 2)
+	cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	cell.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if trophy_bonus(monster, key, hidden) <= 0:
+		return cell
+	var count: int = monster.gem_count(key)
+	var font_size := label.get_theme_font_size("font_size")
+	if font_size <= 0:
+		font_size = DEFAULT_FONT_SIZE
+	var gem_field = load(GEM_FIELD_PATH)
+	var icon: Control = gem_field.gem_icon(key)
+	icon.custom_minimum_size = Vector2.ONE * roundf(font_size * TROPHY_ICON_SCALE)
+	icon.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cell.add_child(icon)
+	var count_label := _horizontal_label("%dx" % count, GAIN_COLOR)
+	count_label.add_theme_font_size_override("font_size", roundi(font_size * TROPHY_BONUS_FONT_SCALE))
+	count_label.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	cell.add_child(count_label)
+	cell.tooltip_text = TranslationServer.translate(gem_field.STATS[key].name)
+	cell.mouse_filter = Control.MOUSE_FILTER_PASS
+	return cell

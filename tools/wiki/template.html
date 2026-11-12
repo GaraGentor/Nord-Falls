@@ -256,6 +256,8 @@ const state = {
 	skillSort: { key: "tier", dir: "asc" },
 	skillElement: "all",
 	skillList: "all",
+	monType: "all",
+	monRarity: "all",
 	matrixAll: false,
 };
 
@@ -370,7 +372,13 @@ function statProfile(m) {
 function renderMonsters() {
 	const bountyByKey = Object.fromEntries(DATA.bounties.map((b) => [b.key, b]));
 	const msByKey = Object.fromEntries(DATA.milestones.map((m) => [m.key, m]));
-	const cards = DATA.mons.filter((m) => {
+	const rarities = Object.keys(DATA.enums.MON_RARITY || {}).filter((r) => DATA.mons.some((m) => m.rarity === r));
+	const types = [...new Set(DATA.mons.map((m) => m.initial_type))]
+		.sort((a, b) => elementsIn(a).length - elementsIn(b).length || a - b);
+	const cards = DATA.mons
+		.filter((m) => state.monType === "all" || m.initial_type === Number(state.monType))
+		.filter((m) => state.monRarity === "all" || m.rarity === state.monRarity)
+		.filter((m) => {
 		const skills = [...(m.default_egg_skills || []), ...(m.unlockable_egg_skills || []),
 			...Object.values(m.milestone_egg_skills || {}), ...Object.values(m.bounty_egg_skills || {})];
 		return matches(m.name, monName(m.name), elementName(m.initial_type), rarityName(m.rarity), ...skills.map((s) => tr(s)));
@@ -406,7 +414,18 @@ function renderMonsters() {
 			})}</div>
 		</article>`;
 	});
-	return header("monsters") + (cards.length ? `<div class="grid">${cards.join("")}</div>` : `<div class="empty">${ui("noResults")}</div>`);
+	const filters = `<div class="filters">
+		<select id="f-mon-type" aria-label="${ui("element")}">
+			<option value="all">${ui("element")}: ${ui("all")}</option>
+			${types.map((t) => `<option value="${t}" ${String(t) === state.monType ? "selected" : ""}>${esc(elementName(t))}</option>`).join("")}
+		</select>
+		<select id="f-mon-rarity" aria-label="${ui("rarity")}">
+			<option value="all">${ui("rarity")}: ${ui("all")}</option>
+			${rarities.map((r) => `<option value="${r}" ${r === state.monRarity ? "selected" : ""}>${esc(rarityName(r))}</option>`).join("")}
+		</select>
+		<span class="muted small">${cards.length} / ${DATA.mons.length}</span>
+	</div>`;
+	return header("monsters") + filters + (cards.length ? `<div class="grid">${cards.join("")}</div>` : `<div class="empty">${ui("noResults")}</div>`);
 }
 
 function renderSkills() {
@@ -675,6 +694,8 @@ document.addEventListener("click", (e) => {
 document.addEventListener("change", (e) => {
 	if (e.target.id === "f-element") state.skillElement = e.target.value;
 	else if (e.target.id === "f-list") state.skillList = e.target.value;
+	else if (e.target.id === "f-mon-type") state.monType = e.target.value;
+	else if (e.target.id === "f-mon-rarity") state.monRarity = e.target.value;
 	else return;
 	render();
 });

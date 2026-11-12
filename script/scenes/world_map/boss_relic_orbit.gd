@@ -70,10 +70,13 @@ func _icon(id: String) -> TextureRect:
 	get_parent().add_child.call_deferred(icon)
 	return icon
 
-func _exit_tree() -> void:
-	for icon in _icons:
-		if is_instance_valid(icon):
-			icon.queue_free()
+## Erst beim Löschen mit weg: die Karte hängt Boss-Felder samt Bahn kurz aus und wieder ein (world_map.gd set_map),
+## dabei müssen die Relikte am Feld bleiben
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:
+		for icon in _icons:
+			if is_instance_valid(icon):
+				icon.queue_free()
 
 func _process(delta: float) -> void:
 	_time += delta

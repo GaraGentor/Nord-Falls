@@ -5,7 +5,6 @@ extends Control
 ## links Bild, Name und Typ, rechts Werte, gesammelte Edelsteine und darunter alle Attacken
 ## als große Karten wie im Kampf in einer waagerechten Scrollview (reine Anzeige, ohne Klick).
 
-const GemField = preload("res://script/scenes/gems/gems.gd")
 const BATTLE_CARD := preload("res://script/scenes/battle/battle_card.tscn")
 const LEFT_WIDTH := 300.0
 const PORTRAIT_SIZE := Vector2(0, 150)
@@ -64,8 +63,8 @@ func _right_side() -> Control:
 	facts.alignment = BoxContainer.ALIGNMENT_CENTER
 	facts.add_theme_constant_override("separation", 10)
 	top.add_child(facts)
-	facts.add_child(StatsGrid.stacked_for(_mon, 18))
-	facts.add_child(GemField.gem_counts(_mon))
+	# Trophäen stehen direkt unter ihrem Wert, ihr Anteil grün hinter der Zahl (wie im Trophäen-Feld)
+	facts.add_child(StatsGrid.stacked_for(_mon, 18, true))
 	var back := RewardDialog.icon_button(BACK_ICON)
 	back.tooltip_text = tr("MONSTER_INFO_BACK")
 	back.size_flags_vertical = SIZE_SHRINK_BEGIN

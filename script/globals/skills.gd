@@ -375,7 +375,7 @@ func get_egg_skill_source(mon_name: String, skill_name: String) -> Array:
 const EGG_SKILL_CATEGORIES = [
 	{"key": "physical", "label": "EGG_CATEGORY_PHYSICAL", "icon": "res://assets/ui/icons/fist.svg"},
 	{"key": "magic", "label": "EGG_CATEGORY_MAGIC", "icon": "res://assets/ui/icons/sparkle.svg"},
-	{"key": "shield", "label": "EGG_CATEGORY_SHIELD", "icon": "res://assets/ui/icons/battle/shield.svg"},
+	{"key": "shield", "label": "EGG_CATEGORY_SHIELD", "icon": "res://assets/ui/icons/stat_shield.svg"},
 	{"key": "buff", "label": "EGG_CATEGORY_BUFF", "icon": "res://assets/ui/icons/battle/buff.svg"},
 	{"key": "passive", "label": "EGG_CATEGORY_PASSIVE", "icon": "res://assets/ui/icons/passive.svg"},
 ]
@@ -384,11 +384,29 @@ const PHYSICAL_ICON := preload("res://assets/ui/icons/fist.svg")
 const MAGIC_ICON := preload("res://assets/ui/icons/sparkle.svg")
 const PASSIVE_ICON := preload("res://assets/ui/icons/passive.svg")
 
-## Icon der Skill-Art auf Karten und in Tabellen: passiv, sonst physisch (Faust) oder magisch.
+## Icon oben rechts auf Karten und in Tabellen: der Wert, den die Fähigkeit verändert, mit denselben Symbolen wie die
+## Werte-Tabellen (StatsGrid.ICONS). Schaden = Angriffswert (Faust bzw. Funken), Schild = Verteidigung (Schild bzw.
+## Magie-Schild), Buff und Passiv = der verstärkte Wert (z. B. Herz bei KP). Unbekanntes Passiv: Passiv-Symbol.
 func kind_icon(skill: Dictionary) -> Texture2D:
+	var stat := affected_stat(skill)
+	if stat != "":
+		return StatsGrid.ICONS[stat]
 	if is_passive(skill):
 		return PASSIVE_ICON
 	return PHYSICAL_ICON if is_physical(skill) else MAGIC_ICON
+
+## Stat-Key, den die Fähigkeit verändert bzw. mit dem sie rechnet ("" = keiner)
+func affected_stat(skill: Dictionary) -> String:
+	var stat: String = ""
+	if is_passive(skill):
+		stat = skill.get("passive_stat", "")
+	elif skill.get("effect", "") == "buff":
+		stat = skill.get("buff_stat", "")
+	elif is_damage_skill(skill):
+		stat = "atk" if is_physical(skill) else "s_atk"
+	elif skill.get("effect", "") == "shield" or not is_damage_skill(skill):
+		stat = "def" if is_physical(skill) else "s_def"
+	return stat if StatsGrid.ICONS.has(stat) else ""
 
 ## Wert, der auf Karten und in Tabellen unter "Stärke" steht: bei Angriffen der Schaden gegen ein Ziel mit gleicher
 ## (Sp.) Verteidigung und neutralem Element, bei Schilden die Schildstärke, beides aus den aktuellen Werten des Monsters.

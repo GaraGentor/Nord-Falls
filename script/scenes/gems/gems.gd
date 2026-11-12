@@ -18,11 +18,6 @@ const STATS := {
 	"speed": {"name": "GEM_SPEED", "desc": "GEM_SPEED_DESC", "stat": "STAT_SPE", "icon": "res://assets/ui/trophies/storm_feather.svg"},
 }
 
-const COUNT_ICON_SIZE := Vector2(20, 20)
-const COUNT_FONT_SIZE := 16
-## noch nicht gesammelte Trophäen treten zurück
-const NO_GEM_ALPHA := 0.35
-
 var gem_choices := GEM_CHOICES
 var _bonus: int
 
@@ -53,34 +48,10 @@ static func show_gem_info(dialog: RewardDialog) -> void:
 	for target in dialog._fixed_targets:
 		if target.mon == null:
 			continue
-		target.box.add_child(gem_counts(target.mon))
-		target.stats = StatsGrid.stacked_for(target.mon)
+		# wie im Map-Header: Trophäen-Anteil "(N)" hinter der Zahl, die Trophäen darunter (StatsGrid.show_trophies)
+		target.stats = StatsGrid.stacked_for(target.mon, 15, true)
 		target.box.add_child(target.stats)
 		ignore_mouse_below(target)
-
-## Eine Zeile mit allen Trophäen-Arten und wie viele davon das Monster schon hat
-static func gem_counts(mon: Monster) -> HBoxContainer:
-	var row := HBoxContainer.new()
-	row.alignment = BoxContainer.ALIGNMENT_CENTER
-	row.add_theme_constant_override("separation", 10)
-	for stat in STATS:
-		var count := mon.gem_count(stat)
-		var entry := HBoxContainer.new()
-		entry.add_theme_constant_override("separation", 3)
-		entry.tooltip_text = TranslationServer.translate(STATS[stat].name)
-		if count == 0:
-			entry.modulate.a = NO_GEM_ALPHA
-		var icon := gem_icon(stat)
-		icon.custom_minimum_size = COUNT_ICON_SIZE
-		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		entry.add_child(icon)
-		var label := Label.new()
-		label.text = str(count)
-		label.add_theme_font_size_override("font_size", COUNT_FONT_SIZE)
-		label.add_theme_color_override("font_color", IronPlate.TEXT_COLOR)
-		entry.add_child(label)
-		row.add_child(entry)
-	return row
 
 ## Trophäen-Karte, auch vom Shop genutzt: wird auf ein Monster gezogen.
 ## Die Änderung zeigen die Werte am Ziel (show_gem_info).

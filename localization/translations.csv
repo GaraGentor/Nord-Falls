@@ -803,3 +803,4 @@ STAT_INFO_TIP_SHIELD,"Shields only block their own damage type (physical or magi
 STAT_INFO_TIP_ELEMENT,"The element counts on top: Water > Fire > Air > Earth > Water, 50 % more or less damage each.","Dazu zählt das Element: Wasser > Feuer > Luft > Erde > Wasser, jeweils 50 % mehr oder weniger Schaden."
 STAT_INFO_TIP_SPEED,"Watch the wheel and the enemies' announced moves: act before a dangerous enemy to knock it out or shield the target in time.","Behalte Rad und angekündigte Gegner-Züge im Blick: Ist dein Monster vorher dran, kannst du einen gefährlichen Gegner noch erledigen oder das Ziel rechtzeitig schützen."
 STAT_INFO_TIP_HIDDEN,"Enemy stats start hidden (?) and are revealed by landing hits.","Werte der Gegner sind anfangs verdeckt (?) und werden durch Treffer aufgedeckt."
+STAT_TROPHY_BONUS_HINT,{bonus} of it from trophies,davon {bonus} durch Trophäen

@@ -263,6 +263,7 @@ function collect() {
 	const monmapSrc = read("script/globals/monmap.gd");
 	const helperSrc = read("script/globals/helper.gd");
 	const gemsSrc = read("script/scenes/gems/gems.gd");
+	const debugSettingsSrc = read("script/globals/debug_settings.gd");
 
 	// Bildpfad wie in Monmap.texture(), dort steht er nicht als Feld in den Daten
 	const mons = readVar(monmapSrc, "mons", "Monmap") ?? [];
@@ -320,7 +321,7 @@ function collect() {
 		},
 		gems: {
 			stats: readVar(gemsSrc, "STATS", "Gems") ?? {},
-			bonusByDepth: readVar(gemsSrc, "BONUS_BY_DEPTH", "Gems") ?? [],
+			bonusByDepth: readVar(debugSettingsSrc, "DEFAULT_TROPHY_BONUS", "DebugSettings") ?? [],
 			choices: readVar(gemsSrc, "GEM_CHOICES", "Gems"),
 		},
 		map: {

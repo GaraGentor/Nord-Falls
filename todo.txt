@@ -3,6 +3,5 @@
 	> Ist es eine Fähigkeit die Schild macht, soll das Schild Icon oben rechts stehen
 	> Ist es eine Fähigkeit die KP Modifiziert, dann Lebens Zeichen.
 	Ich glaub du weißt worauf ich hinaus will
-3. Oh mein Gott geil wäre es, wenn ich in der Mini Map z.B.: auf ein Monster Klicke und die Trophäen sich auch den Stats utnerordnen und bei bei den Stat Werten immer ein +2 etc. in Grün steht, sodass man weiß, dass da Trophäen drauf sind. Das gleiche auch für Kampf etc. damit man sieht, wie viel die Trophäen insgesamt leisten. Wäre ein Netter vergleich
+3. Oh mein Gott geil wäre es, wenn ich in der Mini Map z.B.: auf ein Monster Klicke und die Trophäen sich auch den Stats utnerordnen und bei bei den Stat Werten immer ein +2 etc. in Grün steht, sodass man weiß, dass da Trophäen drauf sind. Das gleiche auch für Kampf etc. damit man sieht, wie viel die Trophäen insgesamt leisten. Wäre ein Netter vergleich. (Bei Gegnerischen Monster soll das +X durch die trophäe erst angezeigt werden, wenn der eigentliche Wert aufgedeckt wird)
 4. In der Minimap muss der Lebensbalken im Header auch dem Living Pixel entsprechen wie im Kampf.
-5. 

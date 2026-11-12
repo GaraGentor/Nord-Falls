@@ -5,13 +5,11 @@ extends HBoxContainer
 
 const PORTRAIT_SIZE := Vector2(64, 64)
 const HOVER_RIM := Color(0.5, 0.62, 0.63)
-const BAR_SIZE := Vector2(150, 8)
+const BAR_SIZE := Vector2(150, 10)
+const RARITY_STAR := preload("res://assets/ui/icons/rarity_star.svg")
+const LIVING_MATERIAL := preload("res://script/ui/shader/living_pixels_material.tres")
+const STAR_SIZE := Vector2(14, 14)
 const FONT_SIZE := 16
-const HP_COLOR := Color(0.35, 0.8, 0.35)
-const BAR_BACKGROUND := Color(0.05, 0.07, 0.085)
-const LOW_HP_COLOR := Color(0.9, 0.3, 0.25)
-## darunter wird der Balken rot
-const LOW_HP_SHARE := 0.3
 
 ## refresh ist schon für das Ende des Frames vorgemerkt (beim Heilen ändern sich die KP jeden Frame)
 var _refresh_queued := false
@@ -77,24 +75,31 @@ func _entry(mon: Monster) -> Control:
 
 	var max_hp: float = mon.hp()
 	var hp := clampf(max_hp - mon._lost_hp, 0.0, max_hp)
-	var bar := ProgressBar.new()
+	# KP-Leiste wie im Kampf: lebende Pixel, Farbe nach Anteil, die Zahlen stehen darunter
+	var bar := LivingBar.hp_bar(hp, max_hp, " ")
 	bar.custom_minimum_size = BAR_SIZE
-	bar.show_percentage = false
-	bar.max_value = max_hp
-	bar.value = hp
-	var fill := StyleBoxFlat.new()
-	fill.bg_color = LOW_HP_COLOR if hp < max_hp * LOW_HP_SHARE else HP_COLOR
-	bar.add_theme_stylebox_override("fill", fill)
-	var background := StyleBoxFlat.new()
-	background.bg_color = BAR_BACKGROUND
-	bar.add_theme_stylebox_override("background", background)
 	info.add_child(bar)
 
 	var hp_label := Label.new()
 	hp_label.text = tr("MAP_TEAM_HP").format({"hp": roundi(hp), "max": roundi(max_hp)})
 	hp_label.add_theme_font_size_override("font_size", FONT_SIZE - 3)
 	hp_label.add_theme_color_override("font_color", IronPlate.TEXT_COLOR)
-	info.add_child(hp_label)
+	# daneben der Seltenheits-Stern wie auf der Kampf-Karte (BattleMonCard)
+	var hp_row := HBoxContainer.new()
+	hp_row.add_theme_constant_override("separation", 6)
+	hp_row.add_child(hp_label)
+	var rarity := Monmap.rarity_of(mon._name)
+	var star := TextureRect.new()
+	star.texture = RARITY_STAR
+	star.material = LIVING_MATERIAL
+	star.custom_minimum_size = STAR_SIZE
+	star.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	star.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	star.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	star.self_modulate = Monmap.RARITY_COLORS[rarity]
+	star.tooltip_text = tr(Monmap.RARITY_LABELS[rarity])
+	hp_row.add_child(star)
+	info.add_child(hp_row)
 
 	RewardDialog.ignore_mouse_below(frame)
 	frame.gui_input.connect(_on_entry_input.bind(mon))

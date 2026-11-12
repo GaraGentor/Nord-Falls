@@ -40,10 +40,8 @@ func _ready() -> void:
 		pg.value_changed.connect(func(value: float): bar.set_share(value / pg.max_value))
 		bar.set_share(pg.value / pg.max_value)
 		_ko_bars.append(bar)
-	# KP unter dem Bild des Monsters, damit man sieht, wie viel ihm nach dem Kampf noch bleibt
-	_hp_bar = LivingBar.new()
-	_hp_bar.glow_when_full = false
-	_hp_bar.glint = false
+	# KP unter dem Bild des Monsters wie im Kampf, damit man sieht, wie viel ihm nach dem Kampf noch bleibt
+	_hp_bar = LivingBar.hp_bar(0, 1)
 	_hp_bar.custom_minimum_size = Vector2(0, HP_BAR_HEIGHT)
 	_hp_bar.size_flags_horizontal = SIZE_EXPAND_FILL
 	var hp_margin := MarginContainer.new()
@@ -65,10 +63,7 @@ func _refresh_hp(animate: bool) -> void:
 		return
 	var max_hp: float = mon.hp()
 	var current: float = maxf(max_hp - mon._lost_hp, 0.0)
-	var share := current / max_hp if max_hp > 0 else 0.0
-	_hp_bar.color = BattleMonCard.hp_color(share)
-	_hp_bar.set_text("%s %d / %d" % [tr("STAT_HP").trim_suffix(":"), roundi(current), roundi(max_hp)])
-	_hp_bar.set_share(share, animate)
+	_hp_bar.set_hp(current, max_hp, "%s %d / %d" % [tr("STAT_HP").trim_suffix(":"), roundi(current), roundi(max_hp)], animate)
 
 func trigger_level_up() -> bool:
 	level_label.position = Vector2(level_label.position.x, 0)
