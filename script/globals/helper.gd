@@ -227,15 +227,26 @@ func format_number(v) -> String:
 		return str(roundi(v)) if is_equal_approx(v, roundf(v)) else str(snappedf(v, 0.1))
 	return str(v)
 
+## Farbe für wichtige Stellen in Beschreibungen (Werte, Schadensart), siehe highlight
+const HIGHLIGHT_COLOR := Color(1.0, 0.84, 0.25)
+
+## Übersetzungen markieren wichtige Stellen mit [hl]...[/hl]. rich = als BBCode gelb färben (RichTextLabel),
+## sonst die Markierungen entfernen (normale Labels)
+func highlight(text: String, rich := false) -> String:
+	if rich:
+		return text.replace("[hl]", "[color=#%s]" % HIGHLIGHT_COLOR.to_html(false)).replace("[/hl]", "[/color]")
+	return text.replace("[hl]", "").replace("[/hl]", "")
+
 ## Skill-Beschreibung mit eingesetzten Werten, Zahlen wie in format_number,
-## bei Kombi-Elementen mit dem Element-Effekt als zweiter Zeile (ElementEffects)
-func skill_description(skill: Dictionary) -> String:
+## bei Kombi-Elementen mit dem Element-Effekt als zweiter Zeile (ElementEffects).
+## rich = wichtige Stellen als BBCode gelb (für RichTextLabel mit bbcode_enabled)
+func skill_description(skill: Dictionary, rich := false) -> String:
 	var values := {}
 	for key in skill:
 		values[key] = format_number(skill[key]) if skill[key] is float else skill[key]
 	var text := tr(skill.description).format(values)
 	var effect := ElementEffects.skill_effect_text(skill)
-	return text if effect == "" else text + "\n" + effect
+	return highlight(text if effect == "" else text + "\n" + effect, rich)
 
 func between(v, min, max) -> bool:
 	return v >= min and v <= max

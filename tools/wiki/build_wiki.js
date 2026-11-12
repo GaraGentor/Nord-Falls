@@ -316,7 +316,9 @@ function collect() {
 		bossRelics,
 		bossRelicSettings: {
 			perBattle: bossConsts.RELICS_PER_BATTLE,
-			rareChance: bossConsts.RARE_BOSS_CHANCE ?? [],
+			rarityWeights: readVar(bossSrc, "BOSS_RARITY_WEIGHTS", "BossRelics") ?? {},
+			wildWeights: readVar(mapSrc, "RARITY_SPAWN_WEIGHTS", "Map") ?? {},
+			unlocks: readVar(mapSrc, "RARITY_UNLOCKS", "Map") ?? {},
 			mythicChance: bossConsts.MYTHIC_BOSS_CHANCE ?? [],
 		},
 		gems: {

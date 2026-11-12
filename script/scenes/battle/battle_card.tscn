@@ -5,7 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://yg6oxnmiu0pd" path="res://assets/ui/icons/fist.svg" id="4_phys"]
 [ext_resource type="PackedScene" path="res://script/ui/moves_badge/moves_badge.tscn" id="6_moves"]
 
-[node name="BattleCard" type="PanelContainer" node_paths=PackedStringArray("name_label", "cost_badge", "value_label", "type_icon", "description_label")]
+[node name="BattleCard" type="PanelContainer" node_paths=PackedStringArray("name_label", "cost_badge", "type_icon", "description_label")]
 custom_minimum_size = Vector2(150, 0)
 size_flags_vertical = 3
 mouse_filter = 0
@@ -13,7 +13,6 @@ theme = ExtResource("3_theme")
 script = ExtResource("1_card")
 name_label = NodePath("MarginContainer/VBoxContainer/NameLabel")
 cost_badge = NodePath("MarginContainer/VBoxContainer/TopRow/CostBadge")
-value_label = NodePath("MarginContainer/VBoxContainer/BottomRow/ValueLabel")
 type_icon = NodePath("MarginContainer/VBoxContainer/TopRow/TypeIcon")
 description_label = NodePath("MarginContainer/VBoxContainer/DescriptionLabel")
 
@@ -62,21 +61,14 @@ text = "SKILL"
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="DescriptionLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+[node name="DescriptionLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(1, 0)
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_font_sizes/font_size = 12
-text = "Description"
-autowrap_mode = 3
-text_overrun_behavior = 3
-
-[node name="BottomRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
-layout_mode = 2
 mouse_filter = 2
-alignment = 1
+theme_override_font_sizes/normal_font_size = 12
+bbcode_enabled = true
+text = "Description"
+scroll_active = false
+autowrap_mode = 3
 
-[node name="ValueLabel" type="Label" parent="MarginContainer/VBoxContainer/BottomRow"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "20"

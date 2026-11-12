@@ -6,4 +6,5 @@
 	> zudem muss man mindestens 1 legendäres Monster besitzen.
 3. Monster mit seltenerer seltenheits Stufe haben als Boss eine höhere Chance aufzutauchen im gegensatz zu einem Normalen Feld
 4. Füge die neuen Monster hinzu & Update das Wiki
-5. 
+5. Entferne aus den Fähigkeiten Karten ganz unten die Zahl. Die Verwirrt nur. Stattdessen färbe den Text mit Relevanten Text Gelb
+	Beispiel.: Verursacht <GELB>25%</GELB> auf deiner ang <GELB>magischen schaden</GELB>

@@ -208,7 +208,7 @@ const TIER_WEIGHTS = {1: 50, 2: 25, 3: 10, 4: 3}
 
 # Liefert eine frische Kopie des Skills mit diesem Namen (aus allen Skill-Listen) oder {}.
 func get_skill(skill_name: String) -> Dictionary:
-	for list in [attack_skills, defensive_skills, buff_skills, passive_skills, area_skills, egg_skills, milestone_skills, bounty_skills, reward_skills]:
+	for list in [attack_skills, defensive_skills, buff_skills, passive_skills, area_skills, egg_skills, milestone_skills, bounty_skills, reward_skills, ascension_skills]:
 		for skill in list:
 			if skill.name == skill_name:
 				var copy = skill.duplicate()
@@ -643,6 +643,30 @@ var reward_skills = [
 	_reward_buff_skill("SKILL_ZEPHYR_MANTLE", Enums.MON_TYPES.AIR),
 	_reward_passive_skill("SKILL_STORM_HEART", Enums.MON_TYPES.AIR),
 ]
+
+# Aufstiegs-Skills: Trinkt ein Monster einen Element-Trank und steigt dadurch zu einem Kombi-Element auf,
+# lernt es den Skill genau dieses Elements (Treasure.add_potion_card, ElementGainOverlay). Chaos hat keinen.
+# Stehen in keiner anderen Liste, tauchen also weder im Biom-Pool noch beim Trainer auf.
+# Zweier-Kombis Stufe 2, Dreier-Kombis Stufe 3. Den Zusatzeffekt bekommen sie über ihr Element (ElementEffects).
+var ascension_skills = [
+	_egg_skill("SKILL_FROST_BITE", Enums.MON_TYPES.AIR | Enums.MON_TYPES.WATER, 45.0, 2, Enums.SKILL_DAMAGE_TYPE.PHYSICAL),
+	_egg_skill("SKILL_STEAM_JET", Enums.MON_TYPES.WATER | Enums.MON_TYPES.FIRE, 45.0, 2, Enums.SKILL_DAMAGE_TYPE.ABILITY),
+	_egg_skill("SKILL_SPARK_LASH", Enums.MON_TYPES.FIRE | Enums.MON_TYPES.AIR, 45.0, 2, Enums.SKILL_DAMAGE_TYPE.ABILITY),
+	_egg_skill("SKILL_LAVA_SURGE", Enums.MON_TYPES.EARTH | Enums.MON_TYPES.FIRE, 45.0, 2, Enums.SKILL_DAMAGE_TYPE.ABILITY),
+	_egg_skill("SKILL_MUD_HURL", Enums.MON_TYPES.EARTH | Enums.MON_TYPES.WATER, 45.0, 2, Enums.SKILL_DAMAGE_TYPE.PHYSICAL),
+	_egg_skill("SKILL_SANDBLAST", Enums.MON_TYPES.EARTH | Enums.MON_TYPES.AIR, 45.0, 2, Enums.SKILL_DAMAGE_TYPE.PHYSICAL),
+	_egg_skill("SKILL_STORM_DISCHARGE", Enums.MON_TYPES.AIR | Enums.MON_TYPES.WATER | Enums.MON_TYPES.FIRE, 60.0, 3, Enums.SKILL_DAMAGE_TYPE.ABILITY),
+	_egg_skill("SKILL_EARTHFIRE", Enums.MON_TYPES.EARTH | Enums.MON_TYPES.WATER | Enums.MON_TYPES.FIRE, 60.0, 3, Enums.SKILL_DAMAGE_TYPE.ABILITY),
+	_egg_skill("SKILL_SOOT_GALE", Enums.MON_TYPES.EARTH | Enums.MON_TYPES.AIR | Enums.MON_TYPES.FIRE, 60.0, 3, Enums.SKILL_DAMAGE_TYPE.PHYSICAL),
+	_egg_skill("SKILL_BOG_GRIP", Enums.MON_TYPES.EARTH | Enums.MON_TYPES.AIR | Enums.MON_TYPES.WATER, 60.0, 3, Enums.SKILL_DAMAGE_TYPE.PHYSICAL),
+]
+
+## Aufstiegs-Skill für genau dieses Kombi-Element (frische Kopie), {} für Grundelemente und Chaos
+func ascension_skill(nature: int) -> Dictionary:
+	for skill in ascension_skills:
+		if skill.nature == nature:
+			return get_skill(skill.name)
+	return {}
 
 func _reward_area_skill(skill_name: String, nature: int) -> Dictionary:
 	return _with(_effect_skill(skill_name, nature, 45.0, 3, Enums.SKILL_DAMAGE_TYPE.ABILITY, "damage",

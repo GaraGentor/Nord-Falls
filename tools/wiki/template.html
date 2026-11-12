@@ -199,7 +199,7 @@ const UI = {
 		components: "Besteht aus", weight: "Spawn-Gewicht", noResults: "Keine Treffer.", warnings: "Warnungen beim Generieren",
 		strongVs: "stark gegen", maxSkills: "Max. Skills pro Monster", tierWeights: "Stufen-Gewichte (Spawn-Häufigkeit)",
 		onlyBase: "Nur Grund-Elemente", allCombos: "Alle Kombinationen", catchHint: "bei 0 HP und gleicher Stufe",
-		bossRelics: "Boss-Relikte", relicsPerBattle: "Relikte pro Boss-Kampf", rareBossChance: "Chance auf seltenen Boss (sonst legendär)", mythicBossChance: "Chance auf einen mythischen Boss pro Boss-Kampf",
+		bossRelics: "Boss-Relikte", relicsPerBattle: "Relikte pro Boss-Kampf", bossRarity: "Seltenheit der Bosse (Gewicht, in Klammern normales Feld)", rarityUnlocks: "Freischaltung (wild und Boss)", fromBiome: "ab Biom", needs: "braucht", mythicBossChance: "Chance auf einen mythischen Boss pro Boss-Kampf",
 		mon: "Monster", lists: {
 			attack_skills: "Basis-Angriff", defensive_skills: "Basis-Block", buff_skills: "Buff", passive_skills: "Passiv", area_skills: "Flächenangriff", reward_skills: "Belohnung",
 			egg_skills: "Ei-Attacke", milestone_skills: "Meilenstein", bounty_skills: "Kopfgeld",
@@ -231,7 +231,7 @@ const UI = {
 		components: "Made of", weight: "Spawn weight", noResults: "No results.", warnings: "Warnings during generation",
 		strongVs: "strong against", maxSkills: "Max skills per monster", tierWeights: "Tier weights (spawn frequency)",
 		onlyBase: "Base elements only", allCombos: "All combinations", catchHint: "at 0 HP and same level",
-		bossRelics: "Boss relics", relicsPerBattle: "Relics per boss battle", rareBossChance: "Chance for a rare boss (otherwise legendary)", mythicBossChance: "Chance for one mythic boss per boss battle",
+		bossRelics: "Boss relics", relicsPerBattle: "Relics per boss battle", bossRarity: "Boss rarity (weight, normal node in brackets)", rarityUnlocks: "Unlocks (wild and boss)", fromBiome: "from biome", needs: "needs", mythicBossChance: "Chance for one mythic boss per boss battle",
 		mon: "Monster", lists: {
 			attack_skills: "Basic attack", defensive_skills: "Basic block", buff_skills: "Buff", passive_skills: "Passive", area_skills: "Area attack", reward_skills: "Reward",
 			egg_skills: "Egg move", milestone_skills: "Milestone", bounty_skills: "Bounty",
@@ -274,7 +274,8 @@ const RARITY_STYLE = { COMMON: "color:#bfbfbf", UNCOMMON: "color:#59d959", RARE:
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 function tr(key, args = {}) {
 	const text = DATA.tr[state.lang]?.[key] || DATA.tr.en?.[key] || key;
-	return text.replace(/\{(\w+)\}/g, (all, k) => (k in args ? args[k] : all));
+	// [hl]...[/hl] färbt im Spiel wichtige Stellen gelb, im Wiki entfällt es
+	return text.replace(/\[\/?hl\]/g, "").replace(/\{(\w+)\}/g, (all, k) => (k in args ? args[k] : all));
 }
 const res = (p) => (p || "").replace(/^res:\/\//, "../");
 const pct = (v) => `${Math.round(v * 1000) / 10} %`;
@@ -583,7 +584,8 @@ function renderBossRelics() {
 	const s = DATA.bossRelicSettings || {};
 	const settings = `<div class="card wide"><dl class="kv">
 		<dt>${ui("relicsPerBattle")}</dt><dd>${s.perBattle ?? "?"}</dd>
-		<dt>${ui("rareBossChance")}</dt><dd>${(s.rareChance || []).map((c, i) => `${ui("depth")} ${i + 1}: ${pct(c)}`).join(" · ") || ui("none")}</dd>
+		<dt>${ui("bossRarity")}</dt><dd>${Object.entries(s.rarityWeights || {}).map(([r, w]) => `<span style="${RARITY_STYLE[r] || ""}">${esc(rarityName(r))}</span> ${fmtNum(w)} (${fmtNum(s.wildWeights?.[r] ?? 0)})`).join(" · ") || ui("none")}</dd>
+		<dt>${ui("rarityUnlocks")}</dt><dd>${Object.entries(s.unlocks || {}).map(([r, u]) => `<span style="${RARITY_STYLE[r] || ""}">${esc(rarityName(r))}</span>: ${ui("fromBiome")} ${u.depth + 1}, ${ui("needs")} ${Object.entries(u.owned || {}).map(([o, n]) => `${n}× ${esc(rarityName(o))}`).join(", ")}`).join("<br>") || ui("none")}</dd>
 		<dt>${ui("mythicBossChance")}</dt><dd>${(s.mythicChance || []).map((c, i) => `${ui("depth")} ${i + 1}: ${pct(c)}`).join(" · ") || ui("none")}</dd>
 	</dl></div>`;
 	return header("bossRelics") + (cards.length ? `<div class="grid">${cards.join("")}${settings}</div>` : `<div class="empty">${ui("noResults")}</div>`);

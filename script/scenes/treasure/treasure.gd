@@ -27,6 +27,8 @@ const KEY_ICON = preload("res://assets/ui/icons/key.svg")
 const FLASK_TEXTURE = preload("res://assets/ui/shop/potion_flask.svg")
 const LIQUID_TEXTURE = preload("res://assets/ui/shop/potion_liquid.svg")
 const PROPS_MATERIAL = preload("res://script/scenes/jailer/jailer_props_material.tres")
+## Belohnung beim Aufstieg in ein Kombi-Element durch einen Trank
+const ElementGainOverlayScript = preload("res://script/ui/element_gain_overlay/element_gain_overlay.gd")
 
 var _buttons: HBoxContainer
 var _is_open := false
@@ -100,7 +102,10 @@ static func add_potion_card(dialog: RewardDialog, element: int) -> RewardDialog.
 	var element_name = dialog.tr(ColorMap.get_combo(element).label)
 	var text = dialog.tr("TREASURE_POTION_DESC").format({"element": element_name})
 	var give := func(mon: Monster):
+		var old_type: int = mon._type
 		mon.gain_element(element)
+		# Aufstieg in ein Kombi-Element: das Monster lernt dessen Aufstiegs-Skill (läuft für sich, auch wenn der Dialog schließt)
+		ElementGainOverlayScript.reward(mon, old_type)
 	return dialog.add_mon_card(potion_title(dialog, element), text, potion_art(element), dialog.tr("TREASURE_POTION_CHOOSE_MON"), func(): return mons_without(element), give, Callable(), {"element": element})
 
 static func potion_title(dialog: Node, element: int) -> String:

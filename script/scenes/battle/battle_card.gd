@@ -11,11 +11,11 @@ const SWIPE_TO_DRAG := 40.0
 @export var name_label: Label
 ## Kosten in Zügen, mit den gleichen Partikeln wie die übrigen Züge auf den Monster-Karten
 @export var cost_badge: Control
-@export var value_label: Label
 @export var type_icon: TextureRect
-@export var description_label: Label
+## Beschreibung mit gelb hervorgehobenen Werten (Helper.skill_description rich)
+@export var description_label: RichTextLabel
 
-## Monster, aus dessen Werten Schaden bzw. Schildstärke unten auf der Karte berechnet wird (null = Grundwert)
+## Monster, dem die Karte gehört (show_state)
 var mon: Monster
 
 var skill: Dictionary:
@@ -38,6 +38,8 @@ var _swiping := false
 var _paper: SkillCardPaper
 
 func _ready() -> void:
+	# RichTextLabel nutzt sonst nicht die Label-Schrift aus dem Theme
+	description_label.add_theme_font_override("normal_font", name_label.get_theme_font("font"))
 	_init_card()
 
 func _init_card() -> void:
@@ -50,9 +52,8 @@ func _init_card() -> void:
 	name_label.text = tr(skill.name)
 	name_label.self_modulate = SkillCardPaper.readable_color(Helper.color_by_type(skill.nature))
 	cost_badge.show_number(skill.cost, false)
-	value_label.text = Skills.power_text(skill, mon)
 	type_icon.texture = Skills.kind_icon(skill)
-	description_label.text = Helper.skill_description(skill)
+	description_label.text = Helper.skill_description(skill, true)
 	description_label.self_modulate = Color.WHITE
 
 ## Fehlen dem Monster Elemente für diesen Skill oder läuft die Abklingzeit noch,
@@ -65,8 +66,6 @@ func show_state(owner_mon: Monster) -> void:
 	if text.is_empty():
 		_init_card()
 		return
-	# Werte können sich im Kampf ändern (Buffs), daher auch hier neu berechnen
-	value_label.text = Skills.power_text(skill, mon)
 	description_label.text = text
 	description_label.self_modulate = Color(1, 0.45, 0.45)
 

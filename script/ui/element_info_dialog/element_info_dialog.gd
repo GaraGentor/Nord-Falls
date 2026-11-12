@@ -36,7 +36,7 @@ func _build(content: VBoxContainer) -> void:
 	else:
 		content.add_child(_note(tr("ELEMENT_INFO_BASE_DESC"), IronPlate.TEXT_COLOR))
 	# was Skills dieses Elements zusätzlich bewirken (ElementEffects)
-	var effect := ElementEffects.element_effect_text(_mask)
+	var effect := Helper.highlight(ElementEffects.element_effect_text(_mask))
 	if effect != "":
 		content.add_child(_note(effect, SkillDetailPopup.GOLD))
 

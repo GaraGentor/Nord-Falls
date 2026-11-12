@@ -2,7 +2,7 @@ class_name EggSkillCard
 extends PanelContainer
 
 ## Große Karte einer Ei-Attacke für die Ei-Auswahl, aufgebaut wie die Spielkarte im Kampf.
-## Kosten, Schadensart, Name und Stärke stehen fest. Nur die Beschreibung dazwischen scrollt:
+## Kosten, Schadensart und Name stehen fest. Nur die Beschreibung darunter scrollt:
 ## von selbst, wenn sie nicht passt, und per Mausrad / Leiste auch von Hand. Nach eigenem Scrollen
 ## setzt das automatische Scrollen erst nach einer Weile Ruhe wieder ein.
 ## Gesperrte Attacken liegen unter zwei gekreuzten Ketten, mittig steht, wie man sie freischaltet.
@@ -99,7 +99,16 @@ func _build(skill: Dictionary, mon: Monster, locked_label: String, locked_hint: 
 	# PASS: Klick und Ziehen gehen weiter an die Karte (Drag & Drop), das Mausrad scrollt den Text
 	_scroll.mouse_filter = Control.MOUSE_FILTER_PASS
 	lines.add_child(_scroll)
-	var description := _label(Helper.skill_description(skill), 13, TEXT_COLOR)
+	# wichtige Stellen gelb (Helper.highlight), daher RichTextLabel mit der Schrift der übrigen Labels
+	var description := RichTextLabel.new()
+	description.bbcode_enabled = true
+	description.fit_content = true
+	description.scroll_active = false
+	description.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	description.add_theme_font_override("normal_font", THEME.get_font("font", "Label"))
+	description.add_theme_font_size_override("normal_font_size", 13)
+	description.add_theme_color_override("default_color", TEXT_COLOR)
+	description.text = Helper.skill_description(skill, true)
 	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	description.custom_minimum_size.x = 1
 	description.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -112,11 +121,6 @@ func _build(skill: Dictionary, mon: Monster, locked_label: String, locked_hint: 
 		missing.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		missing.custom_minimum_size.x = 1
 		lines.add_child(missing)
-
-	# unten: Schaden bzw. Stärke
-	var value := _label(Skills.power_text(skill, mon), 18, TEXT_COLOR)
-	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lines.add_child(value)
 
 	if locked:
 		set_process(false)

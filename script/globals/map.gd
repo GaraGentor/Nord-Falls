@@ -156,16 +156,57 @@ const RARITY_SPAWN_WEIGHTS := {
 	Enums.MON_RARITY.LEGENDARY: 1.0,
 }
 
+## Freischaltung der höchsten Seltenheiten, gilt für wilde Monster und Bosse:
+## - depth: frühestens ab dieser Biom-Tiefe (0-basiert, 1 = Biom 2)
+## - owned: so viele Arten der jeweiligen Seltenheit muss man besitzen (Sammlung: Start-Monster und gefangene Arten,
+##   Helper.get_all_owned_monster_names). Gezählt wird genau diese Seltenheit, ein episches Monster zählt nicht als seltenes.
+## Seltenheiten ohne Eintrag sind immer erlaubt.
+const RARITY_UNLOCKS := {
+	Enums.MON_RARITY.LEGENDARY: {"depth": 1, "owned": {Enums.MON_RARITY.RARE: 3, Enums.MON_RARITY.EPIC: 1}},
+	Enums.MON_RARITY.MYTHIC: {"depth": 2, "owned": {Enums.MON_RARITY.EPIC: 2, Enums.MON_RARITY.LEGENDARY: 1}},
+}
+
+## Darf diese Seltenheit in der Biom-Tiefe auftauchen (RARITY_UNLOCKS)? depth < 0: aktuelle Tiefe
+func is_rarity_unlocked(rarity: int, depth := -1) -> bool:
+	if depth < 0:
+		depth = encounter_depth()
+	if depth < rarity_min_depth(rarity):
+		return false
+	var needed: Dictionary = RARITY_UNLOCKS.get(rarity, {}).get("owned", {})
+	if needed.is_empty():
+		return true
+	var owned := owned_rarity_counts()
+	for needed_rarity in needed:
+		if owned.get(needed_rarity, 0) < needed[needed_rarity]:
+			return false
+	return true
+
+## Erste Biom-Tiefe (0-basiert), in der die Seltenheit auftauchen darf
+func rarity_min_depth(rarity: int) -> int:
+	return RARITY_UNLOCKS.get(rarity, {}).get("depth", 0)
+
+## Besessene Arten pro Seltenheit (Start-Monster und gefangene Arten)
+func owned_rarity_counts() -> Dictionary:
+	var counts := {}
+	for mon_name in Helper.get_all_owned_monster_names():
+		var rarity := Monmap.rarity_of(mon_name)
+		counts[rarity] = counts.get(rarity, 0) + 1
+	return counts
+
 ## Arten, die wild auftauchen dürfen: keine eigenen Kopfgeld-Arten, keine mythischen (nur Bosse)
 func wild_species() -> Array:
 	return Monmap.mons.filter(func(meta): return not meta.has("bounty_target") and meta.rarity != Enums.MON_RARITY.MYTHIC)
 
 ## Zieht eine wilde Art aus dem Pool, gewichtet nach RARITY_SPAWN_WEIGHTS.
 ## max_rarity begrenzt die Seltenheit (Begleiter sind nie seltener als das erste Monster des Kampfs).
+## Noch nicht freigeschaltete Seltenheiten (RARITY_UNLOCKS) fallen weg.
 func pick_wild_species(pool: Array, max_rarity: int = Enums.MON_RARITY.LEGENDARY) -> String:
 	var candidates = pool.filter(func(mon_name): return RARITY_SPAWN_WEIGHTS.has(Monmap.rarity_of(mon_name)))
 	if candidates.is_empty():
 		candidates = wild_species().map(func(meta): return meta.name)
+	var unlocked = candidates.filter(func(mon_name): return is_rarity_unlocked(Monmap.rarity_of(mon_name)))
+	if not unlocked.is_empty():
+		candidates = unlocked
 	var allowed = candidates.filter(func(mon_name): return Monmap.rarity_of(mon_name) <= max_rarity)
 	if allowed.is_empty():
 		# nichts so Gewöhnliches im Pool: die gewöhnlichste vorhandene Seltenheit
@@ -189,7 +230,9 @@ func generate_biome_pools(biomes: Array[int]) -> void:
 	State.biome_pools = []
 	for i in biomes.size():
 		var t = float(i) / max(biomes.size() - 1, 1)
-		var candidates = wild_species()
+		# Seltenheiten, die in dieser Tiefe noch gar nicht auftauchen dürfen, belegen keinen Platz im Pool
+		# (der Besitz in RARITY_UNLOCKS kann sich im Run noch ändern, den prüft erst pick_wild_species)
+		var candidates = wild_species().filter(func(meta): return i >= rarity_min_depth(meta.rarity))
 		var weights = candidates.map(func(meta): return pool_weight(meta.rarity, t))
 		var elements = Enums.MON_TYPES.values().filter(func(element): return biomes[i] & element)
 		elements.shuffle()
@@ -216,7 +259,7 @@ const COMMON_POOL_SHARE := 1.0 / 3.0
 ## Erstes Biom (0-basiert), in dem Arten dieser Seltenheit häufig im Pool landen (Sammlung)
 func usual_depth(rarity: int) -> int:
 	var depths := ENCOUNTERS.size()
-	for i in depths:
+	for i in range(rarity_min_depth(rarity), depths):
 		if pool_weight(rarity, float(i) / max(depths - 1, 1)) >= COMMON_POOL_SHARE - 0.0001:
 			return i
 	return depths - 1

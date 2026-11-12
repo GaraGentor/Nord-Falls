@@ -31,9 +31,18 @@ const THORNS_SHARE := 0.15
 
 ## So viele zufällige Relikte hat jeder Boss-Kampf, egal wie viele Bosse
 const RELICS_PER_BATTLE := 1
-## Chance auf einen seltenen Boss pro Biom-Tiefe, sonst ein legendärer (gibt es keinen, die höchste vorhandene Seltenheit)
-const RARE_BOSS_CHANCE := [0.8, 0.5, 0.5, 0.5, 0.5]
-## Chance pro Boss-Kampf und Biom-Tiefe, dass einer der Bosse mythisch ist (Map.roll_boss_enemies)
+## Wie oft eine Seltenheit als Boss auftaucht, relativ zueinander (roll_species). Im Vergleich zu einem normalen Feld
+## (Map.RARITY_SPAWN_WEIGHTS, 12:6:3:2:1) sind seltenere Arten als Boss deutlich wahrscheinlicher.
+## Noch nicht freigeschaltete Seltenheiten (Map.RARITY_UNLOCKS) und solche ohne Arten fallen weg.
+const BOSS_RARITY_WEIGHTS := {
+	Enums.MON_RARITY.COMMON: 1.0,
+	Enums.MON_RARITY.UNCOMMON: 2.0,
+	Enums.MON_RARITY.RARE: 4.0,
+	Enums.MON_RARITY.EPIC: 3.0,
+	Enums.MON_RARITY.LEGENDARY: 2.0,
+}
+## Chance pro Boss-Kampf und Biom-Tiefe, dass einer der Bosse mythisch ist (Map.roll_boss_enemies),
+## nur wenn mythische Arten schon freigeschaltet sind (Map.RARITY_UNLOCKS)
 const MYTHIC_BOSS_CHANCE := [0.03, 0.05, 0.08, 0.1, 0.15]
 
 const RELIC_COLOR := Color(1.0, 0.75, 0.3)
@@ -119,13 +128,11 @@ func take_active() -> Array:
 # ─────────────────────────
 # Bosse ausstatten (Map.roll_boss_enemies, battle.gd)
 
-## Art eines Bosses: selten oder legendär (mythic: mythisch), bevorzugt mit einem Element des aktuellen Bioms
+## Art eines Bosses: Seltenheit gewichtet nach BOSS_RARITY_WEIGHTS (mythic: mythisch),
+## bevorzugt mit einem Element des aktuellen Bioms
 func roll_species(depth: int, mythic := false) -> String:
-	var chance: float = RARE_BOSS_CHANCE[clampi(depth, 0, RARE_BOSS_CHANCE.size() - 1)]
-	var rarity: int = Enums.MON_RARITY.RARE if randf() < chance else _top_rarity()
-	if mythic:
-		rarity = Enums.MON_RARITY.MYTHIC
 	var all = Monmap.mons.filter(func(meta): return not meta.has("bounty_target"))
+	var rarity: int = Enums.MON_RARITY.MYTHIC if mythic else _roll_boss_rarity(depth, all)
 	var candidates = all.filter(func(meta): return meta.get("rarity", Enums.MON_RARITY.COMMON) == rarity)
 	if candidates.is_empty():
 		candidates = all
@@ -133,17 +140,20 @@ func roll_species(depth: int, mythic := false) -> String:
 	var matching = candidates.filter(func(meta): return meta.initial_type & biome)
 	return (matching if not matching.is_empty() else candidates).pick_random().name
 
-## Legendär, solange es noch keine legendären Arten gibt die höchste vorhandene Seltenheit über selten (ohne mythisch)
-func _top_rarity() -> int:
-	var top: int = Enums.MON_RARITY.RARE
-	for meta in Monmap.mons:
-		if not meta.has("bounty_target") and meta.get("rarity", Enums.MON_RARITY.COMMON) != Enums.MON_RARITY.MYTHIC:
-			top = maxi(top, meta.get("rarity", Enums.MON_RARITY.COMMON))
-	return top
+## Seltenheit eines nicht-mythischen Bosses: nur freigeschaltete Seltenheiten, von denen es Arten gibt
+func _roll_boss_rarity(depth: int, species: Array) -> int:
+	var rarities = BOSS_RARITY_WEIGHTS.keys().filter(func(rarity):
+		return Map.is_rarity_unlocked(rarity, depth) \
+			and species.any(func(meta): return meta.get("rarity", Enums.MON_RARITY.COMMON) == rarity))
+	if rarities.is_empty():
+		return Enums.MON_RARITY.RARE
+	var weights = rarities.map(func(rarity): return BOSS_RARITY_WEIGHTS[rarity])
+	return rarities[Map.pick_weighted_index(range(rarities.size()), weights)]
 
-## Ist in diesem Boss-Kampf einer der Bosse mythisch? (MYTHIC_BOSS_CHANCE)
+## Ist in diesem Boss-Kampf einer der Bosse mythisch? (MYTHIC_BOSS_CHANCE, erst nach Freischaltung)
 func roll_mythic(depth: int) -> bool:
-	return randf() < MYTHIC_BOSS_CHANCE[clampi(depth, 0, MYTHIC_BOSS_CHANCE.size() - 1)]
+	return Map.is_rarity_unlocked(Enums.MON_RARITY.MYTHIC, depth) \
+		and randf() < MYTHIC_BOSS_CHANCE[clampi(depth, 0, MYTHIC_BOSS_CHANCE.size() - 1)]
 
 ## Zufällige Relikte für einen Boss-Kampf. Jedes Relikt kommt pro Run nur einmal zum Einsatz: schon zerbrochene
 ## (State.used_boss_relics) und die in exclude (z. B. schon an andere Kämpfe des Bioms vergeben) fallen weg.

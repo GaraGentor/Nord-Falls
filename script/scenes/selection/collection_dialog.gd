@@ -74,7 +74,25 @@ func _entry(meta: Dictionary, seen: bool) -> Control:
 	column.add_child(title)
 	var rarity: int = meta.get("rarity", Enums.MON_RARITY.COMMON)
 	column.add_child(_text(tr(Monmap.RARITY_LABELS[rarity]), Monmap.RARITY_COLORS[rarity], INFO_FONT_SIZE))
-	var where := tr("COLLECTION_BOSS_ONLY") if rarity == Enums.MON_RARITY.MYTHIC \
+	var where := tr("COLLECTION_BOSS_ONLY").format({"biome": Map.rarity_min_depth(rarity) + 1}) if rarity == Enums.MON_RARITY.MYTHIC \
 		else tr("COLLECTION_FROM_BIOME").format({"biome": Map.usual_depth(rarity) + 1})
 	column.add_child(_text(where, IronPlate.TEXT_COLOR, INFO_FONT_SIZE))
+	var requirement := _requirement_text(rarity)
+	if requirement != "":
+		var label := _text(requirement, UNKNOWN_COLOR, INFO_FONT_SIZE)
+		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		label.custom_minimum_size.x = ENTRY_WIDTH - 16
+		column.add_child(label)
 	return panel
+
+## Noch fehlender Besitz, damit die Seltenheit auftauchen darf (Map.RARITY_UNLOCKS), leer wenn erfüllt
+func _requirement_text(rarity: int) -> String:
+	var needed: Dictionary = Map.RARITY_UNLOCKS.get(rarity, {}).get("owned", {})
+	var owned := Map.owned_rarity_counts()
+	var missing := []
+	for needed_rarity in needed:
+		if owned.get(needed_rarity, 0) < needed[needed_rarity]:
+			missing.append("%d× %s" % [needed[needed_rarity], tr(Monmap.RARITY_LABELS[needed_rarity])])
+	if missing.is_empty():
+		return ""
+	return tr("COLLECTION_REQUIRES").format({"list": ", ".join(missing)})
