@@ -239,6 +239,27 @@ function collect() {
 		if (typeof mask === "number" && info && mask > 0) combos.push({ mask, ...info });
 	}
 
+	// Element-Effekte (ElementEffects): Konstanten der Reihe nach auswerten, Masken bauen auf EARTH/FIRE/... auf
+	const effectsSrc = stripComments(read("script/globals/element_effects.gd"));
+	const effectConsts = {};
+	for (const m of effectsSrc.matchAll(/^const\s+([A-Z_]+)\s*(?::\s*\w+\s*)?:?=\s*([^\n]+)$/gm)) {
+		if (m[2].trim().startsWith("{")) continue;
+		try {
+			const names = Object.keys(effectConsts);
+			const value = Function(...names, `"use strict"; return (${gdToJs(m[2])});`)(...names.map((n) => effectConsts[n]));
+			if (typeof value === "number" || typeof value === "string") effectConsts[m[1]] = value;
+		} catch {
+			// Color(...) und Ähnliches braucht das Wiki nicht
+		}
+	}
+	const effectKeysRaw = rawValue(effectsSrc, "EFFECT_KEYS");
+	const effectKeys = {};
+	if (effectKeysRaw === null) warnings.push("ElementEffects: Variable EFFECT_KEYS nicht gefunden");
+	else for (const m of effectKeysRaw.matchAll(/([A-Z_]+)\s*:\s*"(\w+)"/g)) {
+		if (m[1] in effectConsts) effectKeys[effectConsts[m[1]]] = m[2];
+		else warnings.push(`ElementEffects: Konstante ${m[1]} nicht gefunden`);
+	}
+
 	// Skills
 	const skillsSrc = read("script/globals/skills.gd");
 	// Skills._skill_cost: 1 Aktion + 1 pro erreichter Schwelle aus COST_THRESHOLDS
@@ -271,7 +292,12 @@ function collect() {
 		const image = `assets/mons/${mon.name}/${mon.name}_frontx256.png`;
 		if (fs.existsSync(path.join(ROOT, image))) mon.image = "res://" + image;
 		else warnings.push(`Monster ${mon.name}: Bild ${image} nicht gefunden`);
+		// größere Variante für die Detailansicht
+		const large = `assets/mons/${mon.name}/${mon.name}_frontx512.png`;
+		mon.imageLarge = fs.existsSync(path.join(ROOT, large)) ? "res://" + large : mon.image;
 	}
+	// Start-Monster (State.INITIAL_MONS), weitere Arten kommen im Spiel erst durch Fangen dazu
+	const starters = readVar(read("script/globals/state.gd"), "INITIAL_MONS", "State") ?? [];
 
 	const relics = readVar(relicsSrc, "RELICS", "Relics") ?? {};
 	for (const relic of Object.values(relics)) {
@@ -295,16 +321,21 @@ function collect() {
 			combos,
 			strongAgainst: readVar(skillsSrc, "STRONG_AGAINST", "Skills"),
 			elementBonus: readVar(skillsSrc, "ELEMENT_BONUS", "Skills"),
+			// Maske -> Übersetzungsschlüssel EFFECT_<KEY>_DESC, dazu die Werte für die Platzhalter
+			effectKeys,
+			effects: effectConsts,
 		},
 		skills,
 		skillLists: listNames,
 		tierWeights: readVar(skillsSrc, "TIER_WEIGHTS", "Skills"),
 		depthTierBonus: readVar(skillsSrc, "DEPTH_TIER_BONUS", "Skills"),
 		maxSkills: readVar(skillsSrc, "MAX_SKILLS", "Skills"),
+		dormantBasePower: readVar(skillsSrc, "DORMANT_BASE_POWER", "Skills"),
 		milestones: readVar(skillsSrc, "MILESTONES", "Skills") ?? [],
 		bounties: readVar(skillsSrc, "BOUNTIES", "Skills") ?? [],
 		bountyChance: readVar(skillsSrc, "BOUNTY_CHANCE", "Skills"),
 		mons,
+		starters,
 		catch: {
 			rarityBase: readVar(helperSrc, "CATCH_RARITY_BASE", "Helper"),
 			hpWeight: readVar(helperSrc, "CATCH_HP_WEIGHT", "Helper"),

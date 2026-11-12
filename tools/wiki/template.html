@@ -116,6 +116,34 @@ section[hidden] { display: none; }
 .tier { font-family: "Pixelify", monospace; color: var(--accent); letter-spacing: 1px; }
 
 .mon-img { width: 100%; height: 180px; object-fit: contain; background: var(--panel-2); border-radius: 10px; flex: none; }
+.card.clickable { cursor: pointer; transition: border-color .15s, transform .15s; }
+.card.clickable:hover, .card.clickable:focus-visible { border-color: var(--accent); transform: translateY(-2px); outline: none; }
+.tag.starter { background: color-mix(in srgb, var(--good) 18%, transparent); color: var(--good); }
+
+dialog#mon-dialog {
+	width: min(920px, calc(100vw - 32px)); max-height: calc(100vh - 32px); padding: 0;
+	background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow);
+}
+dialog#mon-dialog::backdrop { background: rgba(10, 8, 4, .55); backdrop-filter: blur(2px); }
+.dlg-head { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: var(--panel); border-bottom: 1px solid var(--line); }
+.dlg-head h2 { margin: 0; }
+.dlg-close { margin-left: auto; background: var(--panel-2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; width: 34px; height: 34px; font-size: 1.1rem; cursor: pointer; flex: none; }
+.dlg-body { padding: 16px; }
+.dlg-top { display: grid; grid-template-columns: minmax(0, 320px) 1fr; gap: 18px; align-items: start; }
+.dlg-top .mon-img { height: 320px; }
+.bars { display: grid; gap: 5px; margin-top: 6px; }
+.bar-row { display: grid; grid-template-columns: 44px 1fr 44px; gap: 8px; align-items: center; font-size: .85rem; }
+.bar-row .track { height: 9px; background: var(--panel-2); border-radius: 99px; overflow: hidden; }
+.bar-row .fill { height: 100%; background: var(--accent); border-radius: 99px; }
+.bar-row .v { text-align: right; font-variant-numeric: tabular-nums; }
+.matchup { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+.skill-cards { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.skill-card { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; min-width: 0; }
+.skill-card .meta { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 5px; font-size: .8rem; color: var(--muted); }
+.skill-card .meta b { color: var(--text); font-variant-numeric: tabular-nums; }
+.skill-card p { margin: 6px 0 0; font-size: .87rem; }
+.skill-card .how { margin-top: 6px; font-size: .78rem; color: var(--accent); }
+.tag.dormant { background: color-mix(in srgb, var(--muted) 20%, transparent); color: var(--muted); }
 .stat-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; margin-top: 4px; text-align: center; font-size: .85rem; }
 .stat-row span { display: block; font-size: .7rem; color: var(--muted); }
 .skill-group { margin-top: 12px; }
@@ -155,6 +183,8 @@ mark { background: color-mix(in srgb, var(--accent) 30%, transparent); color: in
 @media (max-width: 600px) {
 	input[type="search"] { width: 100%; order: 10; }
 	.brand { font-size: 1.15rem; }
+	.dlg-top { grid-template-columns: 1fr; }
+	.dlg-top .mon-img { height: 220px; }
 }
 </style>
 </head>
@@ -175,6 +205,7 @@ mark { background: color-mix(in srgb, var(--accent) 30%, transparent); color: in
 </header>
 <main id="main"></main>
 <footer id="footer"></footer>
+<dialog id="mon-dialog" aria-labelledby="mon-dialog-title"></dialog>
 
 <script>
 const DATA = /*__WIKI_DATA__*/null;
@@ -200,6 +231,14 @@ const UI = {
 		strongVs: "stark gegen", maxSkills: "Max. Skills pro Monster", tierWeights: "Stufen-Gewichte (Spawn-Häufigkeit)",
 		onlyBase: "Nur Grund-Elemente", allCombos: "Alle Kombinationen", catchHint: "bei 0 HP und gleicher Stufe",
 		bossRelics: "Boss-Relikte", relicsPerBattle: "Relikte pro Boss-Kampf", bossRarity: "Seltenheit der Bosse (Gewicht, in Klammern normales Feld)", rarityUnlocks: "Freischaltung (wild und Boss)", fromBiome: "ab Biom", needs: "braucht", mythicBossChance: "Chance auf einen mythischen Boss pro Boss-Kampf",
+		starter: "Start-Monster", onlyStarters: "Nur Start-Monster", noStarters: "Ohne Start-Monster", close: "Schließen",
+		clickHint: "Klick auf ein Monster zeigt alle Details.", weakTo: "Verwundbar gegen", resists: "Resistent gegen",
+		dormantHint: "Schlummert: {power} % Stärke, dem Monster fehlt ein Element", effect: "Effekt",
+		elementEffects: "Element-Effekte", noEffect: "Kein Zusatzeffekt (Grundelement)",
+		elementEffectsHint: "Aus <code>ElementEffects</code>. Grundelemente haben keinen Zusatzeffekt. Ausschlaggebend ist das Element des Skills, nicht das des Monsters. Schwächungen und Statuseffekte treffen jedes getroffene Ziel eines Schadens-Skills, Verstärkungen gelten einmal pro Einsatz für den Wirker. Zweier-Kombis halten wenige Züge, Dreier-Kombis bis Kampfende. Schlummernde Skills haben keinen Effekt. Einzelne Karten können Chance und Stärke anpassen, hier stehen die Standardwerte.",
+		starterHint: "Steht von Anfang an in der Ei-Auswahl zur Wahl", catchToUnlock: "Erst nach dem ersten Fang in der Ei-Auswahl",
+		effects: { damage: "Schaden", shield: "Schild", buff: "Buff", passive: "Passiv" },
+		targets: { SINGLE_ENEMY: "ein Gegner", TEAM_ENEMY: "alle Gegner", SINGLE_FRIEND: "ein Verbündeter", TEAM_FRIEND: "ganzes Team" },
 		mon: "Monster", lists: {
 			attack_skills: "Basis-Angriff", defensive_skills: "Basis-Block", buff_skills: "Buff", passive_skills: "Passiv", area_skills: "Flächenangriff", reward_skills: "Belohnung",
 			egg_skills: "Ei-Attacke", milestone_skills: "Meilenstein", bounty_skills: "Kopfgeld",
@@ -232,6 +271,14 @@ const UI = {
 		strongVs: "strong against", maxSkills: "Max skills per monster", tierWeights: "Tier weights (spawn frequency)",
 		onlyBase: "Base elements only", allCombos: "All combinations", catchHint: "at 0 HP and same level",
 		bossRelics: "Boss relics", relicsPerBattle: "Relics per boss battle", bossRarity: "Boss rarity (weight, normal node in brackets)", rarityUnlocks: "Unlocks (wild and boss)", fromBiome: "from biome", needs: "needs", mythicBossChance: "Chance for one mythic boss per boss battle",
+		starter: "Starter", onlyStarters: "Starters only", noStarters: "No starters", close: "Close",
+		clickHint: "Click a monster to see all details.", weakTo: "Weak to", resists: "Resists",
+		dormantHint: "Dormant: {power} % strength, the monster lacks an element", effect: "Effect",
+		elementEffects: "Element effects", noEffect: "No extra effect (base element)",
+		elementEffectsHint: "From <code>ElementEffects</code>. Base elements have no extra effect. What counts is the skill's element, not the monster's. Debuffs and status effects hit every target of a damage skill, buffs apply once per use to the caster. Two-element combos last a few turns, three-element combos until the battle ends. Dormant skills have no effect. Individual cards can change chance and strength, the defaults are shown here.",
+		starterHint: "Available in the egg selection from the start", catchToUnlock: "Joins the egg selection after the first catch",
+		effects: { damage: "Damage", shield: "Shield", buff: "Buff", passive: "Passive" },
+		targets: { SINGLE_ENEMY: "one enemy", TEAM_ENEMY: "all enemies", SINGLE_FRIEND: "one ally", TEAM_FRIEND: "whole team" },
 		mon: "Monster", lists: {
 			attack_skills: "Basic attack", defensive_skills: "Basic block", buff_skills: "Buff", passive_skills: "Passive", area_skills: "Area attack", reward_skills: "Reward",
 			egg_skills: "Egg move", milestone_skills: "Milestone", bounty_skills: "Bounty",
@@ -258,6 +305,8 @@ const state = {
 	skillList: "all",
 	monType: "all",
 	monRarity: "all",
+	monStarter: "all",
+	openMon: null,
 	matrixAll: false,
 };
 
@@ -291,6 +340,29 @@ const elementsIn = (mask) => BASE_MASKS.filter((e) => mask & e);
 const elementName = (mask) => tr(comboByMask[mask]?.label || "ELEMENT_UNKNOWN");
 const elementColor = (mask) => comboByMask[mask]?.color || "#555555";
 const chip = (mask) => `<span class="chip"><i style="background:${esc(elementColor(mask))}"></i>${esc(elementName(mask))}</span>`;
+
+// Spiegelt ElementEffects.element_effect_text (Standardwerte, ohne effect_power einer Karte), "" für Grundelemente
+const effectPct = (share) => fmtNum(Math.round(share * 1000) / 10);
+function elementEffectText(mask) {
+	const key = DATA.elements.effectKeys?.[mask];
+	if (!key) return "";
+	const c = DATA.elements.effects;
+	return tr(`EFFECT_${key}_DESC`, {
+		turns: c.EFFECT_TURNS,
+		speed: effectPct(c.SPEED_FACTOR),
+		attack: effectPct(c.ATTACK_FACTOR),
+		magma: fmtNum(Math.round(c.MAGMA_SHIELD_COST * 10) / 10),
+		ice: effectPct(c.ICE_SHIELD_SHARE),
+		poison: effectPct(c.POISON_SHARE),
+		stacks: c.POISON_MAX_STACKS,
+		burn: effectPct(c.BURN_SHARE),
+		burn_attack: effectPct(c.BURN_ATTACK_FACTOR),
+		paralysis: effectPct(c.PARALYSIS_CHANCE),
+		volcano: effectPct(c.VOLCANO_CHANCE),
+		chaos: Number(c.CHAOS_BONUS).toFixed(2),
+	// "Blitz: ..." – der Elementname steht im Wiki schon daneben
+	}).replace(/^[^:]+:\s*/, "");
+}
 
 // Spiegelt Skills.element_score / element_multiplier
 function elementScore(skillNature, targetType) {
@@ -370,6 +442,98 @@ function statProfile(m) {
 		Object.entries(labels).map(([key, label]) => `<div><span>${esc(tr("STAT_" + label).replace(":", ""))}</span>${m.preferred_stats[key] ?? "–"} %</div>`).join("")}</div></div>`;
 }
 
+const isStarter = (m) => (DATA.starters || []).includes(m.name);
+const starterTag = (m) => isStarter(m) ? `<span class="tag starter" title="${esc(ui("starterHint"))}">${esc(ui("starter"))}</span>` : "";
+// Wie man eine Meilenstein- bzw. Kopfgeld-Ei-Attacke freischaltet
+function milestoneHow(key) {
+	const def = DATA.milestones.find((m) => m.key === key);
+	return def ? `${def.count}× ${tr("MILESTONE_STAT_" + def.stat.toUpperCase())}` : key;
+}
+function bountyHow(key) {
+	const def = DATA.bounties.find((b) => b.key === key);
+	return def ? tr(def.label, { mon: monName(def.mon) }) + ` (${ui("depth")} ${def.min_depth + 1}+)` : key;
+}
+const popcount = (mask) => elementsIn(mask).length;
+
+// Ein Skill mit allen Werten, wie ihn das Monster einsetzt
+function skillCard(name, m, how) {
+	const s = skillByName[name];
+	if (!s) return `<li class="skill-card"><b>${esc(tr(name))}</b>${how ? `<div class="how">${esc(how)}</div>` : ""}</li>`;
+	const value = s.value ?? s.damage;
+	const awake = covers(m.initial_type, s.nature);
+	// wie Skills.dormant_power
+	const share = popcount(s.nature & m.initial_type) / Math.max(popcount(s.nature), 1);
+	const dormant = (DATA.dormantBasePower ?? 0.4) + (1 - (DATA.dormantBasePower ?? 0.4)) * share;
+	const meta = [
+		value != null ? `${ui("power")} <b>${fmtNum(value)}</b>${!awake ? ` <span title="${esc(ui("dormantHint").replace("{power}", Math.round(dormant * 100)))}">(→ ${fmtNum(Math.max(Math.round(value * dormant), 1))})</span>` : ""}` : "",
+		s.effect ? `${ui("effect")} <b>${esc(ui("effects")[s.effect] || s.effect)}</b>` : "",
+		`<b>${dmgType(s)}</b>`,
+		s.cost != null ? `${ui("cost")} <b>${s.cost}</b>` : "",
+		s.cooldown != null ? `${ui("cd")} <b>${s.cooldown}</b>` : "",
+		s.target ? `${ui("target")} <b>${esc(ui("targets")[s.target] || s.target)}</b>` : "",
+	].filter(Boolean).map((x) => `<span>${x}</span>`).join("");
+	return `<li class="skill-card">
+		<div class="row" style="gap:6px">${chip(s.nature)} <b>${esc(tr(name))}</b> <span class="tier small">${tierStars(s.tier)}</span>
+			${!awake ? `<span class="tag dormant" title="${esc(ui("dormantHint").replace("{power}", Math.round(dormant * 100)))}">${esc(tr("SKILL_DORMANT").split(":")[0])}</span>` : ""}</div>
+		<div class="meta">${meta}</div>
+		<p>${esc(skillDesc(s))}</p>
+		${how ? `<div class="how">${esc(how)}</div>` : ""}
+	</li>`;
+}
+
+function renderMonDetail(m) {
+	const catchBase = DATA.catch.rarityBase?.[m.rarity];
+	const labels = { hp: "HP", atk: "ATK", def: "DEF", s_atk: "SPA", s_def: "SPD", speed: "SPE" };
+	const maxPref = Math.max(...Object.values(m.preferred_stats || { x: 1 }));
+	const bars = m.preferred_stats ? `<div class="skill-group"><h4 title="${esc(ui("preferredHint"))}">${ui("preferredStats")}</h4><div class="bars">${
+		Object.entries(labels).map(([key, label]) => {
+			const v = m.preferred_stats[key] ?? 0;
+			return `<div class="bar-row"><span class="muted">${esc(tr("STAT_" + label).replace(":", ""))}</span><div class="track"><div class="fill" style="width:${(v / maxPref) * 100}%"></div></div><span class="v">${v} %</span></div>`;
+		}).join("")}</div><p class="small muted" style="margin:6px 0 0">${esc(ui("preferredHint"))}</p></div>` : "";
+	// Basis-Elemente, die gegen dieses Monster stark bzw. schwach sind
+	const vs = BASE_MASKS.map((e) => [e, elementMultiplier(e, m.initial_type)]);
+	const weak = vs.filter(([, x]) => x > 1), strong = vs.filter(([, x]) => x < 1);
+	const vsList = (list) => list.length ? list.map(([e, x]) => `${chip(e)} <span class="small muted">×${fmtNum(x)}</span>`).join(" ") : `<span class="muted">${ui("none")}</span>`;
+	const group = (title, items) => `<div class="skill-group"><h4>${title}</h4>${items.length ? `<ul class="skill-cards">${items.join("")}</ul>` : `<span class="muted">${ui("none")}</span>`}</div>`;
+	const ms = Object.entries(m.milestone_egg_skills || {});
+	const bs = Object.entries(m.bounty_egg_skills || {});
+	return `<div class="dlg-head">
+		<h2 id="mon-dialog-title">${esc(monName(m.name))}</h2>
+		${chip(m.initial_type)} <span class="tag" style="${RARITY_STYLE[m.rarity] || ""}">${esc(rarityName(m.rarity))}</span> ${starterTag(m)}
+		<button class="dlg-close" data-close aria-label="${esc(ui("close"))}" title="${esc(ui("close"))}">✕</button>
+	</div>
+	<div class="dlg-body">
+		<div class="dlg-top">
+			<img class="mon-img" src="${esc(res(m.imageLarge || m.image))}" alt="${esc(monName(m.name))}" onerror="this.style.visibility='hidden'">
+			<div style="min-width:0">
+				<dl class="kv" style="margin-top:0">
+					<dt>${ui("bst")}</dt><dd>${(m.stats || []).join(" – ")}</dd>
+					<dt>${ui("maxUpgrades")}</dt><dd>${m.max_upgrades ?? ui("none")}</dd>
+					${catchBase != null ? `<dt>${ui("catchBase")}</dt><dd>${pct(catchBase)} <span class="small muted">(${esc(ui("catchHint"))})</span></dd>` : ""}
+					<dt>${ui("starter")}</dt><dd>${esc(isStarter(m) ? ui("starterHint") : ui("catchToUnlock"))}</dd>
+					<dt>${ui("weakTo")}</dt><dd class="matchup">${vsList(weak)}</dd>
+					<dt>${ui("resists")}</dt><dd class="matchup">${vsList(strong)}</dd>
+				</dl>
+				${bars}
+			</div>
+		</div>
+		${group(ui("defaultSkills"), (m.default_egg_skills || []).map((n) => skillCard(n, m)))}
+		${group(ui("unlockable"), (m.unlockable_egg_skills || []).map((n) => skillCard(n, m)))}
+		${group(ui("milestone"), ms.map(([k, n]) => skillCard(n, m, milestoneHow(k))))}
+		${group(ui("bounty"), bs.map(([k, n]) => skillCard(n, m, bountyHow(k))))}
+	</div>`;
+}
+
+function openMonDialog(name) {
+	const m = DATA.mons.find((x) => x.name === name);
+	const dlg = document.getElementById("mon-dialog");
+	if (!m) { state.openMon = null; if (dlg.open) dlg.close(); return; }
+	state.openMon = name;
+	dlg.innerHTML = renderMonDetail(m);
+	if (!dlg.open) dlg.showModal();
+	dlg.scrollTop = 0;
+}
+
 function renderMonsters() {
 	const bountyByKey = Object.fromEntries(DATA.bounties.map((b) => [b.key, b]));
 	const msByKey = Object.fromEntries(DATA.milestones.map((m) => [m.key, m]));
@@ -379,6 +543,7 @@ function renderMonsters() {
 	const cards = DATA.mons
 		.filter((m) => state.monType === "all" || m.initial_type === Number(state.monType))
 		.filter((m) => state.monRarity === "all" || m.rarity === state.monRarity)
+		.filter((m) => state.monStarter === "all" || isStarter(m) === (state.monStarter === "starter"))
 		.filter((m) => {
 		const skills = [...(m.default_egg_skills || []), ...(m.unlockable_egg_skills || []),
 			...Object.values(m.milestone_egg_skills || {}), ...Object.values(m.bounty_egg_skills || {})];
@@ -389,12 +554,12 @@ function renderMonsters() {
 		const ms = Object.entries(m.milestone_egg_skills || {});
 		const bs = Object.entries(m.bounty_egg_skills || {});
 		const catchBase = DATA.catch.rarityBase?.[m.rarity];
-		return `<article class="card">
+		return `<article class="card clickable" data-mon="${esc(m.name)}" tabindex="0" role="button" aria-label="${esc(monName(m.name))}">
 			<div class="row" style="align-items:flex-start">
 				<img class="mon-img" src="${esc(res(m.image))}" alt="${esc(monName(m.name))}" loading="lazy" onerror="this.style.visibility='hidden'">
 				<div style="min-width:0">
 					<h3>${hl(monName(m.name))}</h3>
-					<div class="row" style="margin-top:4px">${chip(m.initial_type)} <span class="tag" style="${RARITY_STYLE[m.rarity] || ""}">${esc(rarityName(m.rarity))}</span></div>
+					<div class="row" style="margin-top:4px">${chip(m.initial_type)} <span class="tag" style="${RARITY_STYLE[m.rarity] || ""}">${esc(rarityName(m.rarity))}</span> ${starterTag(m)}</div>
 					<dl class="kv">
 						<dt>${ui("bst")}</dt><dd>${(m.stats || []).join(" – ")}</dd>
 						<dt>${ui("maxUpgrades")}</dt><dd>${m.max_upgrades ?? ui("none")}</dd>
@@ -424,7 +589,11 @@ function renderMonsters() {
 			<option value="all">${ui("rarity")}: ${ui("all")}</option>
 			${rarities.map((r) => `<option value="${r}" ${r === state.monRarity ? "selected" : ""}>${esc(rarityName(r))}</option>`).join("")}
 		</select>
-		<span class="muted small">${cards.length} / ${DATA.mons.length}</span>
+		<select id="f-mon-starter" aria-label="${ui("starter")}">
+			${[["all", `${ui("starter")}: ${ui("all")}`], ["starter", ui("onlyStarters")], ["other", ui("noStarters")]]
+				.map(([v, l]) => `<option value="${v}" ${v === state.monStarter ? "selected" : ""}>${esc(l)}</option>`).join("")}
+		</select>
+		<span class="muted small">${cards.length} / ${DATA.mons.length} · ${esc(ui("clickHint"))}</span>
 	</div>`;
 	return header("monsters") + filters + (cards.length ? `<div class="grid">${cards.join("")}</div>` : `<div class="empty">${ui("noResults")}</div>`);
 }
@@ -506,6 +675,7 @@ function renderElements() {
 			<div><h3>${hl(tr(c.label))}</h3><div class="small muted">${elementsIn(c.mask).length > 1 ? `${ui("components")}: ${elementsIn(c.mask).map(elementName).join(" + ")}` : esc(c.color)}</div></div>
 		</div>
 		<dl class="kv">
+			<dt>${ui("effect")}</dt><dd>${elementEffectText(c.mask) ? hl(elementEffectText(c.mask)) : ui("noEffect")}</dd>
 			<dt>${ui("skills")}</dt><dd>${skills.length ? skills.map((s) => esc(tr(s.name))).join(", ") : ui("none")}</dd>
 			<dt>${ui("monsters")}</dt><dd>${mons.length ? mons.map((m) => esc(monName(m.name))).join(", ") : ui("none")}</dd>
 		</dl></article>`;
@@ -530,7 +700,22 @@ function renderElements() {
 			<tbody>${axis.map((a) => `<tr><th class="rowh">${chip(a)}</th>${axis.map((d) => cell(a, d)).join("")}</tr>`).join("")}</tbody>
 		</table></div></div>`;
 
+	// Übersicht der Element-Effekte (ElementEffects), nach Anzahl der Grundelemente gruppiert
+	const effectRows = DATA.elements.combos
+		.filter((c) => elementEffectText(c.mask))
+		.filter((c) => matches(tr(c.label), c.label, elementEffectText(c.mask), ...elementsIn(c.mask).map(elementName)))
+		.sort((a, b) => elementsIn(a.mask).length - elementsIn(b.mask).length || a.mask - b.mask);
+	const effectTable = `<h3 style="margin:24px 0 10px">${ui("elementEffects")}</h3>
+		<p class="small muted" style="margin:0 0 10px">${ui("elementEffectsHint")}</p>
+		${effectRows.length ? `<div class="table-wrap"><table>
+			<thead><tr><th>${ui("element")}</th><th>${ui("components")}</th><th>${ui("effect")}</th></tr></thead>
+			<tbody>${effectRows.map((c) => `<tr><td>${chip(c.mask)}</td>
+				<td class="small muted">${elementsIn(c.mask).map(elementName).join(" + ")}</td>
+				<td>${hl(elementEffectText(c.mask))}</td></tr>`).join("")}</tbody>
+		</table></div>` : `<div class="empty">${ui("noResults")}</div>`}`;
+
 	return header("elements") + `<div class="grid">${cycleHtml}${matrix}</div>
+		${effectTable}
 		<h3 style="margin:24px 0 10px">${ui("combos")}</h3>
 		${combos.length ? `<div class="grid">${comboHtml}</div>` : `<div class="empty">${ui("noResults")}</div>`}`;
 }
@@ -660,6 +845,8 @@ function render() {
 	renderChrome();
 	const warn = DATA.warnings?.length ? `<div class="warn"><b>${ui("warnings")}</b><ul>${DATA.warnings.map((w) => `<li>${esc(w)}</li>`).join("")}</ul></div>` : "";
 	document.getElementById("main").innerHTML = warn + `<section>${SECTIONS[state.tab].render()}</section>`;
+	// offene Detailansicht z. B. nach Sprachwechsel neu aufbauen
+	if (state.openMon) openMonDialog(state.openMon);
 }
 
 function applyTheme(theme) {
@@ -669,7 +856,18 @@ function applyTheme(theme) {
 	localSet("wiki.theme", theme);
 }
 
+const monDialog = document.getElementById("mon-dialog");
+// Klick auf den abgedunkelten Rand schließt die Detailansicht
+monDialog.addEventListener("click", (e) => { if (e.target === monDialog || e.target.closest("[data-close]")) monDialog.close(); });
+monDialog.addEventListener("close", () => { state.openMon = null; });
+document.addEventListener("keydown", (e) => {
+	const card = e.target.closest?.("[data-mon]");
+	if (card && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openMonDialog(card.dataset.mon); }
+});
 document.addEventListener("click", (e) => {
+	if (monDialog.contains(e.target)) return;
+	const card = e.target.closest("[data-mon]");
+	if (card) { openMonDialog(card.dataset.mon); return; }
 	const t = e.target.closest("button, th.sortable");
 	if (!t) return;
 	if (t.dataset.tab) {
@@ -698,6 +896,7 @@ document.addEventListener("change", (e) => {
 	else if (e.target.id === "f-list") state.skillList = e.target.value;
 	else if (e.target.id === "f-mon-type") state.monType = e.target.value;
 	else if (e.target.id === "f-mon-rarity") state.monRarity = e.target.value;
+	else if (e.target.id === "f-mon-starter") state.monStarter = e.target.value;
 	else return;
 	render();
 });
