@@ -620,6 +620,8 @@ func learnable_copy(skill: Dictionary) -> Dictionary:
 	var copy = skill.duplicate()
 	copy.id = Helper.generate_fake_uuid()
 	copy.erase("egg_skill")
+	# gelernte Attacken sind dem eigenen Monster bekannt, auch wenn der Gegner sie nie eingesetzt hat
+	copy.scouted = true
 	return copy
 
 # ─────────────────────────

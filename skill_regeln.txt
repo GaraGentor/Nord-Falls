@@ -70,11 +70,11 @@ default_egg_skills (3, immer wählbar):  Standard-Skills der Kategorien 1., 2. u
   Start-Monster (State.INITIAL_MONS):   alle drei Standard
   Gewöhnlich:                           1. Kategorie als "Verstärkt", Rest Standard
   Ungewöhnlich und höher:               die beste ANGRIFFS-Kategorie der drei als Standard (keine Abklingzeit),
-                                        die anderen beiden "Verstärkt". So kann jede stärkere Art in jedem Zug
-                                        angreifen (ein Monster hat nur eine Aktion pro Zug, BASE_MOVES).
+										die anderen beiden "Verstärkt". So kann jede stärkere Art in jedem Zug
+										angreifen (ein Monster hat nur eine Aktion pro Zug, BASE_MOVES).
   Seltenheits-Bonus auf Standard-Skills (Skills.standard_rarity_bonus, gilt für alle Standard-Skills der Art,
   auch über den Trank gelernte): pro Stufe über Gewöhnlich Angriff +1, Schild +2.
-      Gewöhnlich 20 / 35   Ungewöhnlich 21 / 37   Selten 22 / 39   Episch 23 / 41   Legendär 24 / 43   Mythisch 25 / 45
+	  Gewöhnlich 20 / 35   Ungewöhnlich 21 / 37   Selten 22 / 39   Episch 23 / 41   Legendär 24 / 43   Mythisch 25 / 45
   Bewusst klein: die höheren Werte seltener Arten machen schon mehr Schaden. Verstärkt (26-29, Abklingzeit 1)
   bleibt stärker als jeder Standard-Skill.
   Variation: wo es eine Variante gibt (Splitterhieb, Glutbiss, Stachelpfeil), lieber die nehmen,

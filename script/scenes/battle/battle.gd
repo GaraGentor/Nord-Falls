@@ -170,6 +170,9 @@ func _is_own_turn() -> bool:
 func _on_turn_for(mon: Monster) -> void:
 	active_mon = mon
 	_turn_serial += 1
+	# Pfeil rechts neben dem Monster, das am Zug ist
+	for scene in _monster_scenes():
+		scene.set_turn_active(scene.mon == mon and mon != null)
 	$UI_Blocker.visible = true
 	# ein zerbrechendes Boss-Relikt hält den Kampf an
 	await _relic_overlay.wait_idle()

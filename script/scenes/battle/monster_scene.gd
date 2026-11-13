@@ -277,7 +277,51 @@ func _drop_data(_at_position: Vector2, data) -> void:
 	Events.mouse_event.emit({"action": Enums.MOUSE_ACTION.SELECT_MONSTER, "mon": mon})
 	Events.mouse_event.emit({"action": Enums.MOUSE_ACTION.PLAY_CARD, "skill": data.skill, "mon": mon})
 
-func _process(_delta: float) -> void:
+## Pfeil rechts neben dem Monster, das gerade am Zug ist; zeigt nach links auf das Monster und wippt leicht
+const TURN_ARROW_COLOR := Color(1.0, 0.85, 0.25)
+const TURN_ARROW_SIZE := 30.0
+const TURN_ARROW_BOB := 6.0
+var _turn_arrow: Control
+var _turn_arrow_time := 0.0
+
+func set_turn_active(active: bool) -> void:
+	if active and _turn_arrow == null:
+		_turn_arrow = Control.new()
+		_turn_arrow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_turn_arrow.z_index = 10
+		_turn_arrow.draw.connect(_draw_turn_arrow)
+		add_child(_turn_arrow)
+	if _turn_arrow:
+		_turn_arrow.visible = active
+		_turn_arrow_time = 0.0
+		_update_turn_arrow(0.0)
+
+func _draw_turn_arrow() -> void:
+	var s := TURN_ARROW_SIZE
+	# Spitze bei (0, 0), Pfeil zeigt nach links
+	var points := PackedVector2Array([Vector2(0, 0), Vector2(s * 0.6, -s * 0.5), Vector2(s * 0.6, -s * 0.22),
+		Vector2(s * 1.2, -s * 0.22), Vector2(s * 1.2, s * 0.22), Vector2(s * 0.6, s * 0.22), Vector2(s * 0.6, s * 0.5)])
+	_turn_arrow.draw_colored_polygon(points, TURN_ARROW_COLOR)
+	var outline := points.duplicate()
+	outline.append(points[0])
+	_turn_arrow.draw_polyline(outline, Color.BLACK, 3.0, true)
+
+## Rechte Kante des tatsächlich gezeichneten Monsterbilds (das Bild ist zentriert und behält sein Seitenverhältnis)
+func _update_turn_arrow(delta: float) -> void:
+	if _turn_arrow == null or not _turn_arrow.visible or texture_rect.texture == null:
+		return
+	_turn_arrow_time += delta
+	var rect_size := texture_rect.size
+	var tex_size := texture_rect.texture.get_size()
+	var scale_factor := minf(rect_size.x / tex_size.x, rect_size.y / tex_size.y)
+	var drawn := tex_size * scale_factor
+	var origin := _texture_offset() + (rect_size - drawn) / 2
+	var bob := sin(_turn_arrow_time * 5.0) * TURN_ARROW_BOB
+	# etwas über der Mitte, damit der Pfeil die Statusanzeige nicht verdeckt
+	_turn_arrow.position = origin + Vector2(drawn.x + 4 + bob, drawn.y * 0.3)
+
+func _process(delta: float) -> void:
+	_update_turn_arrow(delta)
 	# gültiges Ziel unter einer gezogenen Karte hervorheben
 	var drag_data = get_viewport().gui_get_drag_data() if get_viewport().gui_is_dragging() else null
 	var hovered = drag_data != null and get_global_rect().has_point(get_global_mouse_position()) \
