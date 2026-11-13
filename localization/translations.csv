@@ -320,6 +320,26 @@ MONSTER_42,Smogfist,Smogfaust
 MONSTER_43,Bonebasher,Knochenschläger
 MONSTER_44,Mawworm,Schlundwurm
 MONSTER_45,Volcashell,Vulkanpanzer
+MONSTER_46,Emberlizard,Glutechse
+MONSTER_47,Swordfin,Schwertflosser
+MONSTER_48,Coralking,Korallenkönig
+MONSTER_49,Blazefiend,Lohenteufel
+MONSTER_50,Maceback,Keulenschwanz
+MONSTER_51,Sunsphinx,Sonnensphinx
+MONSTER_52,Whirlwyrm,Strudeldrache
+MONSTER_53,Rime Drake,Reifdrache
+MONSTER_54,Shardhulk,Splitterkoloss
+MONSTER_55,Steelshark,Stahlhai
+MONSTER_56,Hauntshack,Spukhütte
+MONSTER_57,Mantablade,Rochenklinge
+MONSTER_58,Gloomreaver,Schattenreißer
+MONSTER_59,Sandsouls,Sandseelen
+MONSTER_60,Bogwraith,Moorgeist
+MONSTER_61,Vinemaw,Rankenrachen
+MONSTER_62,Thunderlord,Gewitterfürst
+MONSTER_63,Riftbones,Spaltknochen
+MONSTER_64,Frostblob,Frostklumpen
+MONSTER_65,Lavaknight,Lavaritter
 TURN_WHEEL_ROUND,Round {round},Runde {round}
 SKILL_RAPTOR_DIVE,Raptor Dive,Raubvogelsturz
 SKILL_HUNTERS_GALE,Hunter's Gale,Jägerböe
