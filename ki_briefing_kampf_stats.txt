@@ -1,0 +1,252 @@
+Du bist erfahrene/r Game Designer/in mit Schwerpunkt Kampfsysteme und Balancing (Zahlen, Kurven, Simulationen).
+Ich möchte das Scaling und die Verteilung von Stats, Skills und Kämpfen in meinem Spiel neu durchplanen.
+Unten steht der aktuelle Stand, so wie er im Code umgesetzt ist. Bitte gib mir Ideen, Kritik und konkrete Zahlenvorschläge.
+
+
+# Das Spiel in Kürze
+"To the North": Singleplayer-Roguelike (Godot 4, 2D) mit Monsterfang und rundenbasierten Kartenkämpfen.
+Gefühl: Monster fangen wie in Pokémon, Run-Struktur und Kartenwahl wie in Slay the Spire.
+- Ein Run: 5 Biome, rund 26 normale Kämpfe plus Bosse. Gegner steigen von Stufe ~5 auf ~35.
+- Start mit einem Ei-Monster auf Stufe 5. Mein Team hat maximal 2 Monster, Gegner 1 bis 3.
+- Fangen statt Töten: Statt anzugreifen kann ich einen Fang versuchen (beendet den Zug).
+  Aber nur K.O.s geben Stufen (2 K.O.s = +1 Stufe für das Team). Wer nur fängt, fällt zurück.
+- Biome sind Elementkombinationen: Biom 1 hat ein Element, das letzte ist "Chaos" (alle vier).
+
+
+# 1. STATS
+==========
+Sechs Werte: KP, Angriff (atk), Verteidigung (def), Sp. Angriff (s_atk), Sp. Verteidigung (s_def), Initiative (speed).
+
+Basiswerte-Summe (BST) pro Seltenheit, wird pro Art und Run zufällig im Bereich gewürfelt:
+  Gewöhnlich   190-210     (14 Arten)
+  Ungewöhnlich 200-220     (14)
+  Selten       215-235     (13)
+  Episch       230-250     (10)
+  Legendär     245-265     (8)
+  Mythisch     260-280     (6, nur als Boss, praktisch unfangbar)
+
+Verteilung: Jede Art hat ein Profil in Prozent (Summe 100), z. B.
+  Sturmschamane (Luft, gewöhnlich):  KP 15, Ang 15, Vert 12, SpA 25, SpV 15, Init 18
+  Leuchtkrabbe (Wasser, gewöhnlich): KP 18, Ang 14, Vert 25, SpA 14, SpV 19, Init 10
+  Episch (Beispiel):                 KP 17, Ang 8,  Vert 14, SpA 25, SpV 24, Init 12
+Pro Run weicht jeder Anteil um bis zu ±15 % ab (danach wieder auf 100 % normiert).
+Die Werte einer Art sind verdeckt und werden durch Treffer aufgedeckt
+(ich treffe ihn -> seine Vert./SpV sichtbar, er trifft mich -> sein Ang./SpA sichtbar).
+
+Formel pro Wert:
+  Wert(Stufe) = Anteil * (BST / 35) * 8 * Stufe          (linear, Stufe 10 = 10x Stufe 1)
+  (35 = Referenzstufe, 8 = Skalierung, damit gerundete Schadenszahlen auf niedriger Stufe fein genug sind)
+  Danach: (Wert + Trophäen-Punkte) * Buffs/Schwächungen * Passive-Boni.
+  Buffs und Schwächungen addieren sich als Faktor, Untergrenze 0,25.
+
+Beispiel ausgeglichene Art, BST 200, je 1/6 Anteil: Stufe 5 ~38 pro Wert, Stufe 35 ~267.
+
+Weitere Stat-Quellen im Run:
+  - Trophäen: feste Punkte auf einen Wert, je Biom-Tiefe 15 / 20 / 25 / 30 / 35. Bosse tragen ebenfalls Trophäen.
+  - Kerkermeister: dauerhaft +1 Aktion pro Zug für eine Art (über Boss-Tränen, sehr stark).
+  - Passive (siehe 5.) und Buffs (siehe 4.).
+
+Im Debug-Menü gibt es Stellschrauben, aktuell noch auf Standard:
+  - KP-Reserve: ein fester Anteil der BST geht vorab an KP (oder einen anderen Wert).
+  - Wachstum pro Stufe (Faktor), "Stufen-Sockel" (level_offset): flacht den Zuwachs ab,
+    z. B. Sockel 10 -> Stufe 7 hat nur 17/15 der Werte von Stufe 5 statt 7/5.
+  - KP-Multiplikator.
+
+
+# 2. SCHADEN
+============
+Physisch: Angriff gegen Verteidigung. Magisch: Sp. Angriff gegen Sp. Verteidigung.
+Skill-Wert = Prozent vom Angriff.
+
+Aktive Formel ("classic"):
+  Schaden = aufrunden( Ang * (Wert/100) * 2*Ang/(Ang+Vert) * Element-Faktor )
+  -> Bei Ang = Vert ist der Faktor 1, mehr Angriff bis x2, mehr Verteidigung gegen 0.
+  -> Angriff zählt etwa 3x so viel wie Verteidigung.
+
+Alternativen, im Debug-Menü umschaltbar, noch nicht entschieden:
+  "symmetric": Grundwert der Stufe * (Wert/100) * clamp(2*a^k/(a^k+d^k), 0.25, 2.0) * Element, k = 2
+               (Grundwert aus einer festen Referenz-BST 210, damit die BST nicht doppelt zählt)
+               Empfehlung aus meiner Simulation: symmetric, Stufen-Sockel 10, feste BST 210.
+  "pokemon":   (floor(2L/5)+2) * Wert * Ang/Vert / 50 + 2
+
+Beobachtungen aus der Simulation (classic, linear):
+  - Gleiche Stufe, Wert 20, ausgeglichene Arten: ~5 Treffer bis K.O., Wert 40: ~3 Treffer.
+    Weil Werte und KP linear wachsen, bleibt das auf jeder Stufe gleich.
+  - Stufenvorteil wirkt etwa kubisch: Stufe 7 gegen Stufe 5 besiegt den Gegner ~2,7x schneller als umgekehrt.
+  - BST-Vorteil genauso: Mythisch 270 gegen 200 ~2,5x Kampfkraft.
+  -> Das ist einer der Hauptgründe, warum ich das Scaling neu planen will.
+
+Schilde:
+  - Getrennt: Rüstung (physisch) und Magie-Schild. Fangen nur passenden Schaden ab.
+  - Menge = Skill-Wert % der eigenen Vert. bzw. SpV (+ Schild-Passive).
+  - Halten bis zum nächsten eigenen Zug des geschützten Monsters oder bis sie aufgebraucht sind.
+
+Elementkreis: Wasser > Feuer > Luft > Erde > Wasser. Gegenüber (Wasser/Luft, Feuer/Erde) neutral.
+  - Jedes Element des Skills wird gegen jedes Element des Ziels verrechnet: +1 stark, -1 schwach.
+  - Faktor: +1 = x1,5, +2 = x2,0 ... / -1 = x0,5, -2 = x0,25.
+  - Mehrfach-Elemente erben alle Schwächen und Resistenzen, die sich aufheben können.
+  - Chaos (alle vier) ist damit gegen alles neutral. Chaos-Skills bekommen +0,25 auf den Faktor.
+
+
+# 3. KAMPFABLAUF
+================
+- Zugreihenfolge: Initiative-Rad, wird zu Rundenbeginn nach Initiative sortiert.
+- Das Monster am Zug spielt seine Skills als Karten. Jedes Monster kennt höchstens 6 Skills.
+- Aktionen: eigene Monster 1 pro Zug (mehr nur über Kerkermeister oder Relikt), Gegner später bis zu 3.
+  Gegner-Aktionen pro Biom (Gewichte für 1/2/3 Aktionen, Anfang -> Ende des Bioms):
+    Biom 1: 100/0/0 -> 90/10/0      Biom 4: 40/45/15 -> 20/50/30
+    Biom 2: 85/15/0 -> 65/30/5      Biom 5: 20/50/30 -> 5/45/50
+    Biom 3: 60/35/5 -> 40/45/15
+- Skill-Kosten: Angriffe ab Wert 50 kosten 2 Aktionen, ab 80 drei. Schilde ab 75 zwei, Team-Schilde immer zwei.
+  Dazu Abklingzeiten 0-3 Züge.
+  -> Mit 1 Aktion kann ein eigenes Monster Skills über 50 nicht einsetzen, bis es mehr Aktionen hat.
+- Gegner-Anzahl (Gewichte 1/2/3 Gegner): Biom 1 fast nur Einzelkämpfe, Biom 5 meist 3 gegen 2.
+- Gegnerstufen: Biom 1: 4-6, Biom 2: 7-11, Biom 3: 12-17, Biom 4: 18-25, Biom 5: 26-35 (+ kleine Zufallsabweichung).
+- Bosse: 1-3 Stück, +1 bis +2 Stufen über dem Biom-Ende, mindestens 1-3 Aktionen, dazu ein Boss-Relikt.
+- Absichten: Gegner kündigen ihren nächsten Zug samt Ziel und Schaden an.
+  Die KI bewertet Skill+Ziel (erwarteter Schaden, Kill-Bonus x2, wenig Overkill, leichte Bedrohungs-Gewichtung),
+  würfelt gewichtet (Schärfe steigt mit der Biom-Tiefe) und die Gegner sprechen Fokus ab.
+- Fangchance: Grundchance nach Seltenheit (90 / 70 / 50 / 30 / 15 / 5 %), x (1 - 0,75 * KP-Anteil),
+  -8 % pro Stufe über dem eigenen Team, Bonus bei unter 10 % / 5 % KP. Grenzen 1-95 %.
+- Stufen: 2 K.O.s = +1 Stufe für das Team. Für den Weg von Stufe 5 auf 35 braucht es also ~60 K.O.s
+  in ~26 Kämpfen plus Bossen.
+
+Boss-Relikte (eins pro Boss-Kampf, gilt für alle Gegner):
+  Heilmoos (heilen 20 % des Schadens), Glutboden (meine Monster -5 % max. KP pro Runde),
+  Fate-Spiegel (zugefügter Schaden wird zum Schild), Bongos (abwechselnd Rüstung/Magie-Schild 25 %),
+  Nebelmaschine (50 % Verfehlen), Flinkes Wiesel (abwechselnd zuerst/zuletzt),
+  Mikrofon (ungerade Runden fallen aus, alle heilen 10 % der fehlenden KP),
+  Magische Dornen (15 % Rückschaden, abwechselnd physisch/magisch).
+
+Spieler-Relikte (Auswahl): +1 Aktion, Fangchance +25 %, langsamstes Monster in Runde 1 zuerst,
+  jedes Level-Up gibt 2 Stufen, Trophäen +2, alle Gegnerwerte/-skills sichtbar.
+
+
+# 4. ELEMENTE UND ELEMENT-EFFEKTE
+=================================
+Grundelemente: Erde, Feuer, Wasser, Luft. Kombi-Elemente entstehen aus 2, 3 oder 4 Grundelementen.
+Monster lernen über Tränke neue Elemente und können dann mehr Skills einsetzen.
+
+Element-Charakter (ca. +5 % gegenüber den anderen Grundelementen):
+  Feuer = physische Angriffe, Luft = magische Angriffe, Erde = Rüstung, Wasser = Magie-Schilde.
+
+Skill-Regel: Ein Monster kann einen Skill einsetzen, wenn es mindestens ein Element des Skills hat.
+Fehlen Elemente, "schlummert" der Skill: Wert = 40 % + 60 % * (vorhandene Elemente / Elemente des Skills),
+kein Element-Effekt, und er trifft nur mit den Elementen, die das Monster hat.
+
+Element-Effekt löst beim Ausspielen aus und hängt am Element des SKILLS (nicht des Monsters).
+Grundelemente haben keinen Effekt. Gegner nutzen dieselben Effekte.
+
+Zweier-Kombis (3 Spiegelpaare, wirken 2 Züge):
+  Tempo:    Dampf (Feuer+Wasser)  Ziel Initiative -20 %   <->  Blitz (Feuer+Luft)    Wirker Initiative +20 %
+  Schilde:  Magma (Erde+Feuer)    Treffer zieht Schilde    <->  Eis (Luft+Wasser)     Wirker bekommt Schild =
+                                  doppelt ab                                          25 % des verursachten Schadens
+  Angriff:  Staub (Erde+Luft)     Ziel Ang./SpA -20 %      <->  Schlamm (Erde+Wasser) Wirker Ang./SpA +20 %
+
+Dreier-Kombis (Status bis Kampfende):
+  Sumpf (Erde+Luft+Wasser)       Gift: 3 % max. KP pro Stapel vor jedem Zug, max. 5 Stapel, Rüstung fängt es ab
+  Aschesturm (Erde+Luft+Feuer)   Verbrennung: 6 % max. KP nach jedem Zug + Angriff -15 %, Magie-Schild fängt es ab
+  Gewitter (Luft+Wasser+Feuer)   Paralyse: 20 % Chance zu Zugbeginn, dass der Zug ausfällt
+  Vulkan (Erde+Feuer+Wasser)     15 % Chance, dass der Skill ein zweites Mal wirkt
+
+Chaos (alle vier): nur +0,25 Element-Faktor, kein weiterer Effekt. Soll Ziel für den Endkampf sein.
+
+Gleicher Effekt erneut: frischt auf, stapelt nicht (Ausnahme Gift).
+Karten können Auslösechance (effect_chance) und Stärke (effect_power) ihres Effekts anpassen:
+  mittlere Skills 100 %, starke 75 %, Top-Skills 60 % (dafür Stärke x1,5).
+
+
+# 5. SKILLS
+===========
+Rund 230 Skills. Skill-Wert = % vom (Sp.) Angriff bei Angriffen, % der (Sp.) Verteidigung bei Schilden.
+
+Obergrenzen:
+  Grundelement Angriffe bis 60, Zweier-Kombi bis 80, Dreier-Kombi bis 100, Chaos 70-100 (nur 2-4 Skills),
+  höchstens zwei Ausnahmen bis 150. Schilde: Grundelement bis 90, Kombi bis ~75.
+
+Stufen im Grundelement:
+  Stufe            Angriff  Schild          Abklingzeit  Herkunft
+  Standard         20       35              0            Start-Skills, Trank
+  Verstärkt        26-29    46-50           1            beste Werte gewöhnlicher Arten
+  Stufe 2          38       60-63           1-2          Ei-Attacken
+  Stufe 3          46       Team 35-37      2-3          Ei-Attacken
+  Stufe 4          55-57    86-90           3            seltene Arten, Trainer
+  Varianten: etwas weniger Wert (-4 bis -6), dafür ein Extra. Schwächungs-Angriffe 20-24, Schwächung immer.
+
+Zweier-Kombi: zwei mittlere (45), ein starker (62), ein Top (72-78), ein Unterstützer, dazu ein Aufstiegs-Skill (Trank).
+Dreier-Kombi: Aufstieg (60), stark (72-75), Top/Fläche (85-100).
+
+Seltenheits-Bonus auf Standard-Skills: pro Stufe über Gewöhnlich Angriff +1, Schild +2 (Mythisch 25 / 45).
+
+Extras (Bausteine auf Karten):
+  debuff             Ziel -15 bis -25 % auf einen Wert, 2 Züge
+  self_buff          Wirker +10-15 %, 2 Züge
+  team_buff          jedes eigene Monster +10 %, 2 Züge
+  charge             Partner: nächster physischer/magischer Angriff +10-20 %
+  leech              Wirker heilt 20-25 % des Schadens
+  heal               eigenes Ziel heilt 5-10 % max. KP
+  bonus_vs_weakened  +30 % gegen geschwächte Ziele (Schwächung oder Status)
+  bonus_low_hp       +25-30 % gegen Ziele unter 50 % KP ("Jäger")
+
+Buffs als eigene Skills:
+  Stufe 2: ein Monster +25 % für 2 Züge, Stufe 3: Team +12 % für 2 Züge,
+  Stufe 4: Kombi-Buffs (Team +15-18 %, Einzel +35 % für 3 Züge).
+  Luft -> SpA, Feuer -> Ang., Wasser -> SpV, Erde -> Vert., Blitz -> Initiative (sparsam).
+
+Herkunft der Skills pro Art:
+  - 3 Standard-Skills (für die drei besten Kampfwerte der Art)
+  - 3-4 Ei-Attacken durch Fangen & Opfern (eine für den schwächsten Wert, eine besser als der zweitbeste,
+    eine besser als der beste)
+  - 3 Meilensteine (nur mit der Art als Start-Monster): Boss 1, Boss 5, Spielsieg -> im Neben-Element
+  - 3 Kopfgelder: zwei geteilte "Jäger"-Skills des Grundelements, eine einzigartige Trophäe im Neben-Element
+  Neben-Element: Jede Art hat genau EIN Kombi-Element, das ihr Grundelement enthält. Legendäre dürfen zwei
+  mischen, Mythische haben Dreier-Kombis und Chaos.
+
+
+# 6. PASSIVE
+============
+Passive belegen einen der 6 Skill-Plätze und wirken dauerhaft. Sie gelten nur, wenn das Monster ein Element
+des Passivs hat, sonst schlummernd abgeschwächt.
+  stat, self        +10-12 % auf einen Wert für sich selbst
+  stat, partner     +12 % für den Partner (nächstes Monster im Team -> Reihenfolge zählt)
+  stat, team        +6-8 % für jedes Monster im Team
+  element_power     +10 % Schaden mit einem Element (Feuer)
+  magic_power       +10 % magischer Schaden (Luft)
+  shield_power      +10 % Rüstung (Erde),  s_shield_power +10 % Magie-Schild (Wasser)
+  effect_chance     Resonanz: eigene Element-Effekte lösen 30 % öfter aus (nur Meilensteine)
+  leech             heilt 12-15 % des verursachten Schadens (Wasser, Schlamm)
+  kill_heal         heilt 20-25 % max. KP bei einem K.O.
+
+Umgesetzte Synergien: Aufladen (Luft-/Kugelblitz-Skills laden Partner auf), Schwächen + Jäger-Skills,
+Glotzblick senkt SpV -> magische Treffer des Partners, Partner-Passive, Resonanz + Karten mit 60-75 % Chance,
+Wasser heilt.
+
+Ideen, noch nicht umgesetzt: Bonus pro Giftstapel, Konter-Schild (schwächt beim Brechen den Angreifer),
+Initiative-Raub (Blitz), Status reinigen (Wasser), Chaos-Passiv als Meilenstein,
+"eine Passive pro Art" statt zusätzlicher Attacken.
+
+
+# 7. BEKANNTE SPANNUNGEN / WARUM ICH NEU PLANE
+==============================================
+- Lineares Stat-Wachstum + classic-Formel: Stufen- und BST-Vorteile wirken etwa kubisch.
+  1-2 Stufen Rückstand (z. B. durch viel Fangen) können einen Kampf schon entscheiden.
+- Aktionen-Asymmetrie: Gegner bis 3 Aktionen, ich nur 1 (außer Kerkermeister/Relikt).
+  Teure Skills (50+) sind ohne Upgrades gar nicht spielbar.
+- Initiative ist im Rundenkampf vermutlich der stärkste Wert, steckt aber wie alle anderen in der BST.
+- 2er-Team gegen bis zu 3 Gegner: Wie skalieren Gegnerzahl, Stufe und Aktionen zusammen, ohne dass es unfair wird?
+- Prozent-Statusschaden (Gift, Verbrennung, Glutboden) skaliert gegen KP, nicht gegen Stats -> auf hoher Stufe
+  relativ stärker oder schwächer als Direktschaden?
+- Schilde halten nur bis zum nächsten eigenen Zug -> Wert hängt stark von der Initiative-Reihenfolge ab.
+- Fangen vs. Leveln: Der Zielkonflikt soll spürbar sein, aber nicht den Run kaputt machen.
+
+
+# DEINE AUFGABE
+- Beurteile das Scaling (Stats pro Stufe, Schadensformel, BST-Spannen, KP) und schlage eine Zielkurve vor:
+  Wie viele Treffer bis K.O. auf gleicher Stufe, wie viel Vorteil pro Stufe Unterschied, wie viel pro Seltenheit?
+  Begründe die Zahlen und nenne die Formel(n), mit denen man sie erreicht.
+- Schlage eine sinnvolle Verteilung der Werte auf Rollen vor (Angreifer, Tank, Tempo, Unterstützer) und
+  wie Initiative bewertet werden sollte.
+- Bewerte die Element-Effekte und Passiven: Was ist zu stark, zu schwach, zu langweilig? Gib Alternativen.
+- Gib 10 neue Ideen für Fähigkeiten oder Passive, die Team-Synergien zwischen genau 2 Monstern erzeugen.
+- Schlage vor, wie Gegnerstufe, Gegnerzahl und Gegner-Aktionen über die 5 Biome zusammen skalieren sollen.
+- Stelle mir Rückfragen, wenn dir für eine gute Antwort etwas fehlt.
