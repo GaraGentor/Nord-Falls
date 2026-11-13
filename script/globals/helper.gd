@@ -101,6 +101,8 @@ func generate_mons(props: Dictionary = {
 			proposal.append_array(Skills.pick_weighted_unique(available.filter(func(skill_name): return not proposal.has(skill_name)), 3 - proposal.size()))
 			for skill_name in proposal:
 				var skill = Skills.get_skill(skill_name)
+				if skill.is_empty():
+					continue
 				skill.scouted = true
 				newMon._skills.append(skill)
 			mons.append(newMon)
@@ -153,14 +155,17 @@ const WILD_SKILL_COUNT := 3
 func roll_wild_skills(mon: Monster, mon_meta_data: Dictionary) -> void:
 	var usable = func(skill_name): return Skills.is_awake_name(mon, skill_name)
 	var species_pool = mon_meta_data.default_egg_skills.filter(usable)
-	var skill_names = [Skills.pick_weighted(species_pool)]
+	# Art ohne passende (existierende) Ei-Attacke: pick_weighted liefert "", dann nur aus dem Biom-Pool
+	var skill_names = [Skills.pick_weighted(species_pool)].filter(func(skill_name): return skill_name != "")
 	var not_picked = func(skill_name): return not skill_names.has(skill_name)
 	var biome_pool = Skills.get_biome_skills(State.current_biome()).filter(usable).filter(not_picked)
 	skill_names.append_array(Skills.pick_weighted_unique(biome_pool, WILD_SKILL_COUNT - skill_names.size(), State.map_level))
 	# zu wenig passende Biom-Skills: mit den Skills der Art auffüllen
 	skill_names.append_array(Skills.pick_weighted_unique(species_pool.filter(not_picked), WILD_SKILL_COUNT - skill_names.size()))
 	for skill_name in skill_names:
-		mon._skills.append(Skills.get_skill(skill_name))
+		var skill = Skills.get_skill(skill_name)
+		if not skill.is_empty():
+			mon._skills.append(skill)
 
 const EGG_SKILL_CHANCE := 0.35
 
@@ -177,6 +182,8 @@ func add_egg_skill(mon: Monster) -> void:
 	# bevorzugt Ei-Attacken, die das Monster selbst wach einsetzen kann
 	var usable_locked = locked.filter(func(skill_name): return Skills.is_awake_name(mon, skill_name))
 	var skill = Skills.get_skill(Skills.pick_weighted(usable_locked if not usable_locked.is_empty() else locked, State.map_level))
+	if skill.is_empty() or mon._skills.is_empty():
+		return
 	skill.egg_skill = true
 	# trägt das Monster den Skill schon (aus dem Biom-Pool), wird genau dieser markiert
 	var index = mon._skills.map(func(s): return s.name).find(skill.name)
@@ -254,7 +261,11 @@ func skill_description(skill: Dictionary, rich := false, mon: Monster = null) ->
 		values[key] = format_number(used[key]) if used[key] is float else used[key]
 	if dormant and rich and used.has("value") and used.value != skill.value:
 		values.value = _inactive(format_number(skill.value)) + " " + values.value
+	# Platzhalter für Buffs und Passive: {stat} = Kurzname des Werts, {element} = Element der Element-Passive
+	values.stat = Skills.stat_label(skill.get("buff_stat", skill.get("passive_stat", "")))
+	values.element = tr(ColorMap.get_combo(skill.get("passive_element", skill.nature)).label)
 	var lines := PackedStringArray([tr(skill.description).format(values)])
+	lines.append_array(Skills.extras_text(skill))
 	var effect := ElementEffects.skill_effect_text(skill)
 	if effect != "":
 		if not dormant:
@@ -298,11 +309,25 @@ func egg_to_save(mon: Monster) -> Dictionary:
 func mon_from_egg(egg: Dictionary) -> Monster:
 	State.restore_mon_stats(egg.name, int(egg.best_points), egg.growth)
 	var mon := Monster.new(State.INITIAL_LEVEL, Monmap.mon_metainfos_by_name(egg.name))
-	for skill_name in egg.skills:
+	# Skills, die es nicht mehr gibt (älterer Spielstand), fallen weg und werden mit Standard-Skills der Art aufgefüllt
+	# nur Ei-Attacken, die die Art aktuell hat (gelöschte oder aus der Liste der Art entfernte fallen weg)
+	var available := Skills.get_available_egg_skills(egg.name)
+	var names: Array = egg.skills.filter(func(skill_name): return available.has(skill_name))
+	for skill_name in available:
+		if names.size() >= EGG_SKILL_COUNT:
+			break
+		if not names.has(skill_name):
+			names.append(skill_name)
+	for skill_name in names:
 		var skill = Skills.get_skill(skill_name)
+		if skill.is_empty():
+			continue
 		skill.scouted = true
 		mon._skills.append(skill)
 	return mon
+
+## So viele Attacken bringt ein Ei der Start-Auswahl mit (wie im Ei-Konfigurator)
+const EGG_SKILL_COUNT := 3
 #func balance_growth_rate(max_level) -> Dictionary:
 	
 # send message

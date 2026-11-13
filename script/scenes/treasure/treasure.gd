@@ -105,7 +105,8 @@ static func add_potion_card(dialog: RewardDialog, element: int) -> RewardDialog.
 		var old_type: int = mon._type
 		mon.gain_element(element)
 		Skills.announce_awakened(mon, old_type)
-		# Aufstieg in ein Kombi-Element: das Monster lernt dessen Aufstiegs-Skill (läuft für sich, auch wenn der Dialog schließt)
+		# neues Element: das Monster darf den Aufstiegs-Skill oder einen Standard-Skill des Elements lernen
+		# (läuft für sich, auch wenn der Dialog schließt)
 		ElementGainOverlayScript.reward(mon, old_type)
 	return dialog.add_mon_card(potion_title(dialog, element), text, potion_art(element), dialog.tr("TREASURE_POTION_CHOOSE_MON"), func(): return mons_without(element), give, Callable(), {"element": element})
 

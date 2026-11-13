@@ -404,7 +404,19 @@ func _build_vfx_page() -> void:
 		["WASSER", _play_vfx.bind(kinds.WATER)],
 		["ERDE", _play_vfx.bind(kinds.EARTH)],
 		["LUFT", _play_vfx.bind(kinds.AIR)],
-		["MAGMA (KOMBI)", _play_vfx_kinds.bind(BATTLE_VFX.element_kinds(Enums.MON_TYPES.EARTH | Enums.MON_TYPES.FIRE))],
+	], VFX_COLUMNS)
+	_add_section(list, "Kombi-Elemente", [
+		["DAMPF", _play_vfx.bind(kinds.STEAM)],
+		["BLITZ", _play_vfx.bind(kinds.LIGHTNING)],
+		["MAGMA", _play_vfx.bind(kinds.MAGMA)],
+		["EIS", _play_vfx.bind(kinds.ICE)],
+		["STAUB", _play_vfx.bind(kinds.DUST)],
+		["SCHLAMM", _play_vfx.bind(kinds.MUD)],
+		["SUMPF (GIFT)", _play_vfx.bind(kinds.POISON)],
+		["ASCHESTURM", _play_vfx.bind(kinds.ASH)],
+		["GEWITTER", _play_vfx.bind(kinds.THUNDER)],
+		["VULKAN", _play_vfx.bind(kinds.ERUPTION)],
+		["CHAOS", _play_vfx.bind(kinds.CHAOS)],
 	], VFX_COLUMNS)
 	_add_section(list, "Schilde", [
 		["SCHILD", _play_vfx.bind(kinds.SHIELD)],
@@ -412,8 +424,10 @@ func _build_vfx_page() -> void:
 		["SCHILD-TREFFER", _play_vfx.bind(kinds.SHIELD_HIT)],
 		["MAG. SCHILD-TREFFER", _play_vfx.bind(kinds.S_SHIELD_HIT)],
 	], VFX_COLUMNS)
-	_add_section(list, "Buffs", [
+	_add_section(list, "Buff, Schwächung & Heilung", [
 		["BUFF", _play_vfx.bind(kinds.BUFF)],
+		["SCHWÄCHUNG", _play_vfx.bind(kinds.DEBUFF)],
+		["HEILUNG", _play_vfx.bind(kinds.HEAL)],
 	], VFX_COLUMNS)
 
 	var stage := CenterContainer.new()
@@ -445,14 +459,13 @@ func _play_vfx(kind: int, nature := 0) -> void:
 	var accent := Color(ColorMap.get_combo(nature).color) if nature != 0 else Color.WHITE
 	BATTLE_VFX_LAYER.for_target(_vfx_target, _vfx_target).play(kind, accent)
 
-func _play_vfx_kinds(kinds: Array) -> void:
-	for kind in kinds:
-		_play_vfx(kind)
-
 func _play_all_vfx() -> void:
 	var kinds = BATTLE_VFX.Kind
 	var sequence := [[kinds.SLASH, Enums.MON_TYPES.FIRE], [kinds.FIRE, 0], [kinds.WATER, 0], [kinds.EARTH, 0], [kinds.AIR, 0],
-		[kinds.SHIELD, 0], [kinds.SHIELD_HIT, 0], [kinds.S_SHIELD, 0], [kinds.S_SHIELD_HIT, 0], [kinds.BUFF, 0]]
+		[kinds.STEAM, 0], [kinds.LIGHTNING, 0], [kinds.MAGMA, 0], [kinds.ICE, 0], [kinds.DUST, 0], [kinds.MUD, 0],
+		[kinds.POISON, 0], [kinds.ASH, 0], [kinds.THUNDER, 0], [kinds.ERUPTION, 0], [kinds.CHAOS, 0],
+		[kinds.SHIELD, 0], [kinds.SHIELD_HIT, 0], [kinds.S_SHIELD, 0], [kinds.S_SHIELD_HIT, 0],
+		[kinds.BUFF, 0], [kinds.DEBUFF, 0], [kinds.HEAL, 0]]
 	for entry in sequence:
 		# Seite gewechselt oder Menü geschlossen: Abfolge abbrechen
 		if not is_inside_tree() or not _vfx_page.visible:

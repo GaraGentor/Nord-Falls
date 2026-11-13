@@ -202,31 +202,30 @@ SKILL_STONE_GUARD,Stone Guard,Felsenpanzer
 SKILL_MIST_VEIL,Mist Veil,Nebelschleier
 SKILL_SHIELD_PHYSICAL_DESC,Shields an ally with [hl]{value}%[/hl] of your [hl]DEF[/hl] against [hl]physical damage[/hl] until its next turn,Schützt ein eigenes Monster mit [hl]{value}%[/hl] deiner [hl]VER[/hl] vor [hl]physischem Schaden[/hl] bis zu seinem nächsten Zug
 SKILL_SHIELD_ABILITY_DESC,Shields an ally with [hl]{value}%[/hl] of your [hl]SPD[/hl] against [hl]magical damage[/hl] until its next turn,Schützt ein eigenes Monster mit [hl]{value}%[/hl] deiner [hl]SVE[/hl] vor [hl]magischem Schaden[/hl] bis zu seinem nächsten Zug
-SKILL_TEMPERED_HIDE,Tempered Hide,Gehärtete Haut
 SKILL_BUFF_DEF_DESC,[hl]+{value}% DEF[/hl] for an ally for [hl]{buff_turns} turns[/hl],[hl]+{value}% VER[/hl] für ein eigenes Monster für [hl]{buff_turns} Züge[/hl]
 SKILL_LIFE_SPRING,Life Spring,Lebensquell
 SKILL_PASSIVE_HP_DESC,Passive: [hl]+{value} HP[/hl] for every monster in the team,Passiv: [hl]+{value} KP[/hl] für jedes Monster im Team
 SKILL_SQUALL,Squall,Sturmböe
 SKILL_FIRESTORM,Firestorm,Feuersturm
 SKILL_AREA_ABILITY_DESC,Deals [hl]{value}%[/hl] of your [hl]SPA[/hl] as [hl]magical damage[/hl] to [hl]all enemies[/hl],Verursacht [hl]{value}%[/hl] deines [hl]SAN[/hl] als [hl]magischen Schaden[/hl] an [hl]allen Gegnern[/hl]
-SKILL_GUST,gust,Windstoß
-SKILL_SPLASH,splash,Platscher
-SKILL_EMBER,ember,Glut
-SKILL_PEBBLE_THROW,pebble throw,Kieselwurf
-SKILL_WIND_BLADE,wind blade,Windklinge
-SKILL_TIDAL_SLAM,tidal slam,Flutschlag
-SKILL_FLAME_CLAW,flame claw,Flammenklaue
-SKILL_ROCK_CRUSH,rock crush,Felsbrecher
-SKILL_THUNDER_STRIKE,thunder strike,Donnerschlag
-SKILL_ICE_SPEAR,ice spear,Eisspeer
-SKILL_MAGMA_BURST,magma burst,Magmaausbruch
-SKILL_CHAOS_NOVA,chaos nova,Chaosnova
-SKILL_TAILWIND_STRIKE,tailwind strike,Rückenwindhieb
-SKILL_CYCLONE,cyclone,Zyklon
-SKILL_NORTHERN_GALE,northern gale,Nordwind
-SKILL_UNDERTOW,undertow,Sog
-SKILL_MAELSTROM,maelstrom,Mahlstrom
-SKILL_NORTHERN_TIDE,northern tide,Nordmeerflut
+SKILL_GUST,Gust,Windstoß
+SKILL_SPLASH,Splash,Platscher
+SKILL_EMBER,Ember,Glut
+SKILL_PEBBLE_THROW,Pebble Throw,Kieselwurf
+SKILL_WIND_BLADE,Wind Blade,Windklinge
+SKILL_TIDAL_SLAM,Tidal Slam,Flutschlag
+SKILL_FLAME_CLAW,Flame Claw,Flammenklaue
+SKILL_ROCK_CRUSH,Rock Crush,Felsbrecher
+SKILL_THUNDER_STRIKE,Thunder Strike,Donnerschlag
+SKILL_ICE_SPEAR,Ice Spear,Eisspeer
+SKILL_MAGMA_BURST,Magma Burst,Magmaausbruch
+SKILL_CHAOS_NOVA,Chaos Nova,Chaosnova
+SKILL_TAILWIND_STRIKE,Tailwind Strike,Rückenwindhieb
+SKILL_CYCLONE,Cyclone,Zyklon
+SKILL_NORTHERN_GALE,Northern Gale,Nordwind
+SKILL_UNDERTOW,Undertow,Sog
+SKILL_MAELSTROM,Maelstrom,Mahlstrom
+SKILL_NORTHERN_TIDE,Northern Tide,Nordmeerflut
 MILESTONE_UNLOCKED,New egg move for {mon}: {skills},Neue Ei-Attacke für {mon}: {skills}
 MILESTONE_HINT_BOSS_1,"Milestone egg move: defeat a biome boss with this monster as your starter (it has to still be in your team)","Meilenstein-Ei-Attacke: Besiege einen Biom-Boss mit diesem Monster als Start-Monster (es muss noch im Team sein)"
 MILESTONE_HINT_BOSS_5,"Milestone egg move: defeat 5 biome bosses with this monster as your starter (it has to still be in your team)","Meilenstein-Ei-Attacke: Besiege 5 Biom-Bosse mit diesem Monster als Start-Monster (es muss noch im Team sein)"
@@ -247,8 +246,8 @@ ELEMENT_ASH_STORM,Ash Storm,Aschesturm
 ELEMENT_SWAMP,Swamp,Sumpf
 ELEMENT_CHAOS,Chaos,Chaos
 ELEMENT_EMPTY,Empty,Leer
-ELEMENT_GAIN_TITLE,Ascended to {element}!,Aufgestiegen zu {element}!
-ELEMENT_GAIN_TEXT,{mon} is now {element} and learns a new skill as a reward:,{mon} ist jetzt {element} und lernt zur Belohnung eine neue Fähigkeit:
+ELEMENT_GAIN_TITLE,Now {element}!,Jetzt {element}!
+ELEMENT_GAIN_TEXT,{mon} is now {element} and may learn a new skill:,{mon} ist jetzt {element} und darf eine neue Fähigkeit lernen:
 ELEMENT_GAIN_OK,OK,OK
 SKILL_FROST_BITE,Frost Bite,Frostbiss
 SKILL_STEAM_JET,Steam Jet,Dampfstoß
@@ -322,96 +321,67 @@ MONSTER_43,Bonebasher,Knochenschläger
 MONSTER_44,Mawworm,Schlundwurm
 MONSTER_45,Volcashell,Vulkanpanzer
 TURN_WHEEL_ROUND,Round {round},Runde {round}
-SKILL_RAPTOR_DIVE,raptor dive,Raubvogelsturz
-SKILL_HUNTERS_GALE,hunter's gale,Jägerböe
-SKILL_TROPHY_TEMPEST,trophy tempest,Trophäensturm
-SKILL_SHARK_BITE,shark bite,Haibiss
-SKILL_HUNTERS_TIDE,hunter's tide,Jägerflut
-SKILL_TROPHY_TSUNAMI,trophy tsunami,Trophäentsunami
-SKILL_PLUME_FLURRY,plume flurry,Federwirbel
-SKILL_PHANTOM_DRAFT,phantom draft,Phantomzug
-SKILL_SHADOW_SQUALL,shadow squall,Schattenbö
-SKILL_SCORCHING_CHOP,scorching chop,Sengender Hieb
-SKILL_BLAZING_CLEAVE,blazing cleave,Lodernder Spalter
-SKILL_INFERNO_EXECUTION,inferno execution,Infernohinrichtung
-SKILL_DUST_WHIRR,dust whirr,Staubschwirren
-SKILL_STARING_GAZE,staring gaze,Glotzblick
-SKILL_MUDWING_DIVE,mudwing dive,Schlammflügelsturz
-SKILL_ROOT_LASH,root lash,Wurzelpeitsche
-SKILL_TWIN_AXE_SWEEP,twin axe sweep,Doppelaxtschwung
-SKILL_ANCIENT_TIMBER,ancient timber,Uraltes Gehölz
-SKILL_POLLEN_DRIFT,pollen drift,Pollenflug
-SKILL_BLOSSOM_CHORUS,blossom chorus,Blütenchor
-SKILL_FOURFOLD_BLOOM,fourfold bloom,Vierfache Blüte
-SKILL_SPARK_SPIT,spark spit,Funkenspucke
-SKILL_LAVA_TAIL,lava tail,Lavaschweif
-SKILL_EMBER_SPIRAL,ember spiral,Glutspirale
-SKILL_BUBBLE_SPRAY,bubble spray,Blasenschauer
-SKILL_TENTACLE_LASH,tentacle lash,Tentakelpeitsche
-SKILL_TIDE_HEART,tide heart,Gezeitenherz
-SKILL_MAGMA_FIST,magma fist,Magmafaust
-SKILL_SMOLDER_STOMP,smolder stomp,Schwelstampfer
-SKILL_CORE_BLAST,core blast,Kernglut
-SKILL_FEATHER_PUFF,feather puff,Federpuff
-SKILL_CLOUD_BURST,cloud burst,Wolkenbruch
-SKILL_SKY_TWISTER,sky twister,Himmelswirbel
-SKILL_STATIC_TALON,static talon,Statikkralle
-SKILL_THUNDER_WINGS,thunder wings,Donnerschwingen
-SKILL_SKYFALL_STORM,skyfall storm,Himmelssturz
-SKILL_SHARD_SWIPE,shard swipe,Splitterhieb
-SKILL_CRYSTAL_SPIKES,crystal spikes,Kristallstacheln
-SKILL_GEODE_CRASH,geode crash,Geodenschlag
-SKILL_SNOW_FLURRY,snow flurry,Schneegestöber
-SKILL_FROST_TAILS,frost tails,Frostschweife
-SKILL_GLACIAL_GRACE,glacial grace,Gletscheranmut
-SKILL_MIST_TOUCH,mist touch,Nebelhauch
-SKILL_VAPOR_COIL,vapor coil,Dunstschlinge
-SKILL_PHANTOM_FOG,phantom fog,Phantomnebel
-SKILL_STATIC_ROLL,static roll,Statikrolle
-SKILL_VOLT_QUILLS,volt quills,Voltstacheln
-SKILL_BALL_LIGHTNING,ball lightning,Kugelblitz
-SKILL_SILENT_SWOOP,silent swoop,Lautloser Sturzflug
-SKILL_HUNTERS_HAUNT,hunter's haunt,Jägerspuk
-SKILL_TROPHY_PHANTASM,trophy phantasm,Trophäenphantasma
-SKILL_HOT_HATCHET,hot hatchet,Glühendes Beil
-SKILL_HUNTERS_BLAZE,hunter's blaze,Jägerlohe
-SKILL_TROPHY_PYRE,trophy pyre,Trophäenscheiterhaufen
-SKILL_STINGER_DART,stinger dart,Stachelpfeil
-SKILL_HUNTERS_GAZE,hunter's gaze,Jägerblick
-SKILL_TROPHY_SWARM,trophy swarm,Trophäenschwarm
-SKILL_SAP_CLEAVER,sap cleaver,Harzspalter
-SKILL_HUNTERS_GROVE,hunter's grove,Jägerhain
-SKILL_TROPHY_TIMBERFALL,trophy timberfall,Trophäenbaumfall
-SKILL_THORN_EMBRACE,thorn embrace,Dornenumarmung
-SKILL_HUNTERS_BLOOM,hunter's bloom,Jägerblüte
-SKILL_TROPHY_WILDWOOD,trophy wildwood,Trophäenwildwald
-SKILL_CINDER_BITE,cinder bite,Glutbiss
-SKILL_HUNTERS_FLAME,hunter's flame,Jägerflamme
-SKILL_TROPHY_ERUPTION,trophy eruption,Trophäeneruption
-SKILL_JELLY_STING,jelly sting,Gallertstich
-SKILL_HUNTERS_CURRENT,hunter's current,Jägerströmung
-SKILL_TROPHY_TORRENT,trophy torrent,Trophäensturzflut
-SKILL_BOULDER_PUNCH,boulder punch,Felsenhieb
-SKILL_HUNTERS_EMBER,hunter's ember,Jägerglut
-SKILL_TROPHY_CALDERA,trophy caldera,Trophäencaldera
-SKILL_DOWNDRAFT,downdraft,Fallwind
-SKILL_HUNTERS_BREEZE,hunter's breeze,Jägerbrise
-SKILL_TROPHY_TYPHOON,trophy typhoon,Trophäentaifun
-SKILL_GRYPH_STRIKE,gryph strike,Greifenhieb
-SKILL_HUNTERS_THUNDER,hunter's thunder,Jägerdonner
-SKILL_TROPHY_HURRICANE,trophy hurricane,Trophäenorkan
-SKILL_QUARRY_CLAW,quarry claw,Steinbruchklaue
-SKILL_HUNTERS_BOULDER,hunter's boulder,Jägerfels
-SKILL_TROPHY_AVALANCHE,trophy avalanche,Trophäenlawine
-SKILL_ICICLE_FANG,icicle fang,Eiszapfenbiss
-SKILL_HUNTERS_FROST,hunter's frost,Jägerfrost
-SKILL_TROPHY_BLIZZARD,trophy blizzard,Trophäenblizzard
-SKILL_WISP_GRASP,wisp grasp,Irrlichtgriff
-SKILL_HUNTERS_MIST,hunter's mist,Jägernebel
-SKILL_TROPHY_DELUGE,trophy deluge,Trophäensintflut
-SKILL_SHOCK_NIP,shock nip,Schockbiss
-SKILL_HUNTERS_SPARK,hunter's spark,Jägerfunke
-SKILL_TROPHY_SURGE,trophy surge,Trophäenentladung
+SKILL_RAPTOR_DIVE,Raptor Dive,Raubvogelsturz
+SKILL_HUNTERS_GALE,Hunter's Gale,Jägerböe
+SKILL_TROPHY_TEMPEST,Trophy Tempest,Trophäensturm
+SKILL_SHARK_BITE,Shark Bite,Haibiss
+SKILL_HUNTERS_TIDE,Hunter's Tide,Jägerflut
+SKILL_TROPHY_TSUNAMI,Trophy Tsunami,Trophäentsunami
+SKILL_SCORCHING_CHOP,Scorching Chop,Sengender Hieb
+SKILL_BLAZING_CLEAVE,Blazing Cleave,Lodernder Spalter
+SKILL_INFERNO_EXECUTION,Inferno Execution,Infernohinrichtung
+SKILL_DUST_WHIRR,Dust Whirr,Staubschwirren
+SKILL_STARING_GAZE,Staring Gaze,Glotzblick
+SKILL_MUDWING_DIVE,Mudwing Dive,Schlammflügelsturz
+SKILL_ROOT_LASH,Root Lash,Wurzelpeitsche
+SKILL_POLLEN_DRIFT,Pollen Drift,Pollenflug
+SKILL_BLOSSOM_CHORUS,Blossom Chorus,Blütenchor
+SKILL_FOURFOLD_BLOOM,Fourfold Bloom,Vierfache Blüte
+SKILL_SPARK_SPIT,Spark Spit,Funkenspucke
+SKILL_EMBER_SPIRAL,Ember Spiral,Glutspirale
+SKILL_BUBBLE_SPRAY,Bubble Spray,Blasenschauer
+SKILL_TENTACLE_LASH,Tentacle Lash,Tentakelpeitsche
+SKILL_TIDE_HEART,Tide Heart,Gezeitenherz
+SKILL_MAGMA_FIST,Magma Fist,Magmafaust
+SKILL_SMOLDER_STOMP,Smolder Stomp,Schwelstampfer
+SKILL_CORE_BLAST,Core Blast,Kernglut
+SKILL_FEATHER_PUFF,Feather Puff,Federpuff
+SKILL_CLOUD_BURST,Cloud Burst,Wolkenbruch
+SKILL_SKY_TWISTER,Sky Twister,Himmelswirbel
+SKILL_STATIC_TALON,Static Talon,Statikkralle
+SKILL_THUNDER_WINGS,Thunder Wings,Donnerschwingen
+SKILL_SKYFALL_STORM,Skyfall Storm,Himmelssturz
+SKILL_SHARD_SWIPE,Shard Swipe,Splitterhieb
+SKILL_CRYSTAL_SPIKES,Crystal Spikes,Kristallstacheln
+SKILL_GEODE_CRASH,Geode Crash,Geodenschlag
+SKILL_SNOW_FLURRY,Snow Flurry,Schneegestöber
+SKILL_FROST_TAILS,Frost Tails,Frostschweife
+SKILL_GLACIAL_GRACE,Glacial Grace,Gletscheranmut
+SKILL_MIST_TOUCH,Mist Touch,Nebelhauch
+SKILL_VAPOR_COIL,Vapor Coil,Dunstschlinge
+SKILL_VOLT_QUILLS,Volt Quills,Voltstacheln
+SKILL_BALL_LIGHTNING,Ball Lightning,Kugelblitz
+SKILL_TROPHY_PHANTASM,Trophy Phantasm,Trophäenphantasma
+SKILL_HOT_HATCHET,Hot Hatchet,Glühendes Beil
+SKILL_HUNTERS_BLAZE,Hunter's Blaze,Jägerlohe
+SKILL_TROPHY_PYRE,Trophy Pyre,Trophäenscheiterhaufen
+SKILL_STINGER_DART,Stinger Dart,Stachelpfeil
+SKILL_TROPHY_SWARM,Trophy Swarm,Trophäenschwarm
+SKILL_SAP_CLEAVER,Sap Cleaver,Harzspalter
+SKILL_HUNTERS_GROVE,Hunter's Grove,Jägerhain
+SKILL_TROPHY_TIMBERFALL,Trophy Timberfall,Trophäenbaumfall
+SKILL_TROPHY_WILDWOOD,Trophy Wildwood,Trophäenwildwald
+SKILL_CINDER_BITE,Cinder Bite,Glutbiss
+SKILL_TROPHY_ERUPTION,Trophy Eruption,Trophäeneruption
+SKILL_JELLY_STING,Jelly Sting,Gallertstich
+SKILL_TROPHY_TORRENT,Trophy Torrent,Trophäensturzflut
+SKILL_TROPHY_CALDERA,Trophy Caldera,Trophäencaldera
+SKILL_TROPHY_TYPHOON,Trophy Typhoon,Trophäentaifun
+SKILL_TROPHY_HURRICANE,Trophy Hurricane,Trophäenorkan
+SKILL_TROPHY_AVALANCHE,Trophy Avalanche,Trophäenlawine
+SKILL_TROPHY_BLIZZARD,Trophy Blizzard,Trophäenblizzard
+SKILL_TROPHY_DELUGE,Trophy Deluge,Trophäensintflut
+SKILL_TROPHY_SURGE,Trophy Surge,Trophäenentladung
 CONFIGURATOR_LOCKED_BOUNTY,Locked (bounty hunter),Gesperrt (Bounty Hunter)
 BOUNTY_ALPHA,Alpha {mon},Alpha {mon}
 BOUNTY_NORTHERN_WARDEN,Northern Warden {mon},Nordwächter {mon}
@@ -497,7 +467,9 @@ SHOP_DETAIL_BAG,Drag it into the bag to buy it.,Zum Kaufen in die Tasche ziehen.
 REWARD_NO_TARGET,None of your monsters can use this.,Keins deiner Monster kann das gebrauchen.
 BATTLE_SUPER_EFFECTIVE,Super effective!,Sehr effektiv!
 BATTLE_NOT_EFFECTIVE,Not very effective...,Nicht sehr effektiv...
-BATTLE_CARD_COOLDOWN,Ready in {turns} turns,Bereit in {turns} Zügen
+BATTLE_CARD_COOLDOWN,Ready in {turns} of your turns,Bereit in {turns} eigenen Zügen
+BATTLE_CARD_COOLDOWN_NEXT,Ready on your next turn,Bereit im nächsten eigenen Zug
+BATTLE_CARD_COOLDOWN_AFTER_NEXT,"Locked next turn, ready after that","Nächsten Zug gesperrt, danach bereit"
 BATTLE_BLOCKED,{value} blocked,{value} geblockt
 BATTLE_STATUS_SHIELD,Shield {value},Schild {value}
 BATTLE_STATUS_S_SHIELD,Sp. Shield {value},Sp.-Schild {value}
@@ -838,3 +810,134 @@ TREASURE_POTION_BAG_DESC,"Into the bag! Afterwards you can give it to a monster.
 SHOP_TROPHY_SWITCH,Choose another stat,Anderen Wert wählen
 SHOP_RELIC_PICK_ONE,Only one of the relics can be bought.,Von den Relikten gibt es nur eins.
 POTION_REWARD_TITLE,A potion falls out of your bag!,Ein Trank fällt aus der Tasche!
+SKILL_EARTH_PULSE,Earth Pulse,Erdpuls
+SKILL_SAND_VEIL,Sand Veil,Sandschleier
+SKILL_HEAT_SHIMMER,Heat Shimmer,Hitzeflimmern
+SKILL_BREEZE_WARD,Breeze Ward,Brisenwacht
+SKILL_TECTONIC_SLAM,Tectonic Slam,Tektonikschlag
+SKILL_SOLAR_FLARE,Solar Flare,Sonnenfackel
+SKILL_SCALD_FANG,Scald Fang,Brühbiss
+SKILL_HOT_MIST,Hot Mist,Heißer Nebel
+SKILL_GEYSER,Geyser,Geysir
+SKILL_STEAM_HAMMER,Steam Hammer,Dampfhammer
+SKILL_ARC_BOLT,Arc Bolt,Bogenblitz
+SKILL_MAGMA_SPIT,Magma Spit,Magmaspucke
+SKILL_CALDERA_CRASH,Caldera Crash,Calderasturz
+SKILL_SAND_FANG,Sand Fang,Sandzahn
+SKILL_DUNE_RAM,Dune Ram,Dünenramme
+SKILL_SLUDGE_SHOT,Sludge Shot,Schlammschuss
+SKILL_MUDSLIDE,Mudslide,Schlammlawine
+SKILL_SILT_WAVE,Silt Wave,Schlickwelle
+SKILL_VENOM_MIRE,Venom Mire,Giftmoor
+SKILL_SCORCHED_EARTH,Scorched Earth,Verbrannte Erde
+SKILL_CINDER_CYCLONE,Cinder Cyclone,Glutzyklon
+SKILL_TEMPEST_WRATH,Tempest Wrath,Sturmeszorn
+SKILL_LAVA_GEYSER,Lava Geyser,Lavageysir
+SKILL_PRIMAL_ERUPTION,Primal Eruption,Urausbruch
+SKILL_CHAOS_RIFT,Chaos Rift,Chaosriss
+SKILL_WORLD_SUNDER,World Sunder,Weltenspalter
+SKILL_AMBER_SHELL,Amber Shell,Bernsteinhülle
+SKILL_GRANITE_SKIN,Granite Skin,Granithaut
+SKILL_GEODE_WARD,Geode Ward,Geodenwacht
+SKILL_STONE_CIRCLE,Stone Circle,Steinkreis
+SKILL_EARTH_DOME,Earth Dome,Erdkuppel
+SKILL_MOUNTAIN_WALL,Mountain Wall,Bergwall
+SKILL_CINDER_WALL,Cinder Wall,Aschewall
+SKILL_EMBER_SHROUD,Ember Shroud,Glutschleier
+SKILL_FORGE_GUARD,Forge Guard,Schmiedewehr
+SKILL_FLAME_VEIL,Flame Veil,Flammenschleier
+SKILL_HEARTH_CIRCLE,Hearth Circle,Herdkreis
+SKILL_SUN_HALO,Sun Halo,Sonnenhalo
+SKILL_SHELL_GUARD,Shell Guard,Panzerschale
+SKILL_CORAL_GUARD,Coral Guard,Korallenwehr
+SKILL_TIDE_VEIL,Tide Veil,Gezeitenschleier
+SKILL_REEF_WALL,Reef Wall,Riffwall
+SKILL_TIDE_DOME,Tide Dome,Flutkuppel
+SKILL_DEEP_WARD,Deep Ward,Tiefseewacht
+SKILL_WIND_WALL,Wind Wall,Windwall
+SKILL_CLOUD_COVER,Cloud Cover,Wolkendecke
+SKILL_GALE_GUARD,Gale Guard,Sturmwehr
+SKILL_AURORA_VEIL,Aurora Veil,Polarlichtschleier
+SKILL_WIND_CIRCLE,Wind Circle,Windkreis
+SKILL_SKY_VEIL,Sky Veil,Himmelsschleier
+SKILL_STORM_EYE,Eye of the Storm,Auge des Sturms
+SKILL_CLAY_ARMOR,Clay Armor,Lehmpanzer
+SKILL_OBSIDIAN_SKIN,Obsidian Skin,Obsidianhaut
+SKILL_GRIT_CLOAK,Grit Cloak,Sandmantel
+SKILL_HOARFROST_VEIL,Hoarfrost Veil,Raureifschleier
+SKILL_STORM_FOCUS,Storm Focus,Sturmfokus
+SKILL_SKY_CHORUS,Sky Chorus,Himmelschor
+SKILL_BATTLE_FERVOR,Battle Fervor,Kampfeifer
+SKILL_BLAZE_ANTHEM,Blaze Anthem,Glutgesang
+SKILL_TIDE_BLESSING,Tide Blessing,Gezeitensegen
+SKILL_CALM_WATERS,Calm Waters,Stille Wasser
+SKILL_IRONBARK,Ironbark,Eisenrinde
+SKILL_STONE_CHANT,Stone Chant,Steingesang
+SKILL_CRYSTAL_FOCUS,Crystal Focus,Kristallfokus
+SKILL_OVERCHARGE,Overcharge,Überladung
+SKILL_FORGE_FURY,Forge Fury,Schmiedewut
+SKILL_BOG_BULWARK,Bog Bulwark,Moorbollwerk
+SKILL_HOT_SPRING,Hot Spring,Heiße Quelle
+SKILL_INNER_FIRE,Inner Fire,Inneres Feuer
+SKILL_STORM_MIND,Storm Mind,Sturmgeist
+SKILL_STONE_SOUL,Stone Soul,Felsenseele
+SKILL_DEEP_CALM,Deep Calm,Tiefe Ruhe
+SKILL_THICK_HIDE,Thick Hide,Dickes Fell
+SKILL_FIRE_BLOOD,Fire Blood,Feuerblut
+SKILL_SCALE_SHEEN,Scale Sheen,Schuppenglanz
+SKILL_LIGHT_FEATHER,Light Feather,Federleicht
+SKILL_KINDRED_FLAME,Kindred Flame,Verwandte Flamme
+SKILL_TAILWIND_BOND,Tailwind Bond,Rückenwindband
+SKILL_SHELTER_TIDE,Shelter Tide,Schutzgezeit
+SKILL_SHOULDER_STONE,Shoulder Stone,Schulterstein
+SKILL_STONE_KINSHIP,Stone Kinship,Steinsippe
+SKILL_HIGH_WINDS,High Winds,Höhenwind
+SKILL_WAR_DRUMS,War Drums,Kriegstrommeln
+SKILL_PRESSURE_VALVE,Pressure Valve,Überdruckventil
+SKILL_STATIC_CHARGE,Static Charge,Statische Ladung
+SKILL_MOLTEN_CORE,Molten Core,Glühender Kern
+SKILL_PERMAFROST,Permafrost,Permafrost
+SKILL_SANDSTORM_EYE,Sandstorm Eye,Auge des Sandsturms
+SKILL_BOG_HEART,Bog Heart,Moorherz
+SKILL_SIPHON,Siphon,Saugstrudel
+SKILL_LEECH_MIRE,Leech Mire,Saugmoor
+SKILL_TIDE_FEAST,Tide Feast,Gezeitenschmaus
+SKILL_TREMOR,Tremor,Erdzittern
+SKILL_SPARK_SHOWER,Spark Shower,Funkenregen
+SKILL_RAIN_SHOWER,Rain Shower,Regenschauer
+SKILL_STEAM_CLOUD,Steam Cloud,Dampfwolke
+SKILL_SANDSTORM,Sandstorm,Sandsturm
+SKILL_MIASMA,Miasma,Miasma
+SKILL_AREA_PHYSICAL_DESC,Deals [hl]{value}%[/hl] of your [hl]ATK[/hl] as [hl]physical damage[/hl] to [hl]all enemies[/hl],Verursacht [hl]{value}%[/hl] deines [hl]ANG[/hl] als [hl]physischen Schaden[/hl] an [hl]allen Gegnern[/hl]
+SKILL_SHIELD_TEAM_PHYSICAL_DESC,Shields [hl]every ally[/hl] with [hl]{value}%[/hl] of your [hl]DEF[/hl] against [hl]physical damage[/hl] until its next turn,Schützt [hl]jedes eigene Monster[/hl] mit [hl]{value}%[/hl] deiner [hl]VER[/hl] vor [hl]physischem Schaden[/hl] bis zu seinem nächsten Zug
+SKILL_SHIELD_TEAM_ABILITY_DESC,Shields [hl]every ally[/hl] with [hl]{value}%[/hl] of your [hl]SPD[/hl] against [hl]magical damage[/hl] until its next turn,Schützt [hl]jedes eigene Monster[/hl] mit [hl]{value}%[/hl] deiner [hl]SVE[/hl] vor [hl]magischem Schaden[/hl] bis zu seinem nächsten Zug
+SKILL_BUFF_SINGLE_DESC,[hl]+{value}% {stat}[/hl] for an ally for [hl]{buff_turns} of its turns[/hl],[hl]+{value}% {stat}[/hl] für ein eigenes Monster für [hl]{buff_turns} seiner Züge[/hl]
+SKILL_BUFF_TEAM_DESC,[hl]+{value}% {stat}[/hl] for [hl]every ally[/hl] for [hl]{buff_turns} of its turns[/hl],[hl]+{value}% {stat}[/hl] für [hl]jedes eigene Monster[/hl] für [hl]{buff_turns} seiner Züge[/hl]
+SKILL_PASSIVE_STAT_SELF_DESC,Passive: [hl]+{value}% {stat}[/hl] for this monster,Passiv: [hl]+{value}% {stat}[/hl] für dieses Monster
+SKILL_PASSIVE_STAT_PARTNER_DESC,Passive: [hl]+{value}% {stat}[/hl] for its [hl]partner[/hl] (the next monster in the team),Passiv: [hl]+{value}% {stat}[/hl] für seinen [hl]Partner[/hl] (das nächste Monster im Team)
+SKILL_PASSIVE_STAT_TEAM_DESC,Passive: [hl]+{value}% {stat}[/hl] for every monster in the team,Passiv: [hl]+{value}% {stat}[/hl] für jedes Monster im Team
+SKILL_PASSIVE_ELEMENT_POWER_DESC,Passive: its [hl]{element}[/hl] attacks deal [hl]+{value}% damage[/hl],Passiv: seine [hl]{element}[/hl]-Attacken machen [hl]+{value}% Schaden[/hl]
+SKILL_PASSIVE_MAGIC_POWER_DESC,Passive: its [hl]magical attacks[/hl] deal [hl]+{value}% damage[/hl],Passiv: seine [hl]magischen Attacken[/hl] machen [hl]+{value}% Schaden[/hl]
+SKILL_PASSIVE_SHIELD_POWER_DESC,Passive: its [hl]physical shields[/hl] are [hl]{value}% stronger[/hl],Passiv: seine [hl]physischen Schilde[/hl] sind [hl]{value}% stärker[/hl]
+SKILL_PASSIVE_S_SHIELD_POWER_DESC,Passive: its [hl]magical shields[/hl] are [hl]{value}% stronger[/hl],Passiv: seine [hl]magischen Schilde[/hl] sind [hl]{value}% stärker[/hl]
+SKILL_PASSIVE_EFFECT_CHANCE_DESC,"Passive: its [hl]element effects[/hl] trigger [hl]{value}% more often[/hl] (cards with a trigger chance, Volcano)","Passiv: seine [hl]Element-Effekte[/hl] lösen [hl]{value}% öfter[/hl] aus (Karten mit Auslösechance, Vulkan)"
+SKILL_PASSIVE_LEECH_DESC,Passive: heals itself for [hl]{value}%[/hl] of the damage it deals,"Passiv: heilt sich um [hl]{value}%[/hl] des Schadens, den es verursacht"
+SKILL_PASSIVE_KILL_HEAL_DESC,Passive: heals [hl]{value}% of its max HP[/hl] when it defeats an enemy,"Passiv: heilt [hl]{value}% seiner max. KP[/hl], wenn es einen Gegner besiegt"
+SKILL_EXTRA_DEBUFF,Target: [hl]-{value}% {stat}[/hl] for [hl]{turns} turns[/hl],Ziel: [hl]-{value}% {stat}[/hl] für [hl]{turns} Züge[/hl]
+SKILL_EXTRA_SELF_BUFF,User: [hl]+{value}% {stat}[/hl] for [hl]{turns} turns[/hl],Wirker: [hl]+{value}% {stat}[/hl] für [hl]{turns} Züge[/hl]
+SKILL_EXTRA_TEAM_BUFF,Every ally: [hl]+{value}% {stat}[/hl] for [hl]{turns} turns[/hl],Jedes eigene Monster: [hl]+{value}% {stat}[/hl] für [hl]{turns} Züge[/hl]
+SKILL_EXTRA_CHARGE_MAGIC,Allies: their next [hl]magical attack[/hl] deals [hl]+{value}%[/hl],Partner: ihre nächste [hl]magische Attacke[/hl] macht [hl]+{value}%[/hl]
+SKILL_EXTRA_CHARGE_PHYSICAL,Allies: their next [hl]physical attack[/hl] deals [hl]+{value}%[/hl],Partner: ihre nächste [hl]physische Attacke[/hl] macht [hl]+{value}%[/hl]
+SKILL_EXTRA_LEECH,Heals the user for [hl]{value}%[/hl] of the damage dealt,Heilt den Wirker um [hl]{value}%[/hl] des Schadens
+SKILL_EXTRA_HEAL,Heals the target for [hl]{value}% of its max HP[/hl],Heilt das Ziel um [hl]{value}% seiner max. KP[/hl]
+SKILL_EXTRA_BONUS_VS_WEAKENED,[hl]+{value}% damage[/hl] against weakened targets (debuff or status),[hl]+{value}% Schaden[/hl] gegen geschwächte Ziele (Schwächung oder Status)
+SKILL_EXTRA_BONUS_LOW_HP,[hl]+{value}% damage[/hl] against targets below [hl]{share}% HP[/hl],[hl]+{value}% Schaden[/hl] gegen Ziele unter [hl]{share}% KP[/hl]
+STATUS_POPUP_NONE,Nothing changed,Nichts verändert
+STATUS_BUFF_LINE,+{value}% {stat} ({turns}),+{value}% {stat} ({turns})
+STATUS_DEBUFF_LINE,-{value}% {stat} ({turns}),-{value}% {stat} ({turns})
+STATUS_CHARGE_LINE_MAGIC,Next magical attack +{value}%,Nächste magische Attacke +{value}%
+STATUS_CHARGE_LINE_PHYSICAL,Next physical attack +{value}%,Nächste physische Attacke +{value}%
+STATUS_UNTIL_END,until the battle ends,bis Kampfende
+STATUS_TURNS,{turns} turns,{turns} Züge
+ELEMENT_GAIN_LEARN,Learn,Lernen
+ELEMENT_GAIN_SKIP,Learn nothing,Nichts lernen

@@ -1,0 +1,179 @@
+SKILL-REGELN
+============
+
+Nach diesen Regeln sind alle Fähigkeiten gebaut und auf die Arten verteilt. Neue Skills, Passive oder Arten bitte
+nach demselben Schema einsetzen. Daten: script/globals/skills.gd (Skills) und script/globals/monmap.gd (Arten).
+"Wert" = Prozent vom (Sp.) Angriff bei Angriffen, von der (Sp.) Verteidigung bei Schilden.
+
+
+1. GRENZEN
+==========
+  Grundelement (Erde, Feuer, Wasser, Luft)   Angriffe bis 60
+  Zweier-Kombi (Dampf, Blitz, Magma, ...)    Angriffe bis 80
+  Dreier-Kombi (Sumpf, Aschesturm, ...)      Angriffe bis 100
+  Chaos (alle vier)                          nur 2-4 Skills, 70-100 (der Chaos-Zuschlag +0,25 kommt dazu)
+  Ausnahmen über 100                         höchstens zwei, max. 150:
+											   Urausbruch (Vulkan, 150) - Vulkan wirkt doppelt, das lohnt sich hier
+											   Sturmeszorn (Gewitter, 110) - Meilenstein einer mythischen Art
+											 Ausnahmen: "trainer": false und "wild": false
+  Schilde                                    Grundelement bis 90, Kombi-Schilde bis ca. 75
+  Kosten (Angriffe)                          ab Wert 50 zwei Aktionen, ab 80 drei (COST_THRESHOLDS)
+  Kosten (Schilde)                           ab Wert 75 zwei Aktionen, Team-Schilde immer zwei
+
+Element-Charakter (gegenüber den anderen Grundelementen, ca. +5 %):
+  Feuer  physische Angriffe       20 -> 21, 28 -> 29, 38 -> 40, 46 -> 48
+  Luft   magische Angriffe        genauso
+  Erde   physische Schilde        35 -> 37, 48 -> 50, 60 -> 63, 86 -> 90
+  Wasser magische Schilde         genauso
+
+
+2. STUFEN IM GRUNDELEMENT (je Element und Kategorie)
+====================================================
+Kategorie = der Wert, mit dem der Skill rechnet:
+  physisch (Angriff), magisch (Sp. Angriff), Schild (Verteidigung), Magie-Schild (Sp. Verteidigung)
+
+  Stufe            Angriff  Schild          Abklingzeit  Wofür
+  ---------------  -------  --------------  -----------  -------------------------------------------------
+  Standard (1)     20       35              0            Start-Skills, Trank-Angebot (standard_skills)
+  Verstärkt (1)    26-29    46-50           1            Top-Werte gewöhnlicher Arten, Biom-Pool
+  Stufe 2          38       60-63           1 / 2        Ei-Attacke "stärker als der zweitbeste Wert"
+  Stufe 3          46       Team 35-37      2 / 3        Ei-Attacke "stärker als der beste Wert"
+  Stufe 4          55-57    86-90           3            seltene Arten, Trainer (selten)
+
+Varianten: gleiche Stufe, etwas weniger Wert (ca. -4 bis -6), dafür ein Extra (Schwächung, Selbst-Buff, Heilung).
+Schwächungs-Angriffe: bewusst wenig Schaden (20-24), dafür löst die Schwächung immer aus.
+
+
+3. ZWEIER- UND DREIER-KOMBIS
+============================
+Pro Zweier-Kombi:   zwei mittlere (45, je eine Schadensart), ein starker (62), ein Top-Skill (72-78),
+					dazu ein Unterstützungs-Skill (Schild, Team-Schild, Flächenschaden oder Buff).
+					Aufstiegs-Skill (45) gibt es zusätzlich nur über den Trank.
+Pro Dreier-Kombi:   Aufstieg (60), ein starker (72-75), ein Top-Skill oder Flächenschaden (85-100).
+Auslösechance des Element-Effekts (effect_chance):
+  mittlere Skills 100 %, starke 75 %, Top-Skills 60 % (dafür effect_power 1,5), Dreier-Top 60-80 %.
+  Magma löst immer aus (nur effect_power zählt). Darauf bauen die Resonanz-Passive auf (siehe 5.).
+Element-Effekte selbst: siehe balancing_plan.txt Punkt 1 und script/globals/element_effects.gd.
+
+
+4. VERTEILUNG AUF DIE ARTEN (monmap.gd)
+=======================================
+Neben-Element (Affinität): Jede Art bekommt genau EIN Kombi-Element, das ihr Grundelement enthält.
+  Alle Kombi-Skills der Art (Ei-Attacken, Meilensteine, Kopfgeld) sind aus diesem einen Element, kein Mix.
+  Beispiel: Leuchtkrabbe (Wasser) -> Dampf. Dann hat sie keine Eis- oder Schlamm-Ei-Attacke.
+  Ausnahmen: Legendäre dürfen zwei Kombi-Elemente mischen, Mythische haben Dreier-Kombis (und Chaos).
+
+Die vier Kampfwerte der Art (preferred_stats atk, def, s_atk, s_def) nach Größe sortieren -> Kategorien 1. bis 4.
+Gleichstand: nach dem Aussehen der Art entscheiden.
+
+default_egg_skills (3, immer wählbar):  Standard-Skills der Kategorien 1., 2. und 3.
+  Start-Monster (State.INITIAL_MONS):   alle drei Standard
+  Gewöhnlich:                           1. Kategorie als "Verstärkt", Rest Standard
+  Ungewöhnlich und höher:               die beste ANGRIFFS-Kategorie der drei als Standard (keine Abklingzeit),
+                                        die anderen beiden "Verstärkt". So kann jede stärkere Art in jedem Zug
+                                        angreifen (ein Monster hat nur eine Aktion pro Zug, BASE_MOVES).
+  Seltenheits-Bonus auf Standard-Skills (Skills.standard_rarity_bonus, gilt für alle Standard-Skills der Art,
+  auch über den Trank gelernte): pro Stufe über Gewöhnlich Angriff +1, Schild +2.
+      Gewöhnlich 20 / 35   Ungewöhnlich 21 / 37   Selten 22 / 39   Episch 23 / 41   Legendär 24 / 43   Mythisch 25 / 45
+  Bewusst klein: die höheren Werte seltener Arten machen schon mehr Schaden. Verstärkt (26-29, Abklingzeit 1)
+  bleibt stärker als jeder Standard-Skill.
+  Variation: wo es eine Variante gibt (Splitterhieb, Glutbiss, Stachelpfeil), lieber die nehmen,
+  damit gleiche Elemente nicht immer gleich starten.
+
+unlockable_egg_skills (Fangen & Opfern, 3-4):
+  - eine Fähigkeit für die 4. Kategorie
+  - eine stärker als die der 2. Kategorie
+  - eine stärker als die der 1. Kategorie
+  - optional ein Passiv (eine Handvoll Arten je Sorte: selbst / Partner / Team, Element-Passive)
+								 4. Kat.    2. Kat.     1. Kat.
+  Gewöhnlich                     Stufe 2    Stufe 2     Stufe 3
+  Ungewöhnlich                   Stufe 2    Stufe 3     Stufe 3 (ein paar wenige Stufe 4)
+  Selten                         Stufe 2    Stufe 3     Stufe 4 (+ manchmal ein abweichender Schwächungs-Skill)
+  Episch                         Stufe 3    Stufe 3-4   Stufe 4
+  Legendär                       Stufe 3    starker Skill aus Kombi A, starker/Top aus Kombi B, Stufe 4
+  Mythisch                       Stufe 3    Dreier-Kombis (stark/Top), dazu höchstens ein Chaos-Skill
+
+milestone_egg_skills (alle Arten, zählen nur mit der Art als Start-Monster):
+  boss_1   mittlerer Skill des Neben-Elements
+  boss_5   starker Skill oder Unterstützung des Neben-Elements
+  game_win Top-Skill des Neben-Elements ODER ein Passiv (Resonanz, Team-Buff)
+  Seltenere Arten dürfen den Top-Skill schon bei boss_5 haben.
+
+bounty_egg_skills (vorerst nur Arten 1-16):
+  alpha_1  geteilter Jäger-Skill des Grundelements (Stufe 2, +30 % gegen Ziele unter 50 % KP)
+  alpha_2  geteilter Jäger-Skill des Grundelements (Stufe 3, +30 % gegen geschwächte Ziele)
+  northern_warden  einzigartige Trophäe im Neben-Element (Stufe 4, bis 78, mit Extra) - die einzigen Unikate der Arten
+
+
+5. PASSIVE (effect "passive", Feld "passive")
+=============================================
+  Art               Wert    Wirkung
+  ----------------  ------  ------------------------------------------------------------------------
+  stat, self        10-12   +x % auf einen Wert für das Monster selbst
+  stat, partner     12      +x % für den Partner (das nächste Monster im Team) - nicht beim Trainer
+  stat, team        6-8     +x % für jedes Monster im Team (weniger als auf eins)
+  element_power     10      eigene Angriffe mit dem Element (Feuer-Passiv)
+  magic_power       10      eigene magische Angriffe (Luft-Passiv)
+  shield_power      10      eigene physische Schilde (Erd-Passiv)
+  s_shield_power    10      eigene magische Schilde (Wasser-Passiv)
+  effect_chance     30      Resonanz: eigene Element-Effekte lösen 30 % öfter aus. Eine pro Zweier-Kombi,
+							nur über Meilensteine (nicht beim Trainer)
+  leech             12-15   heilt sich um x % des verursachten Schadens (Wasser, Schlamm)
+  kill_heal         20-25   heilt x % der max. KP bei einem K.O. (Wasser, Couvert-Feuer)
+Die 5 % aus der Aufgabe waren für einen Skill-Platz zu wenig (ein Monster hat höchstens 6 Skills), daher 10 %.
+Passive gelten nur, wenn das Monster eins ihrer Elemente hat, ohne alle Elemente schwächer (schlummernd).
+
+
+6. EXTRAS (Feld "extras", Baustein _extra)
+==========================================
+  debuff             Ziel -x % auf einen Wert für n Züge (Chance)             typisch 15-25 %, 2 Züge
+  self_buff          Wirker +x %                                              10-15 %, 2 Züge
+  team_buff          jedes eigene Monster +x %                                10 %, 2 Züge
+  charge             Partner: nächster physischer/magischer Angriff +x %      10-20 %  (Synergie!)
+  leech              Wirker heilt x % des Schadens                            20-25 %
+  heal               Ziel (eigenes) heilt x % seiner max. KP                  5-10 %
+  bonus_vs_weakened  +x % gegen Ziele mit Schwächung oder Statuseffekt        30 %
+  bonus_low_hp       +x % gegen Ziele unter 50 % KP                           25-30 %
+Mehrere Extras auf einer Karte nur bei seltenen Quellen (Couvert, Trophäen, Stufe 4).
+
+
+7. BUFFS
+========
+  Stufe 2  ein eigenes Monster +25 % für 2 Züge (Abklingzeit 2)
+  Stufe 3  das ganze Team +12 % für 2 Züge (Abklingzeit 3)
+  Stufe 4  Kombi-Buffs (Team +15-18 %, Einzel +35 % für 3 Züge), nicht beim Trainer
+  Luft -> Sp. Angriff, Feuer -> Angriff, Wasser -> Sp. Verteidigung, Erde -> Verteidigung,
+  Blitz -> Initiative (sparsam, Initiative ist der stärkste Wert).
+
+
+8. QUELLEN
+==========
+  Standard-Skills    Start der Art, beim Trinken eines Tranks (ElementGainOverlay bietet den Aufstiegs-Skill
+					 und die zwei Standard-Skills des neuen Grundelements an, die zu den besten Werten passen)
+  Gemeinsamer Pool   egg_skills, defensive_skills, buff_skills, passive_skills, area_skills
+					 -> Ei-Attacken der Arten, wilde Monster ("wild": false = nie), Trainer ab Stufe 2
+						("trainer": false = nie). Nicht beim Trainer: Partner-Passive, Resonanzen, Kombi-Top-Skills,
+						Stufe-4-Kombi-Buffs, Ausnahmen.
+  Kopfgeld           bounty_skills: Jäger-Skills und Trophäen, nur über Kopfgelder
+  Couvert            reward_skills: 16 Unikate (pro Grundelement Treffer, Fläche, Schutz/Buff, Passiv),
+					 nicht stärker als Stufe 3/4, aber mit Kombinationen, die es sonst nicht gibt
+  Aufstieg           ascension_skills: einer pro Kombi-Element, nur über den Trank
+
+
+9. SYNERGIEN (umgesetzt)
+========================
+  - Nordwind / Himmelsriss / Trophäen: starker Luft-Zauber lädt die Partner auf (nächste magische Attacke +15-20 %).
+  - Kugelblitz / Trophäenorkan: dasselbe für physische Angriffe.
+  - Schwächer (Staub, Dampf, Wurzelpeitsche, Glotzblick ...) + Jäger-Skills (+30 % gegen geschwächte Ziele).
+  - Glotzblick senkt Sp. Verteidigung -> danach magische Treffer der Partner.
+  - Partner-Passive: Reihenfolge im Team wird wichtig (das Monster davor stärkt das danach).
+  - Resonanz-Passive + Karten mit 60-75 % Auslösechance.
+  - Blitz-/Schlamm-Schilde verstärken den Wirker auch beim Schützen (Element-Effekt beim Ausspielen).
+  - Wasser heilt: Nebelhauch, Tiefseewacht, Heiße Quelle, Lebensraub, Heilung bei K.O.
+
+Weitere Ideen (noch nicht umgesetzt):
+  - Gift-Stapel als Bonus: +x % Schaden pro Giftstapel des Ziels (Sumpf-Familie).
+  - "Konter": Schild, der beim Brechen den Angreifer schwächt.
+  - Initiative-Raub (Blitz): Ziel -10 % INI, Wirker +10 %.
+  - Status reinigen (Wasser-Unterstützung), sobald es mehr Statuseffekte gibt.
+  - Meilenstein "zum ersten Mal Chaos erreicht" (tasks.txt) als Chaos-Passiv.

@@ -63,6 +63,8 @@ var _debuffs: Dictionary = {}
 # Statuseffekte bis Kampfende (ElementEffects): "poison"/"burn"/"paralysis" -> {"stacks": Anzahl, "from": Verursacher,
 # "power": Stärke-Faktor der stärksten Karte, die ihn ausgelöst hat (effect_power)}
 var _statuses: Dictionary = {}
+# Aufladungen (Extra "charge"): "physical"/"magic" -> +Anteil Schaden für den nächsten Angriff dieser Art, danach weg
+var _charges: Dictionary = {}
 # Buffs und Schwächungen zusammen drücken einen Wert nie unter diesen Faktor
 const MIN_STAT_FACTOR := 0.25
 # Nur Gegner: geplanter nächster Zug als [{"skill": Dictionary, "target": Monster}], im Kampf als Absicht sichtbar (battle.gd _plan_intent)
@@ -109,6 +111,7 @@ func reset_battle_state() -> void:
 	_buffs = {}
 	_debuffs = {}
 	_statuses = {}
+	_charges = {}
 	_intent = []
 	_relic_state = {}
 	for skill in _skills:
@@ -168,7 +171,28 @@ func buff_factor(stat: String) -> float:
 	return maxf(factor, MIN_STAT_FACTOR)
 
 func is_buffed() -> bool:
-	return not _buffs.is_empty()
+	return not _buffs.is_empty() or not _charges.is_empty()
+
+# Aufladung für den nächsten Angriff dieser Art ("physical"/"magic"), erneutes Aufladen nimmt den größeren Wert
+func add_charge(kind: String, factor: float) -> void:
+	_charges[kind] = maxf(factor, _charges.get(kind, 0.0))
+	Events.monster_status_changed.emit(self)
+
+func charge(kind: String) -> float:
+	return _charges.get(kind, 0.0)
+
+func consume_charge(kind: String) -> void:
+	if _charges.erase(kind):
+		Events.monster_status_changed.emit(self)
+
+## Geschwächt: Schwächung oder Statuseffekt (für Extras wie "bonus_vs_weakened")
+func is_weakened() -> bool:
+	return is_debuffed() or not _statuses.is_empty()
+
+## Anteil der verbleibenden KP (1.0 = voll)
+func hp_share() -> float:
+	var max_hp: float = hp()
+	return (max_hp - _lost_hp) / max_hp if max_hp > 0 else 0.0
 
 # Erneutes Schwächen aus derselben Quelle stapelt nicht, sondern frischt Stärke und Dauer auf (turns -1 = bis Kampfende).
 func add_debuff(key: String, stat: String, factor: float, turns: int) -> void:
@@ -217,24 +241,28 @@ func get_unlockable_egg_skill() -> Dictionary:
 	return {}
 
 func hp():
-	# passive Skills im Team (z. B. +15 KP) kommen obendrauf
+	# Werte-Passive im Team (z. B. +6 % KP für jedes Monster im Team) kommen obendrauf
 	# KP-Multiplikator aus dem Debug-Menü (Schadensformel) steuert die Kampflänge, Standard 1
-	return _base_stat("hp") * DebugSettings.hp_scale() + gem_bonus("hp") + Skills.passive_bonus(self, "hp")
+	return (_base_stat("hp") * DebugSettings.hp_scale() + gem_bonus("hp")) * Skills.passive_stat_factor(self, "hp")
 
+# Werte: (Grundwert + Edelsteine) x Buffs/Schwächungen x Werte-Passive im Team
 func attack():
-	return (_base_stat("atk") + gem_bonus("atk")) * buff_factor("atk")
+	return _stat_with_bonuses("atk")
 
 func defense():
-	return (_base_stat("def") + gem_bonus("def")) * buff_factor("def")
+	return _stat_with_bonuses("def")
 
 func s_attack():
-	return (_base_stat("s_atk") + gem_bonus("s_atk")) * buff_factor("s_atk")
+	return _stat_with_bonuses("s_atk")
 
 func s_defense():
-	return (_base_stat("s_def") + gem_bonus("s_def")) * buff_factor("s_def")
+	return _stat_with_bonuses("s_def")
 
 func speed():
-	return (_base_stat("speed") + gem_bonus("speed")) * buff_factor("speed")
+	return _stat_with_bonuses("speed")
+
+func _stat_with_bonuses(stat: String) -> float:
+	return (_base_stat(stat) + gem_bonus(stat)) * buff_factor(stat) * Skills.passive_stat_factor(self, stat)
 
 func best():
 	return _best_points
@@ -278,8 +306,8 @@ func gain_element(element: int) -> void:
 	_gained_elements |= element
 
 # Außerhalb des Kampfes aufrufen, das Monster muss schon wieder im Team stehen (passive KP-Boni zählen mit).
-func revive(hp_share: float) -> void:
+func revive(share: float) -> void:
 	_revived = true
-	_lost_hp = hp() * (1.0 - hp_share)
+	_lost_hp = hp() * (1.0 - share)
 	# Der Setter wartet auf dieses Signal, ohne Kampf käme es erst beim ersten Treffer des nächsten Kampfes (wie camp_monster.gd)
 	Events.damage_animation_done.emit.call_deferred(self)

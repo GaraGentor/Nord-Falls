@@ -234,18 +234,20 @@ const UI = {
 		starter: "Start-Monster", onlyStarters: "Nur Start-Monster", noStarters: "Ohne Start-Monster", close: "Schließen",
 		clickHint: "Klick auf ein Monster zeigt alle Details.", weakTo: "Verwundbar gegen", resists: "Resistent gegen",
 		dormantHint: "Schlummert: {power} % Stärke, dem Monster fehlt ein Element", effect: "Effekt",
+		rarityBonusHint: "Standard-Fähigkeiten werden pro Seltenheitsstufe über Gewöhnlich etwas stärker", perRarity: "pro Seltenheit",
 		elementEffects: "Element-Effekte", noEffect: "Kein Zusatzeffekt (Grundelement)",
 		elementEffectsHint: "Aus <code>ElementEffects</code>. Grundelemente haben keinen Zusatzeffekt. Ausschlaggebend ist das Element des Skills, nicht das des Monsters. Schwächungen und Statuseffekte treffen jedes getroffene Ziel eines Schadens-Skills, Verstärkungen gelten einmal pro Einsatz für den Wirker. Zweier-Kombis halten wenige Züge, Dreier-Kombis bis Kampfende. Schlummernde Skills haben keinen Effekt. Einzelne Karten können Chance und Stärke anpassen, hier stehen die Standardwerte.",
 		starterHint: "Steht von Anfang an in der Ei-Auswahl zur Wahl", catchToUnlock: "Erst nach dem ersten Fang in der Ei-Auswahl",
 		effects: { damage: "Schaden", shield: "Schild", buff: "Buff", passive: "Passiv" },
 		targets: { SINGLE_ENEMY: "ein Gegner", TEAM_ENEMY: "alle Gegner", SINGLE_FRIEND: "ein Verbündeter", TEAM_FRIEND: "ganzes Team" },
 		mon: "Monster", lists: {
-			attack_skills: "Basis-Angriff", defensive_skills: "Basis-Block", buff_skills: "Buff", passive_skills: "Passiv", area_skills: "Flächenangriff", reward_skills: "Belohnung",
-			egg_skills: "Ei-Attacke", milestone_skills: "Meilenstein", bounty_skills: "Kopfgeld",
+			standard_skills: "Standard", ascension_skills: "Aufstieg (Trank)", defensive_skills: "Schild", buff_skills: "Buff", passive_skills: "Passiv", area_skills: "Flächenangriff",
+			egg_skills: "Angriff (Pool)", bounty_skills: "Kopfgeld", reward_skills: "Couvert (einzigartig)",
 		},
+		trainer: "Trainer", wild: "wilde Monster", onlySpecies: "nur Ei-Attacke der Arten",
 		leads: {
 			monsters: "Alle Monster-Arten aus <code>Monmap.mons</code> mit ihren Ei-Attacken und wie man sie freischaltet.",
-			skills: "Alle Skills aus <code>Skills</code>. Ein Monster kann einen Skill nur spielen, wenn sein Typ alle Elemente des Skills enthält. Spalten sind sortierbar.",
+			skills: "Alle Skills aus <code>Skills</code>, Regeln in <code>skill_regeln.txt</code>. Ein Monster kann einen Skill spielen, sobald es eins seiner Elemente hat; fehlen Elemente, schlummert er (schwächer, ohne Element-Effekt). Unter der Quelle steht, ob Trainer oder wilde Monster ihn haben. Spalten sind sortierbar.",
 			elements: "Element-Kreis und alle Kombinationen aus <code>ColorMap</code>. Jedes Skill-Element wird gegen jedes Ziel-Element verglichen; Kombi-Monster erben alle Schwächen und Resistenzen.",
 			gems: "Trophäen erhöhen einen Wert eines eigenen Monsters um feste Punkte für den restlichen Run.",
 			relics: "Relikte sind passive Run-Boni. Es gibt sie zur Auswahl in der Kiste nach Biom-Bossen und im Laden, unabhängig von ihrer Seltenheit.",
@@ -274,18 +276,20 @@ const UI = {
 		starter: "Starter", onlyStarters: "Starters only", noStarters: "No starters", close: "Close",
 		clickHint: "Click a monster to see all details.", weakTo: "Weak to", resists: "Resists",
 		dormantHint: "Dormant: {power} % strength, the monster lacks an element", effect: "Effect",
+		rarityBonusHint: "Standard skills get slightly stronger with each rarity step above Common", perRarity: "per rarity",
 		elementEffects: "Element effects", noEffect: "No extra effect (base element)",
 		elementEffectsHint: "From <code>ElementEffects</code>. Base elements have no extra effect. What counts is the skill's element, not the monster's. Debuffs and status effects hit every target of a damage skill, buffs apply once per use to the caster. Two-element combos last a few turns, three-element combos until the battle ends. Dormant skills have no effect. Individual cards can change chance and strength, the defaults are shown here.",
 		starterHint: "Available in the egg selection from the start", catchToUnlock: "Joins the egg selection after the first catch",
 		effects: { damage: "Damage", shield: "Shield", buff: "Buff", passive: "Passive" },
 		targets: { SINGLE_ENEMY: "one enemy", TEAM_ENEMY: "all enemies", SINGLE_FRIEND: "one ally", TEAM_FRIEND: "whole team" },
 		mon: "Monster", lists: {
-			attack_skills: "Basic attack", defensive_skills: "Basic block", buff_skills: "Buff", passive_skills: "Passive", area_skills: "Area attack", reward_skills: "Reward",
-			egg_skills: "Egg move", milestone_skills: "Milestone", bounty_skills: "Bounty",
+			standard_skills: "Standard", ascension_skills: "Ascension (potion)", defensive_skills: "Shield", buff_skills: "Buff", passive_skills: "Passive", area_skills: "Area attack",
+			egg_skills: "Attack (pool)", bounty_skills: "Bounty", reward_skills: "Envelope (unique)",
 		},
+		trainer: "Trainer", wild: "wild monsters", onlySpecies: "species egg move only",
 		leads: {
 			monsters: "All monster species from <code>Monmap.mons</code> with their egg moves and how to unlock them.",
-			skills: "All skills from <code>Skills</code>. A monster can only play a skill if its type contains all of the skill's elements. Columns are sortable.",
+			skills: "All skills from <code>Skills</code>, rules in <code>skill_regeln.txt</code>. A monster can play a skill once it has one of its elements; missing elements make it dormant (weaker, no element effect). Below the source: whether the trainer or wild monsters have it. Columns are sortable.",
 			elements: "Element cycle and all combinations from <code>ColorMap</code>. Every skill element is compared with every target element; combined monsters inherit all weaknesses and resistances.",
 			gems: "Trophies raise one stat of your own monster by fixed points for the rest of the run.",
 			relics: "Relics are passive run bonuses. You can pick them from the chest after biome bosses and buy them in the shop, regardless of rarity.",
@@ -391,7 +395,52 @@ const covers = (typeMask, nature) => (nature & ~typeMask) === 0;
 const skillByName = Object.fromEntries(DATA.skills.map((s) => [s.name, s]));
 const tierStars = (t) => "◆".repeat(t || 1) + `<span class="muted">${"◇".repeat(Math.max(0, 4 - (t || 1)))}</span>`;
 const dmgType = (s) => (s.damage_type === "ABILITY" ? ui("ability") : ui("physical"));
-const skillDesc = (s) => tr(s.description, { value: fmtNum(s.value ?? s.damage ?? 0) });
+// Wie Helper.skill_description: Haupttext mit {stat}/{element}, darunter die Extras (Skills.extras_text) und der
+// Element-Effekt der Karte (ElementEffects.skill_effect_text, mit effect_chance / effect_power der Karte)
+const STAT_KEYS = { hp: "STAT_HP", atk: "STAT_ATK", def: "STAT_DEF", s_atk: "STAT_SPA", s_def: "STAT_SPD", speed: "STAT_SPE" };
+const statLabel = (stat) => (STAT_KEYS[stat] ? tr(STAT_KEYS[stat]).replace(":", "") : stat || "");
+function skillEffectText(s) {
+	const key = DATA.elements.effectKeys?.[s.nature];
+	if (!key) return "";
+	const E = DATA.elements.effects;
+	let power = s.effect_power ?? 1;
+	let chance = s.effect_chance ?? 1;
+	if (key === "VOLCANO") { power *= chance; chance = 1; }
+	if (key === "MAGMA") chance = 1;
+	const pct = (x) => fmtNum(Math.round(x * 1000) / 10);
+	const text = tr(`EFFECT_${key}_DESC`, {
+		turns: E.EFFECT_TURNS, speed: pct(E.SPEED_FACTOR * power), attack: pct(E.ATTACK_FACTOR * power),
+		magma: fmtNum(Math.round((1 + (E.MAGMA_SHIELD_COST - 1) * power) * 10) / 10), ice: pct(E.ICE_SHIELD_SHARE * power),
+		poison: pct(E.POISON_SHARE * power), stacks: E.POISON_MAX_STACKS, burn: pct(E.BURN_SHARE * power),
+		burn_attack: pct(E.BURN_ATTACK_FACTOR * power), paralysis: pct(E.PARALYSIS_CHANCE * power),
+		volcano: pct(E.VOLCANO_CHANCE * power), chaos: E.CHAOS_BONUS,
+	});
+	return chance < 1 ? tr("EFFECT_CHANCE_PREFIX", { chance: Math.round(chance * 100) }) + text : text;
+}
+function skillDesc(s) {
+	const lines = [tr(s.description, {
+		value: fmtNum(s.value ?? s.damage ?? 0), buff_turns: s.buff_turns ?? "",
+		stat: statLabel(s.buff_stat ?? s.passive_stat), element: elementName(s.passive_element ?? s.nature),
+	})];
+	for (const x of s.extras || []) {
+		const key = "SKILL_EXTRA_" + x.kind.toUpperCase() + (x.kind === "charge" ? "_" + x.stat.toUpperCase() : "");
+		let text = tr(key, { value: fmtNum(x.value), turns: x.turns, stat: statLabel(x.stat), share: 50 });
+		if (x.chance != null && x.chance < 1) text = tr("EFFECT_CHANCE_PREFIX", { chance: Math.round(x.chance * 100) }) + text;
+		lines.push(text);
+	}
+	const effect = skillEffectText(s);
+	if (effect) lines.push(effect);
+	return lines.join(" · ");
+}
+// Woher man den Skill bekommt, über die Arten hinaus: Trainer, wilde Monster (Biom-Pool)
+const POOL_LISTS = ["egg_skills", "defensive_skills", "buff_skills", "passive_skills", "area_skills"];
+function skillSources(s) {
+	if (!POOL_LISTS.includes(s.list)) return ui("lists")[s.list] || s.list;
+	const parts = [];
+	if (s.trainer !== false && (s.tier || 1) >= 2) parts.push(ui("trainer"));
+	if (s.wild !== false) parts.push(ui("wild"));
+	return parts.join(", ") || ui("onlySpecies");
+}
 const skillLabel = (name) => {
 	const s = skillByName[name];
 	return s ? `${chip(s.nature)} <b>${esc(tr(name))}</b> <span class="tier small">${tierStars(s.tier)}</span>` : `<b>${esc(tr(name))}</b>`;
@@ -456,16 +505,23 @@ function bountyHow(key) {
 const popcount = (mask) => elementsIn(mask).length;
 
 // Ein Skill mit allen Werten, wie ihn das Monster einsetzt
+// wie Skills.standard_rarity_bonus: Standard-Skills werden pro Seltenheitsstufe über Gewöhnlich etwas stärker
+const standardBonusPerStep = (s) => (s.standard && DATA.standardRarityBonus?.[s.effect]) || 0;
+function standardRarityBonus(s, m) {
+	return m ? standardBonusPerStep(s) * (DATA.enums.MON_RARITY?.[m.rarity] ?? 0) : 0;
+}
 function skillCard(name, m, how) {
-	const s = skillByName[name];
-	if (!s) return `<li class="skill-card"><b>${esc(tr(name))}</b>${how ? `<div class="how">${esc(how)}</div>` : ""}</li>`;
+	const base = skillByName[name];
+	if (!base) return `<li class="skill-card"><b>${esc(tr(name))}</b>${how ? `<div class="how">${esc(how)}</div>` : ""}</li>`;
+	const bonus = standardRarityBonus(base, m);
+	const s = bonus ? { ...base, value: base.value + bonus } : base;
 	const value = s.value ?? s.damage;
 	const awake = covers(m.initial_type, s.nature);
 	// wie Skills.dormant_power
 	const share = popcount(s.nature & m.initial_type) / Math.max(popcount(s.nature), 1);
 	const dormant = (DATA.dormantBasePower ?? 0.4) + (1 - (DATA.dormantBasePower ?? 0.4)) * share;
 	const meta = [
-		value != null ? `${ui("power")} <b>${fmtNum(value)}</b>${!awake ? ` <span title="${esc(ui("dormantHint").replace("{power}", Math.round(dormant * 100)))}">(→ ${fmtNum(Math.max(Math.round(value * dormant), 1))})</span>` : ""}` : "",
+		value != null ? `${ui("power")} <b>${fmtNum(value)}</b>${bonus ? ` <span class="small muted" title="${esc(ui("rarityBonusHint"))}">(${fmtNum(base.value)} + ${fmtNum(bonus)} ${esc(rarityName(m.rarity))})</span>` : ""}${!awake ? ` <span title="${esc(ui("dormantHint").replace("{power}", Math.round(dormant * 100)))}">(→ ${fmtNum(Math.max(Math.round(value * dormant), 1))})</span>` : ""}` : "",
 		s.effect ? `${ui("effect")} <b>${esc(ui("effects")[s.effect] || s.effect)}</b>` : "",
 		`<b>${dmgType(s)}</b>`,
 		s.cost != null ? `${ui("cost")} <b>${s.cost}</b>` : "",
@@ -621,7 +677,9 @@ function renderSkills() {
 			const c = typeof x === "number" ? x - y : String(x).localeCompare(String(y), state.lang);
 			return (dir === "asc" ? c : -c) || (a.tier || 1) - (b.tier || 1) || (a.value ?? 0) - (b.value ?? 0);
 		});
-	const usable = (s) => DATA.mons.filter((m) => covers(m.initial_type, s.nature)).map((m) => monName(m.name));
+	// Arten, die den Skill als Start-Skill, Ei-Attacke, Meilenstein oder Kopfgeld haben
+	const usable = (s) => DATA.mons.filter((m) => [...(m.default_egg_skills || []), ...(m.unlockable_egg_skills || []),
+		...Object.values(m.milestone_egg_skills || {}), ...Object.values(m.bounty_egg_skills || {})].includes(s.name)).map((m) => monName(m.name));
 	const filters = `<div class="filters">
 		<select id="f-element" aria-label="${ui("element")}">
 			<option value="all">${ui("element")}: ${ui("all")}</option>
@@ -640,12 +698,12 @@ function renderSkills() {
 			<td><b>${hl(tr(s.name))}</b><br><code class="small">${hl(s.name)}</code></td>
 			<td>${chip(s.nature)}</td>
 			<td class="tier" title="${ui("weight")}: ${fmtNum(skillWeight(s))}">${tierStars(s.tier)}</td>
-			<td class="num">${fmtNum(s.value ?? s.damage ?? 0)}</td>
+			<td class="num">${fmtNum(s.value ?? s.damage ?? 0)}${standardBonusPerStep(s) ? `<br><span class="small muted" title="${esc(ui("rarityBonusHint"))}">+${fmtNum(standardBonusPerStep(s))} ${esc(ui("perRarity"))}</span>` : ""}</td>
 			<td>${dmgType(s)}</td>
 			<td class="num">${s.cost ?? ""}</td>
 			<td class="num">${s.cooldown ?? ""}</td>
 			<td class="num">${s.shop_cost ? `${s.shop_cost.min}–${s.shop_cost.max}` : ""}</td>
-			<td><span class="tag">${esc(ui("lists")[s.list] || s.list)}</span></td>
+			<td><span class="tag">${esc(ui("lists")[s.list] || s.list)}</span><br><span class="small muted">${esc(skillSources(s))}</span></td>
 			<td class="wrap">${hl(skillDesc(s))}</td>
 			<td class="wrap small">${esc(usable(s).join(", ") || ui("none"))}</td>
 		</tr>`).join("")}</tbody></table></div>`;

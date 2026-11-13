@@ -49,6 +49,32 @@ func _init() -> void:
 	monster_battle_selected_material.set_shader_parameter("outline_color", BATTLE_OUTLINE_COLOR)
 	monster_battle_selected_material.set_shader_parameter("outline_thickness", BATTLE_OUTLINE_THICKNESS)
 
+## Skills (Autoload vor Monmap) ist hier schon geladen.
+func _ready() -> void:
+	_drop_missing_egg_skills()
+
+## Sicherheitsnetz: Ei-Attacken, die es in Skills nicht (mehr) gibt, fliegen aus den Listen der Arten.
+## Sonst liefert Skills.get_skill {} und Konfigurator, Start-Vorschlag, wilde Monster usw. stürzen ab.
+func _drop_missing_egg_skills() -> void:
+	for mon in mons:
+		for key in ["default_egg_skills", "unlockable_egg_skills"]:
+			if not mon.has(key):
+				continue
+			var kept: Array = []
+			for skill_name in mon[key]:
+				if Skills.has_skill(skill_name):
+					kept.append(skill_name)
+				else:
+					push_warning("Monmap: Ei-Attacke '%s' von '%s' (%s) gibt es nicht, wird ignoriert" % [skill_name, mon.name, key])
+			mon[key] = kept
+		for key in ["milestone_egg_skills", "bounty_egg_skills"]:
+			if not mon.has(key):
+				continue
+			for slot in mon[key].keys():
+				if not Skills.has_skill(mon[key][slot]):
+					push_warning("Monmap: Ei-Attacke '%s' von '%s' (%s.%s) gibt es nicht, wird ignoriert" % [mon[key][slot], mon.name, key, slot])
+					mon[key].erase(slot)
+
 ## Monsterbild samt Monster-Material auf ein TextureRect setzen
 func show_on(rect: TextureRect, name: String, display_size: float, back := false) -> void:
 	rect.texture = texture(name, display_size, back)
@@ -102,14 +128,14 @@ var mons = [
 		"stats": [190, 210],
 		# Bevorzugte Werteverteilung der Art in Prozent (Summe 100), schwankt pro Run um bis zu ±15 % (siehe growth.gd)
 		"preferred_stats": {"hp": 15, "atk": 15, "def": 12, "s_atk": 25, "s_def": 15, "speed": 18},
+		# Skill-Listen (Regeln: skill_regeln.txt): default = Standard-Skills der drei besten Kampfwerte, immer wählbar;
+		# unlockable = Ei-Attacken, die wilde Monster der Art tragen und durch Opfern freigeschaltet werden;
+		# milestone = Meilensteine mit der Art als Start-Monster (Skills.MILESTONES), im Neben-Element der Art;
+		# bounty = Kopfgelder, ein Monster der Art muss das Kopfgeld-Monster selbst besiegen (Skills.BOUNTIES)
 		"max_upgrades": 2,
-		# Ei-Attacken, die immer von Beginn an zur Wahl stehen
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_AIR", "SKILL_BASIC_BLOCK_AIR", "SKILL_GUST"],
-		# Ei-Attacken, die wilde Monster dieser Art tragen können und durch Opfern freigeschaltet werden
-		"unlockable_egg_skills": ["SKILL_PEBBLE_THROW", "SKILL_WIND_BLADE", "SKILL_THUNDER_STRIKE"],
-		# Ei-Attacken, die nur über Meilensteine mit dieser Art als Start-Monster freigeschaltet werden (siehe Skills.MILESTONES)
-		"milestone_egg_skills": {"boss_1": "SKILL_TAILWIND_STRIKE", "boss_5": "SKILL_CYCLONE", "game_win": "SKILL_NORTHERN_GALE"},
-		# Bounty-Hunter-Ei-Attacken: ein Monster dieser Art muss das Kopfgeld-Monster selbst besiegen (siehe Skills.BOUNTIES)
+		"default_egg_skills": ["SKILL_FEATHER_PUFF", "SKILL_BREEZE_WARD", "SKILL_BASIC_ATTACK_AIR"],
+		"unlockable_egg_skills": ["SKILL_GALE_GUARD", "SKILL_AURORA_VEIL", "SKILL_CLOUD_BURST", "SKILL_TAILWIND_BOND"],
+		"milestone_egg_skills": {"boss_1": "SKILL_SNOW_FLURRY", "boss_5": "SKILL_ICE_SPEAR", "game_win": "SKILL_PERMAFROST"},
 		"bounty_egg_skills": {"alpha_1": "SKILL_RAPTOR_DIVE", "alpha_2": "SKILL_HUNTERS_GALE", "northern_warden": "SKILL_TROPHY_TEMPEST"},
 	},
 	# Leuchtkrabbe: Krabbe mit Leuchtturm auf dem Panzer
@@ -120,9 +146,9 @@ var mons = [
 		"stats": [190, 210],
 		"preferred_stats": {"hp": 18, "atk": 14, "def": 25, "s_atk": 14, "s_def": 19, "speed": 10},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_WATER", "SKILL_BASIC_BLOCK_WATER", "SKILL_SPLASH"],
-		"unlockable_egg_skills": ["SKILL_EMBER", "SKILL_TIDAL_SLAM", "SKILL_MAGMA_BURST"],
-		"milestone_egg_skills": {"boss_1": "SKILL_UNDERTOW", "boss_5": "SKILL_MAELSTROM", "game_win": "SKILL_NORTHERN_TIDE"},
+		"default_egg_skills": ["SKILL_BASIC_BLOCK_WATER", "SKILL_MIST_VEIL", "SKILL_SPLASH"],
+		"unlockable_egg_skills": ["SKILL_TIDAL_SLAM", "SKILL_TIDE_VEIL", "SKILL_REEF_WALL", "SKILL_DEEP_CALM"],
+		"milestone_egg_skills": {"boss_1": "SKILL_HOT_MIST", "boss_5": "SKILL_GEYSER", "game_win": "SKILL_PRESSURE_VALVE"},
 		"bounty_egg_skills": {"alpha_1": "SKILL_SHARK_BITE", "alpha_2": "SKILL_HUNTERS_TIDE", "northern_warden": "SKILL_TROPHY_TSUNAMI"},
 	},
 	# Schattflaum: Federgeist aus violettem Rauch
@@ -133,10 +159,10 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 12, "atk": 8, "def": 12, "s_atk": 27, "s_def": 21, "speed": 20},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_AIR", "SKILL_BASIC_BLOCK_AIR", "SKILL_GUST"],
-		"unlockable_egg_skills": ["SKILL_WIND_BLADE", "SKILL_ICE_SPEAR", "SKILL_THUNDER_STRIKE"],
-		"milestone_egg_skills": {"boss_1": "SKILL_PLUME_FLURRY", "boss_5": "SKILL_PHANTOM_DRAFT", "game_win": "SKILL_SHADOW_SQUALL"},
-		"bounty_egg_skills": {"alpha_1": "SKILL_SILENT_SWOOP", "alpha_2": "SKILL_HUNTERS_HAUNT", "northern_warden": "SKILL_TROPHY_PHANTASM"},
+		"default_egg_skills": ["SKILL_GUST", "SKILL_CLOUD_COVER", "SKILL_WIND_WALL"],
+		"unlockable_egg_skills": ["SKILL_WIND_BLADE", "SKILL_SKY_VEIL", "SKILL_CLOUD_BURST"],
+		"milestone_egg_skills": {"boss_1": "SKILL_DUST_WHIRR", "boss_5": "SKILL_GRIT_CLOAK", "game_win": "SKILL_SANDSTORM"},
+		"bounty_egg_skills": {"alpha_1": "SKILL_RAPTOR_DIVE", "alpha_2": "SKILL_HUNTERS_GALE", "northern_warden": "SKILL_TROPHY_PHANTASM"},
 	},
 	# Hackschupp: Echse mit Beil und Schuppenpanzer
 	{
@@ -146,9 +172,9 @@ var mons = [
 		"stats": [190, 210],
 		"preferred_stats": {"hp": 16, "atk": 27, "def": 22, "s_atk": 8, "s_def": 12, "speed": 15},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_FIRE", "SKILL_BASIC_BLOCK_FIRE", "SKILL_EMBER"],
-		"unlockable_egg_skills": ["SKILL_FLAME_CLAW", "SKILL_ROCK_CRUSH", "SKILL_MAGMA_BURST"],
-		"milestone_egg_skills": {"boss_1": "SKILL_SCORCHING_CHOP", "boss_5": "SKILL_BLAZING_CLEAVE", "game_win": "SKILL_INFERNO_EXECUTION"},
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_FIRE", "SKILL_BASIC_BLOCK_FIRE", "SKILL_HEAT_SHIMMER"],
+		"unlockable_egg_skills": ["SKILL_EMBER_SPIRAL", "SKILL_FORGE_GUARD", "SKILL_BLAZING_CLEAVE", "SKILL_FIRE_BLOOD"],
+		"milestone_egg_skills": {"boss_1": "SKILL_MAGMA_FIST", "boss_5": "SKILL_OBSIDIAN_SKIN", "game_win": "SKILL_CALDERA_CRASH"},
 		"bounty_egg_skills": {"alpha_1": "SKILL_HOT_HATCHET", "alpha_2": "SKILL_HUNTERS_BLAZE", "northern_warden": "SKILL_TROPHY_PYRE"},
 	},
 	# Glotzlibelle: Libelle mit Stielaugen
@@ -159,10 +185,10 @@ var mons = [
 		"stats": [190, 210],
 		"preferred_stats": {"hp": 13, "atk": 18, "def": 11, "s_atk": 20, "s_def": 14, "speed": 24},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_AIR", "SKILL_BASIC_BLOCK_AIR", "SKILL_GUST"],
-		"unlockable_egg_skills": ["SKILL_PEBBLE_THROW", "SKILL_WIND_BLADE", "SKILL_ROCK_CRUSH"],
-		"milestone_egg_skills": {"boss_1": "SKILL_DUST_WHIRR", "boss_5": "SKILL_STARING_GAZE", "game_win": "SKILL_MUDWING_DIVE"},
-		"bounty_egg_skills": {"alpha_1": "SKILL_STINGER_DART", "alpha_2": "SKILL_HUNTERS_GAZE", "northern_warden": "SKILL_TROPHY_SWARM"},
+		"default_egg_skills": ["SKILL_GUST", "SKILL_BASIC_ATTACK_AIR", "SKILL_BREEZE_WARD"],
+		"unlockable_egg_skills": ["SKILL_GALE_GUARD", "SKILL_WIND_BLADE", "SKILL_CLOUD_BURST", "SKILL_LIGHT_FEATHER"],
+		"milestone_egg_skills": {"boss_1": "SKILL_SAND_FANG", "boss_5": "SKILL_DUNE_RAM", "game_win": "SKILL_SANDSTORM"},
+		"bounty_egg_skills": {"alpha_1": "SKILL_RAPTOR_DIVE", "alpha_2": "SKILL_HUNTERS_GALE", "northern_warden": "SKILL_TROPHY_SWARM"},
 	},
 	# Borkenhieb: Baumkrieger mit zwei Runenäxten
 	{
@@ -172,9 +198,9 @@ var mons = [
 		"stats": [215, 235],
 		"preferred_stats": {"hp": 19, "atk": 28, "def": 20, "s_atk": 7, "s_def": 14, "speed": 12},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_EARTH", "SKILL_BASIC_BLOCK_EARTH", "SKILL_PEBBLE_THROW"],
-		"unlockable_egg_skills": ["SKILL_ROCK_CRUSH", "SKILL_TIDAL_SLAM", "SKILL_MAGMA_BURST"],
-		"milestone_egg_skills": {"boss_1": "SKILL_ROOT_LASH", "boss_5": "SKILL_TWIN_AXE_SWEEP", "game_win": "SKILL_ANCIENT_TIMBER"},
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_EARTH", "SKILL_STONE_GUARD", "SKILL_AMBER_SHELL"],
+		"unlockable_egg_skills": ["SKILL_CRYSTAL_SPIKES", "SKILL_STONE_CIRCLE", "SKILL_TECTONIC_SLAM", "SKILL_ROOT_LASH"],
+		"milestone_egg_skills": {"boss_1": "SKILL_MUDWING_DIVE", "boss_5": "SKILL_MUDSLIDE", "game_win": "SKILL_BOG_HEART"},
 		"bounty_egg_skills": {"alpha_1": "SKILL_SAP_CLEAVER", "alpha_2": "SKILL_HUNTERS_GROVE", "northern_warden": "SKILL_TROPHY_TIMBERFALL"},
 	},
 	# Hainschwestern: vier Baumfeen unter einer Krone
@@ -185,10 +211,10 @@ var mons = [
 		"stats": [230, 250],
 		"preferred_stats": {"hp": 17, "atk": 8, "def": 14, "s_atk": 25, "s_def": 24, "speed": 12},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_EARTH", "SKILL_BASIC_BLOCK_EARTH", "SKILL_PEBBLE_THROW"],
-		"unlockable_egg_skills": ["SKILL_SPLASH", "SKILL_ROCK_CRUSH", "SKILL_CHAOS_NOVA"],
-		"milestone_egg_skills": {"boss_1": "SKILL_POLLEN_DRIFT", "boss_5": "SKILL_BLOSSOM_CHORUS", "game_win": "SKILL_FOURFOLD_BLOOM"},
-		"bounty_egg_skills": {"alpha_1": "SKILL_THORN_EMBRACE", "alpha_2": "SKILL_HUNTERS_BLOOM", "northern_warden": "SKILL_TROPHY_WILDWOOD"},
+		"default_egg_skills": ["SKILL_EARTH_PULSE", "SKILL_AMBER_SHELL", "SKILL_STONE_GUARD"],
+		"unlockable_egg_skills": ["SKILL_GEODE_CRASH", "SKILL_EARTH_DOME", "SKILL_FOURFOLD_BLOOM", "SKILL_STONE_KINSHIP"],
+		"milestone_egg_skills": {"boss_1": "SKILL_DUST_WHIRR", "boss_5": "SKILL_SANDSTORM", "game_win": "SKILL_SANDSTORM_EYE"},
+		"bounty_egg_skills": {"alpha_1": "SKILL_SAP_CLEAVER", "alpha_2": "SKILL_HUNTERS_GROVE", "northern_warden": "SKILL_TROPHY_WILDWOOD"},
 	},
 	# Glutmolch: Lavamolch mit brennendem Schwanz
 	{
@@ -198,10 +224,10 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 17, "atk": 16, "def": 15, "s_atk": 24, "s_def": 14, "speed": 14},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_FIRE", "SKILL_BASIC_BLOCK_FIRE", "SKILL_EMBER"],
-		"unlockable_egg_skills": ["SKILL_FLAME_CLAW", "SKILL_THUNDER_STRIKE", "SKILL_MAGMA_BURST"],
-		"milestone_egg_skills": {"boss_1": "SKILL_SPARK_SPIT", "boss_5": "SKILL_LAVA_TAIL", "game_win": "SKILL_EMBER_SPIRAL"},
-		"bounty_egg_skills": {"alpha_1": "SKILL_CINDER_BITE", "alpha_2": "SKILL_HUNTERS_FLAME", "northern_warden": "SKILL_TROPHY_ERUPTION"},
+		"default_egg_skills": ["SKILL_EMBER", "SKILL_SCORCHING_CHOP", "SKILL_CINDER_WALL"],
+		"unlockable_egg_skills": ["SKILL_FLAME_VEIL", "SKILL_BLAZING_CLEAVE", "SKILL_CORE_BLAST", "SKILL_INNER_FIRE"],
+		"milestone_egg_skills": {"boss_1": "SKILL_HOT_MIST", "boss_5": "SKILL_GEYSER", "game_win": "SKILL_STEAM_CLOUD"},
+		"bounty_egg_skills": {"alpha_1": "SKILL_HOT_HATCHET", "alpha_2": "SKILL_HUNTERS_BLAZE", "northern_warden": "SKILL_TROPHY_ERUPTION"},
 	},
 	# Quallolotl: Gallert-Axolotl mit Wasserbauch und Quallententakeln
 	{
@@ -211,10 +237,10 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 24, "atk": 10, "def": 14, "s_atk": 20, "s_def": 22, "speed": 10},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_WATER", "SKILL_BASIC_BLOCK_WATER", "SKILL_SPLASH"],
-		"unlockable_egg_skills": ["SKILL_TIDAL_SLAM", "SKILL_WIND_BLADE", "SKILL_ICE_SPEAR"],
-		"milestone_egg_skills": {"boss_1": "SKILL_BUBBLE_SPRAY", "boss_5": "SKILL_TENTACLE_LASH", "game_win": "SKILL_TIDE_HEART"},
-		"bounty_egg_skills": {"alpha_1": "SKILL_JELLY_STING", "alpha_2": "SKILL_HUNTERS_CURRENT", "northern_warden": "SKILL_TROPHY_TORRENT"},
+		"default_egg_skills": ["SKILL_MIST_TOUCH", "SKILL_SPLASH", "SKILL_SHELL_GUARD"],
+		"unlockable_egg_skills": ["SKILL_TIDAL_SLAM", "SKILL_MAELSTROM", "SKILL_TIDE_DOME", "SKILL_SIPHON"],
+		"milestone_egg_skills": {"boss_1": "SKILL_SLUDGE_SHOT", "boss_5": "SKILL_CLAY_ARMOR", "game_win": "SKILL_SILT_WAVE"},
+		"bounty_egg_skills": {"alpha_1": "SKILL_SHARK_BITE", "alpha_2": "SKILL_HUNTERS_TIDE", "northern_warden": "SKILL_TROPHY_TORRENT"},
 	},
 	# Glutkoloss: Lavagolem mit glühendem Kern und Felsfäusten
 	{
@@ -224,10 +250,10 @@ var mons = [
 		"stats": [215, 235],
 		"preferred_stats": {"hp": 24, "atk": 26, "def": 24, "s_atk": 8, "s_def": 10, "speed": 8},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_FIRE", "SKILL_BASIC_BLOCK_FIRE", "SKILL_EMBER"],
-		"unlockable_egg_skills": ["SKILL_FLAME_CLAW", "SKILL_ROCK_CRUSH", "SKILL_MAGMA_BURST"],
-		"milestone_egg_skills": {"boss_1": "SKILL_MAGMA_FIST", "boss_5": "SKILL_SMOLDER_STOMP", "game_win": "SKILL_CORE_BLAST"},
-		"bounty_egg_skills": {"alpha_1": "SKILL_BOULDER_PUNCH", "alpha_2": "SKILL_HUNTERS_EMBER", "northern_warden": "SKILL_TROPHY_CALDERA"},
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_FIRE", "SKILL_CINDER_WALL", "SKILL_EMBER_SHROUD"],
+		"unlockable_egg_skills": ["SKILL_EMBER_SPIRAL", "SKILL_HEARTH_CIRCLE", "SKILL_INFERNO_EXECUTION", "SKILL_SMOLDER_STOMP"],
+		"milestone_egg_skills": {"boss_1": "SKILL_MAGMA_FIST", "boss_5": "SKILL_CALDERA_CRASH", "game_win": "SKILL_MOLTEN_CORE"},
+		"bounty_egg_skills": {"alpha_1": "SKILL_HOT_HATCHET", "alpha_2": "SKILL_HUNTERS_BLAZE", "northern_warden": "SKILL_TROPHY_CALDERA"},
 	},
 	# Wolkenkauz: Wolkeneule auf einem kleinen Wirbelsturm
 	{
@@ -237,10 +263,10 @@ var mons = [
 		"stats": [190, 210],
 		"preferred_stats": {"hp": 15, "atk": 10, "def": 12, "s_atk": 24, "s_def": 19, "speed": 20},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_AIR", "SKILL_BASIC_BLOCK_AIR", "SKILL_GUST"],
-		"unlockable_egg_skills": ["SKILL_SPLASH", "SKILL_WIND_BLADE", "SKILL_ICE_SPEAR"],
-		"milestone_egg_skills": {"boss_1": "SKILL_FEATHER_PUFF", "boss_5": "SKILL_CLOUD_BURST", "game_win": "SKILL_SKY_TWISTER"},
-		"bounty_egg_skills": {"alpha_1": "SKILL_DOWNDRAFT", "alpha_2": "SKILL_HUNTERS_BREEZE", "northern_warden": "SKILL_TROPHY_TYPHOON"},
+		"default_egg_skills": ["SKILL_GUST", "SKILL_BREEZE_WARD", "SKILL_BASIC_BLOCK_AIR"],
+		"unlockable_egg_skills": ["SKILL_WIND_BLADE", "SKILL_AURORA_VEIL", "SKILL_CLOUD_BURST", "SKILL_STORM_MIND"],
+		"milestone_egg_skills": {"boss_1": "SKILL_SNOW_FLURRY", "boss_5": "SKILL_HOARFROST_VEIL", "game_win": "SKILL_GLACIAL_GRACE"},
+		"bounty_egg_skills": {"alpha_1": "SKILL_RAPTOR_DIVE", "alpha_2": "SKILL_HUNTERS_GALE", "northern_warden": "SKILL_TROPHY_TYPHOON"},
 	},
 	# Sturmgreif: Greif mit Blitzschwingen und Wirbelsturmschweifen
 	{
@@ -250,10 +276,10 @@ var mons = [
 		"stats": [230, 250],
 		"preferred_stats": {"hp": 15, "atk": 22, "def": 12, "s_atk": 22, "s_def": 10, "speed": 19},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_AIR", "SKILL_BASIC_BLOCK_AIR", "SKILL_GUST"],
-		"unlockable_egg_skills": ["SKILL_WIND_BLADE", "SKILL_THUNDER_STRIKE", "SKILL_CHAOS_NOVA"],
-		"milestone_egg_skills": {"boss_1": "SKILL_STATIC_TALON", "boss_5": "SKILL_THUNDER_WINGS", "game_win": "SKILL_SKYFALL_STORM"},
-		"bounty_egg_skills": {"alpha_1": "SKILL_GRYPH_STRIKE", "alpha_2": "SKILL_HUNTERS_THUNDER", "northern_warden": "SKILL_TROPHY_HURRICANE"},
+		"default_egg_skills": ["SKILL_GUST", "SKILL_TAILWIND_STRIKE", "SKILL_WIND_WALL"],
+		"unlockable_egg_skills": ["SKILL_SKY_VEIL", "SKILL_SKYFALL_STORM", "SKILL_NORTHERN_GALE", "SKILL_STORM_FOCUS"],
+		"milestone_egg_skills": {"boss_1": "SKILL_ARC_BOLT", "boss_5": "SKILL_THUNDER_STRIKE", "game_win": "SKILL_BALL_LIGHTNING"},
+		"bounty_egg_skills": {"alpha_1": "SKILL_RAPTOR_DIVE", "alpha_2": "SKILL_HUNTERS_GALE", "northern_warden": "SKILL_TROPHY_HURRICANE"},
 	},
 	# Kristallwühler: Felsbestie mit Bernsteinkristallen auf dem Rücken
 	{
@@ -263,10 +289,10 @@ var mons = [
 		"stats": [215, 235],
 		"preferred_stats": {"hp": 22, "atk": 22, "def": 27, "s_atk": 6, "s_def": 15, "speed": 8},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_EARTH", "SKILL_BASIC_BLOCK_EARTH", "SKILL_PEBBLE_THROW"],
-		"unlockable_egg_skills": ["SKILL_ROCK_CRUSH", "SKILL_FLAME_CLAW", "SKILL_MAGMA_BURST"],
-		"milestone_egg_skills": {"boss_1": "SKILL_SHARD_SWIPE", "boss_5": "SKILL_CRYSTAL_SPIKES", "game_win": "SKILL_GEODE_CRASH"},
-		"bounty_egg_skills": {"alpha_1": "SKILL_QUARRY_CLAW", "alpha_2": "SKILL_HUNTERS_BOULDER", "northern_warden": "SKILL_TROPHY_AVALANCHE"},
+		"default_egg_skills": ["SKILL_STONE_GUARD", "SKILL_BASIC_ATTACK_EARTH", "SKILL_AMBER_SHELL"],
+		"unlockable_egg_skills": ["SKILL_CRYSTAL_SPIKES", "SKILL_GEODE_CRASH", "SKILL_MOUNTAIN_WALL", "SKILL_THICK_HIDE"],
+		"milestone_egg_skills": {"boss_1": "SKILL_MAGMA_FIST", "boss_5": "SKILL_OBSIDIAN_SKIN", "game_win": "SKILL_CALDERA_CRASH"},
+		"bounty_egg_skills": {"alpha_1": "SKILL_SAP_CLEAVER", "alpha_2": "SKILL_HUNTERS_GROVE", "northern_warden": "SKILL_TROPHY_AVALANCHE"},
 	},
 	# Frostfähe: Eisfüchsin mit kristallenen Schweifen
 	{
@@ -276,10 +302,10 @@ var mons = [
 		"stats": [215, 235],
 		"preferred_stats": {"hp": 14, "atk": 20, "def": 12, "s_atk": 20, "s_def": 14, "speed": 20},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_WATER", "SKILL_BASIC_BLOCK_WATER", "SKILL_SPLASH"],
-		"unlockable_egg_skills": ["SKILL_TIDAL_SLAM", "SKILL_ICE_SPEAR", "SKILL_WIND_BLADE"],
-		"milestone_egg_skills": {"boss_1": "SKILL_SNOW_FLURRY", "boss_5": "SKILL_FROST_TAILS", "game_win": "SKILL_GLACIAL_GRACE"},
-		"bounty_egg_skills": {"alpha_1": "SKILL_ICICLE_FANG", "alpha_2": "SKILL_HUNTERS_FROST", "northern_warden": "SKILL_TROPHY_BLIZZARD"},
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_WATER", "SKILL_BUBBLE_SPRAY", "SKILL_MIST_TOUCH"],
+		"unlockable_egg_skills": ["SKILL_CORAL_GUARD", "SKILL_MAELSTROM", "SKILL_NORTHERN_TIDE", "SKILL_VAPOR_COIL"],
+		"milestone_egg_skills": {"boss_1": "SKILL_FROST_TAILS", "boss_5": "SKILL_ICE_SPEAR", "game_win": "SKILL_GLACIAL_GRACE"},
+		"bounty_egg_skills": {"alpha_1": "SKILL_SHARK_BITE", "alpha_2": "SKILL_HUNTERS_TIDE", "northern_warden": "SKILL_TROPHY_BLIZZARD"},
 	},
 	# Nebelspuk: Nebelgeist mit Dunstschwaden und violetten Augen
 	{
@@ -289,10 +315,10 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 14, "atk": 6, "def": 14, "s_atk": 26, "s_def": 24, "speed": 16},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_WATER", "SKILL_BASIC_BLOCK_WATER", "SKILL_SPLASH"],
-		"unlockable_egg_skills": ["SKILL_EMBER", "SKILL_WIND_BLADE", "SKILL_ICE_SPEAR"],
-		"milestone_egg_skills": {"boss_1": "SKILL_MIST_TOUCH", "boss_5": "SKILL_VAPOR_COIL", "game_win": "SKILL_PHANTOM_FOG"},
-		"bounty_egg_skills": {"alpha_1": "SKILL_WISP_GRASP", "alpha_2": "SKILL_HUNTERS_MIST", "northern_warden": "SKILL_TROPHY_DELUGE"},
+		"default_egg_skills": ["SKILL_SPLASH", "SKILL_MIST_TOUCH", "SKILL_SHELL_GUARD"],
+		"unlockable_egg_skills": ["SKILL_TIDAL_SLAM", "SKILL_TIDE_DOME", "SKILL_TIDE_HEART", "SKILL_SHELTER_TIDE"],
+		"milestone_egg_skills": {"boss_1": "SKILL_HOT_MIST", "boss_5": "SKILL_GEYSER", "game_win": "SKILL_HOT_SPRING"},
+		"bounty_egg_skills": {"alpha_1": "SKILL_SHARK_BITE", "alpha_2": "SKILL_HUNTERS_TIDE", "northern_warden": "SKILL_TROPHY_DELUGE"},
 	},
 	# Funkenigel: Igel mit elektrisch geladenen Stacheln
 	{
@@ -302,10 +328,10 @@ var mons = [
 		"stats": [190, 210],
 		"preferred_stats": {"hp": 14, "atk": 14, "def": 22, "s_atk": 22, "s_def": 10, "speed": 18},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_FIRE", "SKILL_BASIC_BLOCK_FIRE", "SKILL_EMBER"],
-		"unlockable_egg_skills": ["SKILL_WIND_BLADE", "SKILL_THUNDER_STRIKE", "SKILL_FLAME_CLAW"],
-		"milestone_egg_skills": {"boss_1": "SKILL_STATIC_ROLL", "boss_5": "SKILL_VOLT_QUILLS", "game_win": "SKILL_BALL_LIGHTNING"},
-		"bounty_egg_skills": {"alpha_1": "SKILL_SHOCK_NIP", "alpha_2": "SKILL_HUNTERS_SPARK", "northern_warden": "SKILL_TROPHY_SURGE"},
+		"default_egg_skills": ["SKILL_SPARK_SPIT", "SKILL_BASIC_BLOCK_FIRE", "SKILL_BASIC_ATTACK_FIRE"],
+		"unlockable_egg_skills": ["SKILL_FLAME_VEIL", "SKILL_FORGE_GUARD", "SKILL_CORE_BLAST", "SKILL_BATTLE_FERVOR"],
+		"milestone_egg_skills": {"boss_1": "SKILL_ARC_BOLT", "boss_5": "SKILL_VOLT_QUILLS", "game_win": "SKILL_BALL_LIGHTNING"},
+		"bounty_egg_skills": {"alpha_1": "SKILL_HOT_HATCHET", "alpha_2": "SKILL_HUNTERS_BLAZE", "northern_warden": "SKILL_TROPHY_SURGE"},
 	},
 	# Glutskorpion: Lavaskorpion mit brennendem Stachel (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -315,8 +341,9 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 16, "atk": 24, "def": 22, "s_atk": 14, "s_def": 12, "speed": 12},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_FIRE", "SKILL_BASIC_BLOCK_FIRE", "SKILL_EMBER"],
-		"unlockable_egg_skills": ["SKILL_FLAME_CLAW", "SKILL_MAGMA_BURST", "SKILL_ROCK_CRUSH"],
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_FIRE", "SKILL_CINDER_WALL", "SKILL_SPARK_SPIT"],
+		"unlockable_egg_skills": ["SKILL_FLAME_VEIL", "SKILL_HEARTH_CIRCLE", "SKILL_BLAZING_CLEAVE", "SKILL_SMOLDER_STOMP"],
+		"milestone_egg_skills": {"boss_1": "SKILL_MAGMA_FIST", "boss_5": "SKILL_MAGMA_BURST", "game_win": "SKILL_CALDERA_CRASH"},
 	},
 	# Dünenhorn: Sandkäfer mit Bernsteinhörnern (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -326,8 +353,9 @@ var mons = [
 		"stats": [190, 210],
 		"preferred_stats": {"hp": 15, "atk": 22, "def": 18, "s_atk": 10, "s_def": 13, "speed": 22},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_EARTH", "SKILL_BASIC_BLOCK_EARTH", "SKILL_PEBBLE_THROW"],
-		"unlockable_egg_skills": ["SKILL_ROCK_CRUSH", "SKILL_MAGMA_BURST", "SKILL_TIDAL_SLAM"],
+		"default_egg_skills": ["SKILL_PEBBLE_THROW", "SKILL_BASIC_BLOCK_EARTH", "SKILL_SAND_VEIL"],
+		"unlockable_egg_skills": ["SKILL_CRYSTAL_SPIKES", "SKILL_GRANITE_SKIN", "SKILL_GEODE_CRASH", "SKILL_TREMOR"],
+		"milestone_egg_skills": {"boss_1": "SKILL_SAND_FANG", "boss_5": "SKILL_DUNE_RAM", "game_win": "SKILL_SANDSTORM_EYE"},
 	},
 	# Reifwolf: Eiswolf mit Kristallmähne (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -337,8 +365,9 @@ var mons = [
 		"stats": [215, 235],
 		"preferred_stats": {"hp": 14, "atk": 24, "def": 12, "s_atk": 18, "s_def": 12, "speed": 20},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_WATER", "SKILL_BASIC_BLOCK_WATER", "SKILL_SPLASH"],
-		"unlockable_egg_skills": ["SKILL_TIDAL_SLAM", "SKILL_ICE_SPEAR", "SKILL_WIND_BLADE"],
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_WATER", "SKILL_BUBBLE_SPRAY", "SKILL_SHELL_GUARD"],
+		"unlockable_egg_skills": ["SKILL_TIDE_VEIL", "SKILL_MAELSTROM", "SKILL_NORTHERN_TIDE"],
+		"milestone_egg_skills": {"boss_1": "SKILL_FROST_TAILS", "boss_5": "SKILL_ICE_SPEAR", "game_win": "SKILL_PERMAFROST"},
 	},
 	# Dampfhorn: Steinstier mit Dampfwolken (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -348,8 +377,9 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 22, "atk": 14, "def": 22, "s_atk": 18, "s_def": 16, "speed": 8},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_WATER", "SKILL_BASIC_BLOCK_WATER", "SKILL_SPLASH"],
-		"unlockable_egg_skills": ["SKILL_TIDAL_SLAM", "SKILL_ICE_SPEAR", "SKILL_WIND_BLADE"],
+		"default_egg_skills": ["SKILL_SHELL_GUARD", "SKILL_SPLASH", "SKILL_MIST_TOUCH"],
+		"unlockable_egg_skills": ["SKILL_TIDAL_SLAM", "SKILL_MAELSTROM", "SKILL_REEF_WALL", "SKILL_SCALE_SHEEN"],
+		"milestone_egg_skills": {"boss_1": "SKILL_HOT_MIST", "boss_5": "SKILL_STEAM_CLOUD", "game_win": "SKILL_PRESSURE_VALVE"},
 	},
 	# Dünenstachler: Sandskorpion im Staubwirbel (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -359,8 +389,9 @@ var mons = [
 		"stats": [190, 210],
 		"preferred_stats": {"hp": 14, "atk": 22, "def": 16, "s_atk": 12, "s_def": 14, "speed": 22},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_EARTH", "SKILL_BASIC_BLOCK_EARTH", "SKILL_PEBBLE_THROW"],
-		"unlockable_egg_skills": ["SKILL_ROCK_CRUSH", "SKILL_MAGMA_BURST", "SKILL_TIDAL_SLAM"],
+		"default_egg_skills": ["SKILL_SHARD_SWIPE", "SKILL_BASIC_BLOCK_EARTH", "SKILL_SAND_VEIL"],
+		"unlockable_egg_skills": ["SKILL_CRYSTAL_SPIKES", "SKILL_GRANITE_SKIN", "SKILL_GEODE_CRASH"],
+		"milestone_egg_skills": {"boss_1": "SKILL_SAND_FANG", "boss_5": "SKILL_DUNE_RAM", "game_win": "SKILL_SANDSTORM"},
 	},
 	# Schlammschlund: Moorkröte mit Wurzelschwanz (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -370,8 +401,9 @@ var mons = [
 		"stats": [190, 210],
 		"preferred_stats": {"hp": 24, "atk": 18, "def": 18, "s_atk": 12, "s_def": 18, "speed": 10},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_WATER", "SKILL_BASIC_BLOCK_WATER", "SKILL_SPLASH"],
-		"unlockable_egg_skills": ["SKILL_TIDAL_SLAM", "SKILL_ICE_SPEAR", "SKILL_WIND_BLADE"],
+		"default_egg_skills": ["SKILL_SHELL_GUARD", "SKILL_BASIC_ATTACK_WATER", "SKILL_MIST_VEIL"],
+		"unlockable_egg_skills": ["SKILL_UNDERTOW", "SKILL_TIDAL_SLAM", "SKILL_REEF_WALL", "SKILL_TIDE_FEAST"],
+		"milestone_egg_skills": {"boss_1": "SKILL_MUDWING_DIVE", "boss_5": "SKILL_MUDSLIDE", "game_win": "SKILL_BOG_HEART"},
 	},
 	# Aschrücken: Magmaechse mit Lavaschwanz (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -381,8 +413,9 @@ var mons = [
 		"stats": [215, 235],
 		"preferred_stats": {"hp": 20, "atk": 26, "def": 22, "s_atk": 12, "s_def": 12, "speed": 8},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_FIRE", "SKILL_BASIC_BLOCK_FIRE", "SKILL_EMBER"],
-		"unlockable_egg_skills": ["SKILL_FLAME_CLAW", "SKILL_MAGMA_BURST", "SKILL_ROCK_CRUSH"],
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_FIRE", "SKILL_CINDER_WALL", "SKILL_SPARK_SPIT"],
+		"unlockable_egg_skills": ["SKILL_FLAME_VEIL", "SKILL_HEARTH_CIRCLE", "SKILL_INFERNO_EXECUTION", "SKILL_WAR_DRUMS"],
+		"milestone_egg_skills": {"boss_1": "SKILL_MAGMA_SPIT", "boss_5": "SKILL_MAGMA_BURST", "game_win": "SKILL_CALDERA_CRASH"},
 	},
 	# Voltkäfer: Panzerkäfer unter Strom (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -392,8 +425,9 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 14, "atk": 22, "def": 24, "s_atk": 14, "s_def": 12, "speed": 14},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_AIR", "SKILL_BASIC_BLOCK_AIR", "SKILL_GUST"],
-		"unlockable_egg_skills": ["SKILL_WIND_BLADE", "SKILL_THUNDER_STRIKE", "SKILL_ICE_SPEAR"],
+		"default_egg_skills": ["SKILL_WIND_WALL", "SKILL_BASIC_ATTACK_AIR", "SKILL_FEATHER_PUFF"],
+		"unlockable_egg_skills": ["SKILL_AURORA_VEIL", "SKILL_SKY_TWISTER", "SKILL_WIND_CIRCLE"],
+		"milestone_egg_skills": {"boss_1": "SKILL_STATIC_TALON", "boss_5": "SKILL_VOLT_QUILLS", "game_win": "SKILL_BALL_LIGHTNING"},
 	},
 	# Moorpanzer: uralte Sumpfschildkröte mit Teich auf dem Rücken (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -403,8 +437,9 @@ var mons = [
 		"stats": [230, 250],
 		"preferred_stats": {"hp": 26, "atk": 14, "def": 26, "s_atk": 12, "s_def": 16, "speed": 6},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_EARTH", "SKILL_BASIC_BLOCK_EARTH", "SKILL_PEBBLE_THROW"],
-		"unlockable_egg_skills": ["SKILL_ROCK_CRUSH", "SKILL_MAGMA_BURST", "SKILL_TIDAL_SLAM"],
+		"default_egg_skills": ["SKILL_STONE_GUARD", "SKILL_AMBER_SHELL", "SKILL_BASIC_ATTACK_EARTH"],
+		"unlockable_egg_skills": ["SKILL_BLOSSOM_CHORUS", "SKILL_EARTH_DOME", "SKILL_MOUNTAIN_WALL", "SKILL_SHOULDER_STONE"],
+		"milestone_egg_skills": {"boss_1": "SKILL_CLAY_ARMOR", "boss_5": "SKILL_MUDSLIDE", "game_win": "SKILL_BOG_BULWARK"},
 	},
 	# Aschwirbel: Rauchgeist im Glutsturm (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -414,8 +449,9 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 12, "atk": 10, "def": 12, "s_atk": 26, "s_def": 18, "speed": 22},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_AIR", "SKILL_BASIC_BLOCK_AIR", "SKILL_GUST"],
-		"unlockable_egg_skills": ["SKILL_WIND_BLADE", "SKILL_THUNDER_STRIKE", "SKILL_ICE_SPEAR"],
+		"default_egg_skills": ["SKILL_GUST", "SKILL_CLOUD_COVER", "SKILL_WIND_WALL"],
+		"unlockable_egg_skills": ["SKILL_WIND_BLADE", "SKILL_SKY_VEIL", "SKILL_NORTHERN_GALE", "SKILL_HIGH_WINDS"],
+		"milestone_egg_skills": {"boss_1": "SKILL_ARC_BOLT", "boss_5": "SKILL_THUNDER_STRIKE", "game_win": "SKILL_STATIC_CHARGE"},
 	},
 	# Donnerhorn: gehörnte Gewitterwolke (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -425,8 +461,9 @@ var mons = [
 		"stats": [215, 235],
 		"preferred_stats": {"hp": 16, "atk": 12, "def": 14, "s_atk": 26, "s_def": 18, "speed": 14},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_AIR", "SKILL_BASIC_BLOCK_AIR", "SKILL_GUST"],
-		"unlockable_egg_skills": ["SKILL_WIND_BLADE", "SKILL_THUNDER_STRIKE", "SKILL_ICE_SPEAR"],
+		"default_egg_skills": ["SKILL_GUST", "SKILL_CLOUD_COVER", "SKILL_WIND_WALL"],
+		"unlockable_egg_skills": ["SKILL_WIND_BLADE", "SKILL_SKY_VEIL", "SKILL_NORTHERN_GALE", "SKILL_STARING_GAZE"],
+		"milestone_egg_skills": {"boss_1": "SKILL_SNOW_FLURRY", "boss_5": "SKILL_CRYSTAL_FOCUS", "game_win": "SKILL_GLACIAL_GRACE"},
 	},
 	# Dünenbrecher: Sandsteinnashorn (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -436,8 +473,9 @@ var mons = [
 		"stats": [230, 250],
 		"preferred_stats": {"hp": 20, "atk": 28, "def": 24, "s_atk": 6, "s_def": 12, "speed": 10},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_EARTH", "SKILL_BASIC_BLOCK_EARTH", "SKILL_PEBBLE_THROW"],
-		"unlockable_egg_skills": ["SKILL_ROCK_CRUSH", "SKILL_MAGMA_BURST", "SKILL_TIDAL_SLAM"],
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_EARTH", "SKILL_STONE_GUARD", "SKILL_AMBER_SHELL"],
+		"unlockable_egg_skills": ["SKILL_BLOSSOM_CHORUS", "SKILL_MOUNTAIN_WALL", "SKILL_TECTONIC_SLAM", "SKILL_THICK_HIDE"],
+		"milestone_egg_skills": {"boss_1": "SKILL_MAGMA_FIST", "boss_5": "SKILL_CALDERA_CRASH", "game_win": "SKILL_FORGE_FURY"},
 	},
 	# Sturmdschinn: gepanzerter Wirbelsturm mit Blitzklauen (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -447,8 +485,9 @@ var mons = [
 		"stats": [245, 265],
 		"preferred_stats": {"hp": 14, "atk": 16, "def": 12, "s_atk": 26, "s_def": 14, "speed": 18},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_AIR", "SKILL_BASIC_BLOCK_AIR", "SKILL_GUST"],
-		"unlockable_egg_skills": ["SKILL_WIND_BLADE", "SKILL_THUNDER_STRIKE", "SKILL_ICE_SPEAR"],
+		"default_egg_skills": ["SKILL_GUST", "SKILL_TAILWIND_STRIKE", "SKILL_CLOUD_COVER"],
+		"unlockable_egg_skills": ["SKILL_WIND_CIRCLE", "SKILL_ICE_SPEAR", "SKILL_THUNDER_STRIKE", "SKILL_NORTHERN_GALE"],
+		"milestone_egg_skills": {"boss_1": "SKILL_ARC_BOLT", "boss_5": "SKILL_GLACIAL_GRACE", "game_win": "SKILL_BALL_LIGHTNING"},
 	},
 	# Vulkanfaust: Vulkangolem mit Lavafäusten (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -458,8 +497,9 @@ var mons = [
 		"stats": [245, 265],
 		"preferred_stats": {"hp": 22, "atk": 28, "def": 22, "s_atk": 8, "s_def": 12, "speed": 8},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_FIRE", "SKILL_BASIC_BLOCK_FIRE", "SKILL_EMBER"],
-		"unlockable_egg_skills": ["SKILL_FLAME_CLAW", "SKILL_MAGMA_BURST", "SKILL_ROCK_CRUSH"],
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_FIRE", "SKILL_CINDER_WALL", "SKILL_EMBER_SHROUD"],
+		"unlockable_egg_skills": ["SKILL_CORE_BLAST", "SKILL_OBSIDIAN_SKIN", "SKILL_STEAM_HAMMER", "SKILL_INFERNO_EXECUTION"],
+		"milestone_egg_skills": {"boss_1": "SKILL_MAGMA_FIST", "boss_5": "SKILL_CALDERA_CRASH", "game_win": "SKILL_MOLTEN_CORE"},
 	},
 	# Staubkönig: gekrönter Sandgeist mit rotem Herz (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -469,8 +509,9 @@ var mons = [
 		"stats": [245, 265],
 		"preferred_stats": {"hp": 14, "atk": 10, "def": 14, "s_atk": 26, "s_def": 20, "speed": 16},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_EARTH", "SKILL_BASIC_BLOCK_EARTH", "SKILL_PEBBLE_THROW"],
-		"unlockable_egg_skills": ["SKILL_ROCK_CRUSH", "SKILL_MAGMA_BURST", "SKILL_TIDAL_SLAM"],
+		"default_egg_skills": ["SKILL_EARTH_PULSE", "SKILL_AMBER_SHELL", "SKILL_STONE_GUARD"],
+		"unlockable_egg_skills": ["SKILL_GEODE_CRASH", "SKILL_EARTH_DOME", "SKILL_SANDSTORM", "SKILL_MAGMA_BURST"],
+		"milestone_egg_skills": {"boss_1": "SKILL_DUST_WHIRR", "boss_5": "SKILL_MAGMA_SPIT", "game_win": "SKILL_SANDSTORM_EYE"},
 	},
 	# Nachthydra: dreiköpfiger Schattendrache (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -480,8 +521,9 @@ var mons = [
 		"stats": [260, 280],
 		"preferred_stats": {"hp": 20, "atk": 20, "def": 16, "s_atk": 18, "s_def": 14, "speed": 12},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_WATER", "SKILL_BASIC_BLOCK_WATER", "SKILL_SPLASH"],
-		"unlockable_egg_skills": ["SKILL_TIDAL_SLAM", "SKILL_ICE_SPEAR", "SKILL_CHAOS_NOVA"],
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_WATER", "SKILL_BUBBLE_SPRAY", "SKILL_SHELL_GUARD"],
+		"unlockable_egg_skills": ["SKILL_TIDE_DOME", "SKILL_VENOM_MIRE", "SKILL_LAVA_GEYSER", "SKILL_WORLD_SUNDER"],
+		"milestone_egg_skills": {"boss_1": "SKILL_THUNDER_WINGS", "boss_5": "SKILL_MIASMA", "game_win": "SKILL_TIDE_FEAST"},
 	},
 	# Blutmähne: Mantikor mit Runenpanzer (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -491,8 +533,9 @@ var mons = [
 		"stats": [260, 280],
 		"preferred_stats": {"hp": 16, "atk": 26, "def": 16, "s_atk": 12, "s_def": 12, "speed": 18},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_EARTH", "SKILL_BASIC_BLOCK_EARTH", "SKILL_PEBBLE_THROW"],
-		"unlockable_egg_skills": ["SKILL_ROCK_CRUSH", "SKILL_MAGMA_BURST", "SKILL_CHAOS_NOVA"],
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_EARTH", "SKILL_STONE_GUARD", "SKILL_POLLEN_DRIFT"],
+		"unlockable_egg_skills": ["SKILL_EARTH_DOME", "SKILL_SCORCHED_EARTH", "SKILL_LAVA_GEYSER", "SKILL_CHAOS_RIFT"],
+		"milestone_egg_skills": {"boss_1": "SKILL_MIASMA", "boss_5": "SKILL_CINDER_CYCLONE", "game_win": "SKILL_VENOM_MIRE"},
 	},
 	# Höllenwächter: dreiköpfiger Schattenhund (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -502,8 +545,9 @@ var mons = [
 		"stats": [260, 280],
 		"preferred_stats": {"hp": 18, "atk": 24, "def": 16, "s_atk": 14, "s_def": 12, "speed": 16},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_FIRE", "SKILL_BASIC_BLOCK_FIRE", "SKILL_EMBER"],
-		"unlockable_egg_skills": ["SKILL_FLAME_CLAW", "SKILL_MAGMA_BURST", "SKILL_CHAOS_NOVA"],
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_FIRE", "SKILL_CINDER_WALL", "SKILL_SPARK_SPIT"],
+		"unlockable_egg_skills": ["SKILL_SUN_HALO", "SKILL_SCORCHED_EARTH", "SKILL_THUNDER_WINGS", "SKILL_LAVA_GEYSER"],
+		"milestone_egg_skills": {"boss_1": "SKILL_INFERNO_EXECUTION", "boss_5": "SKILL_CINDER_CYCLONE", "game_win": "SKILL_KINDRED_FLAME"},
 	},
 	# Leerwurm: Schuppenwyrm mit violetten Flammen (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -513,8 +557,9 @@ var mons = [
 		"stats": [260, 280],
 		"preferred_stats": {"hp": 14, "atk": 16, "def": 12, "s_atk": 24, "s_def": 16, "speed": 18},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_AIR", "SKILL_BASIC_BLOCK_AIR", "SKILL_GUST"],
-		"unlockable_egg_skills": ["SKILL_WIND_BLADE", "SKILL_THUNDER_STRIKE", "SKILL_CHAOS_NOVA"],
+		"default_egg_skills": ["SKILL_GUST", "SKILL_TAILWIND_STRIKE", "SKILL_CLOUD_COVER"],
+		"unlockable_egg_skills": ["SKILL_WIND_CIRCLE", "SKILL_THUNDER_WINGS", "SKILL_CINDER_CYCLONE", "SKILL_CHAOS_NOVA"],
+		"milestone_egg_skills": {"boss_1": "SKILL_MIASMA", "boss_5": "SKILL_VENOM_MIRE", "game_win": "SKILL_TEMPEST_WRATH"},
 	},
 	# Staubgreifer: Sandgeist mit Steinklingen an langen Ranken (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -524,8 +569,9 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 12, "atk": 22, "def": 12, "s_atk": 16, "s_def": 14, "speed": 24},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_EARTH", "SKILL_BASIC_BLOCK_EARTH", "SKILL_PEBBLE_THROW"],
-		"unlockable_egg_skills": ["SKILL_ROCK_CRUSH", "SKILL_WIND_BLADE", "SKILL_MAGMA_BURST"],
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_EARTH", "SKILL_POLLEN_DRIFT", "SKILL_AMBER_SHELL"],
+		"unlockable_egg_skills": ["SKILL_GRANITE_SKIN", "SKILL_BLOSSOM_CHORUS", "SKILL_GEODE_CRASH"],
+		"milestone_egg_skills": {"boss_1": "SKILL_SAND_FANG", "boss_5": "SKILL_DUNE_RAM", "game_win": "SKILL_SANDSTORM"},
 	},
 	# Mooskoloss: Baumriese aus Moos und Wurzeln mit Kristallkrone (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -535,8 +581,9 @@ var mons = [
 		"stats": [230, 250],
 		"preferred_stats": {"hp": 24, "atk": 16, "def": 18, "s_atk": 18, "s_def": 16, "speed": 8},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_EARTH", "SKILL_BASIC_BLOCK_EARTH", "SKILL_PEBBLE_THROW"],
-		"unlockable_egg_skills": ["SKILL_ROCK_CRUSH", "SKILL_SPLASH", "SKILL_TIDAL_SLAM"],
+		"default_egg_skills": ["SKILL_STONE_GUARD", "SKILL_EARTH_PULSE", "SKILL_AMBER_SHELL"],
+		"unlockable_egg_skills": ["SKILL_GEODE_CRASH", "SKILL_FOURFOLD_BLOOM", "SKILL_MOUNTAIN_WALL", "SKILL_LEECH_MIRE"],
+		"milestone_egg_skills": {"boss_1": "SKILL_SLUDGE_SHOT", "boss_5": "SKILL_CLAY_ARMOR", "game_win": "SKILL_SILT_WAVE"},
 	},
 	# Gorgonatter: Riesenschlange mit Schlangenhaupt (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -546,8 +593,9 @@ var mons = [
 		"stats": [245, 265],
 		"preferred_stats": {"hp": 15, "atk": 14, "def": 13, "s_atk": 26, "s_def": 16, "speed": 16},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_WATER", "SKILL_BASIC_BLOCK_WATER", "SKILL_SPLASH"],
-		"unlockable_egg_skills": ["SKILL_TIDAL_SLAM", "SKILL_ICE_SPEAR", "SKILL_WIND_BLADE"],
+		"default_egg_skills": ["SKILL_SPLASH", "SKILL_MIST_TOUCH", "SKILL_JELLY_STING"],
+		"unlockable_egg_skills": ["SKILL_REEF_WALL", "SKILL_GEYSER", "SKILL_SILT_WAVE", "SKILL_TIDE_HEART"],
+		"milestone_egg_skills": {"boss_1": "SKILL_HOT_MIST", "boss_5": "SKILL_SLUDGE_SHOT", "game_win": "SKILL_HOT_SPRING"},
 	},
 	# Frostgürtler: Gürteltier aus Eisplatten (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -557,8 +605,9 @@ var mons = [
 		"stats": [215, 235],
 		"preferred_stats": {"hp": 20, "atk": 20, "def": 28, "s_atk": 8, "s_def": 16, "speed": 8},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_WATER", "SKILL_BASIC_BLOCK_WATER", "SKILL_SPLASH"],
-		"unlockable_egg_skills": ["SKILL_TIDAL_SLAM", "SKILL_ICE_SPEAR", "SKILL_ROCK_CRUSH"],
+		"default_egg_skills": ["SKILL_SHELL_GUARD", "SKILL_BASIC_ATTACK_WATER", "SKILL_MIST_TOUCH"],
+		"unlockable_egg_skills": ["SKILL_UNDERTOW", "SKILL_TENTACLE_LASH", "SKILL_REEF_WALL", "SKILL_SCALE_SHEEN"],
+		"milestone_egg_skills": {"boss_1": "SKILL_FROST_TAILS", "boss_5": "SKILL_ICE_SPEAR", "game_win": "SKILL_PERMAFROST"},
 	},
 	# Runenskarab: gekrönter Käfer mit Runenpanzer und Geisterflammen (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -568,8 +617,9 @@ var mons = [
 		"stats": [230, 250],
 		"preferred_stats": {"hp": 16, "atk": 22, "def": 22, "s_atk": 14, "s_def": 14, "speed": 12},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_EARTH", "SKILL_BASIC_BLOCK_EARTH", "SKILL_PEBBLE_THROW"],
-		"unlockable_egg_skills": ["SKILL_ROCK_CRUSH", "SKILL_MAGMA_BURST", "SKILL_CHAOS_NOVA"],
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_EARTH", "SKILL_STONE_GUARD", "SKILL_POLLEN_DRIFT"],
+		"unlockable_egg_skills": ["SKILL_EARTH_DOME", "SKILL_STONE_CIRCLE", "SKILL_TECTONIC_SLAM", "SKILL_STONE_SOUL"],
+		"milestone_egg_skills": {"boss_1": "SKILL_MAGMA_SPIT", "boss_5": "SKILL_MAGMA_BURST", "game_win": "SKILL_CALDERA_CRASH"},
 	},
 	# Glutroller: eingerollte Lavakugel auf Steinfüßen (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -579,8 +629,9 @@ var mons = [
 		"stats": [190, 210],
 		"preferred_stats": {"hp": 18, "atk": 20, "def": 22, "s_atk": 14, "s_def": 14, "speed": 12},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_FIRE", "SKILL_BASIC_BLOCK_FIRE", "SKILL_EMBER"],
-		"unlockable_egg_skills": ["SKILL_FLAME_CLAW", "SKILL_ROCK_CRUSH", "SKILL_MAGMA_BURST"],
+		"default_egg_skills": ["SKILL_CINDER_WALL", "SKILL_BASIC_ATTACK_FIRE", "SKILL_EMBER"],
+		"unlockable_egg_skills": ["SKILL_FLAME_VEIL", "SKILL_FLAME_CLAW", "SKILL_HEARTH_CIRCLE"],
+		"milestone_egg_skills": {"boss_1": "SKILL_SCALD_FANG", "boss_5": "SKILL_GEYSER", "game_win": "SKILL_STEAM_HAMMER"},
 	},
 	# Smogfaust: Giftwolke mit zwei Riesenfäusten (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -590,8 +641,9 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 16, "atk": 24, "def": 14, "s_atk": 16, "s_def": 14, "speed": 16},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_AIR", "SKILL_BASIC_BLOCK_AIR", "SKILL_GUST"],
-		"unlockable_egg_skills": ["SKILL_WIND_BLADE", "SKILL_PEBBLE_THROW", "SKILL_THUNDER_STRIKE"],
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_AIR", "SKILL_FEATHER_PUFF", "SKILL_WIND_WALL"],
+		"unlockable_egg_skills": ["SKILL_AURORA_VEIL", "SKILL_CLOUD_BURST", "SKILL_SKY_TWISTER"],
+		"milestone_egg_skills": {"boss_1": "SKILL_SAND_FANG", "boss_5": "SKILL_DUNE_RAM", "game_win": "SKILL_SANDSTORM_EYE"},
 	},
 	# Knochenschläger: Skelettkrieger mit Morgenstern in violetten Flammen (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -601,8 +653,9 @@ var mons = [
 		"stats": [215, 235],
 		"preferred_stats": {"hp": 13, "atk": 27, "def": 12, "s_atk": 14, "s_def": 12, "speed": 22},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_FIRE", "SKILL_BASIC_BLOCK_FIRE", "SKILL_EMBER"],
-		"unlockable_egg_skills": ["SKILL_FLAME_CLAW", "SKILL_ROCK_CRUSH", "SKILL_WIND_BLADE"],
+		"default_egg_skills": ["SKILL_BASIC_ATTACK_FIRE", "SKILL_SPARK_SPIT", "SKILL_CINDER_WALL"],
+		"unlockable_egg_skills": ["SKILL_FLAME_VEIL", "SKILL_CORE_BLAST", "SKILL_INFERNO_EXECUTION", "SKILL_SMOLDER_STOMP"],
+		"milestone_egg_skills": {"boss_1": "SKILL_STATIC_TALON", "boss_5": "SKILL_THUNDER_STRIKE", "game_win": "SKILL_BALL_LIGHTNING"},
 	},
 	# Schlundwurm: Riesenwurm mit Zahnkranz (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -612,8 +665,9 @@ var mons = [
 		"stats": [190, 210],
 		"preferred_stats": {"hp": 24, "atk": 22, "def": 16, "s_atk": 10, "s_def": 14, "speed": 14},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_EARTH", "SKILL_BASIC_BLOCK_EARTH", "SKILL_PEBBLE_THROW"],
-		"unlockable_egg_skills": ["SKILL_ROCK_CRUSH", "SKILL_TIDAL_SLAM", "SKILL_MAGMA_BURST"],
+		"default_egg_skills": ["SKILL_PEBBLE_THROW", "SKILL_BASIC_BLOCK_EARTH", "SKILL_SAND_VEIL"],
+		"unlockable_egg_skills": ["SKILL_CRYSTAL_SPIKES", "SKILL_GRANITE_SKIN", "SKILL_GEODE_CRASH", "SKILL_IRONBARK"],
+		"milestone_egg_skills": {"boss_1": "SKILL_MUDWING_DIVE", "boss_5": "SKILL_MUDSLIDE", "game_win": "SKILL_SILT_WAVE"},
 	},
 	# Vulkanpanzer: Schildkröte mit rauchendem Vulkan auf dem Rücken (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -623,7 +677,8 @@ var mons = [
 		"stats": [245, 265],
 		"preferred_stats": {"hp": 22, "atk": 18, "def": 26, "s_atk": 18, "s_def": 10, "speed": 6},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_BASIC_ATTACK_FIRE", "SKILL_BASIC_BLOCK_FIRE", "SKILL_EMBER"],
-		"unlockable_egg_skills": ["SKILL_FLAME_CLAW", "SKILL_MAGMA_BURST", "SKILL_ROCK_CRUSH"],
+		"default_egg_skills": ["SKILL_CINDER_WALL", "SKILL_EMBER", "SKILL_SCORCHING_CHOP"],
+		"unlockable_egg_skills": ["SKILL_SUN_HALO", "SKILL_MAGMA_BURST", "SKILL_GEYSER", "SKILL_PRIMAL_ERUPTION"],
+		"milestone_egg_skills": {"boss_1": "SKILL_MAGMA_SPIT", "boss_5": "SKILL_OBSIDIAN_SKIN", "game_win": "SKILL_MOLTEN_CORE"},
 	},
 ]

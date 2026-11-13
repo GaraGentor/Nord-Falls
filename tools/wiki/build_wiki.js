@@ -265,13 +265,23 @@ function collect() {
 	// Skills._skill_cost: 1 Aktion + 1 pro erreichter Schwelle aus COST_THRESHOLDS
 	const costThresholds = readVar(skillsSrc, "COST_THRESHOLDS", "Skills") ?? [];
 	ctx.helpers._skill_cost = (value) => 1 + costThresholds.filter((threshold) => value >= threshold).length;
-	// Alle Skill-Baukästen (func _xyz_skill(...): return ...), so laufen neue Baukästen automatisch mit
-	for (const m of skillsSrc.matchAll(/^func\s+(_\w*skill)\s*\([^)]*\)[^:\n]*:\s*return\b/gm)) {
+	// Element- und Schadensart-Kürzel (const EARTH := Enums.MON_TYPES.EARTH, const STEAM := FIRE | WATER, const PHYS := ...)
+	for (const m of stripComments(skillsSrc).matchAll(/^const\s+([A-Z_]+)\s*:=\s*([^\n\[{]+)$/gm)) {
+		try {
+			const names = Object.keys(ctx.helpers);
+			const value = Function(...names, `"use strict"; return (${gdToJs(m[2])});`)(...names.map((n) => ctx.helpers[n]));
+			if (typeof value === "number" || typeof value === "string") ctx.helpers[m[1]] = value;
+		} catch {
+			// Konstanten, die das Wiki nicht braucht
+		}
+	}
+	// Alle Skill-Baukästen (func _xyz_skill(...): return ...) und Extras (_extra), so laufen neue Baukästen automatisch mit
+	for (const m of skillsSrc.matchAll(/^func\s+(_\w*skill|_extra)\s*\([^)]*\)[^:\n]*:\s*return\b/gm)) {
 		ctx.helpers[m[1]] = readBuilder(skillsSrc, m[1]);
 	}
 	ctx.helpers._with = (skill, extra) => Object.assign(skill, extra);
 	// Welche Listen es gibt, steht in get_skill(); so tauchen neue Listen automatisch auf
-	const listNames = (/for list in \[([^\]]*)\]/.exec(skillsSrc)?.[1] ?? "attack_skills, defensive_skills, buff_skills, egg_skills")
+	const listNames = (/for list in \[([^\]]*)\]/.exec(skillsSrc)?.[1] ?? "standard_skills, egg_skills, defensive_skills, buff_skills")
 		.split(",").map((s) => s.trim()).filter(Boolean);
 	const skills = [];
 	for (const list of listNames) {
@@ -331,6 +341,8 @@ function collect() {
 		depthTierBonus: readVar(skillsSrc, "DEPTH_TIER_BONUS", "Skills"),
 		maxSkills: readVar(skillsSrc, "MAX_SKILLS", "Skills"),
 		dormantBasePower: readVar(skillsSrc, "DORMANT_BASE_POWER", "Skills"),
+		// Skills.standard_rarity_bonus: Standard-Skills pro Seltenheitsstufe stärker ({"damage": 1.0, "shield": 2.0})
+		standardRarityBonus: readVar(skillsSrc, "STANDARD_RARITY_BONUS", "Skills") ?? {},
 		milestones: readVar(skillsSrc, "MILESTONES", "Skills") ?? [],
 		bounties: readVar(skillsSrc, "BOUNTIES", "Skills") ?? [],
 		bountyChance: readVar(skillsSrc, "BOUNTY_CHANCE", "Skills"),

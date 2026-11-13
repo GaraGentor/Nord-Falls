@@ -74,11 +74,19 @@ func show_state(owner_mon: Monster) -> void:
 	mon = owner_mon
 	var text = Skills.missing_elements_text(mon, skill)
 	if text.is_empty() and not Skills.is_ready(skill):
-		text = tr("BATTLE_CARD_COOLDOWN").format({"turns": Skills.cooldown_left(skill)})
+		text = cooldown_text(Skills.cooldown_left(skill))
 	if text.is_empty():
 		_init_card()
 		return
 	_set_description(text, Color(1, 0.45, 0.45))
+
+## Abklingzeit in eigenen Zügen (Skills.cooldown_left zählt den laufenden Zug mit):
+## Direkt nach dem Einsatz eines Skills mit Abklingzeit 1 steht 2 da, also "nächsten Zug gesperrt, danach bereit".
+func cooldown_text(turns: int) -> String:
+	match turns:
+		1: return tr("BATTLE_CARD_COOLDOWN_NEXT")
+		2: return tr("BATTLE_CARD_COOLDOWN_AFTER_NEXT")
+	return tr("BATTLE_CARD_COOLDOWN").format({"turns": turns})
 
 ## Ausgewählte Karte leuchtet am Rahmen (erst möglich, wenn die Karte im Baum ist)
 func set_selected(selected: bool) -> void:

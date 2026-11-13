@@ -66,7 +66,8 @@ func _ready() -> void:
 	if not Tutorial.should_show("egg_configurator"):
 		var available := Skills.get_available_egg_skills(_mon._name)
 		var preselect: Array = SaveManager.get_egg_loadout(_mon._name).filter(func(skill_name): return available.has(skill_name))
-		preselect.append_array(_mon._skills.map(func(skill): return skill.name))
+		# nur Attacken, für die unten auch eine Karte gebaut wird (sonst sähe der Platz leer aus, wäre aber belegt)
+		preselect.append_array(_mon._skills.map(func(skill): return skill.get("name", "")).filter(func(skill_name): return available.has(skill_name)))
 		var filled := 0
 		for skill_name in preselect:
 			if filled < SKILLS_TO_PICK and not _slot_skills.has(skill_name):
@@ -189,6 +190,11 @@ func _build() -> void:
 	DragScroll.attach(_scroll)
 
 	_available = Skills.get_available_egg_skills(_mon._name)
+	# Sicherheitsnetz: Plätze mit Attacken ohne Karte (gibt es nicht mehr / nicht für diese Art) leeren
+	for i in _slot_skills.size():
+		if _slot_skills[i] != "" and not _available.has(_slot_skills[i]):
+			push_warning("Ei-Konfigurator: Attacke '%s' ist für '%s' nicht verfügbar, Platz bleibt leer" % [_slot_skills[i], _mon._name])
+			_slot_skills[i] = ""
 	for skill_name in _available:
 		var card := EggSkillCard.create(Skills.get_skill(skill_name), _mon)
 		# wie die Attacke freigeschaltet wurde
@@ -330,12 +336,12 @@ func _drop_on_slot(_at_position: Vector2, data: Variant) -> void:
 	var old := _slot_skills[slot_index]
 	_slot_skills[slot_index] = skill_name
 	if from_slot >= 0:
-		_slot_skills[from_slot] = old
-		if old != "":
+		_slot_skills[from_slot] = old if _cards.has(old) else ""
+		if old != "" and _cards.has(old):
 			_fly_to_slot(old, from_slot)
 	else:
 		_grid_nodes.erase(skill_name)
-		if old != "":
+		if old != "" and _cards.has(old):
 			_fly_to_grid(old)
 	var card: Control = _cards[skill_name]
 	card.get_parent().remove_child(card)
@@ -485,6 +491,8 @@ func _on_go_pressed() -> void:
 	_mon._skills = []
 	for skill_name in _selected():
 		var skill = Skills.get_skill(skill_name)
+		if skill.is_empty():
+			continue
 		skill.scouted = true
 		_mon._skills.append(skill)
 	# mit Tutorial erst der Übungskampf, er führt danach zur Karte

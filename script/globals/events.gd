@@ -48,6 +48,8 @@ signal monster_hit_monster(from, to)
 
 # Effekt eines ausgespielten Skills am Ziel (Hieb, Element-Treffer, Schild, Buff), blocked = vom Schild abgefangener Schaden
 signal skill_vfx(mon, skill, blocked)
+# Effekt ohne eigenen Skill am Monster: "buff" (Verstärkung/Aufladung), "debuff" (Schwächung), "heal" (Heilung)
+signal status_vfx(mon, kind)
 
 # upgrade status to make them upgraded on the run
 signal mon_upgraded(mon_name)

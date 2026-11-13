@@ -40,6 +40,8 @@ const AI_THREAT_WEIGHT := 0.3
 const AI_DEFENSE_WEIGHT := 0.5
 ## jeder Zug bleibt möglich
 const AI_MIN_SCORE := 0.1
+## pro Extra einer Karte (Schwächung, Aufladung, Heilung ...) zählt sie so viel mehr
+const AI_EXTRA_WEIGHT := 0.15
 
 @export var catch_anim: Control
 @export var catch_button: Button
@@ -345,7 +347,7 @@ func _use_skill(from: Monster, card: Dictionary, target: Monster) -> void:
 	if Skills.targets_team(skill):
 		targets = _allies_of(target)
 	var repeats := 1
-	if ElementEffects.rolls_eruption(skill):
+	if ElementEffects.rolls_eruption(skill, from):
 		repeats = 2
 		Events.monster_effect_text.emit(from, tr("EFFECT_TEXT_ERUPTION"), ElementEffects.ERUPTION_COLOR)
 	var dealt := 0.0
@@ -367,8 +369,15 @@ func _use_skill(from: Monster, card: Dictionary, target: Monster) -> void:
 			dealt += hit
 			if hostile:
 				ElementEffects.on_hit(from, mon, skill)
+				Skills.apply_hit_extras(from, mon, skill)
 				BossRelics.on_damage_dealt(from, mon, skill, hit, turn_wheel.round_number)
+			else:
+				Skills.apply_friend_extras(from, mon, skill)
+	# die eigene Aufladung ist mit diesem Angriff verbraucht, danach erst laden die Extras die Partner auf
+	if Skills.is_damage_skill(skill):
+		from.consume_charge(Skills.charge_kind(skill))
 	ElementEffects.on_cast(from, skill, dealt)
+	Skills.apply_cast_extras(from, skill, dealt)
 	Skills.start_cooldown(card)
 	Events.monster_status_changed.emit(from)
 	# Treffer decken Werte auf (Skills.reveal_stats_by_hit)
@@ -683,20 +692,21 @@ func _ai_sharpness() -> float:
 
 ## Wie gut ist dieser Skill gegen dieses Ziel? Schaden in KP, Schilde/Buffs als Grundwert (Ausbau in Schritt 6).
 func _score_action(emon: Monster, skill: Dictionary, target: Monster) -> float:
+	# Team-Karten wirken auf alle eigenen Monster, Extras (Schwächung, Aufladung, Heilung ...) machen eine Karte etwas wertvoller
+	var extra_factor := 1.0 + AI_EXTRA_WEIGHT * Skills.extras(skill).size()
 	if Skills.targets_friends(skill):
+		var receivers := _allies_of(emon).size() if Skills.targets_team(skill) else 1
 		if skill.has("buff_stat"):
 			var stat_value: float = _stat_value(target, skill.buff_stat)
-			return stat_value * skill.value / 100 * skill.get("buff_turns", 1) * AI_DEFENSE_WEIGHT
-		var physical := Skills.is_physical(skill)
-		var def: float = emon.defense() if physical else emon.s_defense()
-		return def * skill.value / 100 * AI_DEFENSE_WEIGHT
+			return stat_value * skill.value / 100 * skill.get("buff_turns", 1) * AI_DEFENSE_WEIGHT * receivers * extra_factor
+		return Skills.shield_amount(emon, skill) * AI_DEFENSE_WEIGHT * receivers * extra_factor
 	if not Skills.is_damage_skill(skill):
 		return AI_MIN_SCORE
 	var targets = _allies_of(target) if Skills.targets_team(skill) else [target]
 	var score := 0.0
 	for mon: Monster in targets:
 		score += _damage_value(emon, skill, mon)
-	return score
+	return score * extra_factor
 
 ## aktueller Wert zu einem Buff-Schlüssel (buff_stat)
 func _stat_value(mon: Monster, stat: String) -> float:

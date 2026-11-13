@@ -140,4 +140,4 @@ Schritt 7: Testen & Balancing
   [ ] Sumpf/Aschesturm: Werte im Spiel testen
   [ ] Heilmittel gegen Status: später über Skills oder Passive
   [ ] Sollen Gegner Dreier-Effekte seltener bekommen als der Spieler?
-  [ ] Inhalte: Skills für Schlamm, Staub, Dampf und alle Dreier-Kombis fehlen noch
+  [x] Inhalte: Skills für Schlamm, Staub, Dampf und alle Dreier-Kombis (siehe skill_regeln.txt)

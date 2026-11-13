@@ -399,7 +399,9 @@ static func element_count(nature: int) -> int:
 ## Dazu kommen EXTRA_OFFERS beliebige Skills, die noch mindestens ein Monster lernen kann.
 ## Mit der Biom-Tiefe werden höhere Stufen wahrscheinlicher.
 func _pick_offers() -> Array:
-	var rare = Skills.egg_skills.filter(func(skill): return skill.tier >= MIN_TIER)
+	# Pool des Trainers: Ei-Attacken, Schilde, Buffs, Passive und Flächenschaden, aber keine Standard-, Kopfgeld-,
+	# Couvert- oder Aufstiegs-Skills und keine mit "trainer": false (Skills.trainer_skills)
+	var rare = Skills.trainer_skills(MIN_TIER)
 	var usable = rare.filter(func(skill): return State.mons.any(func(mon): return Skills.can_use(mon, skill) and not Skills.knows_skill(mon, skill.name)))
 	# passt gar nichts (sollte nicht vorkommen), lieber unpassende Skills als ein leerer Trainer
 	if usable.is_empty():
@@ -411,7 +413,7 @@ func _pick_offers() -> Array:
 	var rest = usable.map(func(skill): return skill.name).filter(func(skill_name): return not names.has(skill_name))
 	names.append_array(Skills.pick_weighted_unique(rest, SINGLE_ELEMENT_OFFERS + MULTI_ELEMENT_OFFERS - names.size(), State.map_level))
 	# reichen die seltenen Skills nicht für alle Plätze, kommen niedrigere Stufen dazu
-	for pool in [rare, Skills.egg_skills]:
+	for pool in [rare, Skills.trainer_skills(1)]:
 		var learnable = pool.filter(func(skill): return not names.has(skill.name) and State.mons.any(func(mon): return not Skills.knows_skill(mon, skill.name)))
 		names.append_array(Skills.pick_weighted_unique(learnable.map(func(skill): return skill.name), SINGLE_ELEMENT_OFFERS + MULTI_ELEMENT_OFFERS + EXTRA_OFFERS - names.size(), State.map_level))
 	return names.map(func(skill_name): return Skills.get_skill(skill_name))

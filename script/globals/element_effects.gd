@@ -11,6 +11,7 @@ extends Node
 ## Vulkan = Chance auf doppelte Wirkung. Chaos: höherer Element-Faktor gegen alle Nicht-Chaos-Ziele.
 ##
 ## Schlummernde Skills (Skills.effective_skill, "_dormant") haben keinen Effekt, erst wenn sie erwacht sind.
+## Passive "effect_chance" des Wirkers (z. B. Permafrost) erhöhen die Auslösechance (effect_chance mit from).
 ##
 ## Alle Werte stehen hier, damit das Balancing an einer Stelle passiert.
 ##
@@ -83,15 +84,17 @@ const ERUPTION_COLOR := Color(1.0, 0.35, 0.15)
 
 ## Pro getroffenem Gegner, nach dem Schaden: Schwächungen und Statuseffekte aufs Ziel.
 func on_hit(from: Monster, target: Monster, skill: Dictionary) -> void:
-	if not Skills.is_damage_skill(skill) or not target.is_alive() or not _triggers(skill):
+	if not Skills.is_damage_skill(skill) or not target.is_alive() or not _triggers(skill, from):
 		return
 	var power := effect_power(skill)
 	match skill.nature:
 		STEAM:
 			target.add_debuff("steam", "speed", SPEED_FACTOR * power, EFFECT_TURNS + 1)
+			Events.status_vfx.emit(target, "debuff")
 		DUST:
 			target.add_debuff("dust_atk", "atk", ATTACK_FACTOR * power, EFFECT_TURNS + 1)
 			target.add_debuff("dust_s_atk", "s_atk", ATTACK_FACTOR * power, EFFECT_TURNS + 1)
+			Events.status_vfx.emit(target, "debuff")
 		SWAMP:
 			_apply_status(target, POISON, from, power, POISON_MAX_STACKS)
 		ASH_STORM:
@@ -103,22 +106,25 @@ func on_hit(from: Monster, target: Monster, skill: Dictionary) -> void:
 ## Einmal pro Einsatz, nach allen Treffern: Verstärkungen für den Wirker.
 ## Buffs zählen zu Beginn jedes eigenen Zuges herunter, +1 für den laufenden Zug.
 func on_cast(from: Monster, skill: Dictionary, dealt: float) -> void:
-	if not from.is_alive() or not skill.nature in [LIGHTNING, MUD, ICE] or not _triggers(skill):
+	if not from.is_alive() or not skill.nature in [LIGHTNING, MUD, ICE] or not _triggers(skill, from):
 		return
 	var power := effect_power(skill)
 	match skill.nature:
 		LIGHTNING:
 			from.add_buff("speed", SPEED_FACTOR * power, EFFECT_TURNS + 1)
+			Events.status_vfx.emit(from, "buff")
 		MUD:
 			from.add_buff("atk", ATTACK_FACTOR * power, EFFECT_TURNS + 1)
 			from.add_buff("s_atk", ATTACK_FACTOR * power, EFFECT_TURNS + 1)
+			Events.status_vfx.emit(from, "buff")
 		ICE:
 			if dealt > 0:
 				from.add_shield(ceilf(dealt * ICE_SHIELD_SHARE * power), Skills.is_physical(skill))
 
 ## Vulkan: wirkt der Skill diesmal doppelt?
-func rolls_eruption(skill: Dictionary) -> bool:
-	return skill.nature == VOLCANO and is_active(skill) and randf() < effect_chance(skill) * VOLCANO_CHANCE * effect_power(skill)
+## from: Wirker, seine Passive "effect_chance" machen den Ausbruch wahrscheinlicher
+func rolls_eruption(skill: Dictionary, from: Monster = null) -> bool:
+	return skill.nature == VOLCANO and is_active(skill) and randf() < effect_chance(skill, from) * VOLCANO_CHANCE * effect_power(skill)
 
 ## Magma: so viel Schild kostet jeder abgefangene Schadenspunkt (auch in der Absichten-Vorschau)
 func shield_cost(skill: Dictionary) -> float:
@@ -131,9 +137,13 @@ func shield_cost(skill: Dictionary) -> float:
 func chaos_bonus(skill_nature: int, target_type: int) -> float:
 	return CHAOS_BONUS if skill_nature == CHAOS and target_type != CHAOS else 0.0
 
-## Kartenwerte (siehe oben), ohne Feld 1.0
-func effect_chance(skill: Dictionary) -> float:
-	return skill.get("effect_chance", 1.0)
+## Kartenwerte (siehe oben), ohne Feld 1.0.
+## from: Wirker, seine Passive "effect_chance" (Skills) erhöhen die Chance um ihren Wert in Prozent (höchstens 100 %)
+func effect_chance(skill: Dictionary, from: Monster = null) -> float:
+	var chance: float = skill.get("effect_chance", 1.0)
+	if from != null:
+		chance *= 1.0 + Skills.own_passive_sum(from, "effect_chance") / 100.0
+	return minf(chance, 1.0) if skill.get("nature", 0) != VOLCANO else chance
 
 func effect_power(skill: Dictionary) -> float:
 	return skill.get("effect_power", 1.0)
@@ -142,8 +152,8 @@ func effect_power(skill: Dictionary) -> float:
 func is_active(skill: Dictionary) -> bool:
 	return not skill.get("_dormant", false)
 
-func _triggers(skill: Dictionary) -> bool:
-	return is_active(skill) and randf() < effect_chance(skill)
+func _triggers(skill: Dictionary, from: Monster = null) -> bool:
+	return is_active(skill) and randf() < effect_chance(skill, from)
 
 func _apply_status(target: Monster, status: String, from: Monster, power: float, max_stacks := 1) -> void:
 	var is_new := not target.has_status(status)

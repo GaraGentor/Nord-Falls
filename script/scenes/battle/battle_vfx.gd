@@ -3,10 +3,13 @@ extends Node2D
 ## Kurze, gezeichnete Effekte über einem Monster im Kampf (siehe MonsterScene._play_skill_vfx):
 ## physische Treffer als Hieb, magische Treffer je Element (Feuer-Explosion, Wasser-Spritzer, Steinbrocken, Windwirbel),
 ## Schilde (physisch: blaues Sechseck, magisch: violetter Runenkreis), Schildtreffer und Buffs.
+## Kombi-Elemente haben eigene Treffer: Dampfwolke, Blitz, Lava, Eissplitter, Sandwirbel, Schlammspritzer,
+## Giftblasen (Sumpf), Aschewolke mit Glut (Aschesturm), Gewitterwolke (Gewitter), Ausbruch (Vulkan) und Chaos-Ringe.
+## Dazu Schwächung (rote Pfeile nach unten) und Heilung (grüne Kreuze).
 ## Jeder Effekt zeichnet sich in _draw aus seinem Fortschritt (0..1) und löscht sich danach selbst.
-## Die passiven Element-Kräfte (ElementEffects) haben bewusst keine eigenen Effekte.
 
-enum Kind { SLASH, FIRE, WATER, EARTH, AIR, SHIELD, S_SHIELD, SHIELD_HIT, S_SHIELD_HIT, BUFF }
+enum Kind { SLASH, FIRE, WATER, EARTH, AIR, SHIELD, S_SHIELD, SHIELD_HIT, S_SHIELD_HIT, BUFF,
+	STEAM, LIGHTNING, MAGMA, ICE, DUST, MUD, POISON, ASH, THUNDER, ERUPTION, CHAOS, DEBUFF, HEAL }
 
 const DURATIONS := {
 	Kind.SLASH: 0.38,
@@ -19,7 +22,46 @@ const DURATIONS := {
 	Kind.SHIELD_HIT: 0.4,
 	Kind.S_SHIELD_HIT: 0.4,
 	Kind.BUFF: 0.8,
+	Kind.STEAM: 0.8,
+	Kind.LIGHTNING: 0.5,
+	Kind.MAGMA: 0.75,
+	Kind.ICE: 0.7,
+	Kind.DUST: 0.75,
+	Kind.MUD: 0.7,
+	Kind.POISON: 0.85,
+	Kind.ASH: 0.85,
+	Kind.THUNDER: 0.75,
+	Kind.ERUPTION: 0.85,
+	Kind.CHAOS: 0.9,
+	Kind.DEBUFF: 0.8,
+	Kind.HEAL: 0.8,
 }
+
+const STEAM_COLOR := Color(0.92, 0.95, 0.97)
+const LIGHTNING_COLOR := Color(1.0, 0.95, 0.45)
+const MAGMA_COLORS := [Color(1.0, 0.75, 0.2), Color(0.95, 0.35, 0.08), Color(0.3, 0.12, 0.08)]
+const ICE_COLOR := Color(0.7, 0.92, 1.0)
+const MUD_COLORS := [Color(0.42, 0.3, 0.18), Color(0.3, 0.22, 0.13)]
+const POISON_COLOR := Color(0.6, 0.9, 0.3)
+const ASH_COLOR := Color(0.32, 0.3, 0.3)
+const STORM_CLOUD_COLOR := Color(0.28, 0.3, 0.38)
+const DEBUFF_COLOR := Color(1.0, 0.45, 0.4)
+const HEAL_COLOR := Color(0.5, 1.0, 0.6)
+## Kombi-Element (Maske wie in ElementEffects) -> eigener Treffer-Effekt
+const COMBO_KINDS := {
+	ElementEffects.STEAM: Kind.STEAM,
+	ElementEffects.LIGHTNING: Kind.LIGHTNING,
+	ElementEffects.MAGMA: Kind.MAGMA,
+	ElementEffects.ICE: Kind.ICE,
+	ElementEffects.DUST: Kind.DUST,
+	ElementEffects.MUD: Kind.MUD,
+	ElementEffects.SWAMP: Kind.POISON,
+	ElementEffects.ASH_STORM: Kind.ASH,
+	ElementEffects.THUNDERSTORM: Kind.THUNDER,
+	ElementEffects.VOLCANO: Kind.ERUPTION,
+	ElementEffects.CHAOS: Kind.CHAOS,
+}
+const CHAOS_COLORS := [Color(0.55, 0.4, 0.22), Color(1.0, 0.5, 0.15), Color(0.35, 0.7, 1.0), Color(0.85, 0.97, 1.0)]
 
 const SHIELD_COLOR := Color(0.55, 0.8, 1.0)
 const S_SHIELD_COLOR := Color(0.85, 0.6, 1.0)
@@ -50,8 +92,10 @@ func setup(center: Vector2, size: float, effect: Kind, accent := Color.WHITE, de
 	z_index = 9
 	_delay = delay
 
-## Effekt-Arten für ein Element (Bitmaske): Kombi-Elemente zeigen alle ihre Teile.
+## Effekt-Arten für ein Element (Bitmaske): Kombi-Elemente haben ihren eigenen Effekt, Grundelemente den ihres Elements.
 static func element_kinds(nature: int) -> Array:
+	if COMBO_KINDS.has(nature):
+		return [COMBO_KINDS[nature]]
 	var kinds := []
 	if nature & Enums.MON_TYPES.FIRE:
 		kinds.append(Kind.FIRE)
@@ -95,6 +139,19 @@ func _draw() -> void:
 		Kind.SHIELD_HIT: _draw_shield_hit(t, SHIELD_COLOR, false)
 		Kind.S_SHIELD_HIT: _draw_shield_hit(t, S_SHIELD_COLOR, true)
 		Kind.BUFF: _draw_buff(t)
+		Kind.STEAM: _draw_steam(t)
+		Kind.LIGHTNING: _draw_lightning(t)
+		Kind.MAGMA: _draw_magma(t)
+		Kind.ICE: _draw_ice(t)
+		Kind.DUST: _draw_dust(t)
+		Kind.MUD: _draw_mud(t)
+		Kind.POISON: _draw_poison(t)
+		Kind.ASH: _draw_ash(t)
+		Kind.THUNDER: _draw_thunder(t)
+		Kind.ERUPTION: _draw_eruption(t)
+		Kind.CHAOS: _draw_chaos(t)
+		Kind.DEBUFF: _draw_debuff(t)
+		Kind.HEAL: _draw_heal(t)
 
 func _roll_parts() -> void:
 	var count := 0
@@ -107,6 +164,19 @@ func _roll_parts() -> void:
 		Kind.S_SHIELD: count = 8
 		Kind.SHIELD_HIT, Kind.S_SHIELD_HIT: count = 5
 		Kind.BUFF: count = 10
+		Kind.STEAM: count = 9
+		Kind.LIGHTNING: count = 8
+		Kind.MAGMA: count = 10
+		Kind.ICE: count = 10
+		Kind.DUST: count = 18
+		Kind.MUD: count = 10
+		Kind.POISON: count = 12
+		Kind.ASH: count = 14
+		Kind.THUNDER: count = 10
+		Kind.ERUPTION: count = 12
+		Kind.CHAOS: count = 12
+		Kind.DEBUFF: count = 8
+		Kind.HEAL: count = 8
 	for i in count:
 		_parts.append(Part.new())
 
@@ -386,6 +456,239 @@ func _draw_buff(t: float) -> void:
 			continue
 		var pos := Vector2(p.offset * r * 0.8, r * 0.7 - s * r * 1.5 * p.speed)
 		_draw_sparkle(pos, r * 0.05 * p.size, _with_alpha(BUFF_COLOR.lightened(0.4), sin(PI * s)))
+
+# ─────────────────────────
+# Dampf: weiße Wolken quellen auf und ziehen nach oben, dazu zischende Strahlen
+
+func _draw_steam(t: float) -> void:
+	var r := radius
+	for p: Part in _parts:
+		var s := clampf((t - p.delay * 0.5) / 0.85, 0.0, 1.0)
+		if s <= 0.0 or s >= 1.0:
+			continue
+		var pos := Vector2(p.offset * r * 0.7, r * 0.3 - s * r * 1.1 * p.speed)
+		var size := r * (0.18 + 0.28 * _ease_out(s)) * p.size
+		draw_circle(pos, size, _with_alpha(STEAM_COLOR, 0.55 * sin(PI * s)))
+		draw_circle(pos + Vector2(-size * 0.3, -size * 0.25), size * 0.55, _with_alpha(Color.WHITE, 0.4 * sin(PI * s)))
+	# Zischen: kurze Strahlen schräg nach außen
+	if t < 0.45:
+		var s := t / 0.45
+		for i in 4:
+			var dir := Vector2.from_angle(-PI / 2.0 + (i - 1.5) * 0.45)
+			draw_line(dir * r * 0.2, dir * r * (0.35 + 0.6 * s), Color(1, 1, 1, 0.7 * (1.0 - s)), 2.0, true)
+
+# Blitz: gezackter Strahl von oben ins Monster, greller Blitz und Funken
+
+func _draw_lightning(t: float) -> void:
+	var r := radius
+	if t < 0.55:
+		var alpha := 1.0 - t / 0.55
+		var points := PackedVector2Array()
+		var steps := 7
+		for i in steps + 1:
+			var u := float(i) / steps
+			var jag := 0.0 if i == 0 or i == steps else _parts[i % _parts.size()].offset * r * 0.22
+			points.append(Vector2(jag * _flip, lerpf(-r * 1.5, 0.0, u)))
+		draw_polyline(points, _with_alpha(LIGHTNING_COLOR, 0.6 * alpha), r * 0.14, true)
+		draw_polyline(points, Color(1, 1, 1, alpha), r * 0.05 + 1.0, true)
+	if t < 0.2:
+		draw_circle(Vector2.ZERO, r * (0.5 + t * 2.0), Color(1, 1, 0.8, 0.6 * (1.0 - t / 0.2)))
+	for p: Part in _parts:
+		var s := clampf((t - 0.1 - p.delay * 0.3) / 0.6, 0.0, 1.0)
+		if s <= 0.0 or s >= 1.0:
+			continue
+		var dir := Vector2.from_angle(p.angle)
+		var a := r * (0.15 + 0.7 * s * p.speed)
+		var mid := dir * (a + r * 0.06) + dir.orthogonal() * r * 0.06 * p.spin
+		draw_polyline(PackedVector2Array([dir * a, mid, dir * (a + r * 0.14)]), _with_alpha(LIGHTNING_COLOR, 1.0 - s), 2.0, true)
+
+# Magma: glühende Lavaklumpen spritzen und kühlen zu dunkler Kruste ab, der Boden glüht
+
+func _draw_magma(t: float) -> void:
+	var r := radius
+	draw_circle(Vector2(0, r * 0.35), r * 0.7 * _ease_out(clampf(t / 0.3, 0.0, 1.0)), _with_alpha(MAGMA_COLORS[1], 0.35 * (1.0 - t)))
+	for p: Part in _parts:
+		var s := clampf((t - p.delay * 0.4) / 0.85, 0.0, 1.0)
+		if s <= 0.0 or s >= 1.0:
+			continue
+		var pos := Vector2(p.offset * r * 0.9 * s, r * 0.2 - 1.3 * p.speed * r * s + 2.0 * r * s * s)
+		var c: Color = (MAGMA_COLORS[0] as Color).lerp(MAGMA_COLORS[2], s)
+		var size := r * 0.1 * p.size
+		draw_circle(pos, size, _with_alpha(c, 1.0 - s * 0.4))
+		draw_circle(pos, size * 0.5, _with_alpha(MAGMA_COLORS[0], 0.8 * (1.0 - s)))
+
+# Eis: Eissplitter schießen sternförmig heraus, ein Frostring legt sich um das Monster
+
+func _draw_ice(t: float) -> void:
+	var r := radius
+	var ring := _ease_out(clampf(t / 0.4, 0.0, 1.0))
+	var alpha := 1.0 - clampf((t - 0.5) / 0.5, 0.0, 1.0)
+	_draw_closed(_polygon(Vector2.ZERO, r * 0.75 * ring, 6, 0.0), _with_alpha(ICE_COLOR, 0.8 * alpha), 2.0)
+	for p: Part in _parts:
+		var s := clampf((t - p.delay * 0.3) / 0.7, 0.0, 1.0)
+		if s <= 0.0 or s >= 1.0:
+			continue
+		var dir := Vector2.from_angle(p.angle)
+		var center := dir * r * (0.15 + 0.8 * _ease_out(s) * p.speed)
+		var length := r * 0.2 * p.size
+		var width := length * 0.3
+		var shard := PackedVector2Array([center + dir * length, center + dir.orthogonal() * width,
+			center - dir * length * 0.4, center - dir.orthogonal() * width])
+		_draw_poly(shard, _with_alpha(ICE_COLOR, 1.0 - s * s))
+		_draw_closed(shard, _with_alpha(Color.WHITE, 0.8 * (1.0 - s)), 1.0)
+
+# Staub: Sandkörner wirbeln in einer Spirale um das Monster, dazu ein bräunlicher Schleier
+
+func _draw_dust(t: float) -> void:
+	var r := radius
+	draw_circle(Vector2(0, r * 0.2), r * 0.85, _with_alpha(DUST_COLOR, 0.2 * sin(PI * t)))
+	for p: Part in _parts:
+		var a: float = p.angle + _flip * t * TAU * 1.3 * p.speed
+		var dist := r * (0.9 - 0.5 * t) * (0.5 + 0.5 * p.size)
+		var pos := Vector2(cos(a) * dist, sin(a) * dist * 0.45 + p.offset * r * 0.4)
+		draw_circle(pos, r * 0.035 * p.size + 1.0, _with_alpha(DUST_COLOR.darkened(0.2 * p.size), sin(PI * t)))
+	_draw_ellipse_arc(Vector2.ZERO, r * (1.0 - 0.4 * t), r * 0.35, _with_alpha(DUST_COLOR, 0.6 * sin(PI * t)), 2.0,
+		_flip * t * TAU, PI * 1.2)
+
+# Schlamm: zähe Klumpen klatschen gegen das Monster und rutschen ab
+
+func _draw_mud(t: float) -> void:
+	var r := radius
+	for p: Part in _parts:
+		var s := clampf((t - p.delay * 0.3) / 0.8, 0.0, 1.0)
+		if s <= 0.0 or s >= 1.0:
+			continue
+		var start := Vector2.from_angle(p.angle) * r * 0.25
+		var pos := start + Vector2(p.offset * r * 0.5 * s, r * 0.9 * s * s)
+		var c: Color = MUD_COLORS[int(p.size * 10) % MUD_COLORS.size()]
+		var size := r * 0.13 * p.size * (1.0 + 0.3 * s)
+		draw_circle(pos, size, _with_alpha(c, 1.0 - s * s))
+		draw_circle(pos + Vector2(size * 0.6, -size * 0.2), size * 0.5, _with_alpha(c, 0.8 * (1.0 - s)))
+	if t < 0.3:
+		draw_circle(Vector2.ZERO, r * 0.45 * _ease_out(t / 0.3), _with_alpha(MUD_COLORS[0], 0.5 * (1.0 - t / 0.3)))
+
+# Sumpf (Gift): giftgrüne Blasen steigen auf und platzen, eine Giftwolke hängt über dem Monster
+
+func _draw_poison(t: float) -> void:
+	var r := radius
+	draw_circle(Vector2(0, -r * 0.1), r * 0.8, _with_alpha(POISON_COLOR.darkened(0.3), 0.22 * sin(PI * t)))
+	for p: Part in _parts:
+		var s := clampf((t - p.delay) / 0.75, 0.0, 1.0)
+		if s <= 0.0 or s >= 1.0:
+			continue
+		var pos := Vector2(p.offset * r * 0.7 + sin(s * 6.0 + p.spin * 3.0) * r * 0.05, r * 0.6 - s * r * 1.3 * p.speed)
+		var size := r * 0.07 * p.size * (0.6 + s)
+		if s < 0.85:
+			draw_arc(pos, size, 0, TAU, 16, _with_alpha(POISON_COLOR, 0.9), 2.0, true)
+			draw_circle(pos + Vector2(-size * 0.3, -size * 0.3), size * 0.25, Color(1, 1, 1, 0.7))
+		else:
+			# Blase platzt: kleiner Spritzer
+			for i in 4:
+				var dir := Vector2.from_angle(i * TAU / 4.0 + p.angle)
+				draw_line(pos + dir * size, pos + dir * size * 1.8, _with_alpha(POISON_COLOR, 1.0 - (s - 0.85) / 0.15), 1.5, true)
+
+# Aschesturm (Verbrennung): dunkle Aschewolke, aus der Glut aufsteigt
+
+func _draw_ash(t: float) -> void:
+	var r := radius
+	for i in 3:
+		var s := clampf(t * 1.2 - i * 0.12, 0.0, 1.0)
+		var x := (i - 1) * r * 0.45
+		draw_circle(Vector2(x, -r * 0.1 - s * r * 0.3), r * (0.3 + 0.25 * s), _with_alpha(ASH_COLOR, 0.45 * sin(PI * s)))
+	for p: Part in _parts:
+		var s := clampf((t - p.delay) / 0.75, 0.0, 1.0)
+		if s <= 0.0 or s >= 1.0:
+			continue
+		var pos := Vector2(p.offset * r * 0.8 + sin(s * 5.0 + p.spin) * r * 0.08, r * 0.5 - s * r * 1.4 * p.speed)
+		var c: Color = FIRE_COLORS[0].lerp(FIRE_COLORS[2], s)
+		draw_circle(pos, r * 0.035 * p.size + 1.0, _with_alpha(c, 1.0 - s))
+
+# Gewitter (Lähmung): dunkle Wolke über dem Monster, Regen und ein Blitz hinein
+
+func _draw_thunder(t: float) -> void:
+	var r := radius
+	var alpha := sin(PI * t)
+	var cloud_y := -r * 0.95
+	for i in 3:
+		draw_circle(Vector2((i - 1) * r * 0.35, cloud_y + absf(i - 1) * r * 0.08), r * 0.3, _with_alpha(STORM_CLOUD_COLOR, 0.85 * alpha))
+	for p: Part in _parts:
+		var s := fmod(t * 2.0 * p.speed + p.delay, 1.0)
+		var x := p.offset * r * 0.6
+		var y := lerpf(cloud_y + r * 0.2, r * 0.5, s)
+		draw_line(Vector2(x, y), Vector2(x - r * 0.04, y + r * 0.12), _with_alpha(Color(0.7, 0.8, 1.0), 0.7 * alpha), 1.5, true)
+	if t > 0.25 and t < 0.6:
+		var s := (t - 0.25) / 0.35
+		var points := PackedVector2Array([Vector2(0, cloud_y + r * 0.2), Vector2(r * 0.15 * _flip, -r * 0.45),
+			Vector2(-r * 0.05 * _flip, -r * 0.3), Vector2(r * 0.1 * _flip, 0)])
+		draw_polyline(points, _with_alpha(LIGHTNING_COLOR, 1.0 - s), r * 0.08 + 1.0, true)
+		draw_circle(Vector2.ZERO, r * 0.4, Color(1, 1, 0.8, 0.4 * (1.0 - s)))
+
+# Vulkan (Ausbruch): eine Lavasäule schießt hoch, Gesteinsbrocken und Glut fliegen heraus
+
+func _draw_eruption(t: float) -> void:
+	var r := radius
+	var up := _ease_out(clampf(t / 0.35, 0.0, 1.0))
+	var fade := 1.0 - clampf((t - 0.45) / 0.55, 0.0, 1.0)
+	var column := PackedVector2Array([Vector2(-r * 0.35, r * 0.5), Vector2(-r * 0.12, r * 0.5 - r * 1.5 * up),
+		Vector2(r * 0.12, r * 0.5 - r * 1.5 * up), Vector2(r * 0.35, r * 0.5)])
+	_draw_poly(column, _with_alpha(MAGMA_COLORS[1], 0.8 * fade))
+	_draw_poly(_scaled_strip(PackedVector2Array([column[0], column[1]]), PackedVector2Array([column[2], column[3]]), 0.5),
+		_with_alpha(MAGMA_COLORS[0], fade))
+	for p: Part in _parts:
+		var s := clampf((t - 0.15 - p.delay * 0.3) / 0.7, 0.0, 1.0)
+		if s <= 0.0 or s >= 1.0:
+			continue
+		var pos := Vector2(p.offset * r * 1.1 * s, -r * 0.9 - 0.8 * p.speed * r * s + 2.2 * r * s * s)
+		if p.size > 0.8:
+			_draw_rock(pos, r * 0.09, p.spin * 5.0 * s, _with_alpha(EARTH_COLORS[1], 1.0 - s * s))
+		else:
+			draw_circle(pos, r * 0.06 * p.size, _with_alpha((MAGMA_COLORS[0] as Color).lerp(MAGMA_COLORS[1], s), 1.0 - s))
+
+# Chaos: Ringe in den vier Elementfarben drehen sich gegeneinander, dazu ein Sternenblitz
+
+func _draw_chaos(t: float) -> void:
+	var r := radius
+	var alpha := sin(PI * t)
+	for i in CHAOS_COLORS.size():
+		var rot := (t * TAU * (1.0 + i * 0.3)) * (1.0 if i % 2 == 0 else -1.0)
+		var size := r * (0.45 + i * 0.15) * (0.6 + 0.4 * _ease_out(clampf(t / 0.4, 0.0, 1.0)))
+		draw_arc(Vector2.ZERO, size, rot, rot + PI * 1.3, 32, _with_alpha(CHAOS_COLORS[i], 0.9 * alpha), r * 0.05 + 1.0, true)
+	for p: Part in _parts:
+		var s := clampf((t - p.delay) / 0.7, 0.0, 1.0)
+		if s <= 0.0 or s >= 1.0:
+			continue
+		var pos := Vector2.from_angle(p.angle) * r * (0.2 + 0.9 * _ease_out(s) * p.speed)
+		_draw_sparkle(pos, r * 0.05 * p.size, _with_alpha(CHAOS_COLORS[int(p.size * 10) % CHAOS_COLORS.size()].lightened(0.3), 1.0 - s))
+
+# Schwächung: rote Pfeile sinken am Monster herab
+
+func _draw_debuff(t: float) -> void:
+	var r := radius
+	draw_circle(Vector2(0, r * 0.2), r * 0.8, _with_alpha(DEBUFF_COLOR, 0.12 * sin(PI * t)))
+	for i in 3:
+		var s := clampf((t - i * 0.15) / 0.7, 0.0, 1.0)
+		if s <= 0.0 or s >= 1.0:
+			continue
+		var x := (i - 1) * r * 0.5
+		var y := lerpf(-r * 0.8, r * 0.6, _ease_out(s))
+		var w := r * 0.2
+		draw_polyline(PackedVector2Array([Vector2(x - w, y - w * 0.7), Vector2(x, y), Vector2(x + w, y - w * 0.7)]),
+			_with_alpha(DEBUFF_COLOR, sin(PI * s)), r * 0.08 + 1.0, true)
+
+# Heilung: grüne Kreuze steigen auf, ein weiches Leuchten
+
+func _draw_heal(t: float) -> void:
+	var r := radius
+	draw_circle(Vector2(0, r * 0.1), r * 0.85, _with_alpha(HEAL_COLOR, 0.18 * sin(PI * t)))
+	for p: Part in _parts:
+		var s := clampf((t - p.delay) / 0.75, 0.0, 1.0)
+		if s <= 0.0 or s >= 1.0:
+			continue
+		var pos := Vector2(p.offset * r * 0.7, r * 0.6 - s * r * 1.3 * p.speed)
+		var size := r * 0.08 * p.size
+		var c := _with_alpha(HEAL_COLOR, sin(PI * s))
+		draw_line(pos - Vector2(size, 0), pos + Vector2(size, 0), c, size * 0.6 + 1.0, true)
+		draw_line(pos - Vector2(0, size), pos + Vector2(0, size), c, size * 0.6 + 1.0, true)
 
 # ─────────────────────────
 # Hilfen

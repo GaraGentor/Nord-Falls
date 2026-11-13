@@ -27,6 +27,7 @@ func _ready() -> void:
 	Events.mon_is_catched.connect(_remove_mon)
 	Events.intents_changed.connect(_refresh_intent)
 	Events.skill_vfx.connect(_play_skill_vfx)
+	Events.status_vfx.connect(_play_status_vfx)
 	var mons = State.mons if home_mons else State.enemy_mons
 	if mons.size() > mon_slot:
 		mon = mons[mon_slot]
@@ -45,8 +46,10 @@ const BattleVfxLayer := preload("res://script/scenes/battle/battle_vfx_layer.gd"
 const VFX_HIT_DELAY := 0.08
 
 # Effekte am Ziel eines Skills: physische Angriffe als Hieb in der Elementfarbe, magische je Element
-# (Feuer-Explosion, Wasser-Spritzer, Steinbrocken, Windwirbel), Schildtreffer, wenn der Schild etwas abfängt,
-# neue Schilde (physisch/magisch) und Buffs. Die passiven Element-Kräfte haben keine eigenen Effekte.
+# (Feuer-Explosion, Wasser-Spritzer, Steinbrocken, Windwirbel, bei Kombi-Elementen deren eigener Effekt wie Dampfwolke,
+# Blitz, Lava oder Eissplitter), Schildtreffer, wenn der Schild etwas abfängt, neue Schilde (physisch/magisch) und Buffs.
+# Physische Kombi-Treffer zeigen zum Hieb auch den Kombi-Effekt. Schwächungen, Verstärkungen und Heilungen ohne eigene
+# Karte kommen über Events.status_vfx (_play_status_vfx).
 func _play_skill_vfx(_mon: Monster, skill: Dictionary, blocked: float) -> void:
 	if mon != _mon or not is_inside_tree() or Skills.is_passive(skill):
 		return
@@ -55,6 +58,9 @@ func _play_skill_vfx(_mon: Monster, skill: Dictionary, blocked: float) -> void:
 		if physical:
 			var accent := Color(ColorMap.get_combo(skill.nature).get("color", "#FFFFFF"))
 			_spawn_vfx(BattleVfxScript.Kind.SLASH, accent, VFX_HIT_DELAY)
+			if Map.count_elements(skill.nature) > 1:
+				for kind in BattleVfxScript.element_kinds(skill.nature):
+					_spawn_vfx(kind, Color.WHITE, VFX_HIT_DELAY + 0.1)
 		else:
 			for kind in BattleVfxScript.element_kinds(skill.nature):
 				_spawn_vfx(kind, Color.WHITE, VFX_HIT_DELAY)
@@ -64,6 +70,14 @@ func _play_skill_vfx(_mon: Monster, skill: Dictionary, blocked: float) -> void:
 		_spawn_vfx(BattleVfxScript.Kind.BUFF)
 	else:
 		_spawn_vfx(BattleVfxScript.Kind.SHIELD if physical else BattleVfxScript.Kind.S_SHIELD)
+
+func _play_status_vfx(_mon: Monster, kind: String) -> void:
+	if mon != _mon or not is_inside_tree():
+		return
+	match kind:
+		"buff": _spawn_vfx(BattleVfxScript.Kind.BUFF, Color.WHITE, VFX_HIT_DELAY)
+		"debuff": _spawn_vfx(BattleVfxScript.Kind.DEBUFF, Color.WHITE, VFX_HIT_DELAY)
+		"heal": _spawn_vfx(BattleVfxScript.Kind.HEAL, Color.WHITE, VFX_HIT_DELAY)
 
 ## Effekte laufen auf einer gemeinsamen Bühne über dem Monsterbild, mit "Lebende Pixel"-Shader (battle_vfx_layer.gd)
 func _spawn_vfx(kind: int, accent := Color.WHITE, delay := 0.0) -> void:
@@ -201,16 +215,35 @@ func _refresh_status() -> void:
 		status_box.add_child(_icon_row([ICON_SHIELD, str(roundi(mon._shield))], STATUS_COLOR, STATUS_FONT_SIZE))
 	if mon._s_shield > 0:
 		status_box.add_child(_icon_row([ICON_S_SHIELD, str(roundi(mon._s_shield))], SPECIAL_COLOR, STATUS_FONT_SIZE))
+	# Verstärkungen als Pfeil hoch, Schwächungen als Pfeil runter, dahinter die Symbole der betroffenen Werte.
+	# Ein Klick öffnet eine kleine Liste, was genau wie lange verändert ist (StatusPopup).
 	if mon.is_buffed():
-		status_box.add_child(_icon_row([ICON_BUFF], BUFF_COLOR, STATUS_FONT_SIZE))
+		status_box.add_child(_clickable(_icon_row([ICON_BUFF] + _stat_icons(StatusPopup.buffed_stats(mon)), BUFF_COLOR, STATUS_FONT_SIZE)))
 	if mon.is_debuffed():
-		status_box.add_child(_icon_row([tr("STATUS_WEAKENED")], ElementEffects.DEBUFF_COLOR, STATUS_FONT_SIZE))
+		status_box.add_child(_clickable(_icon_row([ICON_DEBUFF] + _stat_icons(StatusPopup.debuffed_stats(mon)),
+			ElementEffects.DEBUFF_COLOR, STATUS_FONT_SIZE)))
 	# Statuseffekte der Element-Effekte bis Kampfende, Gift mit seinen Stapeln
 	for status in mon._statuses:
 		var text := tr(ElementEffects.STATUS_LABELS[status])
 		if status == ElementEffects.POISON:
 			text += " x%d" % mon.status_stacks(status)
-		status_box.add_child(_icon_row([text], ElementEffects.STATUS_COLORS[status], STATUS_FONT_SIZE))
+		status_box.add_child(_clickable(_icon_row([text], ElementEffects.STATUS_COLORS[status], STATUS_FONT_SIZE)))
+
+const ICON_DEBUFF := preload("res://assets/ui/icons/battle/debuff.svg")
+
+## Symbole der Werte (wie in der Werte-Tabelle), kleiner als das Pfeil-Symbol davor
+func _stat_icons(stats: Array) -> Array:
+	return stats.map(func(stat): return StatsGrid.ICONS.get(stat, ICON_BUFF))
+
+## Zeile im Status anklickbar machen: zeigt, was das Monster gerade verstärkt oder schwächt
+func _clickable(row: Control) -> Control:
+	row.mouse_filter = Control.MOUSE_FILTER_STOP
+	row.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	row.gui_input.connect(func(event: InputEvent):
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			row.accept_event()
+			StatusPopup.open(row, mon))
+	return row
 
 func printStuff() -> void:
 	if mon:
@@ -333,8 +366,7 @@ func _enemy_intent_rows() -> Array:
 			rows.append(_icon_row([ICON_BUFF, "+%d%% %s" % [roundi(skill.value), stat]] + targets, BUFF_COLOR, INTENT_FONT_SIZE))
 		else:
 			# gleiche Rechnung wie Skills.add_shield, Wert kommt vom Wirker
-			var def = mon.defense() if physical else mon.s_defense()
-			var amount = ceilf(def * skill.value / 100)
+			var amount = Skills.shield_amount(mon, skill)
 			rows.append(_icon_row([ICON_SHIELD if physical else ICON_S_SHIELD, "+%d" % amount] + targets,
 				INTENT_BLOCKED_COLOR if physical else SPECIAL_COLOR, INTENT_FONT_SIZE))
 	return rows
