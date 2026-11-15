@@ -13,6 +13,13 @@ const CRITICAL_COLOR := Color(0.56, 0.05, 0.06)
 const HEALTHY_SHARE := 0.8
 ## Unter diesem Anteil der HP ist der Balken rot
 const CRITICAL_SHARE := 0.3
+## Pfeil neben der ausgewählten Karte (zum Rad hin, Spitze zeigt auf die Karte): von diesem Monster
+## werden gerade die Werte gezeigt. Farbe wie die Rundenmarke am Rad
+const POINTER_COLOR := Color(1.0, 0.85, 0.25)
+const POINTER_LENGTH := 14.0
+const POINTER_HALF_WIDTH := 9.0
+## Abstand der Spitze vom Kartenrand
+const POINTER_GAP := 3.0
 
 @export var plate: IronPlate
 @export var icon: TextureRect
@@ -71,6 +78,22 @@ func _refresh_moves() -> void:
 func set_selected(value: bool) -> void:
 	selected = value
 	_show_rim()
+	queue_redraw()
+
+## Pfeil liegt außerhalb der Karte: Gegner stehen links vom Rad (Pfeil rechts), eigene rechts (Pfeil links)
+func _draw() -> void:
+	if not selected or mon == null:
+		return
+	var own := State.mons.has(mon)
+	var dir := 1.0 if own else -1.0
+	var edge := 0.0 if own else size.x
+	var tip := Vector2(edge - dir * POINTER_GAP, size.y / 2)
+	var base_x := tip.x - dir * POINTER_LENGTH
+	var points := PackedVector2Array([tip, Vector2(base_x, tip.y - POINTER_HALF_WIDTH), Vector2(base_x, tip.y + POINTER_HALF_WIDTH)])
+	draw_colored_polygon(points, POINTER_COLOR)
+	var outline := points.duplicate()
+	outline.append(tip)
+	draw_polyline(outline, Color.BLACK, 2.0, true)
 
 func _show_rim() -> void:
 	plate.set_rim(SkillDetailPopup.GOLD if selected else IronPlate.RIM)

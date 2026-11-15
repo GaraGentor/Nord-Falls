@@ -65,8 +65,8 @@ func refresh() -> void:
 		var max_moves: int = Monster.BASE_MOVES + Monmap.mon_metainfos_by_name(monster._name).get("max_upgrades", 0)
 		moves_badge.set_moves(Monster.BASE_MOVES + monster._upgrades, max_moves)
 	if monster_texture:
+		# sofort sichtbar, ohne Einblenden
 		Monmap.show_on(monster_texture, monster._name, Monmap.MEDIUM)
-		_reveal_monster_pixels()
 	stats_grid.init_with_mon(monster, _hidden_stats())
 	skill_info_container.visible = false
 	if egg_skill_overview:
@@ -84,16 +84,6 @@ func _hidden_stats() -> Array:
 		if not State.is_mon_stat_revealed(monster._name, stat):
 			hidden.append(stat)
 	return hidden
-
-## Pixel-Partikel des Monsterbilds tauchen nacheinander auf (nur mit Lebende-Pixel-Shader)
-func _reveal_monster_pixels() -> void:
-	var shared := monster_texture.material as ShaderMaterial
-	if shared == null or shared.get_shader_parameter("reveal") == null:
-		return
-	# eigene Kopie, sonst blenden alle Monsterbilder mit dem gleichen Material neu ein
-	var mat := shared.duplicate() as ShaderMaterial
-	monster_texture.material = mat
-	create_tween().tween_method(func(v: float): mat.set_shader_parameter("reveal", v), 0.0, 1.0, 0.5)
 
 func _clear_skill_grid(columns: int) -> void:
 	for c in skill_grid.get_children():
