@@ -288,7 +288,7 @@ func set_turn_active(active: bool) -> void:
 	if active and _turn_arrow == null:
 		_turn_arrow = Control.new()
 		_turn_arrow.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_turn_arrow.z_index = 10
+		# kein z_index: sonst liegt der Pfeil über der Kartenhand und dem Boss-Relikt-Overlay
 		_turn_arrow.draw.connect(_draw_turn_arrow)
 		add_child(_turn_arrow)
 	if _turn_arrow:

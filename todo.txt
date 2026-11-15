@@ -1,1 +1,0 @@
-Es gibt ein Bug, wenn ich eine Attacke lerne, die nicht aufgedeckt wurde (weil nicht genutzt) ist die wenn ich sie jemanden beibringe als ? makiert sobald ich ins judgement rein komme. Das ist komisch

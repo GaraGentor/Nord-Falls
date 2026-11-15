@@ -49,7 +49,7 @@ Weitere Stat-Quellen im Run:
 Im Debug-Menü gibt es Stellschrauben, aktuell noch auf Standard:
   - KP-Reserve: ein fester Anteil der BST geht vorab an KP (oder einen anderen Wert).
   - Wachstum pro Stufe (Faktor), "Stufen-Sockel" (level_offset): flacht den Zuwachs ab,
-    z. B. Sockel 10 -> Stufe 7 hat nur 17/15 der Werte von Stufe 5 statt 7/5.
+	z. B. Sockel 10 -> Stufe 7 hat nur 17/15 der Werte von Stufe 5 statt 7/5.
   - KP-Multiplikator.
 
 
@@ -65,13 +65,13 @@ Aktive Formel ("classic"):
 
 Alternativen, im Debug-Menü umschaltbar, noch nicht entschieden:
   "symmetric": Grundwert der Stufe * (Wert/100) * clamp(2*a^k/(a^k+d^k), 0.25, 2.0) * Element, k = 2
-               (Grundwert aus einer festen Referenz-BST 210, damit die BST nicht doppelt zählt)
-               Empfehlung aus meiner Simulation: symmetric, Stufen-Sockel 10, feste BST 210.
+			   (Grundwert aus einer festen Referenz-BST 210, damit die BST nicht doppelt zählt)
+			   Empfehlung aus meiner Simulation: symmetric, Stufen-Sockel 10, feste BST 210.
   "pokemon":   (floor(2L/5)+2) * Wert * Ang/Vert / 50 + 2
 
 Beobachtungen aus der Simulation (classic, linear):
   - Gleiche Stufe, Wert 20, ausgeglichene Arten: ~5 Treffer bis K.O., Wert 40: ~3 Treffer.
-    Weil Werte und KP linear wachsen, bleibt das auf jeder Stufe gleich.
+	Weil Werte und KP linear wachsen, bleibt das auf jeder Stufe gleich.
   - Stufenvorteil wirkt etwa kubisch: Stufe 7 gegen Stufe 5 besiegt den Gegner ~2,7x schneller als umgekehrt.
   - BST-Vorteil genauso: Mythisch 270 gegen 200 ~2,5x Kampfkraft.
   -> Das ist einer der Hauptgründe, warum ich das Scaling neu planen will.
@@ -94,9 +94,9 @@ Elementkreis: Wasser > Feuer > Luft > Erde > Wasser. Gegenüber (Wasser/Luft, Fe
 - Das Monster am Zug spielt seine Skills als Karten. Jedes Monster kennt höchstens 6 Skills.
 - Aktionen: eigene Monster 1 pro Zug (mehr nur über Kerkermeister oder Relikt), Gegner später bis zu 3.
   Gegner-Aktionen pro Biom (Gewichte für 1/2/3 Aktionen, Anfang -> Ende des Bioms):
-    Biom 1: 100/0/0 -> 90/10/0      Biom 4: 40/45/15 -> 20/50/30
-    Biom 2: 85/15/0 -> 65/30/5      Biom 5: 20/50/30 -> 5/45/50
-    Biom 3: 60/35/5 -> 40/45/15
+	Biom 1: 100/0/0 -> 90/10/0      Biom 4: 40/45/15 -> 20/50/30
+	Biom 2: 85/15/0 -> 65/30/5      Biom 5: 20/50/30 -> 5/45/50
+	Biom 3: 60/35/5 -> 40/45/15
 - Skill-Kosten: Angriffe ab Wert 50 kosten 2 Aktionen, ab 80 drei. Schilde ab 75 zwei, Team-Schilde immer zwei.
   Dazu Abklingzeiten 0-3 Züge.
   -> Mit 1 Aktion kann ein eigenes Monster Skills über 50 nicht einsetzen, bis es mehr Aktionen hat.
@@ -140,7 +140,7 @@ Grundelemente haben keinen Effekt. Gegner nutzen dieselben Effekte.
 Zweier-Kombis (3 Spiegelpaare, wirken 2 Züge):
   Tempo:    Dampf (Feuer+Wasser)  Ziel Initiative -20 %   <->  Blitz (Feuer+Luft)    Wirker Initiative +20 %
   Schilde:  Magma (Erde+Feuer)    Treffer zieht Schilde    <->  Eis (Luft+Wasser)     Wirker bekommt Schild =
-                                  doppelt ab                                          25 % des verursachten Schadens
+								  doppelt ab                                          25 % des verursachten Schadens
   Angriff:  Staub (Erde+Luft)     Ziel Ang./SpA -20 %      <->  Schlamm (Erde+Wasser) Wirker Ang./SpA +20 %
 
 Dreier-Kombis (Status bis Kampfende):
@@ -196,7 +196,7 @@ Buffs als eigene Skills:
 Herkunft der Skills pro Art:
   - 3 Standard-Skills (für die drei besten Kampfwerte der Art)
   - 3-4 Ei-Attacken durch Fangen & Opfern (eine für den schwächsten Wert, eine besser als der zweitbeste,
-    eine besser als der beste)
+	eine besser als der beste)
   - 3 Meilensteine (nur mit der Art als Start-Monster): Boss 1, Boss 5, Spielsieg -> im Neben-Element
   - 3 Kopfgelder: zwei geteilte "Jäger"-Skills des Grundelements, eine einzigartige Trophäe im Neben-Element
   Neben-Element: Jede Art hat genau EIN Kombi-Element, das ihr Grundelement enthält. Legendäre dürfen zwei
@@ -244,9 +244,12 @@ Initiative-Raub (Blitz), Status reinigen (Wasser), Chaos-Passiv als Meilenstein,
 - Beurteile das Scaling (Stats pro Stufe, Schadensformel, BST-Spannen, KP) und schlage eine Zielkurve vor:
   Wie viele Treffer bis K.O. auf gleicher Stufe, wie viel Vorteil pro Stufe Unterschied, wie viel pro Seltenheit?
   Begründe die Zahlen und nenne die Formel(n), mit denen man sie erreicht.
+- Mach auch eine Formel Pokemon getreu mit den verschiedenen Stats zum vergleich
 - Schlage eine sinnvolle Verteilung der Werte auf Rollen vor (Angreifer, Tank, Tempo, Unterstützer) und
   wie Initiative bewertet werden sollte.
 - Bewerte die Element-Effekte und Passiven: Was ist zu stark, zu schwach, zu langweilig? Gib Alternativen.
 - Gib 10 neue Ideen für Fähigkeiten oder Passive, die Team-Synergien zwischen genau 2 Monstern erzeugen.
 - Schlage vor, wie Gegnerstufe, Gegnerzahl und Gegner-Aktionen über die 5 Biome zusammen skalieren sollen.
 - Stelle mir Rückfragen, wenn dir für eine gute Antwort etwas fehlt.
+- Mache auch klare regeln, wonach die fähigkeiten aufgebaut werden sollen (stärke, defensive, passive, skill pro zug)
+- Wie kann man die fähigkeiten sinnvoll verteilen, dass anfangs keine Monster zu schwach oder zu stark sind oder komplett useless

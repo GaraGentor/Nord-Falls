@@ -51,6 +51,8 @@ var _parts: Array[Node] = []
 
 func _ready() -> void:
 	theme = THEME
+	# über allem im Kampf, auch über Elementen mit eigenem z_index (Statusanzeigen der Monster)
+	z_index = 15
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	visible = false
