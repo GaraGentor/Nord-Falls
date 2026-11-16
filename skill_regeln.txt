@@ -159,7 +159,7 @@ Mehrere Extras auf einer Karte nur bei seltenen Quellen (Couvert, Trophäen, Stu
 					 nicht stärker als Stufe 3/4, aber mit Kombinationen, die es sonst nicht gibt
   Aufstieg           ascension_skills: einer pro Kombi-Element, nur über den Trank
   Entwürfe           draft_skills: fertige Skills, die noch nirgends vergeben sind (Werte-Tabelle dort im Kommentar).
-                     Wiki-Seite "Unbenutzt" zeigt alle Skills, die keine Art hat.
+					 Wiki-Seite "Unbenutzt" zeigt alle Skills, die keine Art hat.
 
 
 9. SYNERGIEN (umgesetzt)

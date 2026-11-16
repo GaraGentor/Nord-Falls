@@ -1064,6 +1064,9 @@ var ascension_skills = []
 #                  Stufe 4 Top     (CD 3, 2)   45 + 0,65 (+ 48 + 0,70)
 #   Dreier-Kombi   Stufe 3 Angriff/Schild (CD 3, 3 Aktionen)   55 + 0,75 (+ 60 + 0,80)
 #                  Stufe 4 Top     (CD 4, 3)   75 + 0,95 (+ 80 + 1,00)
+#   Leichte Kombi-Skills (je 4 pro Kombi: physisch, magisch, Rüstung, Magie-Schild), billig und oft spielbar:
+#   Zweier-Kombi   Stufe 2 (CD 1, 1 Aktion)    18 + 0,35 (+ 20 + 0,40)
+#   Dreier-Kombi   Stufe 3 (CD 1, 1 Aktion)    20 + 0,50 (+ 22 + 0,55)
 # Dreier-Schilde kosten 3 Aktionen: genau die verbilligt der Bollwerkmeister.
 var draft_skills = [
 	# Feuer (physische Angriffe +)
@@ -1162,6 +1165,48 @@ var draft_skills = [
 	_shield_skill("SKILL_SWAMP_ARMOR_MANGROVE_WALL", SWAMP, 60.0, 0.8, PHYS, 3, 3, 3),
 	_shield_skill("SKILL_SWAMP_WARD_MARSH_MIST", SWAMP, 60.0, 0.8, MAG, 3, 3, 3),
 	_attack_skill("SKILL_SWAMP_MAG_BOG_MAW", SWAMP, 80.0, 1.0, MAG, 4, 4, 3),
+	# Leichte Zweier-Kombis (Stufe 2, CD 1, 1 Aktion)
+	_attack_skill("SKILL_STEAM_PHYS_HOT_JAB", STEAM, 20.0, 0.4, PHYS, 2, 1, 1),
+	_attack_skill("SKILL_STEAM_MAG_VAPOR_PUFF", STEAM, 18.0, 0.35, MAG, 2, 1, 1),
+	_shield_skill("SKILL_STEAM_ARMOR_STEAM_COAT", STEAM, 18.0, 0.35, PHYS, 2, 1, 1),
+	_shield_skill("SKILL_STEAM_WARD_HAZE_SHIELD", STEAM, 20.0, 0.4, MAG, 2, 1, 1),
+	_attack_skill("SKILL_LIGHTNING_PHYS_SHOCK_TAP", LIGHTNING, 20.0, 0.4, PHYS, 2, 1, 1),
+	_attack_skill("SKILL_LIGHTNING_MAG_SPARK_BOLT", LIGHTNING, 20.0, 0.4, MAG, 2, 1, 1),
+	_shield_skill("SKILL_LIGHTNING_ARMOR_CHARGE_PLATE", LIGHTNING, 18.0, 0.35, PHYS, 2, 1, 1),
+	_shield_skill("SKILL_LIGHTNING_WARD_ION_VEIL", LIGHTNING, 18.0, 0.35, MAG, 2, 1, 1),
+	_attack_skill("SKILL_MAGMA_PHYS_EMBER_KNUCKLE", MAGMA, 20.0, 0.4, PHYS, 2, 1, 1),
+	_attack_skill("SKILL_MAGMA_MAG_LAVA_SPIT", MAGMA, 18.0, 0.35, MAG, 2, 1, 1),
+	_shield_skill("SKILL_MAGMA_ARMOR_PUMICE_SKIN", MAGMA, 20.0, 0.4, PHYS, 2, 1, 1),
+	_shield_skill("SKILL_MAGMA_WARD_HEAT_SHIMMER", MAGMA, 18.0, 0.35, MAG, 2, 1, 1),
+	_attack_skill("SKILL_ICE_PHYS_FROST_BITE", ICE, 18.0, 0.35, PHYS, 2, 1, 1),
+	_attack_skill("SKILL_ICE_MAG_SNOW_FLURRY", ICE, 20.0, 0.4, MAG, 2, 1, 1),
+	_shield_skill("SKILL_ICE_ARMOR_RIME_COAT", ICE, 18.0, 0.35, PHYS, 2, 1, 1),
+	_shield_skill("SKILL_ICE_WARD_SNOW_VEIL", ICE, 20.0, 0.4, MAG, 2, 1, 1),
+	_attack_skill("SKILL_DUST_PHYS_GRIT_PUNCH", DUST, 18.0, 0.35, PHYS, 2, 1, 1),
+	_attack_skill("SKILL_DUST_MAG_DUST_SHOT", DUST, 20.0, 0.4, MAG, 2, 1, 1),
+	_shield_skill("SKILL_DUST_ARMOR_SANDSTONE_SKIN", DUST, 20.0, 0.4, PHYS, 2, 1, 1),
+	_shield_skill("SKILL_DUST_WARD_DUST_CLOAK", DUST, 18.0, 0.35, MAG, 2, 1, 1),
+	_attack_skill("SKILL_MUD_PHYS_MUD_PUNCH", MUD, 18.0, 0.35, PHYS, 2, 1, 1),
+	_attack_skill("SKILL_MUD_MAG_SLUDGE_SHOT", MUD, 18.0, 0.35, MAG, 2, 1, 1),
+	_shield_skill("SKILL_MUD_ARMOR_MUD_COAT", MUD, 20.0, 0.4, PHYS, 2, 1, 1),
+	_shield_skill("SKILL_MUD_WARD_PEAT_SEAL", MUD, 20.0, 0.4, MAG, 2, 1, 1),
+	# Leichte Dreier-Kombis (Stufe 3, CD 1, 1 Aktion)
+	_attack_skill("SKILL_THUNDERSTORM_PHYS_SQUALL_STRIKE", THUNDERSTORM, 22.0, 0.55, PHYS, 3, 1, 1),
+	_attack_skill("SKILL_THUNDERSTORM_MAG_STATIC_RAIN", THUNDERSTORM, 22.0, 0.55, MAG, 3, 1, 1),
+	_shield_skill("SKILL_THUNDERSTORM_ARMOR_RAIN_GUARD", THUNDERSTORM, 20.0, 0.5, PHYS, 3, 1, 1),
+	_shield_skill("SKILL_THUNDERSTORM_WARD_STORM_VEIL", THUNDERSTORM, 22.0, 0.55, MAG, 3, 1, 1),
+	_attack_skill("SKILL_VOLCANO_PHYS_VOLCANIC_FIST", VOLCANO, 22.0, 0.55, PHYS, 3, 1, 1),
+	_attack_skill("SKILL_VOLCANO_MAG_FUME_BURST", VOLCANO, 20.0, 0.5, MAG, 3, 1, 1),
+	_shield_skill("SKILL_VOLCANO_ARMOR_LAVA_CRUST", VOLCANO, 22.0, 0.55, PHYS, 3, 1, 1),
+	_shield_skill("SKILL_VOLCANO_WARD_STEAM_VENT", VOLCANO, 22.0, 0.55, MAG, 3, 1, 1),
+	_attack_skill("SKILL_ASH_STORM_PHYS_SOOT_STRIKE", ASH_STORM, 22.0, 0.55, PHYS, 3, 1, 1),
+	_attack_skill("SKILL_ASH_STORM_MAG_EMBER_GUST", ASH_STORM, 22.0, 0.55, MAG, 3, 1, 1),
+	_shield_skill("SKILL_ASH_STORM_ARMOR_CINDER_SHELL", ASH_STORM, 22.0, 0.55, PHYS, 3, 1, 1),
+	_shield_skill("SKILL_ASH_STORM_WARD_SMOKE_SCREEN", ASH_STORM, 20.0, 0.5, MAG, 3, 1, 1),
+	_attack_skill("SKILL_SWAMP_PHYS_REED_WHIP", SWAMP, 20.0, 0.5, PHYS, 3, 1, 1),
+	_attack_skill("SKILL_SWAMP_MAG_SPORE_PUFF", SWAMP, 22.0, 0.55, MAG, 3, 1, 1),
+	_shield_skill("SKILL_SWAMP_ARMOR_MOSS_HIDE", SWAMP, 22.0, 0.55, PHYS, 3, 1, 1),
+	_shield_skill("SKILL_SWAMP_WARD_BOG_MIST", SWAMP, 22.0, 0.55, MAG, 3, 1, 1),
 	# Sonder-Fähigkeiten (todo.txt 1-4, 9-11)
 	_boon_skill("SKILL_FIRE_BOON_FOCUS_FLAME", FIRE, "crit_next", 50.0, -1, SELF, "atk", 3, 2, 1, "SKILL_BOON_CRIT_NEXT_DESC"),
 	_boon_skill("SKILL_LIGHTNING_BOON_OVERCHARGE", LIGHTNING, "crit", 50.0, 1, SELF, "atk", 4, 3, 2, "SKILL_BOON_CRIT_DESC"),

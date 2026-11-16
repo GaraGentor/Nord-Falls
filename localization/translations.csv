@@ -1159,3 +1159,43 @@ STATUS_BOON_LEECH,Lifesteal {value}% ({turns}),Lebensraub {value}% ({turns})
 STATUS_BOON_EXTRA_MOVES,+{value} action ({turns}),+{value} Aktion ({turns})
 STATUS_BOON_TAUNT,Draws attacks ({turns}),Zieht Angriffe auf sich ({turns})
 EFFECT_TEXT_CRIT,Critical!,Kritisch!
+SKILL_STEAM_PHYS_HOT_JAB,Hot Jab,Heißer Stoß
+SKILL_STEAM_MAG_VAPOR_PUFF,Vapor Puff,Dampfwolke
+SKILL_STEAM_ARMOR_STEAM_COAT,Steam Coat,Dampfmantel
+SKILL_STEAM_WARD_HAZE_SHIELD,Haze Shield,Dunstschild
+SKILL_LIGHTNING_PHYS_SHOCK_TAP,Shock Tap,Stromschlag
+SKILL_LIGHTNING_MAG_SPARK_BOLT,Spark Bolt,Funkenblitz
+SKILL_LIGHTNING_ARMOR_CHARGE_PLATE,Charge Plate,Ladungspanzer
+SKILL_LIGHTNING_WARD_ION_VEIL,Ion Veil,Ionenschleier
+SKILL_MAGMA_PHYS_EMBER_KNUCKLE,Ember Knuckle,Glutknöchel
+SKILL_MAGMA_MAG_LAVA_SPIT,Lava Spit,Lavaspucke
+SKILL_MAGMA_ARMOR_PUMICE_SKIN,Pumice Skin,Bimssteinhaut
+SKILL_MAGMA_WARD_HEAT_SHIMMER,Heat Shimmer,Hitzeflimmern
+SKILL_ICE_PHYS_FROST_BITE,Frost Bite,Frostbiss
+SKILL_ICE_MAG_SNOW_FLURRY,Snow Flurry,Schneegestöber
+SKILL_ICE_ARMOR_RIME_COAT,Rime Coat,Raureifmantel
+SKILL_ICE_WARD_SNOW_VEIL,Snow Veil,Schneeschleier
+SKILL_DUST_PHYS_GRIT_PUNCH,Grit Punch,Sandhieb
+SKILL_DUST_MAG_DUST_SHOT,Dust Shot,Staubschuss
+SKILL_DUST_ARMOR_SANDSTONE_SKIN,Sandstone Skin,Sandsteinhaut
+SKILL_DUST_WARD_DUST_CLOAK,Dust Cloak,Staubumhang
+SKILL_MUD_PHYS_MUD_PUNCH,Mud Punch,Matschfaust
+SKILL_MUD_MAG_SLUDGE_SHOT,Sludge Shot,Schlammschuss
+SKILL_MUD_ARMOR_MUD_COAT,Mud Coat,Schlammpanzer
+SKILL_MUD_WARD_PEAT_SEAL,Peat Seal,Torfsiegel
+SKILL_THUNDERSTORM_PHYS_SQUALL_STRIKE,Squall Strike,Böenschlag
+SKILL_THUNDERSTORM_MAG_STATIC_RAIN,Static Rain,Statikregen
+SKILL_THUNDERSTORM_ARMOR_RAIN_GUARD,Rain Guard,Regenwehr
+SKILL_THUNDERSTORM_WARD_STORM_VEIL,Storm Veil,Sturmschleier
+SKILL_VOLCANO_PHYS_VOLCANIC_FIST,Volcanic Fist,Vulkanfaust
+SKILL_VOLCANO_MAG_FUME_BURST,Fume Burst,Schwefelstoß
+SKILL_VOLCANO_ARMOR_LAVA_CRUST,Lava Crust,Lavakruste
+SKILL_VOLCANO_WARD_STEAM_VENT,Steam Vent,Dampfschlot
+SKILL_ASH_STORM_PHYS_SOOT_STRIKE,Soot Strike,Rußhieb
+SKILL_ASH_STORM_MAG_EMBER_GUST,Ember Gust,Glutböe
+SKILL_ASH_STORM_ARMOR_CINDER_SHELL,Cinder Shell,Schlackenschale
+SKILL_ASH_STORM_WARD_SMOKE_SCREEN,Smoke Screen,Rauchwand
+SKILL_SWAMP_PHYS_REED_WHIP,Reed Whip,Schilfpeitsche
+SKILL_SWAMP_MAG_SPORE_PUFF,Spore Puff,Sporenwolke
+SKILL_SWAMP_ARMOR_MOSS_HIDE,Moss Hide,Moospanzer
+SKILL_SWAMP_WARD_BOG_MIST,Bog Mist,Sumpfdunst
