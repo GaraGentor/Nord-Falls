@@ -9,9 +9,6 @@ const DRAG_THRESHOLD := 12.0
 const SWIPE_TO_DRAG := 40.0
 
 @export var name_label: Label
-## Kosten in Zügen, mit den gleichen Partikeln wie die übrigen Züge auf den Monster-Karten
-@export var cost_badge: Control
-@export var type_icon: TextureRect
 ## Beschreibung mit gelb hervorgehobenen Werten (Helper.skill_description rich)
 @export var description_label: RichTextLabel
 ## passt die Beschreibung nicht auf die Karte, scrollt sie von selbst runter und wieder hoch
@@ -38,8 +35,15 @@ var _press_pos := Vector2.ZERO
 var _pressed := false
 var _swiping := false
 var _paper: SkillCardPaper
+## oben Kosten, Sterne (Stufe) und Abklingzeit, unten Icon mit Gesamtwert und Element (SkillCardFace)
+var _top_row := SkillCardFace.TopRow.new()
+var _bottom_row := SkillCardFace.BottomRow.new()
 
 func _ready() -> void:
+	var lines := name_label.get_parent()
+	lines.add_child(_top_row)
+	lines.move_child(_top_row, 0)
+	lines.add_child(_bottom_row)
 	# RichTextLabel nutzt sonst nicht die Label-Schrift aus dem Theme
 	description_label.add_theme_font_override("normal_font", name_label.get_theme_font("font"))
 	# auf der ganzen Karte gedrückt halten hält den Text an
@@ -55,8 +59,8 @@ func _init_card() -> void:
 		_paper.set_skill(skill)
 	name_label.text = tr(skill.name)
 	name_label.self_modulate = SkillCardPaper.readable_color(Helper.color_by_type(skill.nature))
-	cost_badge.show_number(skill.cost, false)
-	type_icon.texture = Skills.kind_icon(skill)
+	_top_row.show_skill(skill)
+	_bottom_row.show_skill(skill, mon)
 	# schlummert der Skill bei seinem Monster: abgeschwächte Werte, Element-Effekt durchgestrichen
 	_set_description(Helper.skill_description(skill, true, mon), Color.WHITE)
 

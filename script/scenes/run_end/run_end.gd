@@ -363,7 +363,7 @@ func _skill_text(skill: Dictionary) -> String:
 	if skill.is_empty():
 		return ""
 	var color = Helper.color_by_type(skill.nature).lightened(0.25)
-	var power = " (%d)" % roundi(skill.value) if Skills.is_damage_skill(skill) else ""
+	var power = " (%s)" % Skills.power_text(skill, null) if Skills.is_damage_skill(skill) else ""
 	return "[color=#%s]%s[/color]%s" % [color.to_html(false), tr(skill.name), power]
 
 func _dim(text: String) -> String:

@@ -495,16 +495,29 @@ func add_mon_card(card_title: String, text: String, icon: Control, header: Strin
 
 ## Skill auf Kartenpapier (Trainer, Couvert), wird auf ein Monster gezogen, das ihn noch nicht kennt.
 ## on_given(mon) bringt ihn bei, die Bilder auf der Karte zeigen, wer ihn einsetzen kann.
+## Aufbau wie die Kampfkarte (SkillCardFace): oben Kosten, Sterne und Abklingzeit, unten Gesamtwert und Element,
+## dazwischen Bilder, Name und Beschreibung. card.row liegt dafür in einer VBox zwischen den beiden Zeilen.
 func add_skill_card(skill: Dictionary, on_given: Callable) -> RewardCard:
-	var element_name = tr(ColorMap.get_combo(skill.nature).label)
-	var stats := "%s · %s" % [tr("CONFIGURATOR_TIER").format({"tier": skill.get("tier", 1)}),
-		tr("CONFIGURATOR_SKILL_STATS").format({"cost": skill.cost, "cooldown": skill.cooldown}).trim_suffix(" ·")]
-	var text = Helper.skill_description(skill) + "\n" + tr("TRAINER_ELEMENT").format({"element": element_name}) + "\n" + stats
+	var text := Helper.skill_description(skill)
 	var learners := func(): return State.mons.filter(func(mon): return not Skills.knows_skill(mon, skill.name))
 	var card := add_mon_card(tr(skill.name), text, _skill_portraits(skill), tr("TRAINER_CHOOSE_MON"), learners,
 		on_given, _skill_target_tooltip.bind(skill), {"no_target": tr("TRAINER_ALL_KNOW"), "skill": skill})
 	# Titel in der Farbe des Elements
 	card.info.get_child(0).add_theme_color_override("font_color", SkillCardPaper.readable_color(Helper.color_by_type(skill.nature)))
+	var holder := card.row.get_parent()
+	holder.remove_child(card.row)
+	var face := VBoxContainer.new()
+	face.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	face.add_theme_constant_override("separation", 6)
+	holder.add_child(face)
+	var top_row := SkillCardFace.TopRow.new()
+	face.add_child(top_row)
+	top_row.show_skill(skill)
+	card.row.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	face.add_child(card.row)
+	var bottom_row := SkillCardFace.BottomRow.new()
+	face.add_child(bottom_row)
+	bottom_row.show_skill(skill, null)
 	SkillCardPaper.attach(card, skill)
 	card.tooltip_text = _skill_fits_text(skill)
 	return card

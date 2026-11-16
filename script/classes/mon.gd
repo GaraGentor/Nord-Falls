@@ -145,16 +145,15 @@ func add_shield(amount: float, physical: bool) -> void:
 	Events.monster_status_changed.emit(self)
 
 # Zieht den Schaden vom passenden Schild ab und liefert, was durchkommt.
-# shield_cost: so viel Schild kostet jeder abgefangene Schadenspunkt (Magma: 2, siehe ElementEffects.shield_cost).
-func absorb_damage(damage: float, physical: bool, shield_cost := 1.0) -> float:
+func absorb_damage(damage: float, physical: bool) -> float:
 	var shield = _shield if physical else _s_shield
-	var blocked = minf(shield / shield_cost, damage)
+	var blocked = minf(shield, damage)
 	if blocked <= 0:
 		return damage
 	if physical:
-		_shield = maxf(_shield - blocked * shield_cost, 0.0)
+		_shield = maxf(_shield - blocked, 0.0)
 	else:
-		_s_shield = maxf(_s_shield - blocked * shield_cost, 0.0)
+		_s_shield = maxf(_s_shield - blocked, 0.0)
 	Events.monster_status_changed.emit(self)
 	return damage - blocked
 
@@ -279,13 +278,6 @@ func _base_stat(stat: String) -> float:
 	# jede weitere Stufe bringt so viel wie Stufe 1, skaliert mit dem Growth aus dem Debug-Menü (Standard = Faktor 1)
 	# und dem Stufen-Sockel der Schadensformel (Standard 0 = linear)
 	return level_1 * DebugSettings.level_scale(_level)
-
-## Durchschnittlicher Wert auf der Stufe dieses Monsters (gleicher Anteil für alle Werte).
-## Grundschaden der symmetrischen Schadensformel, damit der Angriff dort nur im Verhältnis zur Verteidigung zählt.
-## Mit "feste BST" im Debug-Menü aus einer Referenz-BST statt der eigenen, damit die BST nicht doppelt zählt.
-func typical_stat() -> float:
-	var bst := DebugSettings.damage_base_bst(_best_points)
-	return Helper.points_per_level(bst) * STAT_SCALE * DebugSettings.level_scale(_level) / DebugSettings.STATS.size()
 
 func gem_bonus(stat: String) -> int:
 	# der Relikt-Bonus zählt pro Trophäe und wird nicht gespeichert, gilt also auch rückwirkend.

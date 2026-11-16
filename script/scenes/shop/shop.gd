@@ -624,7 +624,7 @@ func _switch_trophy(step: int, item: ShelfItem) -> void:
 
 ## Mehrere Relikte zur Wahl, wer eins kauft, lässt die anderen stehen (_taken)
 func _add_relic_offers() -> void:
-	var unowned = Relics.get_unowned()
+	var unowned = Relics.shop_offers()
 	unowned.shuffle()
 	for id in unowned.slice(0, RELIC_OFFERS):
 		var card: ShelfItem = RelicReward.add_relic_card(self, id)

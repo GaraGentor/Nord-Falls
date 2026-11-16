@@ -2,16 +2,14 @@ class_name EggSkillCard
 extends PanelContainer
 
 ## Große Karte einer Ei-Attacke für die Ei-Auswahl, aufgebaut wie die Spielkarte im Kampf.
-## Kosten, Schadensart und Name stehen fest. Nur die Beschreibung darunter scrollt:
+## Kosten, Sterne, Abklingzeit, Name und unten Gesamtwert und Element stehen fest (SkillCardFace). Nur die Beschreibung darunter scrollt:
 ## von selbst, wenn sie nicht passt, und per Mausrad / Leiste auch von Hand. Nach eigenem Scrollen
 ## setzt das automatische Scrollen erst nach einer Weile Ruhe wieder ein.
 ## Gesperrte Attacken liegen unter zwei gekreuzten Ketten, mittig steht, wie man sie freischaltet.
 
 const HEIGHT := 210.0
 const THEME := preload("res://script/ui/materials/battle_labels.tres")
-const MOVES_BADGE := preload("res://script/ui/moves_badge/moves_badge.tscn")
 const TEXT_COLOR := IronPlate.TEXT_COLOR
-const SUBTLE_COLOR := Color(0.7, 0.68, 0.64)
 const MISSING_COLOR := Color(1, 0.45, 0.45)
 const LOCKED_TINT := Color(0.5, 0.5, 0.5)
 const GOLD := SkillCardPaper.GOLD
@@ -47,36 +45,15 @@ func _build(skill: Dictionary, mon: Monster, locked_label: String, locked_hint: 
 	lines.add_theme_constant_override("separation", 4)
 	margin.add_child(lines)
 
-	# oben: Kosten und Schadensart
-	var top_row := HBoxContainer.new()
-	top_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# oben: Kosten, Sterne (Stufe) und Abklingzeit
+	var top_row := SkillCardFace.TopRow.new()
 	lines.add_child(top_row)
-	var badge = MOVES_BADGE.instantiate()
-	badge.custom_minimum_size = Vector2(30, 28)
-	badge.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	badge.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	badge.label.add_theme_font_size_override("font_size", 16)
-	badge.label.add_theme_constant_override("outline_size", 4)
-	badge.show_number(skill.cost, false)
-	_ignore_mouse(badge)
-	top_row.add_child(badge)
-	var type_icon := TextureRect.new()
-	type_icon.texture = Skills.kind_icon(skill)
-	type_icon.custom_minimum_size = Vector2(22, 22)
-	type_icon.size_flags_horizontal = Control.SIZE_SHRINK_END | Control.SIZE_EXPAND
-	type_icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	type_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	type_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	type_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	top_row.add_child(type_icon)
+	top_row.show_skill(skill)
 
 	var name_label := _label(tr(skill.name), 18, SkillCardPaper.readable_color(Helper.color_by_type(skill.nature)))
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	lines.add_child(name_label)
-	var info := _label("%s · %s %d" % [tr("CONFIGURATOR_TIER").format({"tier": skill.tier}), tr("SKILL_HEADER_CD"), skill.cooldown], 12, SUBTLE_COLOR)
-	info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lines.add_child(info)
 
 	# Mitte: nur die Beschreibung scrollt
 	_scroll = AutoScrollContainer.new()
@@ -109,6 +86,11 @@ func _build(skill: Dictionary, mon: Monster, locked_label: String, locked_hint: 
 		missing.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		missing.custom_minimum_size.x = 1
 		lines.add_child(missing)
+
+	# unten: Icon mit Gesamtwert und Element
+	var bottom_row := SkillCardFace.BottomRow.new()
+	lines.add_child(bottom_row)
+	bottom_row.show_skill(skill, mon)
 
 	if locked:
 		_scroll.set_process(false)
@@ -162,12 +144,6 @@ func _label(text: String, font_size: int, color: Color) -> Label:
 	label.add_theme_font_size_override("font_size", font_size)
 	label.add_theme_color_override("font_color", color)
 	return label
-
-static func _ignore_mouse(node: Node) -> void:
-	if node is Control:
-		node.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for child in node.get_children():
-		_ignore_mouse(child)
 
 ## Ketten von oben rechts nach unten links und von oben links nach unten rechts.
 ## Glieder wechseln sich ab: flach liegend (Ring) und hochkant (Strich).

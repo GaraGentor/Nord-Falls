@@ -22,4 +22,6 @@ PT 1 Done muss man testen.
 
 MM Feedback
 5. One Use Items..
-7. Heilungs Optionen nochmal überdneken
+7. Heilungs Optionen nochmal überdneken (Notlösung sehr gering)
+
+- 

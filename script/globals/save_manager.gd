@@ -30,6 +30,11 @@ const DEFAULT_DATA := {
 	# interaktives Tutorial (siehe Tutorial): gesehene Sequenzen, done = ausgeschaltet, abgeschlossen oder übersprungen (neue Spielstände starten mit Tutorial)
 	"tutorial_seen": [],
 	"tutorial_done": false,
+	# beendete Runs insgesamt und davon verlorene (Fehlschläge, stehen in der Ei-Auswahl unter Anleitung und Sammlung)
+	"runs": 0,
+	"failed_runs": 0,
+	# Runs mit mehr als einer Boss Träne bis zum nächsten Kerkermeister im ersten Biom (Map.generate_run_jailer), 0 = noch nicht gewürfelt
+	"runs_until_jailer": 0,
 }
 
 var save_data: Dictionary = DEFAULT_DATA.duplicate(true)
@@ -58,12 +63,42 @@ func load_game():
 		# neue Felder in alten Spielständen ergänzen
 		parsed.merge(DEFAULT_DATA.duplicate(true))
 		save_data = parsed
+		_drop_removed_mons()
+
+## Aus dem Spiel entfernte Monster-Arten (Schlundwurm, Lavaritter, Nachthydra, Höllenwächter).
+## Hier fest eingetragen, weil SaveManager vor Monmap geladen wird.
+const REMOVED_MONS := ["32", "34", "44", "65"]
+
+## Alte Spielstände: entfernte Arten fliegen raus, sonst stürzen Ei-Auswahl, Pools und Sammlung
+## bei Monmap.mon_metainfos_by_name ab.
+func _drop_removed_mons() -> void:
+	var keep := func(mon_name): return not REMOVED_MONS.has(str(mon_name))
+	save_data["catched_monsters"] = save_data["catched_monsters"].filter(keep)
+	save_data["seen_monsters"] = save_data["seen_monsters"].filter(keep)
+	for key in ["monsters", "egg_skills", "milestones", "egg_loadouts"]:
+		for mon_name in REMOVED_MONS:
+			save_data[key].erase(mon_name)
+	# Eier und Biom-Pools mit entfernten Arten neu würfeln lassen
+	if save_data["starter_eggs"].any(func(egg): return not keep.call(egg.get("name", ""))):
+		save_data["starter_eggs"] = []
+	save_data["biome_pools"] = save_data["biome_pools"].map(func(pool): return pool.filter(keep))
 
 ## Debug-Menü: Freigeschaltetes und der laufende Run sind weg, wie nach einer Neuinstallation.
 ## Einstellungen (settings.cfg) und Debug-Einstellungen bleiben.
 func reset_game():
 	save_data = DEFAULT_DATA.duplicate(true)
 	save_game()
+
+## Zählt einen Run herunter. true, wenn in diesem Run der Kerkermeister dran ist (danach wird neu gewürfelt).
+func jailer_run_due(min_runs: int, max_runs: int) -> bool:
+	var left := int(save_data["runs_until_jailer"])
+	if left <= 0:
+		left = randi_range(min_runs, max_runs)
+	left -= 1
+	var due := left <= 0
+	save_data["runs_until_jailer"] = left
+	save_game()
+	return due
 
 func add_boss_shard(amount := 1):
 	save_data["boss_shards"] += amount
@@ -145,6 +180,13 @@ func set_starter_eggs(eggs: Array):
 func set_biome_path(path: Array, pools: Array):
 	save_data["biome_path"] = path
 	save_data["biome_pools"] = pools
+	save_game()
+
+## Zählt einen beendeten Run, verlorene zusätzlich als Fehlschlag
+func add_finished_run(won: bool):
+	save_data["runs"] = int(save_data["runs"]) + 1
+	if not won:
+		save_data["failed_runs"] = int(save_data["failed_runs"]) + 1
 	save_game()
 
 # Nach Sieg oder Niederlage: der nächste Run würfelt Eier und Biom-Pfad neu

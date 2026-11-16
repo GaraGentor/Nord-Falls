@@ -1,8 +1,8 @@
 class_name SkillDetailPopup
 extends PanelContainer
 
-## Detail-Popup eines Skills: fliegt neben einem Anker-Control (z. B. Infobereich) ein und zeigt die Karte wie im Kampf,
-## Stufe, Kosten, Abklingzeit, Element, fehlende Elemente und bei Ei-Attacken, wie man sie freischaltet bzw. freigeschaltet hat.
+## Detail-Popup eines Skills: fliegt neben einem Anker-Control (z. B. Infobereich) ein und zeigt die Karte wie im Kampf
+## (Stufe, Kosten, Abklingzeit und Element stehen auf der Karte selbst), darunter fehlende Elemente und bei Ei-Attacken, wie man sie freischaltet bzw. freigeschaltet hat.
 ## Liegt per top_level frei über der Szene, der Host hängt es nur als Kind an.
 
 const BATTLE_CARD := preload("res://script/scenes/battle/battle_card.tscn")
@@ -14,8 +14,6 @@ const GAP := 16.0
 const FONT_SIZE := 18
 
 var _card: Control
-var _stats: Label
-var _element: Label
 var _missing: Label
 var _lock: Label
 var _anchor: Control
@@ -38,12 +36,10 @@ func _init() -> void:
 	_card.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	_card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(_card)
-	_stats = _label(IronPlate.TEXT_COLOR)
-	_element = _label(IronPlate.TEXT_COLOR)
 	_missing = _label(MISSING_COLOR)
 	_lock = _label(GOLD)
 	_lock.add_theme_font_size_override("font_size", 15)
-	for label in [_stats, _element, _missing, _lock]:
+	for label in [_missing, _lock]:
 		box.add_child(label)
 
 	var close := RewardDialog.plate_button(tr("MONSTER_CLOSE_INFO"))
@@ -61,10 +57,6 @@ func show_skill(skill: Dictionary, mon: Monster, anchor: Control, lock_hint: Arr
 	_card.mon = mon
 	_card.skill = skill
 	_card.modulate = Color(0.6, 0.6, 0.6) if not lock_hint.is_empty() else Color.WHITE
-	_stats.text = "%s · %s" % [tr("CONFIGURATOR_TIER").format({"tier": skill.get("tier", 1)}),
-		tr("CONFIGURATOR_SKILL_STATS").format({"cost": skill.cost, "cooldown": skill.cooldown}).trim_suffix(" ·")]
-	_element.text = tr("EGG_DETAIL_ELEMENT").format({"element": tr(ColorMap.get_combo(skill.nature).label)})
-	_element.add_theme_color_override("font_color", Helper.color_by_type(skill.nature))
 	_missing.text = Skills.missing_elements_text(mon, skill) if mon else ""
 	_missing.visible = not _missing.text.is_empty()
 	var hint := lock_hint if not lock_hint.is_empty() else source_hint

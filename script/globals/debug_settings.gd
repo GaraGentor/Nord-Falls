@@ -16,28 +16,13 @@ const GROWTH_STEP := 0.5
 ## Die Datei ist nach Kampfmodus gegliedert, weil der Branch new-conzept dieselbe Datei nutzt. Hier gibt es nur diesen Modus.
 const MODE := "classic"
 
-## Schadensformel (Skills.calc_damage), im Debug-Menü umschaltbar:
-## classic   = atk · 2·atk/(atk+def)  (bisher: Angriff zählt etwa 3x so viel wie Verteidigung)
-## symmetric = Grundwert der Stufe · 2·a^k/(a^k+d^k), begrenzt auf [min_factor, max_factor]
-## pokemon   = (floor(2·L/5)+2) · Wert · atk/def / 50 + 2, mit floor wie im Original
-const FORMULAS := ["classic", "symmetric", "pokemon"]
-## Standard = Verhalten wie bisher. level_offset 0 = Werte linear zur Stufe, hp_scale 1 = KP wie bisher.
-## fixed_base: Grundschaden der symmetrischen Formel aus einer festen Referenz-BST (base_bst) statt aus der eigenen BST.
-## Dann zählt die BST nur noch über die Werte selbst und nicht doppelt (Mythic vs. Common ~2,5x statt ~3,3x).
-const DAMAGE_DEFAULTS := {"formula": "classic", "exponent": 2.0, "min_factor": 0.25, "max_factor": 2.0, "level_offset": 0.0, "hp_scale": 1.0,
-	"fixed_base": false, "base_bst": 210.0}
-## Empfehlung aus der Simulation im Debug-Menü: symmetrisch, Boden 0.25, Stufen-Sockel 10, feste Referenz-BST 210.
-## KP x1, weil 30 % KP-Reserve und Growth 3.5 die Kämpfe schon auf etwa 6-7 Treffer bringen (KP x3 wären ~20).
-const DAMAGE_RECOMMENDED := {"formula": "symmetric", "exponent": 2.0, "min_factor": 0.25, "max_factor": 2.0, "level_offset": 10.0, "hp_scale": 1.0,
-	"fixed_base": true, "base_bst": 210.0}
+## Einstellungen rund um den Schaden (Skills.calc_damage rechnet mit festen Werten, siehe Skills "Schadensformel"):
+## level_offset 0 = Werte linear zur Stufe, hp_scale 1 = KP wie bisher.
+const DAMAGE_DEFAULTS := {"level_offset": 0.0, "hp_scale": 1.0}
 ## [min, max, Schritt] pro Zahlen-Einstellung
 const DAMAGE_RANGES := {
-	"exponent": [0.5, 4.0, 0.25],
-	"min_factor": [0.0, 1.0, 0.05],
-	"max_factor": [1.0, 4.0, 0.25],
 	"level_offset": [0.0, 50.0, 1.0],
 	"hp_scale": [0.5, 6.0, 0.25],
-	"base_bst": [150.0, 300.0, 5.0],
 }
 
 ## Kampfmodus -> Wert -> Prozent der BST, die fest diesem Wert gehören
@@ -214,7 +199,10 @@ func damage_setting(key: String):
 ## Alle Einstellungen der Schadensformel, fehlende mit Standardwerten
 func damage_settings() -> Dictionary:
 	var values := DAMAGE_DEFAULTS.duplicate()
-	values.merge(_damage.get(MODE, {}), true)
+	var saved: Dictionary = _damage.get(MODE, {})
+	# ältere Dateien enthalten noch Einstellungen der entfernten Formeln, die zählen nicht mehr
+	for key in values:
+		values[key] = saved.get(key, values[key])
 	return values
 
 ## Rechnet fn mit anderen Einstellungen, ohne sie zu speichern (für die Simulation im Debug-Menü)
@@ -242,13 +230,5 @@ func reset_damage() -> void:
 	_damage.erase(MODE)
 	save()
 
-func damage_formula() -> String:
-	var formula = damage_setting("formula")
-	return formula if FORMULAS.has(formula) else DAMAGE_DEFAULTS.formula
-
 func hp_scale() -> float:
 	return float(damage_setting("hp_scale"))
-
-## BST für den Grundschaden der symmetrischen Formel: feste Referenz oder die eigene BST des Angreifers
-func damage_base_bst(own_bst: int) -> int:
-	return roundi(float(damage_setting("base_bst"))) if damage_setting("fixed_base") else own_bst

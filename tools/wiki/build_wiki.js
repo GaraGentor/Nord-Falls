@@ -262,9 +262,6 @@ function collect() {
 
 	// Skills
 	const skillsSrc = read("script/globals/skills.gd");
-	// Skills._skill_cost: 1 Aktion + 1 pro erreichter Schwelle aus COST_THRESHOLDS
-	const costThresholds = readVar(skillsSrc, "COST_THRESHOLDS", "Skills") ?? [];
-	ctx.helpers._skill_cost = (value) => 1 + costThresholds.filter((threshold) => value >= threshold).length;
 	// Element- und Schadensart-Kürzel (const EARTH := Enums.MON_TYPES.EARTH, const STEAM := FIRE | WATER, const PHYS := ...)
 	for (const m of stripComments(skillsSrc).matchAll(/^const\s+([A-Z_]+)\s*:=\s*([^\n\[{]+)$/gm)) {
 		try {
@@ -342,7 +339,6 @@ function collect() {
 		maxSkills: readVar(skillsSrc, "MAX_SKILLS", "Skills"),
 		dormantBasePower: readVar(skillsSrc, "DORMANT_BASE_POWER", "Skills"),
 		// Skills.standard_rarity_bonus: Standard-Skills pro Seltenheitsstufe stärker ({"damage": 1.0, "shield": 2.0})
-		standardRarityBonus: readVar(skillsSrc, "STANDARD_RARITY_BONUS", "Skills") ?? {},
 		milestones: readVar(skillsSrc, "MILESTONES", "Skills") ?? [],
 		bounties: readVar(skillsSrc, "BOUNTIES", "Skills") ?? [],
 		bountyChance: readVar(skillsSrc, "BOUNTY_CHANCE", "Skills"),

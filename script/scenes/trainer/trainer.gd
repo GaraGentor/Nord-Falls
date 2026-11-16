@@ -421,10 +421,10 @@ func _pick_offers() -> Array:
 func _add_skill_card(skill: Dictionary) -> void:
 	var card := add_skill_card(skill, func(mon: Monster): _learn(_dragged, mon))
 	card.on_click = _toggle_focus.bind(card)
-	# in der Pixel-Schrift passt die Stats-Zeile sonst nicht in die Kartenbreite
+	# in der Pixel-Schrift passt die Beschreibung sonst nicht in die Kartenbreite
 	card.info.get_child(1).add_theme_font_size_override("font_size", TRAINER_TEXT_FONT_SIZE)
-	# Text nicht auf den Papierrahmen setzen
-	card.row.get_parent().add_theme_constant_override("margin_bottom", 14)
+	# Text nicht auf den Papierrahmen setzen (card.row liegt in der VBox mit Kopf- und Fußzeile, darüber der Rand)
+	card.row.get_parent().get_parent().add_theme_constant_override("margin_bottom", 14)
 	set_price(card, randi_range(skill.shop_cost.min, skill.shop_cost.max))
 	ignore_mouse_below(card)
 

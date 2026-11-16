@@ -6,7 +6,7 @@ var current_map: Array = []
 var SETTING_LEVEL = 35
 # Startstufe der eigenen Monster und Mindeststufe aller Monster (Monster._init, battle.gd)
 var INITIAL_LEVEL = 5
-var INITIAL_MONS = ["2", "4", "5", "11"]
+var INITIAL_MONS = ["2", "4", "5", "82"]
 
 var mons: Array[Monster] = []
 # Art des Start-Monsters (Ei), sammelt den Meilenstein-Fortschritt
@@ -281,6 +281,7 @@ func is_mon_seen(mon_name: String, depth := -1) -> bool:
 # Beendet den Run und merkt sich das Team, die Szene wechselt der Aufrufer (run_end.tscn).
 func end_run(won: bool) -> void:
 	run_won = won
+	SaveManager.add_finished_run(won)
 	# erst das Run-Ende gibt neue Eier und einen neuen Biom-Pfad frei
 	SaveManager.clear_run_start()
 	run_team.assign(mons.map(func(mon: Monster): return mon._name))

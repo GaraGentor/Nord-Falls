@@ -1,0 +1,47 @@
+0. Füge die neuen Monster hinzu.
+1. Passe die Schadenformel etc. so an, dass jeder schaden direkt durch geht, sowohl von S_atk als auch von Atk. Die Def und S_Def verteidigungs Stats sollen darauf kein einfluss mehr haben.
+2. Lösche alle fähigkeiten von den Monstern. Wir verteilen das nun neu stück für stück.
+3. Füge für alle Monster, die mehr ATK und S_ATK hat folgende Fähigkeiten hinzu: (das sind die initialen Attacken + EI Attacken)
+	Für Monster mit höchsten ATK Stats (besser als vert, s_vert und s_atk)
+	3.1. Leichter Stoß. Diese hat feste 5 atk + 0.2 atk aus den Stats und 0 CD
+	3.2. Leichter Schlag. Diese hat feste 8 atk + 0.3 atk aus den Stats und 1 CD
+	3.3. Nutzloser Schild. Dieser hat 2 Schild und + 0.2  def aus den Stats
+	
+	Für Monster mit höchten S_ATK Stats (besser als vert, s_vert und atk)
+	3.4. Leichter [ELEMENT_Stoß]. Diese hat feste 5 s_atk + 0.2 s_atk aus den Stats und 0 CD
+	3.5. Leichter [ELEMENT_Schlag]. Diese hat feste 8 s_atk + 0.3 s_atk aus den Stats und 1 CD
+	3.6. Nutzloser [ELEMENT_Schild]. Dieser hat 2 S-Schild und + 0.2  s_def aus den Stats
+	
+	für Monster mit höchsten DEF Stats (besser als s_vert, atk ist allerdings höher als s_atk)
+	3.7. Nutzloser Stoß. Diese hat feste 2 atk + 0.2 atk aus den Stats und 0 CD
+	3.8. Leichter Schild. Diese hat feste 5 Schild + 0.3 def aus den Stats und 0 CD
+	3.9. Nutzloser [ELEMENT_Schild]. Dieser hat 2 S-Schild und + 0.2  s_def aus den Stats
+	ist der s_atk allerdings höher als die atk, dann soll die 3.7. mit einem Nutzlosem [ELEMENT_Stoß] aus der s_atk genommen werden die multiplikatoren können mit 0.2 gleich bleiben allerdings von s_atk nehmen
+
+	für Monster mit höchsten S_DEF Stats (besser als s_vert, atk ist allerdings höher als s_atk)
+	3.10. Nutzloser Stoß. Diese hat feste 2 atk + 0.2 atk aus den Stats und 0 CD
+	3.11. Leichter [ELEMENT_Schild]. Diese hat feste 5 S-Schild + 0.3 s_defdef aus den Stats und 0 CD
+	3.12. Nutzloser [Schild]. Dieser hat 2 Schild und + 0.2  def aus den Stats
+	ist der s_atk allerdings höher als die atk, dann soll die 3.7. mit einem Nutzlosem [ELEMENT_Stoß] aus der s_atk genommen werden die multiplikatoren können mit 0.2 gleich bleiben allerdings von s_atk nehmen
+4. Ignoriere dabei auch erstmal alle Bonis durch die elemente etc.
+5. Jede Attacke davon soll auch passende namen zu den elementen gehören.
+6. Mache nur das nötigste. Hierfür erfinde dir keine ideen die passen könnten.
+7. Räume auch die anderen schadensformeln auf und enterne diese
+8. Entferne die auch aus dem Debug Menü für die Schadensformel.
+	> Lasse die Grundwert Einstellung dort
+	> Lasse den KP-Multiplikator dort
+	> Lasse die Referenz-BST (symm.) dort
+	> Lasse ein paar Statistiken weiterhin vorhanden und gleiche die an (leichte atk, mittlere atk und bsp. weiße eine 20 atk mit * 0.7 und verschiedenen levels)
+9. Passe auch bei den fähigkeiten die Texte so an ( 5 Schaden + (0.2*{ATK_STAT}) )
+10. die anderen fähigkeiten lass wenn nötig liegen oder nimm die auch komplett alle erstmal raus (auch vom trainer und beim trank upgrade und lasse den vorerst leer)
+
+Ändere folgende Element Effekte
+11. Dampf hat eine 10% wahrscheinlihckeit den def und s-def stat um 20% zu reduzieren für 2 Züge
+12. Staub hat eine 10% wahrscheinlihckeit den atk und s-atk stat um 20% zu reduzieren für 2 Züge 
+13. Blitz hat eine 10% wahrscheinlichkeit dass einzelne fähigkeiten zu 10% Fehlschlagen können
+14. Eis hat eine 25% wahrscheinlichkeit dass 25% des schadens als schild gegeben wird (bei s-atk s-def und bei atk nur def).
+16. Gewitter müsste 10% haben und keine 20% für effekt auslösung
+17. Magma & Schlamm trifft zu 20% durch schilde oder s-schilde (je nach attacke ob s-atk oder atk).
+18. Aschesturm macht immer pro treffer zusätzlich 3% der gesammten gegner leben als true damage schaden (ignoriert alle schilde). Und die -15% angriff nimm auch raus. Allerdings löst es nur zu 10% wahrscheinlicghkeit solch einen treffer zu landen
+19. Gift geht auch durch alle schilde und kann so bleiben. Allerdings löst es nur zu 10% wahrscheinlicghkeit aus einen Stack zu generieren
+20. Update mir auch direkt das Wiki.

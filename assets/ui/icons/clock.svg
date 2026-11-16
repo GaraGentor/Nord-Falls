@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" id="clock">
+  <!-- Abklingzeit auf den Skill-Karten: Uhr mit Zeigern, Linienstil wie passive.svg -->
+  <g fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="32" cy="34" r="22"></circle>
+    <path d="M32 20v14l9 6"></path>
+    <path d="M26 6h12"></path>
+    <path d="M32 6v6"></path>
+  </g>
+</svg>

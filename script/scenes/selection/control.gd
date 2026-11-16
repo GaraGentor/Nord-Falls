@@ -28,6 +28,7 @@ const SETTINGS_BUTTON_SIZE := 56.0
 const SETTINGS_BUTTON_MARGIN := 16.0
 const MENU_BUTTON_WIDTH := 280.0
 const MENU_FONT_SIZE := 24
+const FAILURES_FONT_SIZE := 16
 
 func _ready() -> void:
 	_add_settings_button()
@@ -55,6 +56,13 @@ func _build_menu() -> void:
 	menu.add_child(column)
 	column.add_child(_menu_button(tr("SELECTION_GUIDE"), func(): InfoDialog.present(self, GuideDialog.new())))
 	column.add_child(_menu_button(tr("SELECTION_COLLECTION"), func(): InfoDialog.present(self, CollectionDialog.new())))
+	# klein darunter: verlorene Runs bisher
+	var failures := Label.new()
+	failures.text = tr("SELECTION_FAILURES").format({"count": int(SaveManager.save_data["failed_runs"])})
+	failures.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	failures.add_theme_font_size_override("font_size", FAILURES_FONT_SIZE)
+	failures.add_theme_color_override("font_color", IronPlate.TEXT_COLOR)
+	column.add_child(failures)
 
 func _menu_button(text: String, on_pressed: Callable) -> Button:
 	var button := RewardDialog.plate_button(text)

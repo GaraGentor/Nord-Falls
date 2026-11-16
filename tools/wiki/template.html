@@ -241,7 +241,7 @@ const UI = {
 		effects: { damage: "Schaden", shield: "Schild", buff: "Buff", passive: "Passiv" },
 		targets: { SINGLE_ENEMY: "ein Gegner", TEAM_ENEMY: "alle Gegner", SINGLE_FRIEND: "ein Verbündeter", TEAM_FRIEND: "ganzes Team" },
 		mon: "Monster", lists: {
-			standard_skills: "Standard", ascension_skills: "Aufstieg (Trank)", defensive_skills: "Schild", buff_skills: "Buff", passive_skills: "Passiv", area_skills: "Flächenangriff",
+			starter_skills: "Start (Ei)", standard_skills: "Standard", ascension_skills: "Aufstieg (Trank)", defensive_skills: "Schild", buff_skills: "Buff", passive_skills: "Passiv", area_skills: "Flächenangriff",
 			egg_skills: "Angriff (Pool)", bounty_skills: "Kopfgeld", reward_skills: "Couvert (einzigartig)",
 		},
 		trainer: "Trainer", wild: "wilde Monster", onlySpecies: "nur Ei-Attacke der Arten",
@@ -283,7 +283,7 @@ const UI = {
 		effects: { damage: "Damage", shield: "Shield", buff: "Buff", passive: "Passive" },
 		targets: { SINGLE_ENEMY: "one enemy", TEAM_ENEMY: "all enemies", SINGLE_FRIEND: "one ally", TEAM_FRIEND: "whole team" },
 		mon: "Monster", lists: {
-			standard_skills: "Standard", ascension_skills: "Ascension (potion)", defensive_skills: "Shield", buff_skills: "Buff", passive_skills: "Passive", area_skills: "Area attack",
+			starter_skills: "Starter (egg)", standard_skills: "Standard", ascension_skills: "Ascension (potion)", defensive_skills: "Shield", buff_skills: "Buff", passive_skills: "Passive", area_skills: "Area attack",
 			egg_skills: "Attack (pool)", bounty_skills: "Bounty", reward_skills: "Envelope (unique)",
 		},
 		trainer: "Trainer", wild: "wild monsters", onlySpecies: "species egg move only",
@@ -345,27 +345,33 @@ const elementName = (mask) => tr(comboByMask[mask]?.label || "ELEMENT_UNKNOWN");
 const elementColor = (mask) => comboByMask[mask]?.color || "#555555";
 const chip = (mask) => `<span class="chip"><i style="background:${esc(elementColor(mask))}"></i>${esc(elementName(mask))}</span>`;
 
-// Spiegelt ElementEffects.element_effect_text (Standardwerte, ohne effect_power einer Karte), "" für Grundelemente
+// Spiegelt ElementEffects.element_effect_text: Text mit den Werten und der Auslösechance (TRIGGER_CHANCES) davor
 const effectPct = (share) => fmtNum(Math.round(share * 1000) / 10);
+const TRIGGER_CHANCE_KEYS = { STEAM: "DEBUFF_CHANCE", DUST: "DEBUFF_CHANCE", LIGHTNING: "FAIL_TRIGGER_CHANCE", ICE: "ICE_CHANCE",
+	MAGMA: "PIERCE_CHANCE", MUD: "PIERCE_CHANCE", SWAMP: "POISON_CHANCE", ASH_STORM: "ASH_CHANCE" };
+function effectText(key, power = 1, cardChance = 1, stripName = false) {
+	const c = DATA.elements.effects;
+	let text = tr(`EFFECT_${key}_DESC`, {
+		turns: c.EFFECT_TURNS,
+		debuff: effectPct(c.DEBUFF_FACTOR * power),
+		fail: effectPct(c.FAIL_CHANCE * power),
+		ice: effectPct(c.ICE_SHIELD_SHARE * power),
+		poison: effectPct(c.POISON_SHARE * power),
+		stacks: c.POISON_MAX_STACKS,
+		ash: effectPct(c.ASH_SHARE * power),
+		paralysis: effectPct(c.PARALYSIS_CHANCE * power),
+		volcano: effectPct(c.VOLCANO_CHANCE * power),
+		chaos: Number(c.CHAOS_BONUS).toFixed(2),
+	});
+	// "Blitz: ..." – der Elementname steht im Wiki schon daneben
+	if (stripName) text = text.replace(/^[^:]+:\s*/, "");
+	const chance = Math.min((TRIGGER_CHANCE_KEYS[key] ? c[TRIGGER_CHANCE_KEYS[key]] : 1) * cardChance, 1);
+	return chance < 1 ? tr("EFFECT_CHANCE_PREFIX", { chance: effectPct(chance) }) + text : text;
+}
 function elementEffectText(mask) {
 	const key = DATA.elements.effectKeys?.[mask];
 	if (!key) return "";
-	const c = DATA.elements.effects;
-	return tr(`EFFECT_${key}_DESC`, {
-		turns: c.EFFECT_TURNS,
-		speed: effectPct(c.SPEED_FACTOR),
-		attack: effectPct(c.ATTACK_FACTOR),
-		magma: fmtNum(Math.round(c.MAGMA_SHIELD_COST * 10) / 10),
-		ice: effectPct(c.ICE_SHIELD_SHARE),
-		poison: effectPct(c.POISON_SHARE),
-		stacks: c.POISON_MAX_STACKS,
-		burn: effectPct(c.BURN_SHARE),
-		burn_attack: effectPct(c.BURN_ATTACK_FACTOR),
-		paralysis: effectPct(c.PARALYSIS_CHANCE),
-		volcano: effectPct(c.VOLCANO_CHANCE),
-		chaos: Number(c.CHAOS_BONUS).toFixed(2),
-	// "Blitz: ..." – der Elementname steht im Wiki schon daneben
-	}).replace(/^[^:]+:\s*/, "");
+	return effectText(key, 1, 1, true);
 }
 
 // Spiegelt Skills.element_score / element_multiplier
@@ -402,24 +408,17 @@ const statLabel = (stat) => (STAT_KEYS[stat] ? tr(STAT_KEYS[stat]).replace(":", 
 function skillEffectText(s) {
 	const key = DATA.elements.effectKeys?.[s.nature];
 	if (!key) return "";
-	const E = DATA.elements.effects;
 	let power = s.effect_power ?? 1;
 	let chance = s.effect_chance ?? 1;
 	if (key === "VOLCANO") { power *= chance; chance = 1; }
-	if (key === "MAGMA") chance = 1;
-	const pct = (x) => fmtNum(Math.round(x * 1000) / 10);
-	const text = tr(`EFFECT_${key}_DESC`, {
-		turns: E.EFFECT_TURNS, speed: pct(E.SPEED_FACTOR * power), attack: pct(E.ATTACK_FACTOR * power),
-		magma: fmtNum(Math.round((1 + (E.MAGMA_SHIELD_COST - 1) * power) * 10) / 10), ice: pct(E.ICE_SHIELD_SHARE * power),
-		poison: pct(E.POISON_SHARE * power), stacks: E.POISON_MAX_STACKS, burn: pct(E.BURN_SHARE * power),
-		burn_attack: pct(E.BURN_ATTACK_FACTOR * power), paralysis: pct(E.PARALYSIS_CHANCE * power),
-		volcano: pct(E.VOLCANO_CHANCE * power), chaos: E.CHAOS_BONUS,
-	});
-	return chance < 1 ? tr("EFFECT_CHANCE_PREFIX", { chance: Math.round(chance * 100) }) + text : text;
+	return effectText(key, power, chance);
 }
+// Stärke wie Skills.power_text ohne Monster: fester Wert + Anteil x Wert ("5 + 0.2×SAN")
+const SCALING_STAT = (s) => s.effect === "shield" ? (s.damage_type === "ABILITY" ? "s_def" : "def") : (s.damage_type === "ABILITY" ? "s_atk" : "atk");
+const powerLabel = (s) => s.scaling != null ? `${fmtNum(s.value)} + ${fmtNum(s.scaling)}×${statLabel(SCALING_STAT(s))}` : fmtNum(s.value ?? s.damage ?? 0);
 function skillDesc(s) {
 	const lines = [tr(s.description, {
-		value: fmtNum(s.value ?? s.damage ?? 0), buff_turns: s.buff_turns ?? "",
+		value: fmtNum(s.value ?? s.damage ?? 0), scaling: fmtNum(s.scaling ?? 0), buff_turns: s.buff_turns ?? "",
 		stat: statLabel(s.buff_stat ?? s.passive_stat), element: elementName(s.passive_element ?? s.nature),
 	})];
 	for (const x of s.extras || []) {
@@ -521,7 +520,7 @@ function skillCard(name, m, how) {
 	const share = popcount(s.nature & m.initial_type) / Math.max(popcount(s.nature), 1);
 	const dormant = (DATA.dormantBasePower ?? 0.4) + (1 - (DATA.dormantBasePower ?? 0.4)) * share;
 	const meta = [
-		value != null ? `${ui("power")} <b>${fmtNum(value)}</b>${bonus ? ` <span class="small muted" title="${esc(ui("rarityBonusHint"))}">(${fmtNum(base.value)} + ${fmtNum(bonus)} ${esc(rarityName(m.rarity))})</span>` : ""}${!awake ? ` <span title="${esc(ui("dormantHint").replace("{power}", Math.round(dormant * 100)))}">(→ ${fmtNum(Math.max(Math.round(value * dormant), 1))})</span>` : ""}` : "",
+		value != null ? `${ui("power")} <b>${esc(powerLabel(s))}</b>${bonus ? ` <span class="small muted" title="${esc(ui("rarityBonusHint"))}">(${fmtNum(base.value)} + ${fmtNum(bonus)} ${esc(rarityName(m.rarity))})</span>` : ""}${!awake ? ` <span title="${esc(ui("dormantHint").replace("{power}", Math.round(dormant * 100)))}">(→ ${fmtNum(Math.max(Math.round(value * dormant), 1))})</span>` : ""}` : "",
 		s.effect ? `${ui("effect")} <b>${esc(ui("effects")[s.effect] || s.effect)}</b>` : "",
 		`<b>${dmgType(s)}</b>`,
 		s.cost != null ? `${ui("cost")} <b>${s.cost}</b>` : "",
@@ -698,7 +697,7 @@ function renderSkills() {
 			<td><b>${hl(tr(s.name))}</b><br><code class="small">${hl(s.name)}</code></td>
 			<td>${chip(s.nature)}</td>
 			<td class="tier" title="${ui("weight")}: ${fmtNum(skillWeight(s))}">${tierStars(s.tier)}</td>
-			<td class="num">${fmtNum(s.value ?? s.damage ?? 0)}${standardBonusPerStep(s) ? `<br><span class="small muted" title="${esc(ui("rarityBonusHint"))}">+${fmtNum(standardBonusPerStep(s))} ${esc(ui("perRarity"))}</span>` : ""}</td>
+			<td class="num">${esc(powerLabel(s))}${standardBonusPerStep(s) ? `<br><span class="small muted" title="${esc(ui("rarityBonusHint"))}">+${fmtNum(standardBonusPerStep(s))} ${esc(ui("perRarity"))}</span>` : ""}</td>
 			<td>${dmgType(s)}</td>
 			<td class="num">${s.cost ?? ""}</td>
 			<td class="num">${s.cooldown ?? ""}</td>

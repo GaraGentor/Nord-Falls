@@ -89,12 +89,9 @@ var _stat_values := {}
 ## Wert -> Label mit dem Wachstum pro Stufe ("all" = Zeile für alle Werte)
 var _growth_value: Label
 var _damage_page: VBoxContainer
-## Formel-Key -> Schalter
-var _damage_formula_buttons := {}
 ## Einstellungs-Key -> Label mit dem Wert
 var _damage_values := {}
 var _damage_summary: Label
-var _damage_fixed_base_button: Button
 ## Tabellen der Live-Simulation
 var _damage_sim: Label
 var _trophy_page: VBoxContainer
@@ -675,12 +672,12 @@ func _open_level_up() -> void:
 	State.pending_gems = 1
 	State.pending_coupons = 1
 	State.pending_boss_shards = 1
-	State.pending_relic_chest = not Relics.get_unowned().is_empty()
+	State.pending_relic_chest = not Relics.chest_offers().is_empty()
 	State.pending_skill_envelope = not Skills.reward_offers().is_empty()
 	_change_scene(LEVEL_UP_PATH)
 
 func _open_relic_reward() -> void:
-	if Relics.get_unowned().is_empty():
+	if Relics.chest_offers().is_empty():
 		Helper.show_unlock_message("Alle Relics sind schon gesammelt oder ausgeschaltet")
 		return
 	close()
@@ -861,27 +858,22 @@ func _refresh_trophy_page() -> void:
 # ─────────────────────────
 # Schadensformel
 
-const DAMAGE_FORMULA_LABELS := {"classic": "AKTUELL", "symmetric": "SYMMETRISCH", "pokemon": "POKÉMON"}
 ## Zahlen-Einstellungen: Key, Titel, Schritte (negativ und positiv), Format des Werts
 const DAMAGE_ROWS := [
-	["exponent", "Exponent k (symm.)", [0.5, 0.25], "%.2f"],
-	["min_factor", "Boden (symm.)", [0.1, 0.05], "x%.2f"],
-	["max_factor", "Deckel (symm.)", [0.5, 0.25], "x%.2f"],
 	["level_offset", "Stufen-Sockel", [5.0, 1.0], "%d"],
 	["hp_scale", "KP-Multiplikator", [1.0, 0.25], "x%.2f"],
-	["base_bst", "Referenz-BST (symm.)", [10.0, 5.0], "%d"],
 ]
 ## Höhe der scrollbaren Liste, passt samt Titel und Buttons in die 720 px hohe Ansicht
 const DAMAGE_LIST_HEIGHT := 480
 const DAMAGE_SIM_FONT_SIZE := 15
 
-## Formel umschalten und ihre Regler einstellen, darunter eine Live-Übersicht der Treffer bis K.O.
+## Regler rund um den Schaden, darunter eine Live-Übersicht der Treffer bis K.O.
 func _build_damage_page() -> void:
 	_damage_page = VBoxContainer.new()
 	_damage_page.add_theme_constant_override("separation", 10)
 	add_footer(_damage_page)
 
-	_damage_page.add_child(_make_header("Schadensformel: gilt sofort für alle Kämpfe, auch im laufenden Run (Vorschau und KI rechnen mit)"))
+	_damage_page.add_child(_make_header("Schaden (fester Wert + Anteil vom Angriff): gilt sofort für alle Kämpfe, auch im laufenden Run"))
 	# Regler und Übersicht scrollen, die Buttons darunter bleiben immer sichtbar (wie bei den Relikten)
 	var scroll := ScrollContainer.new()
 	scroll.custom_minimum_size.y = DAMAGE_LIST_HEIGHT
@@ -892,27 +884,6 @@ func _build_damage_page() -> void:
 	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(body)
 	DragScroll.attach(scroll)
-
-	var formula_row := _make_stat_row("Formel")
-	for formula in DebugSettings.FORMULAS:
-		var button := _make_toggle_button(DAMAGE_FORMULA_LABELS[formula])
-		button.toggled.connect(func(on: bool):
-			# wie Radio-Buttons: die aktive Formel lässt sich nicht abwählen
-			if on and DebugSettings.damage_formula() != formula:
-				DebugSettings.set_damage_setting("formula", formula)
-			_refresh_damage_page())
-		_damage_formula_buttons[formula] = button
-		formula_row.add_child(button)
-	body.add_child(formula_row)
-
-	# Weg 2: Grundschaden aus fester Referenz-BST, damit die BST nicht doppelt zählt
-	var base_row := _make_stat_row("Grundwert (symm.)")
-	_damage_fixed_base_button = _make_toggle_button("FESTE BST")
-	_damage_fixed_base_button.toggled.connect(func(on: bool):
-		DebugSettings.set_damage_setting("fixed_base", on)
-		_refresh_damage_page())
-	base_row.add_child(_damage_fixed_base_button)
-	body.add_child(base_row)
 
 	for entry in DAMAGE_ROWS:
 		var key: String = entry[0]
@@ -942,9 +913,6 @@ func _build_damage_page() -> void:
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override("separation", 12)
 	row.add_child(_make_button("ZURÜCK", _show_page.bind(_main)))
-	row.add_child(_make_button("EMPFEHLUNG", func():
-		DebugSettings.set_damage_settings(DebugSettings.DAMAGE_RECOMMENDED)
-		_refresh_damage_page()))
 	row.add_child(_make_button("STANDARD", func():
 		DebugSettings.reset_damage()
 		_refresh_damage_page()))
@@ -960,13 +928,6 @@ func _make_damage_step_button(key: String, step: float) -> Button:
 	return button
 
 func _refresh_damage_page() -> void:
-	var current := DebugSettings.damage_formula()
-	for formula in _damage_formula_buttons:
-		_damage_formula_buttons[formula].set_pressed_no_signal(formula == current)
-		_damage_formula_buttons[formula].modulate = Color.WHITE if formula == current else UNPICKED_COLOR
-	var fixed_base: bool = DebugSettings.damage_setting("fixed_base")
-	_damage_fixed_base_button.set_pressed_no_signal(fixed_base)
-	_damage_fixed_base_button.modulate = Color.WHITE if fixed_base else UNPICKED_COLOR
 	for entry in DAMAGE_ROWS:
 		var value := float(DebugSettings.damage_setting(entry[0]))
 		_damage_values[entry[0]].text = entry[3] % (roundi(value) if entry[3] == "%d" else value)
@@ -974,10 +935,9 @@ func _refresh_damage_page() -> void:
 	_damage_summary.text = "\n".join([
 		"Stufen-Sockel: 0 = Werte wachsen linear mit der Stufe (wie bisher, Stufe 10 hat doppelt so viel wie Stufe 5). " +
 			"Höher = jede Stufe bringt anteilig weniger, Stufenunterschiede zählen weniger. Die Startstufe 5 bleibt immer gleich. " +
-			"Beispiel Sockel 10: Stufe 10 hat nur 1,33x so viel wie Stufe 5. Gilt für alle Werte und alle Formeln.",
-		"KP-Multiplikator: steuert die Kampflänge (Treffer bis K.O.), gilt für alle Formeln.",
-		"Nur bei SYMMETRISCH: Exponent, Boden, Deckel, FESTE BST und Referenz-BST. " +
-			"FESTE BST = Grundschaden aus der Referenz-BST statt der eigenen, die BST zählt dann nicht doppelt.",
+			"Beispiel Sockel 10: Stufe 10 hat nur 1,33x so viel wie Stufe 5. Gilt für alle Werte.",
+		"KP-Multiplikator: steuert die Kampflänge (Treffer bis K.O.).",
+		"Schaden = fester Wert + Anteil x (Sp.) Angriff, die Verteidigung des Ziels zählt nicht, nur Schilde.",
 	])
 	_damage_sim.text = DamageSim.report()
 

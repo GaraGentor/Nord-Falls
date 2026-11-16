@@ -165,6 +165,17 @@ func has_relic(id: String) -> bool:
 func is_active(id: String) -> bool:
 	return not DebugSettings.is_relic_disabled(id)
 
+## Diese Relikte gibt es nur im Shop, alle anderen nur aus Relikt-Kisten (Boss-Belohnung)
+const SHOP_RELICS := ["spyglass", "super_catcher", "all_stats", "all_skills"]
+
+## Was der Shop anbieten kann: nur SHOP_RELICS, aktiv und noch nicht gesammelt
+func shop_offers() -> Array:
+	return get_unowned().filter(func(id): return SHOP_RELICS.has(id))
+
+## Was eine Relikt-Kiste anbieten kann: alles außer SHOP_RELICS
+func chest_offers() -> Array:
+	return get_unowned().filter(func(id): return not SHOP_RELICS.has(id))
+
 ## Gesammelt und nicht im Debug-Menü ausgeschaltet
 func works(id: String) -> bool:
 	return has_relic(id) and is_active(id)

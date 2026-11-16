@@ -1,20 +1,16 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://script/scenes/battle/battle_card.gd" id="1_card"]
 [ext_resource type="Theme" uid="uid://bqwc2gott07le" path="res://script/ui/materials/battle_labels.tres" id="3_theme"]
-[ext_resource type="Texture2D" uid="uid://yg6oxnmiu0pd" path="res://assets/ui/icons/fist.svg" id="4_phys"]
-[ext_resource type="PackedScene" path="res://script/ui/moves_badge/moves_badge.tscn" id="6_moves"]
 [ext_resource type="Script" path="res://script/ui/auto_scroll_container.gd" id="7_autoscroll"]
 
-[node name="BattleCard" type="PanelContainer" node_paths=PackedStringArray("name_label", "cost_badge", "type_icon", "description_label", "description_scroll")]
+[node name="BattleCard" type="PanelContainer" node_paths=PackedStringArray("name_label", "description_label", "description_scroll")]
 custom_minimum_size = Vector2(150, 0)
 size_flags_vertical = 3
 mouse_filter = 0
 theme = ExtResource("3_theme")
 script = ExtResource("1_card")
 name_label = NodePath("MarginContainer/VBoxContainer/NameLabel")
-cost_badge = NodePath("MarginContainer/VBoxContainer/TopRow/CostBadge")
-type_icon = NodePath("MarginContainer/VBoxContainer/TopRow/TypeIcon")
 description_label = NodePath("MarginContainer/VBoxContainer/DescriptionScroll/DescriptionLabel")
 description_scroll = NodePath("MarginContainer/VBoxContainer/DescriptionScroll")
 
@@ -30,31 +26,6 @@ theme_override_constants/margin_bottom = 11
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 6
-
-[node name="TopRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
-layout_mode = 2
-mouse_filter = 2
-
-[node name="CostBadge" parent="MarginContainer/VBoxContainer/TopRow" instance=ExtResource("6_moves")]
-custom_minimum_size = Vector2(30, 28)
-layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 4
-mouse_filter = 2
-
-[node name="Label" parent="MarginContainer/VBoxContainer/TopRow/CostBadge"]
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 16
-
-[node name="TypeIcon" type="TextureRect" parent="MarginContainer/VBoxContainer/TopRow"]
-custom_minimum_size = Vector2(22, 22)
-layout_mode = 2
-size_flags_horizontal = 10
-size_flags_vertical = 4
-mouse_filter = 2
-texture = ExtResource("4_phys")
-expand_mode = 1
-stretch_mode = 5
 
 [node name="NameLabel" type="Label" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2

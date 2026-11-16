@@ -178,7 +178,7 @@ func _on_turn_for(mon: Monster) -> void:
 	await _relic_overlay.wait_idle()
 	if not is_inside_tree():
 		return
-	# Gift wirkt vor dem Zug, solange die Rüstung aus dem letzten Zug noch steht (start_turn lässt Schilde ablaufen)
+	# Gift wirkt vor dem Zug und geht durch alle Schilde
 	if ElementEffects.tick_poison(mon):
 		await get_tree().create_timer(STATUS_TICK_TIME).timeout
 		if not is_inside_tree():
@@ -239,12 +239,8 @@ func _on_turn_for(mon: Monster) -> void:
 	Events.intents_changed.emit()
 	_end_turn(mon)
 
-## Ende eines Zuges: Verbrennung wirkt, danach ist das nächste Monster dran.
-func _end_turn(mon: Monster) -> void:
-	if ElementEffects.tick_burn(mon):
-		await get_tree().create_timer(STATUS_TICK_TIME).timeout
-		if not is_inside_tree():
-			return
+## Ende eines Zuges: das nächste Monster ist dran.
+func _end_turn(_mon: Monster) -> void:
 	turn_wheel.next_mon()
 
 func _monster_scenes() -> Array:
@@ -344,6 +340,11 @@ func _is_valid_target(from: Monster, skill: Dictionary, target: Monster) -> bool
 ## Element-Effekte (ElementEffects): Schwächungen und Status pro getroffenem Gegner, Verstärkungen einmal für den Wirker.
 ## Vulkan wirkt mit etwas Glück ein zweites Mal mit gleicher Stärke (zweiter Treffer, doppelter Schild).
 func _use_skill(from: Monster, card: Dictionary, target: Monster) -> void:
+	# Blitz: die Fähigkeit kann fehlschlagen, Aktion und Abklingzeit sind trotzdem verbraucht
+	if ElementEffects.rolls_fail(from):
+		Skills.start_cooldown(card)
+		Events.monster_status_changed.emit(from)
+		return
 	# schlummernde Skills wirken schwächer und ohne Element-Effekt (Skills.effective_skill), die Abklingzeit läuft auf der Karte
 	var skill := Skills.effective_skill(from, card)
 	var targets = [target]
@@ -616,7 +617,7 @@ func _add_boss_loot() -> void:
 		State.pending_boss_shards = FINAL_BOSS_SHARDS if State.is_final_boss else BIOME_BOSS_SHARDS
 	if not is_boss_battle or State.is_final_boss:
 		return
-	State.pending_relic_chest = not Relics.get_unowned().is_empty()
+	State.pending_relic_chest = not Relics.chest_offers().is_empty()
 	State.pending_skill_envelope = not Skills.reward_offers().is_empty()
 
 func _clear_fainted_mons() -> Array:
@@ -756,8 +757,8 @@ func _threat_factor(target: Monster) -> float:
 	var threat := maxf(target.attack(), target.s_attack()) / average
 	return maxf(1.0 + AI_THREAT_WEIGHT * (threat - 1.0), 0.5)
 
-## Reihenfolge im Zug: Buffs (Verteidigung rauf -> größerer Schild), Schilde, Schlamm-Angriffe
-## (Angriff rauf für die folgenden Treffer), übrige Angriffe. Innerhalb einer Gruppe bleibt die Reihenfolge.
+## Reihenfolge im Zug: Buffs (Verteidigung rauf -> größerer Schild), Schilde, Angriffe.
+## Innerhalb einer Gruppe bleibt die Reihenfolge.
 func _order_intent(emon: Monster) -> void:
 	var entries = []
 	for i in emon._intent.size():
@@ -770,9 +771,7 @@ func _action_priority(skill: Dictionary) -> int:
 		return 0
 	if not Skills.is_damage_skill(skill):
 		return 1
-	if skill.nature == ElementEffects.MUD:
-		return 2
-	return 3
+	return 2
 
 ## Ziele, die inzwischen K.O. oder gefangen sind, werden durch ein anderes lebendes Ziel ersetzt.
 func _retarget_intents() -> void:

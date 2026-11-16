@@ -473,6 +473,7 @@ func generate_grid(grid: Array):
 	generate_optional_tiles(grid, "tresures", PATH_TYPE.TREASURE)
 	generate_optional_tiles(grid, "gems", PATH_TYPE.GEM)
 	generate_specials(grid)
+	generate_run_jailer(grid)
 	generate_encounters(grid)
 	print_new_map(grid)
 	State.current_map = grid
@@ -500,6 +501,28 @@ func generate_additional_nodes_per_path(grid: Array):
 			grid[i + r][y_row] = np
 			all_nodes.append(np)
 
+
+## Erstes Biom: wer mehr als eine Boss Träne hat, findet alle JAILER_SPAWN_RUNS Runs einen Kerkermeister
+## auf dem zweiten Feld (Zeile JAILER_SPAWN_ROW). Bei Abzweigungen wird nur eins der Felder dieser Zeile umgewandelt.
+## Gezählt werden nur Runs, die mit genug Tränen starten (SaveManager "runs_until_jailer").
+const JAILER_SPAWN_MIN_SHARDS := 2
+const JAILER_SPAWN_RUNS := [3, 5]
+const JAILER_SPAWN_ROW := 1
+
+func generate_run_jailer(grid: Array) -> void:
+	if State.map_level != 0 or State.boss_shards < JAILER_SPAWN_MIN_SHARDS:
+		return
+	if not SaveManager.jailer_run_due(JAILER_SPAWN_RUNS[0], JAILER_SPAWN_RUNS[1]):
+		return
+	var row_nodes := []
+	for column in grid:
+		if JAILER_SPAWN_ROW < column.size() and column[JAILER_SPAWN_ROW] != null:
+			row_nodes.append(column[JAILER_SPAWN_ROW])
+	# lieber ein Kampf-Feld als ein anderes Sonderfeld überschreiben
+	var combat := row_nodes.filter(func(node: path): return node._type == PATH_TYPE.COMBAT)
+	var choices := combat if not combat.is_empty() else row_nodes
+	if not choices.is_empty():
+		choices.pick_random()._type = PATH_TYPE.JAILER
 
 func generate_specials(grid: Array):
 	var map_setting = map_settings[State.map_level]

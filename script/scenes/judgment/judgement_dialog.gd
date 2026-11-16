@@ -13,6 +13,8 @@ const MUTED := IronPlate.TEXT_COLOR
 const FLAT_THEME = preload("res://script/scenes/battle/flat_button_theme.tres")
 const GemField = preload("res://script/scenes/gems/gems.gd")
 const PANEL_WIDTH := 900.0
+## Skill-Karten mit Kopf- und Fußzeile (SkillCardFace) brauchen etwas mehr Höhe als die übrigen Karten
+const SKILL_CARD_HEIGHT := 185.0
 # Vier statt drei Karten pro Reihe, sonst passen sehr viele Erbstücke nicht in die Höhe
 const WIDE_PANEL_WIDTH := 1180.0
 const MAX_CARDS_NORMAL_WIDTH := 9
@@ -82,7 +84,7 @@ func teach(teacher: Monster, targets: Array, warning: String) -> Dictionary:
 				_title.text = tr("JUDGEMENT_TEACH_PICK_SKILL").format({"mon": Helper.mon_battle_name(teacher)})
 				for teacher_skill in teacher._skills:
 					var learnable = targets.any(func(member): return not Skills.knows_skill(member, teacher_skill.name))
-					var card = _skill_card(teacher_skill, "" if learnable else tr("JUDGEMENT_TEACH_KNOWN_ALL"))
+					var card = _skill_card(teacher_skill, "" if learnable else tr("JUDGEMENT_TEACH_KNOWN_ALL"), teacher)
 					if not learnable:
 						_disable(card)
 					card.pressed.connect(_choice.emit.bind({"value": teacher_skill}))
@@ -95,7 +97,7 @@ func teach(teacher: Monster, targets: Array, warning: String) -> Dictionary:
 				_title.text = tr("JUDGEMENT_TEACH_PICK_REPLACE").format({
 					"mon": Helper.mon_battle_name(target), "max": Skills.MAX_SKILLS, "skill": _skill_name(skill)})
 				for i in target._skills.size():
-					var card = _skill_card(target._skills[i], "")
+					var card = _skill_card(target._skills[i], "", target)
 					card.pressed.connect(_choice.emit.bind({"value": i}))
 		var result: Dictionary = await _choice
 		if result.has("cancel"):
@@ -163,7 +165,7 @@ func last_will(fallen: Monster, heirs: Array) -> Dictionary:
 				_title.text = tr("JUDGEMENT_TEACH_PICK_REPLACE").format({
 					"mon": Helper.mon_battle_name(target), "max": Skills.MAX_SKILLS, "skill": gift_name(gift)})
 				for i in target._skills.size():
-					var card = _skill_card(target._skills[i], "")
+					var card = _skill_card(target._skills[i], "", target)
 					card.pressed.connect(_choice.emit.bind({"value": i}))
 		var result: Dictionary = await _choice
 		if result.has("cancel"):
@@ -232,7 +234,7 @@ func _gift_card(gift: Dictionary, heirs: Array) -> Button:
 	if gift.kind == "skill":
 		card = _skill_card(gift.skill, "" if possible else tr("JUDGEMENT_TEACH_KNOWN_ALL"))
 	else:
-		card = _card(Vector2(270, 150))
+		card = _card(Vector2(270, SKILL_CARD_HEIGHT))
 		var lines := _card_lines(card)
 		var name_label := _label(19, GOLD if gift.kind == "gems" else Helper.color_by_type(gift.element))
 		name_label.text = gift_name(gift)
@@ -294,28 +296,30 @@ func _reset(warning: String) -> void:
 func _skill_name(skill: Dictionary) -> String:
 	return tr(skill.name) if skill.scouted else tr("BATTLE_UNKNOWN_SKILL").format(skill)
 
-func _skill_card(skill: Dictionary, note: String) -> Button:
-	var card := _card(Vector2(270, 150))
+## Aufbau wie die Kampfkarte (SkillCardFace): oben Kosten, Sterne, Abklingzeit, unten Gesamtwert und Element.
+## mon: Besitzer für den Gesamtwert (null = Formel). Unbekannte Skills zeigen nur Sterne und Element.
+func _skill_card(skill: Dictionary, note: String, mon: Monster = null) -> Button:
+	var card := _card(Vector2(270, SKILL_CARD_HEIGHT))
 	var lines := _card_lines(card)
+	var top_row := SkillCardFace.TopRow.new()
+	lines.add_child(top_row)
+	top_row.show_skill(skill, skill.scouted)
 	var name_label := _label(19, SkillCardPaper.readable_color(Helper.color_by_type(skill.nature)))
 	name_label.text = _skill_name(skill)
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lines.add_child(name_label)
-	var stats := _label(14, TEXT_COLOR)
 	var desc := _label(13, MUTED)
 	desc.max_lines_visible = 3
-	if skill.scouted:
-		stats.text = "{cost}: {c}    {cd}: {d}    {power}: {v}".format({
-			"cost": tr("SKILL_HEADER_COST"), "cd": tr("SKILL_HEADER_CD"), "power": tr("SKILL_HEADER_POWER"),
-			"c": skill.cost, "d": skill.cooldown, "v": Helper.format_number(skill.value)})
-		desc.text = Helper.skill_description(skill)
-	else:
-		desc.text = tr("BATTLE_UNKNOWN_SKILL_HINT")
-	lines.add_child(stats)
+	desc.size_flags_vertical = SIZE_EXPAND_FILL
+	desc.text = Helper.skill_description(skill) if skill.scouted else tr("BATTLE_UNKNOWN_SKILL_HINT")
 	lines.add_child(desc)
 	if note != "":
 		var note_label := _label(13, GOLD)
 		note_label.text = note
 		lines.add_child(note_label)
+	var bottom_row := SkillCardFace.BottomRow.new()
+	lines.add_child(bottom_row)
+	bottom_row.show_skill(skill, mon, skill.scouted)
 	SkillCardPaper.attach(card, skill)
 	# Text nicht auf den Papierrahmen setzen
 	for side in ["left", "right", "top", "bottom"]:
