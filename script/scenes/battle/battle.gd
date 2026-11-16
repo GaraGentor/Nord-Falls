@@ -325,16 +325,30 @@ func _opponents_of(mon: Monster) -> Array:
 ## Ziel für Karten, die ohne Drag & Drop gespielt werden: Schilde und Buffs auf das markierte eigene Monster
 ## (sonst auf sich selbst), Angriffe auf den zuletzt markierten Gegner.
 func _default_target(skill: Dictionary) -> Monster:
+	if Skills.targets_self(skill):
+		return active_mon
 	if Skills.targets_friends(skill):
 		return selected_mon if _allies_of(active_mon).has(selected_mon) else active_mon
+	# Aggro: zieht ein Gegner die Aufmerksamkeit auf sich, geht der Einzelangriff auf ihn
+	var taunters := Skills.taunters(_opponents_of(active_mon))
+	if Skills.targets_single_enemy(skill) and not taunters.is_empty() and not taunters.has(currently_selected_enemy_mon):
+		return taunters[0]
 	return currently_selected_enemy_mon
 
-## Schilde und Buffs nur auf eigene Monster, Angriffe nur auf Gegner
+## Schilde und Buffs nur auf eigene Monster (Selbst-Karten nur auf den Wirker), Angriffe nur auf Gegner.
+## Ziehen Gegner die Aufmerksamkeit auf sich (Skills.taunters), müssen Einzelangriffe einen von ihnen treffen.
 func _is_valid_target(from: Monster, skill: Dictionary, target: Monster) -> bool:
 	if target == null:
 		return false
+	if Skills.targets_self(skill):
+		return target == from and from.is_alive()
 	var side = _allies_of(from) if Skills.targets_friends(skill) else _opponents_of(from)
-	return side.has(target)
+	if not side.has(target):
+		return false
+	if Skills.targets_single_enemy(skill):
+		var taunters := Skills.taunters(side)
+		return taunters.is_empty() or taunters.has(target)
+	return true
 
 ## Setzt einen Skill ein: Flächen-Skills treffen die ganze Seite des Ziels, danach startet die Abklingzeit.
 ## Element-Effekte (ElementEffects): Schwächungen und Status pro getroffenem Gegner, Verstärkungen einmal für den Wirker.
@@ -356,6 +370,10 @@ func _use_skill(from: Monster, card: Dictionary, target: Monster) -> void:
 		Events.monster_effect_text.emit(from, tr("EFFECT_TEXT_ERUPTION"), ElementEffects.ERUPTION_COLOR)
 	var dealt := 0.0
 	var hostile := not Skills.targets_friends(skill)
+	# kritischer Treffer (Fokusflamme, Überladung): steckt schon in Skills.calc_damage, hier nur die Anzeige
+	var crit := Skills.is_damage_skill(skill) and Skills.is_crit(from)
+	if crit:
+		Events.monster_effect_text.emit(from, tr("EFFECT_TEXT_CRIT"), ElementEffects.ERUPTION_COLOR)
 	for _i in repeats:
 		for mon in targets:
 			if not mon.is_alive():
@@ -380,17 +398,23 @@ func _use_skill(from: Monster, card: Dictionary, target: Monster) -> void:
 	# die eigene Aufladung ist mit diesem Angriff verbraucht, danach erst laden die Extras die Partner auf
 	if Skills.is_damage_skill(skill):
 		from.consume_charge(Skills.charge_kind(skill))
+		# "nächster Treffer kritisch" gilt für genau einen Angriff (Flächenangriffe: alle Ziele dieses Angriffs)
+		from.consume_boon("crit_next")
 	ElementEffects.on_cast(from, skill, dealt)
 	Skills.apply_cast_extras(from, skill, dealt)
 	Skills.start_cooldown(card)
 	Events.monster_status_changed.emit(from)
+	# Kampfschrei: angekündigte Einzelangriffe der Gegner gehen jetzt auf den Wirker
+	if skill.get("boon", "") == "taunt":
+		_retarget_intents()
 	# Treffer decken Werte auf (Skills.reveal_stats_by_hit)
 	if selected_mon == from or targets.has(selected_mon):
 		battle_info.refresh()
 
 func subract_skill_points(selected_skill, mon) -> bool:
-	if mon._computed_moves >= selected_skill.cost:
-		mon._computed_moves -= selected_skill.cost
+	var cost := Skills.skill_cost(mon, selected_skill)
+	if mon._computed_moves >= cost:
+		mon._computed_moves -= cost
 		return true
 	return false
 
@@ -637,7 +661,7 @@ func _plan_intent(emon: Monster) -> void:
 	emon._intent = []
 	if not emon.is_alive() or _opponents_of(emon).is_empty():
 		return
-	var moves: int = emon._initial_moves
+	var moves: int = emon._initial_moves + roundi(emon.boon_value("extra_moves"))
 	var once_used = []
 	while true:
 		var options = emon._skills.filter(func(skill): return _can_plan(emon, skill, moves) and not once_used.has(skill))
@@ -648,7 +672,7 @@ func _plan_intent(emon: Monster) -> void:
 			for target in _candidate_targets(emon, skill):
 				candidates.append({"skill": skill, "target": target, "score": _score_action(emon, skill, target)})
 		var picked: Dictionary = _weighted_pick(candidates)
-		moves -= maxi(picked.skill.cost, 1)
+		moves -= maxi(Skills.skill_cost(emon, picked.skill), 1)
 		if picked.skill.get("cooldown", 0) > 0 or not Skills.is_damage_skill(picked.skill):
 			once_used.append(picked.skill)
 		# sofort eintragen: die folgenden Aktionen sehen diesen Angriff schon bei den Rest-KP
@@ -657,7 +681,7 @@ func _plan_intent(emon: Monster) -> void:
 
 func _can_plan(emon: Monster, skill: Dictionary, moves_left: int) -> bool:
 	return Skills.can_use(emon, skill) and not Skills.is_passive(skill) \
-		and Skills.cooldown_left(skill) <= 1 and maxi(skill.cost, 1) <= moves_left
+		and Skills.cooldown_left(skill) <= 1 and maxi(Skills.skill_cost(emon, skill), 1) <= moves_left
 
 ## Bestes Ziel für einen Skill (gewichtet gewürfelt), auch beim Neuwählen nach einem K.O.
 func _pick_target(emon: Monster, skill: Dictionary) -> Monster:
@@ -667,10 +691,17 @@ func _pick_target(emon: Monster, skill: Dictionary) -> Monster:
 	return _weighted_pick(candidates).target if not candidates.is_empty() else null
 
 ## Mögliche Ziele: Flächen-Skills treffen ohnehin die ganze Seite, dort reicht ein Ziel.
+## Selbst-Karten nur auf sich, Einzelangriffe nur auf Monster, die die Aufmerksamkeit auf sich ziehen (falls es welche gibt).
 func _candidate_targets(emon: Monster, skill: Dictionary) -> Array:
+	if Skills.targets_self(skill):
+		return [emon]
 	var side = _allies_of(emon) if Skills.targets_friends(skill) else _opponents_of(emon)
 	if Skills.targets_team(skill) and not side.is_empty():
 		return [side[0]]
+	if Skills.targets_single_enemy(skill):
+		var taunters := Skills.taunters(side)
+		if not taunters.is_empty():
+			return taunters
 	return side
 
 ## Gewichteter Zufall über {"score": float, ...}: Gewicht = score ^ Schärfe
@@ -700,6 +731,9 @@ func _score_action(emon: Monster, skill: Dictionary, target: Monster) -> float:
 	var extra_factor := 1.0 + AI_EXTRA_WEIGHT * Skills.extras(skill).size()
 	if Skills.targets_friends(skill):
 		var receivers := _allies_of(emon).size() if Skills.targets_team(skill) else 1
+		# Sonder-Verstärkungen grob nach dem stärkeren Angriffswert des Ziels (gibt es bei Gegnern bisher nicht)
+		if skill.get("effect", "") == "boon":
+			return maxf(target.attack(), target.s_attack()) * AI_DEFENSE_WEIGHT * extra_factor
 		if skill.has("buff_stat"):
 			var stat_value: float = _stat_value(target, skill.buff_stat)
 			return stat_value * skill.value / 100 * skill.get("buff_turns", 1) * AI_DEFENSE_WEIGHT * receivers * extra_factor
@@ -767,7 +801,7 @@ func _order_intent(emon: Monster) -> void:
 	emon._intent = entries.map(func(e): return e.action)
 
 func _action_priority(skill: Dictionary) -> int:
-	if skill.has("buff_stat"):
+	if skill.has("buff_stat") or skill.get("effect", "") == "boon":
 		return 0
 	if not Skills.is_damage_skill(skill):
 		return 1
@@ -823,7 +857,7 @@ func _auto_end_ready() -> bool:
 	if catch_button.is_visible_in_tree() and not catch_button.disabled:
 		return false
 	return not active_mon._skills.any(func(skill): return Skills.is_playable(active_mon, skill) \
-		and skill.cost <= active_mon._computed_moves)
+		and Skills.skill_cost(active_mon, skill) <= active_mon._computed_moves)
 
 func _finish_catching(catched: bool, mon: Monster) -> void:
 	if Tutorial.practice and catched:

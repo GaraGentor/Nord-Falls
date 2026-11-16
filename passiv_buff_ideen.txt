@@ -1,0 +1,176 @@
+PASSIV- UND BUFF-IDEEN
+======================
+
+Sammlung für spätere Fähigkeiten, unabhängig von den Elementen. Werte sind Vorschläge im Stil der bestehenden Skills
+(Sterne = Stufe, CD = Abklingzeit, SP = Aktionen). "Neu" = braucht eine neue Mechanik im Kampf,
+"vorhanden" = lässt sich mit den heutigen Bausteinen (Extras, Buffs, Passive, Sonder-Buffs) bauen.
+
+
+A) PASSIVE
+----------
+
+ 1. Dornenhaut (3 Sterne)
+    Wer das Monster mit einem physischen Angriff trifft, nimmt 15 % des Schadens selbst.
+    Neu: Rückschaden in deal_damage. Gegenstück "Spiegelschuppen" für magische Angriffe.
+
+ 2. Letztes Aufbäumen (4 Sterne)
+    Einmal pro Kampf überlebt das Monster einen tödlichen Treffer mit 1 KP.
+    Neu: Flag pro Kampf, Prüfung vor dem K.O.
+
+ 3. Adrenalin (3 Sterne)
+    Unter 50 % KP: +25 % Angriff und Sp. Angriff.
+    Neu: bedingter Werte-Bonus (hp_share wie bei bonus_low_hp).
+
+ 4. Erstschlag (2 Sterne)
+    Der erste Angriff in jedem Kampf ist kritisch.
+    Vorhanden fast: zu Kampfbeginn Sonder-Buff "crit_next" setzen.
+
+ 5. Jäger-Instinkt (3 Sterne)
+    +20 % Schaden gegen Ziele mit Statuseffekt (Gift, Paralyse, Schwächung).
+    Vorhanden: wie Extra bonus_vs_weakened, nur als Passiv.
+
+ 6. Schildbrecher (3 Sterne)
+    Angriffe machen gegen Schilde doppelten Schaden (nur der Teil, der im Schild landet).
+    Neu: Faktor in absorb_damage.
+
+ 7. Nachhall (4 Sterne)
+    Nach einem Skill mit Abklingzeit 3+ sinkt die Abklingzeit eines zufälligen anderen eigenen Skills um 1.
+    Neu: Hook nach start_cooldown.
+
+ 8. Wachposten (2 Sterne)
+    Zu Beginn jedes eigenen Zuges bekommt das Monster einen Schild von 5 + 0,15 x VER.
+    Neu: Hook in start_turn (nach dem Ablaufen der alten Schilde).
+
+ 9. Blutdurst (3 Sterne)
+    Jeder K.O. gibt +1 Aktion im nächsten Zug.
+    Vorhanden fast: Sonder-Buff "extra_moves" bei K.O. setzen (wie kill_heal).
+
+10. Zähigkeit (2 Sterne)
+    Schwächungen auf diesem Monster halten 1 Zug kürzer, Statuseffekte stapeln höchstens auf 2.
+    Neu: Abzug in add_debuff / add_status.
+
+11. Rudelführer (4 Sterne)
+    Jedes andere lebende Monster im Team gibt diesem Monster +6 % Angriff.
+    Neu: Werte-Passiv, das mit der Teamgröße wächst.
+
+12. Einzelgänger (3 Sterne)
+    Ist es das letzte lebende Monster im Team: +30 % auf alle Werte.
+    Neu: Bedingung in passive_stat_factor.
+
+13. Heilende Präsenz (3 Sterne)
+    Am Ende jeder Runde heilen alle eigenen Monster 3 % ihrer max. KP.
+    Neu: Hook am Rundenende (BossRelics.on_round_started zeigt, wo es passt).
+
+14. Glückspilz (2 Sterne)
+    Fang-Chance gegen Gegner, die dieses Monster getroffen hat, +10 %.
+    Neu: Merker am Gegner, Faktor in Helper.catch_chance.
+
+15. Konterhaltung (4 Sterne)
+    Bricht ein Gegner den Schild dieses Monsters, wird der Angreifer 2 Züge um 15 % VER geschwächt.
+    Neu: Auslöser in absorb_damage (steht schon in skill_regeln.txt unter "Weitere Ideen").
+
+16. Zeitdehner (4 Sterne)
+    Das Monster steht im Initiative-Rad immer vor dem schnellsten Gegner.
+    Neu: Sortierung im TurnWheel.
+
+17. Elementarschwamm (3 Sterne)
+    Getroffen von einem Element, gegen das es schwach ist: +1 Ladung, die den nächsten eigenen Angriff um 15 % verstärkt.
+    Vorhanden fast: Aufladung (charge) beim Treffer setzen.
+
+
+B) AKTIVE BUFFS, DEBUFFS, KONTROLLE
+-----------------------------------
+
+18. Blendlicht (2 Sterne, CD 2, 1 SP)
+    Ziel trifft mit seinem nächsten Angriff zu 50 % daneben.
+    Neu: Status "blind" (ähnlich BossRelics.dodges, nur pro Monster).
+
+19. Erdbeben-Stampfer (4 Sterne, CD 4, 3 SP)
+    Betäubt einen Gegner für seinen nächsten Zug (sicher, keine Chance).
+    Vorhanden fast: Paralyse-Logik mit 100 % für einen Zug.
+
+20. Schlafstaub (3 Sterne, CD 3, 2 SP)
+    Ziel schläft bis zum nächsten Treffer oder max. 2 Züge.
+    Neu: Status "sleep", endet in deal_damage.
+
+21. Spiegelschild (3 Sterne, CD 3, 1 SP)
+    Der nächste magische Angriff auf das Ziel wird zu 50 % auf den Angreifer zurückgeworfen.
+    Neu: Sonder-Buff "reflect".
+
+22. Opfergabe (3 Sterne, CD 3, 1 SP)
+    Der Wirker verliert 15 % seiner max. KP, ein Verbündeter bekommt +1 Aktion und +20 % Angriff für 1 Zug.
+    Vorhanden fast: extra_moves + Buff, dazu Selbstschaden.
+
+23. Schutzpakt (3 Sterne, CD 3, 1 SP)
+    Bis zum nächsten Zug nimmt der Wirker 50 % des Schadens, den ein gewählter Verbündeter erleidet.
+    Neu: Schaden umleiten in deal_damage.
+
+24. Zeitschleife (4 Sterne, CD 5, 2 SP)
+    Setzt alle Abklingzeiten eines Verbündeten zurück.
+    Vorhanden fast: _cooldown_left der Skills des Ziels auf 0.
+
+25. Säurespritzer (2 Sterne, CD 1, 1 SP)
+    Zerstört 50 % der Schilde des Ziels, macht wenig Schaden (6 + 0,2).
+    Neu: Effekt auf _shield / _s_shield.
+
+26. Verwirrung (3 Sterne, CD 3, 1 SP)
+    Der nächste Einzelangriff des Ziels trifft ein zufälliges Monster (auch einen Verbündeten).
+    Neu: Ziel umwerfen in battle.gd _ki_action / beim Spielerzug.
+
+27. Tarnung (2 Sterne, CD 3, 1 SP)
+    Der Wirker kann bis zu seinem nächsten Zug nicht von Einzelangriffen getroffen werden
+    (Gegenstück zum Kampfschrei: Aggro umgekehrt).
+    Vorhanden fast: Gegenteil von Skills.taunters, gleiche Stelle in _is_valid_target.
+
+28. Kettenreaktion (4 Sterne, CD 3, 2 SP)
+    Verlängert alle Statuseffekte und Schwächungen auf allen Gegnern um 1 Zug.
+    Neu: Schleife über _debuffs / _statuses.
+
+29. Läuterung (2 Sterne, CD 2, 1 SP)
+    Entfernt alle Schwächungen und Statuseffekte von einem Verbündeten (steht in skill_regeln.txt als Idee).
+    Neu: _debuffs / _statuses leeren.
+
+30. Kriegstrommel (3 Sterne, CD 4, 2 SP)
+    Ganzes Team +10 % Initiative und +10 % Angriff für 2 Züge.
+    Vorhanden: zwei team_buff-Extras.
+
+31. Markieren (2 Sterne, CD 2, 1 SP)
+    Ziel nimmt 3 Züge lang +20 % Schaden von allen Quellen.
+    Neu: Debuff-Art "vulnerable" als Faktor in damage_factor.
+
+32. Fluch der Schwäche (3 Sterne, CD 3, 1 SP)
+    Ziel: alle Buffs werden entfernt, danach -10 % auf alle Werte für 2 Züge.
+    Neu: _buffs leeren, dazu fünf Schwächungen.
+
+33. Seelenband (4 Sterne, CD 4, 2 SP)
+    Verbindet zwei Gegner: Schaden an einem trifft den anderen zu 30 % mit (3 Züge).
+    Neu: Verknüpfung in deal_damage.
+
+34. Ausweichschritt (2 Sterne, CD 2, 1 SP, nur selbst)
+    Der nächste physische Angriff auf den Wirker verfehlt sicher.
+    Neu: Sonder-Buff "dodge_physical".
+
+35. Verzögern (3 Sterne, CD 3, 1 SP)
+    Schiebt das Ziel im Initiative-Rad dieser Runde ans Ende.
+    Neu: TurnWheel umsortieren.
+
+36. Überlastung (3 Sterne, CD 2, 1 SP)
+    Ziel: nächste Fähigkeit kostet 1 Aktion mehr (bei Gegnern mit wenig Aktionen fällt sie aus).
+    Neu: Kosten-Aufschlag in Skills.skill_cost (die Stelle gibt es jetzt schon).
+
+37. Echo (4 Sterne, CD 4, 2 SP, nur selbst)
+    Der nächste eigene Skill wirkt zweimal (wie Vulkan, aber sicher).
+    Vorhanden fast: repeats in battle.gd _use_skill.
+
+38. Siegesrausch (3 Sterne, CD 3, 1 SP)
+    Bis zum nächsten Zug: jeder K.O. durch das Team heilt alle eigenen Monster um 8 %.
+    Neu: Team-Sonder-Buff, ausgelöst in deal_damage.
+
+
+C) SYNERGIE-IDEEN ZU DEN NEUEN SKILLS
+-------------------------------------
+ - Kampfschrei / Provokateur + Eiserner Wille / Geisteswehr: Tank zieht Angriffe und schützt sich mit dem "falschen" Wert.
+ - Fokusflamme vor einem 3-Aktionen-Dreier-Angriff (Magmatitan, Himmelssturz): ein Krit auf den größten Treffer.
+ - Rückenwind auf ein Monster mit Dreier-Skills: erst mit +1 Aktion kann es 3-SP-Skills spielen.
+ - Bollwerkmeister + Dreier-Schilde (3 SP -> 2 SP).
+ - Blutgezeiten auf das Monster mit Überladung: kritische Treffer heilen mehr.

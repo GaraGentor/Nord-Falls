@@ -1,1 +1,39 @@
-1. Füge die 84 als neues Monster & Endboss hinzu.
+1. Füge mir eine Feuer Fähigkeit hinzu, die den nächsten Treffer Kritisch landet. (2CD 1 SkillPunkt 3 Sterne)
+2. Füge mir eine Feuer & Luft Fähigkeit hinzu, die die komplette nächste runde Kritische Treffer Landen (3CD 2SkillPunkte 4 Sterne)
+3. Füge mir eine Wasser & Erd & Luft & Feuer Fähigkeit hinzu, die die aufmerksamkeit der Monster zieht. (2CD 1 Skill Punkt 2 Sterne)
+4. Füge mir eine Luft Fähigkeit hinzu, die es erlaubt einem Befreundetem Monster zusätzliche Skill Punkt zu geben hält 3 Runden an und kann auch auf sich selbst angewendet werden (2CD 2SkillPunkt 3 Sterne)
+5. Füge mir eine (Luft, Feuer) Passive hinzu, die Physische Stärke (Stats) um 20% Steigert
+6. Füge mir eine (Luft, Feuer) Passive hinzu, die Magische Stärke (Stats) um 20% Steigert
+7. Füge mir eine (Erd & Wasser) Passive hinzu, die die Kosten 3er Schild Fähigkeiten um 1 Skill Punkt verringern
+8. Füge mir eine Passive hinzu, die die KP Stats um 20% erhöhen (Wasser und Erde)
+9. Füge mir eine Wasser Fähigkeit hinzu, die einem Verbündetem Monster die komplette nächste Runde Lebensraus 20% Lebensraub gibt. Kann auch auf sich selber angewendet werden (2CD 2SkillPunkte 3Sterne)
+10. Füge mir eine Wasser & Erd & Luft & Feuer Fähigkeit hinzu, die es erlaubt über die DEF ein Magisches schild zu bekommen 5 + 0.4 DEF Stat (2CD, 1SkillPunkt, 3 Sterne)
+11. Füge mir eine Wasser & Erd & Luft & Feuer Fähigkeit hinzu, die es erlaubt über die M_DEF ein Schild zu bekommen 5 + 0.4 DEF Stat (2CD, 1SkillPunkt, 3 Sterne)
+12. Füge mir eine Passive hinzu, die dauerhaft die aggro der gegner zieht (4Sterne)
+
+
+Nun generiere mir ein paar Standard Attacken und Schilde zu Feuer, Wasser, Erde und Luft.
+Schaue, dass S_Atk Fähigkeiten bei Luft etwas stärker sind,
+ATK Fähigkieten bei Feuer etwas stärker sind,
+SDEF Fähigkeiten bei Wasser etwas stärker sind,
+DEF Fähigkeiten Bei Etde etwas stärker sind.
+
+Die Werte sollen vernünftig balanciert werden mit CD, SP, Seltenheit, Base ATK, Base S_atk, Base Def und S_DEF und Stat Bonus.
+1Element 0.2 - 0.4 Stat Modifier
+Seltene Fähigkeiten können minimal stärker sein als andere. Tlw. kann auch die Fähigkeiten Stärke etwas höher sein (z.B.: 15 atk und 15 schild)
+
+Dazu kommen noch die anderen Elemente hinzu:
+Das sind die Stat Modifier
+2Elemente 0.4 - 0.7 Stat Modifier
+3Elemente 0.7 - 1.0 Stat Modifier
+Hier können auch die fähigkeiten Stärke tlw auf 60 oder 80 hoch gehen. (je nach seltenheit und element).
+
+Denk dir die passenden namen dazu aus.
+Vergebe Sie noch keinem Monster.
+Füge SIe keinem Shop hinzu.
+Füge Sie nicht der Fähigkeiten auswahl hinzu.
+Füge Sie nicht einem Trank hinzu.
+Füge mir im Wiki auch eine bessere Übersicht ein welche Fähigkeiten noch unused von irgendeinem Monster sind.
+
+Zudem mach mir eine Liste mit weiteren Passiven Ideen & "Buff" Fähigkeiten und speicher die in eine Txt ab. (Bitte mehr als nur 10... ca. 30 wären cool)
+Dabei kann es auch um modifikatoren, stuns, buffs, blenden, etc. fähigkeiten sein. Sei Kreativ (unabhängig von den elementen)

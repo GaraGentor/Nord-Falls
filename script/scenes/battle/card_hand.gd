@@ -36,7 +36,7 @@ func refresh_playable() -> void:
 	for card in card_container.get_children():
 		if not card.is_queued_for_deletion():
 			card.show_state(_mon)
-			card.playable = _mon._computed_moves >= card.skill.cost and Skills.is_playable(_mon, card.skill)
+			card.playable = _mon._computed_moves >= Skills.skill_cost(_mon, card.skill) and Skills.is_playable(_mon, card.skill)
 
 func swipe_by(amount: float) -> void:
 	_target_scroll = clampf(_target_scroll + amount, 0.0, _max_scroll())

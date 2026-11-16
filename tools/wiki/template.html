@@ -238,14 +238,19 @@ const UI = {
 		elementEffects: "Element-Effekte", noEffect: "Kein Zusatzeffekt (Grundelement)",
 		elementEffectsHint: "Aus <code>ElementEffects</code>. Grundelemente haben keinen Zusatzeffekt. Ausschlaggebend ist das Element des Skills, nicht das des Monsters. Schwächungen und Statuseffekte treffen jedes getroffene Ziel eines Schadens-Skills, Verstärkungen gelten einmal pro Einsatz für den Wirker. Zweier-Kombis halten wenige Züge, Dreier-Kombis bis Kampfende. Schlummernde Skills haben keinen Effekt. Einzelne Karten können Chance und Stärke anpassen, hier stehen die Standardwerte.",
 		starterHint: "Steht von Anfang an in der Ei-Auswahl zur Wahl", catchToUnlock: "Erst nach dem ersten Fang in der Ei-Auswahl",
-		effects: { damage: "Schaden", shield: "Schild", buff: "Buff", passive: "Passiv" },
-		targets: { SINGLE_ENEMY: "ein Gegner", TEAM_ENEMY: "alle Gegner", SINGLE_FRIEND: "ein Verbündeter", TEAM_FRIEND: "ganzes Team" },
+		effects: { damage: "Schaden", shield: "Schild", buff: "Buff", boon: "Sonder-Buff", passive: "Passiv" },
+		targets: { SINGLE_ENEMY: "ein Gegner", TEAM_ENEMY: "alle Gegner", SINGLE_FRIEND: "ein Verbündeter", TEAM_FRIEND: "ganzes Team", SELF: "nur selbst" },
 		mon: "Monster", lists: {
 			starter_skills: "Start (Ei)", standard_skills: "Standard", ascension_skills: "Aufstieg (Trank)", defensive_skills: "Schild", buff_skills: "Buff", passive_skills: "Passiv", area_skills: "Flächenangriff",
-			egg_skills: "Angriff (Pool)", bounty_skills: "Kopfgeld", reward_skills: "Couvert (einzigartig)",
+			egg_skills: "Angriff (Pool)", bounty_skills: "Kopfgeld", reward_skills: "Couvert (einzigartig)", draft_skills: "Entwurf (nicht vergeben)",
 		},
-		trainer: "Trainer", wild: "wilde Monster", onlySpecies: "nur Ei-Attacke der Arten",
+		trainer: "Trainer", wild: "wilde Monster", onlySpecies: "nur Ei-Attacke der Arten", notAssigned: "nirgends vergeben",
+		unused: "Unbenutzt", usage: "Nutzung", usedOnly: "von Arten benutzt", unusedOnly: "von keiner Art benutzt",
+		unusedTotal: "{n} von {total} Skills hat keine Art (Start, Opfern, Meilenstein, Kopfgeld)",
+		perList: "Nach Quelle", perElement: "Nach Element und Kategorie", reachable: "trotzdem erreichbar über",
+		cats: { physical: "Angriff physisch", magic: "Angriff magisch", shield: "Rüstung", s_shield: "Magie-Schild", buff: "Buff", passive: "Passiv", area: "Fläche" },
 		leads: {
+			unused: "Alle Skills, die <b>keine Monster-Art</b> als Start-Skill, Ei-Attacke, Meilenstein oder Kopfgeld hat. Pool-Skills können trotzdem bei wilden Monstern oder beim Trainer auftauchen (steht dahinter), Entwürfe (<code>Skills.draft_skills</code>) tauchen nirgends auf.",
 			monsters: "Alle Monster-Arten aus <code>Monmap.mons</code> mit ihren Ei-Attacken und wie man sie freischaltet.",
 			skills: "Alle Skills aus <code>Skills</code>, Regeln in <code>skill_regeln.txt</code>. Ein Monster kann einen Skill spielen, sobald es eins seiner Elemente hat; fehlen Elemente, schlummert er (schwächer, ohne Element-Effekt). Unter der Quelle steht, ob Trainer oder wilde Monster ihn haben. Spalten sind sortierbar.",
 			elements: "Element-Kreis und alle Kombinationen aus <code>ColorMap</code>. Jedes Skill-Element wird gegen jedes Ziel-Element verglichen; Kombi-Monster erben alle Schwächen und Resistenzen.",
@@ -280,14 +285,19 @@ const UI = {
 		elementEffects: "Element effects", noEffect: "No extra effect (base element)",
 		elementEffectsHint: "From <code>ElementEffects</code>. Base elements have no extra effect. What counts is the skill's element, not the monster's. Debuffs and status effects hit every target of a damage skill, buffs apply once per use to the caster. Two-element combos last a few turns, three-element combos until the battle ends. Dormant skills have no effect. Individual cards can change chance and strength, the defaults are shown here.",
 		starterHint: "Available in the egg selection from the start", catchToUnlock: "Joins the egg selection after the first catch",
-		effects: { damage: "Damage", shield: "Shield", buff: "Buff", passive: "Passive" },
-		targets: { SINGLE_ENEMY: "one enemy", TEAM_ENEMY: "all enemies", SINGLE_FRIEND: "one ally", TEAM_FRIEND: "whole team" },
+		effects: { damage: "Damage", shield: "Shield", buff: "Buff", boon: "Special buff", passive: "Passive" },
+		targets: { SINGLE_ENEMY: "one enemy", TEAM_ENEMY: "all enemies", SINGLE_FRIEND: "one ally", TEAM_FRIEND: "whole team", SELF: "self only" },
 		mon: "Monster", lists: {
 			starter_skills: "Starter (egg)", standard_skills: "Standard", ascension_skills: "Ascension (potion)", defensive_skills: "Shield", buff_skills: "Buff", passive_skills: "Passive", area_skills: "Area attack",
-			egg_skills: "Attack (pool)", bounty_skills: "Bounty", reward_skills: "Envelope (unique)",
+			egg_skills: "Attack (pool)", bounty_skills: "Bounty", reward_skills: "Envelope (unique)", draft_skills: "Draft (not assigned)",
 		},
-		trainer: "Trainer", wild: "wild monsters", onlySpecies: "species egg move only",
+		trainer: "Trainer", wild: "wild monsters", onlySpecies: "species egg move only", notAssigned: "not assigned anywhere",
+		unused: "Unused", usage: "Usage", usedOnly: "used by species", unusedOnly: "used by no species",
+		unusedTotal: "{n} of {total} skills belong to no species (starter, sacrifice, milestone, bounty)",
+		perList: "By source", perElement: "By element and category", reachable: "still reachable via",
+		cats: { physical: "Physical attack", magic: "Magic attack", shield: "Armor", s_shield: "Magic shield", buff: "Buff", passive: "Passive", area: "Area" },
 		leads: {
+			unused: "All skills that <b>no monster species</b> has as starter skill, egg move, milestone or bounty. Pool skills can still show up on wild monsters or at the trainer (noted behind them), drafts (<code>Skills.draft_skills</code>) appear nowhere.",
 			monsters: "All monster species from <code>Monmap.mons</code> with their egg moves and how to unlock them.",
 			skills: "All skills from <code>Skills</code>, rules in <code>skill_regeln.txt</code>. A monster can play a skill once it has one of its elements; missing elements make it dormant (weaker, no element effect). Below the source: whether the trainer or wild monsters have it. Columns are sortable.",
 			elements: "Element cycle and all combinations from <code>ColorMap</code>. Every skill element is compared with every target element; combined monsters inherit all weaknesses and resistances.",
@@ -307,6 +317,7 @@ const state = {
 	skillSort: { key: "tier", dir: "asc" },
 	skillElement: "all",
 	skillList: "all",
+	skillUsage: "all",
 	monType: "all",
 	monRarity: "all",
 	monStarter: "all",
@@ -414,7 +425,8 @@ function skillEffectText(s) {
 	return effectText(key, power, chance);
 }
 // Stärke wie Skills.power_text ohne Monster: fester Wert + Anteil x Wert ("5 + 0.2×SAN")
-const SCALING_STAT = (s) => s.effect === "shield" ? (s.damage_type === "ABILITY" ? "s_def" : "def") : (s.damage_type === "ABILITY" ? "s_atk" : "atk");
+// Kreuz-Schilde (scaling_stat) rechnen mit dem anderen Verteidigungswert, wie Skills.shield_stat
+const SCALING_STAT = (s) => s.effect === "shield" ? (s.scaling_stat || (s.damage_type === "ABILITY" ? "s_def" : "def")) : (s.damage_type === "ABILITY" ? "s_atk" : "atk");
 const powerLabel = (s) => s.scaling != null ? `${fmtNum(s.value)} + ${fmtNum(s.scaling)}×${statLabel(SCALING_STAT(s))}` : fmtNum(s.value ?? s.damage ?? 0);
 function skillDesc(s) {
 	const lines = [tr(s.description, {
@@ -434,6 +446,7 @@ function skillDesc(s) {
 // Woher man den Skill bekommt, über die Arten hinaus: Trainer, wilde Monster (Biom-Pool)
 const POOL_LISTS = ["egg_skills", "defensive_skills", "buff_skills", "passive_skills", "area_skills"];
 function skillSources(s) {
+	if (s.list === "draft_skills") return ui("notAssigned");
 	if (!POOL_LISTS.includes(s.list)) return ui("lists")[s.list] || s.list;
 	const parts = [];
 	if (s.trainer !== false && (s.tier || 1) >= 2) parts.push(ui("trainer"));
@@ -470,6 +483,7 @@ function hl(text) {
 const SECTIONS = {
 	monsters: { count: () => DATA.mons.length, render: renderMonsters },
 	skills: { count: () => DATA.skills.length, render: renderSkills },
+	unused: { count: () => DATA.skills.filter((s) => !skillUsers(s.name).length).length, render: renderUnused },
 	elements: { count: () => DATA.elements.combos.length, render: renderElements },
 	gems: { count: () => Object.keys(DATA.gems.stats).length, render: renderGems },
 	relics: { count: () => Object.keys(DATA.relics).length, render: renderRelics },
@@ -670,16 +684,20 @@ function renderSkills() {
 	const rows = DATA.skills
 		.filter((s) => state.skillElement === "all" || (s.nature & Number(state.skillElement)))
 		.filter((s) => state.skillList === "all" || s.list === state.skillList)
+		.filter((s) => state.skillUsage === "all" || (state.skillUsage === "used") === skillUsers(s.name).length > 0)
 		.filter((s) => matches(tr(s.name), s.name, elementName(s.nature), skillDesc(s), ui("lists")[s.list]))
 		.sort((a, b) => {
 			const x = col.get(a), y = col.get(b);
 			const c = typeof x === "number" ? x - y : String(x).localeCompare(String(y), state.lang);
 			return (dir === "asc" ? c : -c) || (a.tier || 1) - (b.tier || 1) || (a.value ?? 0) - (b.value ?? 0);
 		});
-	// Arten, die den Skill als Start-Skill, Ei-Attacke, Meilenstein oder Kopfgeld haben
-	const usable = (s) => DATA.mons.filter((m) => [...(m.default_egg_skills || []), ...(m.unlockable_egg_skills || []),
-		...Object.values(m.milestone_egg_skills || {}), ...Object.values(m.bounty_egg_skills || {})].includes(s.name)).map((m) => monName(m.name));
+	const usable = (s) => skillUsers(s.name).map((m) => monName(m.name));
 	const filters = `<div class="filters">
+		<select id="f-usage" aria-label="${ui("usage")}">
+			<option value="all">${ui("usage")}: ${ui("all")}</option>
+			<option value="used" ${state.skillUsage === "used" ? "selected" : ""}>${esc(ui("usedOnly"))}</option>
+			<option value="unused" ${state.skillUsage === "unused" ? "selected" : ""}>${esc(ui("unusedOnly"))}</option>
+		</select>
 		<select id="f-element" aria-label="${ui("element")}">
 			<option value="all">${ui("element")}: ${ui("all")}</option>
 			${BASE_MASKS.map((e) => `<option value="${e}" ${String(e) === state.skillElement ? "selected" : ""}>${esc(elementName(e))}</option>`).join("")}
@@ -709,6 +727,45 @@ function renderSkills() {
 	const weights = `<p class="small muted" style="margin-top:12px">${ui("tierWeights")}: ${Object.entries(DATA.tierWeights || {}).map(([t, w]) => `${ui("tier")} ${t} = ${w}`).join(" · ")}
 		(+${Math.round((DATA.depthTierBonus || 0) * 100)} % / ${ui("depth")} / ${ui("tier")})</p>`;
 	return header("skills") + filters + (rows.length ? table : `<div class="empty">${ui("noResults")}</div>`) + weights;
+}
+
+// Arten, die den Skill als Start-Skill, Ei-Attacke, Meilenstein oder Kopfgeld haben
+function skillUsers(name) {
+	return DATA.mons.filter((m) => [...(m.default_egg_skills || []), ...(m.unlockable_egg_skills || []),
+		...Object.values(m.milestone_egg_skills || {}), ...Object.values(m.bounty_egg_skills || {})].includes(name));
+}
+
+// Kategorie für die Übersicht (wie Skills.egg_skill_category, Schilde getrennt nach Rüstung / Magie-Schild)
+function skillCategory(s) {
+	if (s.effect === "passive") return "passive";
+	if (s.effect === "buff" || s.effect === "boon") return "buff";
+	if (s.effect === "shield") return s.damage_type === "ABILITY" ? "s_shield" : "shield";
+	if (s.target === "TEAM_ENEMY") return "area";
+	return s.damage_type === "ABILITY" ? "magic" : "physical";
+}
+
+// Welche Skills hat keine Art? Zusammenfassung pro Quelle, dann Raster Element x Kategorie
+function renderUnused() {
+	const all = DATA.skills.filter((s) => !skillUsers(s.name).length)
+		.filter((s) => matches(tr(s.name), s.name, elementName(s.nature), skillDesc(s), ui("lists")[s.list]));
+	const total = DATA.skills.length;
+	const summary = `<p class="small muted">${esc(ui("unusedTotal").replace("{n}", all.length).replace("{total}", total))}</p>`;
+	const lists = DATA.skillLists.map((l) => [l, all.filter((s) => s.list === l).length]).filter(([, n]) => n > 0);
+	const perList = `<div class="card wide"><h3>${ui("perList")}</h3><div class="filters" style="margin-top:8px">${
+		lists.map(([l, n]) => `<span class="tag">${esc(ui("lists")[l] || l)}: <b>${n}</b></span>`).join(" ") || ui("none")}</div></div>`;
+	const cats = Object.keys(ui("cats")).filter((c) => all.some((s) => skillCategory(s) === c));
+	const masks = [...new Set(all.map((s) => s.nature))].sort((a, b) => elementsIn(a).length - elementsIn(b).length || a - b);
+	const cell = (items) => items.length ? `<ul class="skill-list">${items
+		.sort((a, b) => (a.tier || 1) - (b.tier || 1) || (a.value ?? 0) - (b.value ?? 0))
+		.map((s) => `<li title="${esc(skillDesc(s))}">${tierStars(s.tier)} <b>${hl(tr(s.name))}</b> <span class="how">${esc(powerLabel(s))} · ${
+			ui("cost")} ${s.cost ?? 0} · ${ui("cd")} ${s.cooldown ?? 0}${s.list === "draft_skills" ? "" : ` · ${esc(skillSources(s))}`}</span></li>`).join("")}</ul>`
+		: `<span class="muted">${ui("none")}</span>`;
+	const grid = masks.length ? `<div class="table-wrap"><table>
+		<thead><tr><th>${ui("element")}</th>${cats.map((c) => `<th>${esc(ui("cats")[c])}</th>`).join("")}</tr></thead>
+		<tbody>${masks.map((mask) => `<tr><td>${chip(mask)}<br><span class="small muted">${all.filter((s) => s.nature === mask).length}</span></td>${
+			cats.map((c) => `<td class="wrap">${cell(all.filter((s) => s.nature === mask && skillCategory(s) === c))}</td>`).join("")}</tr>`).join("")}</tbody>
+	</table></div>` : `<div class="empty">${ui("noResults")}</div>`;
+	return header("unused") + summary + `<div class="grid" style="margin-bottom:12px">${perList}</div><h3>${ui("perElement")}</h3>` + grid;
 }
 
 function renderElements() {
@@ -951,6 +1008,7 @@ document.addEventListener("click", (e) => {
 document.addEventListener("change", (e) => {
 	if (e.target.id === "f-element") state.skillElement = e.target.value;
 	else if (e.target.id === "f-list") state.skillList = e.target.value;
+	else if (e.target.id === "f-usage") state.skillUsage = e.target.value;
 	else if (e.target.id === "f-mon-type") state.monType = e.target.value;
 	else if (e.target.id === "f-mon-rarity") state.monRarity = e.target.value;
 	else if (e.target.id === "f-mon-starter") state.monStarter = e.target.value;

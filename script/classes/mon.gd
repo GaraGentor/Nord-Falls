@@ -65,6 +65,11 @@ var _debuffs: Dictionary = {}
 var _statuses: Dictionary = {}
 # Aufladungen (Extra "charge"): "physical"/"magic" -> +Anteil Schaden für den nächsten Angriff dieser Art, danach weg
 var _charges: Dictionary = {}
+# Sonder-Verstärkungen (Skills "boon", siehe Skills.add_boon): Art -> {"value": float, "turns": übrige eigene Züge
+# (+1 wie bei Buffs), -1 = bis verbraucht oder Kampfende}. Arten: "crit_next" (nächster Treffer kritisch, +value % Schaden),
+# "crit" (alle Treffer kritisch), "leech" (Lebensraub value %), "extra_moves" (+value Aktionen pro Zug),
+# "taunt" (zieht die Einzelangriffe der Gegner auf sich)
+var _boons: Dictionary = {}
 # Buffs und Schwächungen zusammen drücken einen Wert nie unter diesen Faktor
 const MIN_STAT_FACTOR := 0.25
 # Nur Gegner: geplanter nächster Zug als [{"skill": Dictionary, "target": Monster}], im Kampf als Absicht sichtbar (battle.gd _plan_intent)
@@ -112,6 +117,7 @@ func reset_battle_state() -> void:
 	_debuffs = {}
 	_statuses = {}
 	_charges = {}
+	_boons = {}
 	_intent = []
 	_relic_state = {}
 	for skill in _skills:
@@ -135,6 +141,12 @@ func start_turn() -> void:
 		_debuffs[key].turns -= 1
 		if _debuffs[key].turns <= 0:
 			_debuffs.erase(key)
+	for key in _boons.keys():
+		if _boons[key].turns < 0:
+			continue
+		_boons[key].turns -= 1
+		if _boons[key].turns <= 0:
+			_boons.erase(key)
 	Events.monster_status_changed.emit(self)
 
 func add_shield(amount: float, physical: bool) -> void:
@@ -170,7 +182,25 @@ func buff_factor(stat: String) -> float:
 	return maxf(factor, MIN_STAT_FACTOR)
 
 func is_buffed() -> bool:
-	return not _buffs.is_empty() or not _charges.is_empty()
+	return not _buffs.is_empty() or not _charges.is_empty() or not _boons.is_empty()
+
+# Erneutes Verleihen derselben Sonder-Verstärkung stapelt nicht, sondern nimmt den größeren Wert und die längere Dauer.
+func add_boon(kind: String, value: float, turns: int) -> void:
+	var old: Dictionary = _boons.get(kind, {})
+	var old_turns: int = old.get("turns", 0)
+	var new_turns := -1 if turns < 0 or old_turns < 0 else maxi(turns, old_turns)
+	_boons[kind] = {"value": maxf(value, old.get("value", 0.0)), "turns": new_turns}
+	Events.monster_status_changed.emit(self)
+
+func has_boon(kind: String) -> bool:
+	return _boons.has(kind)
+
+func boon_value(kind: String) -> float:
+	return _boons.get(kind, {}).get("value", 0.0)
+
+func consume_boon(kind: String) -> void:
+	if _boons.erase(kind):
+		Events.monster_status_changed.emit(self)
 
 # Aufladung für den nächsten Angriff dieser Art ("physical"/"magic"), erneutes Aufladen nimmt den größeren Wert
 func add_charge(kind: String, factor: float) -> void:
@@ -226,7 +256,8 @@ func status_power(status: String) -> float:
 func reset_to_new_round():
 	Events.refresh_ui_for_monster.emit()
 	print("_upgrades", _upgrades, "_initial_moves", _initial_moves)
-	_computed_moves = Relics.modify("moves", _initial_moves + _upgrades, self)
+	# Rückenwind & Co.: zusätzliche Aktionen für ein paar eigene Züge (Sonder-Verstärkung "extra_moves")
+	_computed_moves = Relics.modify("moves", _initial_moves + _upgrades, self) + roundi(boon_value("extra_moves"))
 
 func unlock_skills():
 	for skill in _skills:

@@ -19,7 +19,14 @@ static func buffed_stats(mon: Monster) -> Array:
 		var stat: String = "atk" if kind == "physical" else "s_atk"
 		if not stats.has(stat):
 			stats.append(stat)
+	for kind in mon._boons:
+		var stat: String = BOON_ICON_STATS.get(kind, "")
+		if stat != "" and not stats.has(stat):
+			stats.append(stat)
 	return stats
+
+## Symbol (Stat-Key) pro Sonder-Verstärkung im Status unter dem Monster
+const BOON_ICON_STATS := {"crit_next": "atk", "crit": "atk", "leech": "hp", "extra_moves": "speed", "taunt": "def"}
 
 ## Werte mit Schwächung (mehrere Quellen auf denselben Wert zählen einmal)
 static func debuffed_stats(mon: Monster) -> Array:
@@ -71,6 +78,10 @@ func _lines(mon: Monster) -> Array:
 			"turns": _turns(buff.turns)}), BUFF_COLOR])
 	for kind in mon._charges:
 		lines.append([tr("STATUS_CHARGE_LINE_" + String(kind).to_upper()).format({"value": roundi(mon._charges[kind] * 100)}), BUFF_COLOR])
+	# Sonder-Verstärkungen (kritische Treffer, Lebensraub, Aktionen, Aggro)
+	for kind in mon._boons:
+		var boon: Dictionary = mon._boons[kind]
+		lines.append([tr("STATUS_BOON_" + String(kind).to_upper()).format({"value": roundi(boon.value), "turns": _turns(boon.turns)}), BUFF_COLOR])
 	for debuff in mon._debuffs.values():
 		lines.append([tr("STATUS_DEBUFF_LINE").format({"value": roundi(debuff.factor * 100), "stat": Skills.stat_label(debuff.stat),
 			"turns": _turns(debuff.turns)}), ElementEffects.DEBUFF_COLOR])

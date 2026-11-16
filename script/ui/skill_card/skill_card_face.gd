@@ -54,9 +54,10 @@ class TopRow extends HBoxContainer:
 		_cooldown.add_child(_cooldown_label)
 		_cooldown.add_child(SkillCardFace.icon(SkillCardFace.CLOCK_TEXTURE, SkillCardFace.ICON_SIZE))
 
-	## known = false: unbekannter Skill eines Gegners, nur die Sterne (Stufe) sind sichtbar
-	func show_skill(skill: Dictionary, known := true) -> void:
-		cost_badge.show_number(skill.cost, false)
+	## known = false: unbekannter Skill eines Gegners, nur die Sterne (Stufe) sind sichtbar.
+	## cost >= 0: tatsächliche Kosten für das Monster (Skills.skill_cost), sonst die Grundkosten der Karte
+	func show_skill(skill: Dictionary, known := true, cost := -1) -> void:
+		cost_badge.show_number(cost if cost >= 0 else skill.cost, false)
 		cost_badge.modulate.a = 1.0 if known else 0.0
 		var tier: int = skill.get("tier", 1)
 		for star in _stars.get_children():

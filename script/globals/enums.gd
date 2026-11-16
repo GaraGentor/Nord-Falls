@@ -38,6 +38,8 @@ enum CARD_TARGETS {
 	TEAM_ENEMY,
 	SINGLE_FRIEND,
 	TEAM_FRIEND,
+	# nur der Wirker selbst (z. B. Fokusflamme, Kampfschrei)
+	SELF,
 }
 
 enum SKILL_DAMAGE_TYPE {

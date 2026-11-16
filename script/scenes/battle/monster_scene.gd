@@ -270,6 +270,9 @@ func _can_drop_data(_at_position: Vector2, data) -> bool:
 			return not home_mons
 		Enums.CARD_TARGETS.SINGLE_FRIEND, Enums.CARD_TARGETS.TEAM_FRIEND:
 			return home_mons
+		# Selbst-Karten nur auf das Monster, das am Zug ist (battle.gd prüft das beim Ausspielen genau)
+		Enums.CARD_TARGETS.SELF:
+			return home_mons
 	return false
 
 func _drop_data(_at_position: Vector2, data) -> void:
@@ -408,6 +411,9 @@ func _enemy_intent_rows() -> Array:
 		elif skill.get("effect", "") == "buff":
 			var stat = tr(BUFF_STAT_KEYS.get(skill.buff_stat, "")).trim_suffix(":")
 			rows.append(_icon_row([ICON_BUFF, "+%d%% %s" % [roundi(skill.value), stat]] + targets, BUFF_COLOR, INTENT_FONT_SIZE))
+		elif skill.get("effect", "") == "boon":
+			# Sonder-Verstärkung: Name der Karte statt einer Zahl
+			rows.append(_icon_row([ICON_BUFF, tr(skill.name)] + targets, BUFF_COLOR, INTENT_FONT_SIZE))
 		else:
 			# gleiche Rechnung wie Skills.add_shield, Wert kommt vom Wirker
 			var amount = Skills.shield_amount(mon, skill)

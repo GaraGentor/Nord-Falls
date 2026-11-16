@@ -1050,3 +1050,112 @@ STATUS_UNTIL_END,until the battle ends,bis Kampfende
 STATUS_TURNS,{turns} turns,{turns} Züge
 ELEMENT_GAIN_LEARN,Learn,Lernen
 ELEMENT_GAIN_SKIP,Learn nothing,Nichts lernen
+SKILL_FIRE_PHYS_FLAME_FIST,Flame Fist,Flammenfaust
+SKILL_FIRE_PHYS_BLAZE_RUSH,Blaze Rush,Glutansturm
+SKILL_FIRE_MAG_SPARK_SHOT,Spark Shot,Funkenschuss
+SKILL_FIRE_MAG_FIREBALL,Fireball,Feuerball
+SKILL_FIRE_ARMOR_CINDER_PLATE,Cinder Plate,Aschepanzer
+SKILL_FIRE_ARMOR_FLAME_WALL,Flame Wall,Flammenwall
+SKILL_FIRE_WARD_HEAT_VEIL,Heat Veil,Hitzeschleier
+SKILL_FIRE_WARD_PHOENIX_AURA,Phoenix Aura,Phönixaura
+SKILL_WATER_PHYS_TIDE_SLAP,Tide Slap,Gezeitenhieb
+SKILL_WATER_PHYS_BREAKER,Breaker Wave,Brecherwelle
+SKILL_WATER_MAG_BUBBLE_BEAM,Bubble Beam,Blasenstrahl
+SKILL_WATER_MAG_HYDRO_LANCE,Hydro Lance,Hydrolanze
+SKILL_WATER_ARMOR_SHELL,Shell Guard,Muschelpanzer
+SKILL_WATER_ARMOR_CORAL_WALL,Coral Wall,Korallenwall
+SKILL_WATER_WARD_MIST_VEIL,Mist Veil,Nebelschleier
+SKILL_WATER_WARD_TIDAL_DOME,Tidal Dome,Gezeitenkuppel
+SKILL_EARTH_PHYS_BOULDER_BASH,Boulder Bash,Felsramme
+SKILL_EARTH_PHYS_QUAKE_STOMP,Quake Stomp,Bebenstampfer
+SKILL_EARTH_MAG_PEBBLE_STORM,Pebble Storm,Kieselsturm
+SKILL_EARTH_MAG_GEO_PULSE,Geo Pulse,Geopuls
+SKILL_EARTH_ARMOR_STONE_SKIN,Stone Skin,Steinhaut
+SKILL_EARTH_ARMOR_GRANITE_BASTION,Granite Bastion,Granitbastion
+SKILL_EARTH_WARD_CLAY_SEAL,Clay Seal,Lehmsiegel
+SKILL_EARTH_WARD_CRYSTAL_SEAL,Crystal Seal,Kristallsiegel
+SKILL_AIR_PHYS_GUST_KICK,Gust Kick,Böentritt
+SKILL_AIR_PHYS_CYCLONE_CLAW,Cyclone Claw,Zyklonklaue
+SKILL_AIR_MAG_WIND_BLADE,Wind Blade,Windklinge
+SKILL_AIR_MAG_TEMPEST_RAY,Tempest Ray,Sturmstrahl
+SKILL_AIR_ARMOR_DRAFT_GUARD,Draft Guard,Zugwindwehr
+SKILL_AIR_ARMOR_GALE_WALL,Gale Wall,Orkanwand
+SKILL_AIR_WARD_BREEZE_VEIL,Breeze Veil,Brisenschleier
+SKILL_AIR_WARD_SKY_DOME,Sky Dome,Himmelskuppel
+SKILL_STEAM_PHYS_SCALD_STRIKE,Scald Strike,Brühschlag
+SKILL_STEAM_MAG_STEAM_JET,Steam Jet,Dampfstrahl
+SKILL_STEAM_ARMOR_VAPOR_PLATE,Vapor Plate,Dunstpanzer
+SKILL_STEAM_WARD_FOG_BARRIER,Fog Barrier,Nebelbarriere
+SKILL_STEAM_PHYS_STEAM_HAMMER,Steam Hammer,Dampfhammer
+SKILL_LIGHTNING_PHYS_VOLT_PUNCH,Volt Punch,Voltfaust
+SKILL_LIGHTNING_MAG_ARC_BOLT,Arc Bolt,Bogenblitz
+SKILL_LIGHTNING_ARMOR_STATIC_PLATE,Static Plate,Statikpanzer
+SKILL_LIGHTNING_WARD_SPARK_FIELD,Spark Field,Funkenfeld
+SKILL_LIGHTNING_MAG_THUNDERCLAP,Thunderclap,Donnerschlag
+SKILL_MAGMA_PHYS_LAVA_FIST,Lava Fist,Lavafaust
+SKILL_MAGMA_MAG_MAGMA_BURST,Magma Burst,Magmastoß
+SKILL_MAGMA_ARMOR_OBSIDIAN_PLATE,Obsidian Plate,Obsidianpanzer
+SKILL_MAGMA_WARD_EMBER_CRUST,Ember Crust,Glutkruste
+SKILL_MAGMA_PHYS_ERUPTION_SLAM,Eruption Slam,Ausbruchsschmetterer
+SKILL_ICE_PHYS_ICICLE_JAB,Icicle Jab,Eiszapfenstich
+SKILL_ICE_MAG_FROST_RAY,Frost Ray,Froststrahl
+SKILL_ICE_ARMOR_ICE_PLATE,Ice Plate,Eispanzer
+SKILL_ICE_WARD_FROST_MIRROR,Frost Mirror,Frostspiegel
+SKILL_ICE_MAG_BLIZZARD,Blizzard,Blizzard
+SKILL_DUST_PHYS_SAND_CLAW,Sand Claw,Sandklaue
+SKILL_DUST_MAG_DUST_DEVIL,Dust Devil,Staubteufel
+SKILL_DUST_ARMOR_DUNE_WALL,Dune Wall,Dünenwall
+SKILL_DUST_WARD_SAND_VEIL,Sand Veil,Sandschleier
+SKILL_DUST_MAG_SANDSTORM,Sandstorm Fury,Sandsturmzorn
+SKILL_MUD_PHYS_MUD_SLAM,Mud Slam,Schlammwurf
+SKILL_MUD_MAG_BOG_PULSE,Bog Pulse,Moorpuls
+SKILL_MUD_ARMOR_CLAY_SHELL,Clay Shell,Lehmschale
+SKILL_MUD_WARD_SILT_SEAL,Silt Seal,Schlicksiegel
+SKILL_MUD_ARMOR_LANDSLIDE_WALL,Landslide Wall,Erdrutschwall
+SKILL_THUNDERSTORM_PHYS_STORM_FIST,Storm Fist,Gewitterfaust
+SKILL_THUNDERSTORM_MAG_CHAIN_LIGHTNING,Chain Lightning,Kettenblitz
+SKILL_THUNDERSTORM_ARMOR_STORM_PLATE,Storm Plate,Sturmpanzer
+SKILL_THUNDERSTORM_WARD_CLOUD_DOME,Cloud Dome,Wolkenkuppel
+SKILL_THUNDERSTORM_MAG_SKYFALL,Skyfall,Himmelssturz
+SKILL_VOLCANO_PHYS_CALDERA_CRUSH,Caldera Crush,Calderabrecher
+SKILL_VOLCANO_MAG_PYROCLAST,Pyroclast,Pyroklast
+SKILL_VOLCANO_ARMOR_BASALT_FORT,Basalt Fort,Basaltfeste
+SKILL_VOLCANO_WARD_GEYSER_SHIELD,Geyser Shield,Geysirschild
+SKILL_VOLCANO_PHYS_MAGMA_TITAN,Magma Titan,Magmatitan
+SKILL_ASH_STORM_PHYS_CINDER_CLAW,Cinder Claw,Schlackenklaue
+SKILL_ASH_STORM_MAG_ASH_CYCLONE,Ash Cyclone,Aschezyklon
+SKILL_ASH_STORM_ARMOR_SLAG_ARMOR,Slag Armor,Schlackenrüstung
+SKILL_ASH_STORM_WARD_SOOT_VEIL,Soot Veil,Rußschleier
+SKILL_ASH_STORM_PHYS_ASHEN_ROLLER,Ashen Roller,Aschenwalze
+SKILL_SWAMP_PHYS_ROOT_LASH,Root Lash,Wurzelgeißel
+SKILL_SWAMP_MAG_MIASMA_CLOUD,Miasma Cloud,Miasmawolke
+SKILL_SWAMP_ARMOR_MANGROVE_WALL,Mangrove Wall,Mangrovenwall
+SKILL_SWAMP_WARD_MARSH_MIST,Marsh Mist,Moornebel
+SKILL_SWAMP_MAG_BOG_MAW,Bog Maw,Moorschlund
+SKILL_FIRE_BOON_FOCUS_FLAME,Focus Flame,Fokusflamme
+SKILL_LIGHTNING_BOON_OVERCHARGE,Overcharge,Überladung
+SKILL_CHAOS_BOON_BATTLE_CRY,Battle Cry,Kampfschrei
+SKILL_AIR_BOON_TAILWIND,Tailwind,Rückenwind
+SKILL_WATER_BOON_BLOOD_TIDE,Blood Tide,Blutgezeiten
+SKILL_CHAOS_WARD_IRON_WILL,Iron Will,Eiserner Wille
+SKILL_CHAOS_ARMOR_SPIRIT_GUARD,Spirit Guard,Geisteswehr
+SKILL_PASSIVE_BATTLE_FERVOR,Battle Fervor,Kampfeslust
+SKILL_PASSIVE_STORM_SPIRIT,Storm Spirit,Sturmgeist
+SKILL_PASSIVE_BULWARK_MASTER,Bulwark Master,Bollwerkmeister
+SKILL_PASSIVE_DEEP_VITALITY,Deep Vitality,Urkraft der Tiefe
+SKILL_PASSIVE_PROVOKER,Provoker,Provokateur
+SKILL_BOON_CRIT_NEXT_DESC,"The user's [hl]next attack[/hl] is a [hl]critical hit[/hl] ([hl]+{value}% damage[/hl])","Der [hl]nächste Angriff[/hl] des Wirkers ist ein [hl]kritischer Treffer[/hl] ([hl]+{value}% Schaden[/hl])"
+SKILL_BOON_CRIT_DESC,"[hl]All attacks[/hl] of the user are [hl]critical hits[/hl] ([hl]+{value}% damage[/hl]) until the end of its [hl]next turn[/hl]","[hl]Alle Angriffe[/hl] des Wirkers sind bis zum Ende seines [hl]nächsten Zuges[/hl] [hl]kritische Treffer[/hl] ([hl]+{value}% Schaden[/hl])"
+SKILL_BOON_TAUNT_DESC,"[hl]Draws the enemies' attention[/hl]: their single-target attacks must hit the user until its next turn","[hl]Zieht die Aufmerksamkeit der Gegner[/hl] auf sich: ihre Einzelangriffe müssen bis zu seinem nächsten Zug den Wirker treffen"
+SKILL_BOON_EXTRA_MOVES_DESC,"An ally (or the user) gets [hl]+{value} action[/hl] in each of its [hl]next {buff_turns} turns[/hl]","Ein eigenes Monster (auch der Wirker) bekommt [hl]+{value} Aktion[/hl] in jedem seiner [hl]nächsten {buff_turns} Züge[/hl]"
+SKILL_BOON_LEECH_DESC,"An ally (or the user) heals for [hl]{value}%[/hl] of the damage it deals until the end of its [hl]next turn[/hl]","Ein eigenes Monster (auch der Wirker) heilt sich bis zum Ende seines [hl]nächsten Zuges[/hl] um [hl]{value}%[/hl] des Schadens, den es verursacht"
+SKILL_SHIELD_ABILITY_FROM_DEF_DESC,Shields an ally with [hl]{value} magic shield + ({scaling}*DEF)[/hl] against [hl]magical damage[/hl] until its next turn,Schützt ein eigenes Monster mit [hl]{value} Magie-Schild + ({scaling}*VER)[/hl] vor [hl]magischem Schaden[/hl] bis zu seinem nächsten Zug
+SKILL_SHIELD_PHYSICAL_FROM_SPD_DESC,Shields an ally with [hl]{value} armor + ({scaling}*SPD)[/hl] against [hl]physical damage[/hl] until its next turn,Schützt ein eigenes Monster mit [hl]{value} Rüstung + ({scaling}*SVE)[/hl] vor [hl]physischem Schaden[/hl] bis zu seinem nächsten Zug
+SKILL_PASSIVE_SHIELD_COST_DESC,Passive: its shields that cost [hl]3 or more actions[/hl] cost [hl]{value} action less[/hl],Passiv: seine Schilde mit [hl]3 oder mehr Aktionen[/hl] kosten [hl]{value} Aktion weniger[/hl]
+SKILL_PASSIVE_TAUNT_DESC,Passive: [hl]permanently draws the enemies' attention[/hl] (their single-target attacks must hit it),Passiv: [hl]zieht dauerhaft die Aufmerksamkeit der Gegner[/hl] auf sich (ihre Einzelangriffe müssen es treffen)
+STATUS_BOON_CRIT_NEXT,Next attack critical (+{value}%),Nächster Angriff kritisch (+{value}%)
+STATUS_BOON_CRIT,Critical hits +{value}% ({turns}),Kritische Treffer +{value}% ({turns})
+STATUS_BOON_LEECH,Lifesteal {value}% ({turns}),Lebensraub {value}% ({turns})
+STATUS_BOON_EXTRA_MOVES,+{value} action ({turns}),+{value} Aktion ({turns})
+STATUS_BOON_TAUNT,Draws attacks ({turns}),Zieht Angriffe auf sich ({turns})
+EFFECT_TEXT_CRIT,Critical!,Kritisch!

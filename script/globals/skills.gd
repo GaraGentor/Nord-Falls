@@ -52,8 +52,25 @@ func calc_damage(from: Monster, to: Monster, skill: Dictionary) -> float:
 	skill = effective_skill(from, skill)
 	var physical = is_physical(skill)
 	var atk: float = from.attack() if physical else from.s_attack()
-	# Passive, Aufladungen und Extras (Jäger, Ausnutzen) wirken als Faktor auf den ganzen Schaden
-	return stat_damage(atk, skill.value, skill.get("scaling", 0.0), damage_factor(from, to, skill) * element_multiplier(skill.nature, to._type))
+	# Passive, Aufladungen und Extras (Jäger, Ausnutzen) wirken als Faktor auf den ganzen Schaden,
+	# kritische Treffer (Fokusflamme, Überladung) multiplizieren obendrauf
+	var factor := damage_factor(from, to, skill) * element_multiplier(skill.nature, to._type) * crit_factor(from)
+	return stat_damage(atk, skill.value, skill.get("scaling", 0.0), factor)
+
+# ─────────────────────────
+# Kritische Treffer: gibt es nur über Sonder-Verstärkungen, kein Zufall. Darum stehen sie auch in Vorschau und Absichten.
+#   "crit_next": der nächste Angriff ist kritisch (danach verbraucht, battle.gd _use_skill)
+#   "crit":      alle Angriffe sind kritisch, solange die Verstärkung hält
+# Der Wert der Verstärkung ist der Zusatzschaden in Prozent (50 = x1,5). Beide zusammen zählen nur einmal (der größere).
+
+## 1.0 ohne kritischen Treffer, sonst 1 + Zusatzschaden
+func crit_factor(from: Monster) -> float:
+	if from == null:
+		return 1.0
+	return 1.0 + maxf(from.boon_value("crit_next"), from.boon_value("crit")) / 100.0
+
+func is_crit(from: Monster) -> bool:
+	return from != null and (from.has_boon("crit_next") or from.has_boon("crit"))
 
 ## Faktor auf den Skill-Wert eines Angriffs (1.0 = unverändert), alle Boni addieren sich:
 ## Passive des Angreifers (Element-Kraft, Magie-Kraft), seine Aufladung für diese Schadensart
@@ -117,7 +134,15 @@ func is_damage_skill(skill: Dictionary) -> bool:
 
 # Schilde und Buffs zielen auf das eigene Team.
 func targets_friends(skill: Dictionary) -> bool:
-	return skill.target in [Enums.CARD_TARGETS.SINGLE_FRIEND, Enums.CARD_TARGETS.TEAM_FRIEND]
+	return skill.target in [Enums.CARD_TARGETS.SINGLE_FRIEND, Enums.CARD_TARGETS.TEAM_FRIEND, Enums.CARD_TARGETS.SELF]
+
+# Wirkt nur auf den Wirker selbst.
+func targets_self(skill: Dictionary) -> bool:
+	return skill.target == Enums.CARD_TARGETS.SELF
+
+# Einzelangriff auf einen Gegner (an ihn binden Aggro-Effekte das Ziel, siehe taunters).
+func targets_single_enemy(skill: Dictionary) -> bool:
+	return skill.target == Enums.CARD_TARGETS.SINGLE_ENEMY
 
 # Flächen-Skills treffen alle Monster der Zielseite.
 func targets_team(skill: Dictionary) -> bool:
@@ -146,18 +171,53 @@ func add_shield(props):
 
 ## Schildstärke, die der Wirker mit dieser Karte gibt (auch für Karten, Absichten und KI):
 ## fester Wert + scaling x seine (Sp.) Verteidigung, Schild-Passive des Wirkers kommen obendrauf.
+## Kreuz-Schilde (Feld "scaling_stat") rechnen mit dem anderen Wert: Eiserner Wille = Magie-Schild aus der Verteidigung.
 func shield_amount(from: Monster, skill: Dictionary) -> float:
 	var used := effective_skill(from, skill)
 	var physical := is_physical(used)
-	var def: float = from.defense() if physical else from.s_defense()
+	var def: float = from.defense() if shield_stat(used) == "def" else from.s_defense()
 	var bonus := own_passive_sum(from, "shield_power" if physical else "s_shield_power") / 100.0
 	return ceilf((used.value + used.get("scaling", 0.0) * def) * (1.0 + bonus))
 
+## Wert, mit dem ein Schild wächst: "def" bei Rüstung, "s_def" bei Magie-Schild, außer die Karte sagt es anders (scaling_stat)
+func shield_stat(skill: Dictionary) -> String:
+	return skill.get("scaling_stat", "def" if is_physical(skill) else "s_def")
 # Buff: value % mehr auf buff_stat für buff_turns eigene Züge des Ziels.
 # +1, weil Buffs zu Beginn jedes eigenen Zuges herunterzählen (wie bei den Element-Effekten).
 func add_buff(props):
 	props.mon.add_buff(props.skill.buff_stat, props.skill.value / 100, props.skill.buff_turns + 1)
 
+# Sonder-Verstärkung (effect "boon", Feld "boon" = Art, siehe Monster._boons): value für buff_turns eigene Züge des Ziels,
+# buff_turns -1 = bis verbraucht (nächster Treffer kritisch). Der Wert kommt aus props.skill, schlummernd also abgeschwächt.
+const BOON_KINDS := ["crit_next", "crit", "leech", "extra_moves", "taunt"]
+
+func add_boon(props):
+	var turns: int = props.skill.get("buff_turns", -1)
+	props.mon.add_boon(props.skill.boon, props.skill.value, -1 if turns < 0 else turns + 1)
+	Events.status_vfx.emit(props.mon, "buff")
+
+# ─────────────────────────
+# Aggro: Monster, die die Aufmerksamkeit auf sich ziehen (Kampfschrei als Sonder-Verstärkung "taunt", Passiv "taunt"),
+# müssen von Einzelangriffen der Gegenseite getroffen werden. Flächenangriffe treffen ohnehin alle.
+# Gilt für beide Seiten: battle.gd prüft es beim Ausspielen (_is_valid_target) und beim Planen der Gegner (_candidate_targets).
+
+func is_taunting(mon: Monster) -> bool:
+	return mon.has_boon("taunt") or not own_passives(mon, "taunt").is_empty()
+
+## Lebende Monster aus side, die gerade die Aufmerksamkeit auf sich ziehen
+func taunters(side: Array) -> Array:
+	return side.filter(func(mon: Monster): return mon.is_alive() and is_taunting(mon))
+
+# ─────────────────────────
+# Kosten: Aktionen, die ein Skill das Monster kostet. Passiv "shield_cost" (Bollwerkmeister) senkt Schilde,
+# die SHIELD_COST_DISCOUNT_FROM oder mehr Aktionen kosten, um seinen Wert (nie unter 1).
+const SHIELD_COST_DISCOUNT_FROM := 3
+
+func skill_cost(mon: Monster, skill: Dictionary) -> int:
+	var cost: int = skill.get("cost", 1)
+	if mon != null and skill.get("effect", "") == "shield" and cost >= SHIELD_COST_DISCOUNT_FROM:
+		cost -= roundi(own_passive_sum(mon, "shield_cost"))
+	return maxi(cost, 1) if skill.get("cost", 1) > 0 else 0
 # ─────────────────────────
 # Absichten: Gegner planen ihren nächsten Zug im Voraus (Monster._intent, battle.gd _plan_intent),
 # der Spieler sieht vorher, wen sie mit wie viel Schaden treffen werden.
@@ -205,6 +265,8 @@ func incoming_hits(target: Monster, attackers: Array) -> Array:
 #   "effect_chance":  eigene Element-Effekte lösen value % öfter aus (Karten mit Auslösechance, Vulkan)
 #   "leech":          heilt sich um value % des verursachten Schadens
 #   "kill_heal":      heilt sich um value % seiner max. KP, wenn es einen Gegner besiegt
+#   "shield_cost":    eigene Schilde ab SHIELD_COST_DISCOUNT_FROM Aktionen kosten value Aktionen weniger (skill_cost)
+#   "taunt":          zieht dauerhaft die Einzelangriffe der Gegner auf sich (taunters)
 
 const PASSIVE_SCOPES := ["self", "partner", "team"]
 
@@ -290,7 +352,8 @@ func apply_cast_extras(from: Monster, skill: Dictionary, dealt: float) -> void:
 	if not from.is_alive():
 		return
 	var allies := team_of(from).filter(func(m: Monster): return m.is_alive())
-	var leech := own_passive_sum(from, "leech") if is_damage_skill(skill) else 0.0
+	# Lebensraub aus Passiv und Sonder-Verstärkung (Blutgezeiten)
+	var leech: float = own_passive_sum(from, "leech") + from.boon_value("leech") if is_damage_skill(skill) else 0.0
 	for extra in extras(skill):
 		match extra.kind:
 			"self_buff":
@@ -369,7 +432,7 @@ const TIER_WEIGHTS = {1: 50, 2: 25, 3: 10, 4: 3}
 
 # Liefert eine frische Kopie des Skills mit diesem Namen (aus allen Skill-Listen) oder {}.
 func get_skill(skill_name: String) -> Dictionary:
-	for list in [starter_skills, standard_skills, egg_skills, defensive_skills, buff_skills, passive_skills, area_skills, bounty_skills, reward_skills, ascension_skills]:
+	for list in [starter_skills, standard_skills, egg_skills, defensive_skills, buff_skills, passive_skills, area_skills, bounty_skills, reward_skills, ascension_skills, draft_skills]:
 		for skill in list:
 			if skill.name == skill_name:
 				var copy = skill.duplicate(true)
@@ -687,9 +750,14 @@ func affected_stat(skill: Dictionary) -> String:
 		stat = skill.get("passive_stat", "")
 	elif skill.get("effect", "") == "buff":
 		stat = skill.get("buff_stat", "")
+	elif skill.get("effect", "") == "boon":
+		# Sonder-Verstärkungen geben das Symbol vor (Krit -> Angriff, Lebensraub -> KP, Aktionen -> Initiative)
+		stat = skill.get("icon_stat", "")
 	elif is_damage_skill(skill):
 		stat = "atk" if is_physical(skill) else "s_atk"
-	elif skill.get("effect", "") == "shield" or not is_damage_skill(skill):
+	elif skill.get("effect", "") == "shield":
+		stat = shield_stat(skill)
+	else:
 		stat = "def" if is_physical(skill) else "s_def"
 	return stat if StatsGrid.ICONS.has(stat) else ""
 
@@ -706,13 +774,13 @@ func power_text(skill: Dictionary, mon: Monster) -> String:
 	var stat := ""
 	if is_damage_skill(skill):
 		stat = "atk" if physical else "s_atk"
-	elif egg_skill_category(skill) == "shield":
-		stat = "def" if physical else "s_def"
+	elif skill.get("effect", "") == "shield":
+		stat = shield_stat(skill)
 	if stat == "" or not used.has("scaling"):
 		return Helper.format_number(value)
 	if mon == null or not _stat_visible(mon, stat):
 		return "%s+%sx" % [Helper.format_number(value), Helper.format_number(used.scaling)]
-	if stat == "def" or stat == "s_def":
+	if skill.get("effect", "") == "shield":
 		return str(int(shield_amount(mon, skill)))
 	var base: float = mon.attack() if physical else mon.s_attack()
 	return str(int(stat_damage(base, used.value, used.scaling, 1.0)))
@@ -726,7 +794,7 @@ func _stat_visible(mon: Monster, stat: String) -> bool:
 func egg_skill_category(skill: Dictionary) -> String:
 	if is_passive(skill):
 		return "passive"
-	if skill.get("effect", "") == "buff":
+	if skill.get("effect", "") in ["buff", "boon"]:
 		return "buff"
 	if not is_damage_skill(skill):
 		return "shield"
@@ -837,8 +905,21 @@ const EARTH := Enums.MON_TYPES.EARTH
 const FIRE := Enums.MON_TYPES.FIRE
 const WATER := Enums.MON_TYPES.WATER
 const AIR := Enums.MON_TYPES.AIR
+const STEAM := FIRE | WATER
+const LIGHTNING := FIRE | AIR
+const MAGMA := EARTH | FIRE
+const ICE := AIR | WATER
+const DUST := EARTH | AIR
+const MUD := EARTH | WATER
+const THUNDERSTORM := AIR | WATER | FIRE
+const VOLCANO := EARTH | FIRE | WATER
+const ASH_STORM := EARTH | AIR | FIRE
+const SWAMP := EARTH | AIR | WATER
+const CHAOS := EARTH | FIRE | WATER | AIR
 const PHYS := Enums.SKILL_DAMAGE_TYPE.PHYSICAL
 const MAG := Enums.SKILL_DAMAGE_TYPE.ABILITY
+const SELF := Enums.CARD_TARGETS.SELF
+const ALLY := Enums.CARD_TARGETS.SINGLE_FRIEND
 
 # ─────────────────────────
 # Start-Skills (Ei-Attacken der Arten, siehe Monmap default_egg_skills), pro Grundelement:
@@ -969,6 +1050,134 @@ func reward_offers() -> Array:
 # kann es den Skill genau dieses Elements lernen (Treasure.add_potion_card, ElementGainOverlay). Vorerst leer.
 var ascension_skills = []
 
+# ─────────────────────────
+# Entwürfe: fertige Skills, die noch NIRGENDS vergeben sind (keine Art, kein Pool, kein Trainer, kein Shop, kein Trank,
+# kein Couvert). get_skill findet sie, das Wiki listet sie unter "Unbenutzt". Zum Vergeben in die passende Liste
+# verschieben bzw. in Monmap eintragen.
+#
+# Werte (fester Wert + Anteil x Wert, siehe Schadensformel). Element-Charakter: Feuer physische Angriffe, Luft magische
+# Angriffe, Erde Rüstung, Wasser Magie-Schild etwas stärker ("+"): gilt pro enthaltenem Element auch in den Kombis.
+#   Grundelement   Stufe 2 (CD 1, 1 Aktion)    Angriff 12 + 0,30 (+ 13 + 0,33)   Schild 12 + 0,30 (+ 14 + 0,33)
+#                  Stufe 3 (CD 2, 1 Aktion)    Angriff 15 + 0,37 (+ 17 + 0,40)   Schild 16 + 0,37 (+ 18 + 0,40)
+#   Zweier-Kombi   Stufe 3 Angriff (CD 2, 2)   30 + 0,50 (+ 33 + 0,55)
+#                  Stufe 3 Schild  (CD 2, 1)   25 + 0,45 (+ 28 + 0,50)
+#                  Stufe 4 Top     (CD 3, 2)   45 + 0,65 (+ 48 + 0,70)
+#   Dreier-Kombi   Stufe 3 Angriff/Schild (CD 3, 3 Aktionen)   55 + 0,75 (+ 60 + 0,80)
+#                  Stufe 4 Top     (CD 4, 3)   75 + 0,95 (+ 80 + 1,00)
+# Dreier-Schilde kosten 3 Aktionen: genau die verbilligt der Bollwerkmeister.
+var draft_skills = [
+	# Feuer (physische Angriffe +)
+	_attack_skill("SKILL_FIRE_PHYS_FLAME_FIST", FIRE, 13.0, 0.33, PHYS, 2, 1, 1),
+	_attack_skill("SKILL_FIRE_PHYS_BLAZE_RUSH", FIRE, 17.0, 0.4, PHYS, 3, 2, 1),
+	_attack_skill("SKILL_FIRE_MAG_SPARK_SHOT", FIRE, 12.0, 0.3, MAG, 2, 1, 1),
+	_attack_skill("SKILL_FIRE_MAG_FIREBALL", FIRE, 15.0, 0.37, MAG, 3, 2, 1),
+	_shield_skill("SKILL_FIRE_ARMOR_CINDER_PLATE", FIRE, 12.0, 0.3, PHYS, 2, 1, 1),
+	_shield_skill("SKILL_FIRE_ARMOR_FLAME_WALL", FIRE, 16.0, 0.37, PHYS, 3, 2, 1),
+	_shield_skill("SKILL_FIRE_WARD_HEAT_VEIL", FIRE, 12.0, 0.3, MAG, 2, 1, 1),
+	_shield_skill("SKILL_FIRE_WARD_PHOENIX_AURA", FIRE, 16.0, 0.37, MAG, 3, 2, 1),
+	# Wasser (Magie-Schilde +)
+	_attack_skill("SKILL_WATER_PHYS_TIDE_SLAP", WATER, 12.0, 0.3, PHYS, 2, 1, 1),
+	_attack_skill("SKILL_WATER_PHYS_BREAKER", WATER, 15.0, 0.37, PHYS, 3, 2, 1),
+	_attack_skill("SKILL_WATER_MAG_BUBBLE_BEAM", WATER, 12.0, 0.3, MAG, 2, 1, 1),
+	_attack_skill("SKILL_WATER_MAG_HYDRO_LANCE", WATER, 15.0, 0.37, MAG, 3, 2, 1),
+	_shield_skill("SKILL_WATER_ARMOR_SHELL", WATER, 12.0, 0.3, PHYS, 2, 1, 1),
+	_shield_skill("SKILL_WATER_ARMOR_CORAL_WALL", WATER, 16.0, 0.37, PHYS, 3, 2, 1),
+	_shield_skill("SKILL_WATER_WARD_MIST_VEIL", WATER, 14.0, 0.33, MAG, 2, 1, 1),
+	_shield_skill("SKILL_WATER_WARD_TIDAL_DOME", WATER, 18.0, 0.4, MAG, 3, 2, 1),
+	# Erde (Rüstung +)
+	_attack_skill("SKILL_EARTH_PHYS_BOULDER_BASH", EARTH, 12.0, 0.3, PHYS, 2, 1, 1),
+	_attack_skill("SKILL_EARTH_PHYS_QUAKE_STOMP", EARTH, 15.0, 0.37, PHYS, 3, 2, 1),
+	_attack_skill("SKILL_EARTH_MAG_PEBBLE_STORM", EARTH, 12.0, 0.3, MAG, 2, 1, 1),
+	_attack_skill("SKILL_EARTH_MAG_GEO_PULSE", EARTH, 15.0, 0.37, MAG, 3, 2, 1),
+	_shield_skill("SKILL_EARTH_ARMOR_STONE_SKIN", EARTH, 14.0, 0.33, PHYS, 2, 1, 1),
+	_shield_skill("SKILL_EARTH_ARMOR_GRANITE_BASTION", EARTH, 18.0, 0.4, PHYS, 3, 2, 1),
+	_shield_skill("SKILL_EARTH_WARD_CLAY_SEAL", EARTH, 12.0, 0.3, MAG, 2, 1, 1),
+	_shield_skill("SKILL_EARTH_WARD_CRYSTAL_SEAL", EARTH, 16.0, 0.37, MAG, 3, 2, 1),
+	# Luft (magische Angriffe +)
+	_attack_skill("SKILL_AIR_PHYS_GUST_KICK", AIR, 12.0, 0.3, PHYS, 2, 1, 1),
+	_attack_skill("SKILL_AIR_PHYS_CYCLONE_CLAW", AIR, 15.0, 0.37, PHYS, 3, 2, 1),
+	_attack_skill("SKILL_AIR_MAG_WIND_BLADE", AIR, 13.0, 0.33, MAG, 2, 1, 1),
+	_attack_skill("SKILL_AIR_MAG_TEMPEST_RAY", AIR, 17.0, 0.4, MAG, 3, 2, 1),
+	_shield_skill("SKILL_AIR_ARMOR_DRAFT_GUARD", AIR, 12.0, 0.3, PHYS, 2, 1, 1),
+	_shield_skill("SKILL_AIR_ARMOR_GALE_WALL", AIR, 16.0, 0.37, PHYS, 3, 2, 1),
+	_shield_skill("SKILL_AIR_WARD_BREEZE_VEIL", AIR, 12.0, 0.3, MAG, 2, 1, 1),
+	_shield_skill("SKILL_AIR_WARD_SKY_DOME", AIR, 16.0, 0.37, MAG, 3, 2, 1),
+	# Dampf (Feuer + Wasser: physische Angriffe +, Magie-Schilde +)
+	_attack_skill("SKILL_STEAM_PHYS_SCALD_STRIKE", STEAM, 33.0, 0.55, PHYS, 3, 2, 2),
+	_attack_skill("SKILL_STEAM_MAG_STEAM_JET", STEAM, 30.0, 0.5, MAG, 3, 2, 2),
+	_shield_skill("SKILL_STEAM_ARMOR_VAPOR_PLATE", STEAM, 25.0, 0.45, PHYS, 3, 2, 1),
+	_shield_skill("SKILL_STEAM_WARD_FOG_BARRIER", STEAM, 28.0, 0.5, MAG, 3, 2, 1),
+	_attack_skill("SKILL_STEAM_PHYS_STEAM_HAMMER", STEAM, 48.0, 0.7, PHYS, 4, 3, 2),
+	# Blitz (Feuer + Luft: beide Angriffsarten +)
+	_attack_skill("SKILL_LIGHTNING_PHYS_VOLT_PUNCH", LIGHTNING, 33.0, 0.55, PHYS, 3, 2, 2),
+	_attack_skill("SKILL_LIGHTNING_MAG_ARC_BOLT", LIGHTNING, 33.0, 0.55, MAG, 3, 2, 2),
+	_shield_skill("SKILL_LIGHTNING_ARMOR_STATIC_PLATE", LIGHTNING, 25.0, 0.45, PHYS, 3, 2, 1),
+	_shield_skill("SKILL_LIGHTNING_WARD_SPARK_FIELD", LIGHTNING, 25.0, 0.45, MAG, 3, 2, 1),
+	_attack_skill("SKILL_LIGHTNING_MAG_THUNDERCLAP", LIGHTNING, 48.0, 0.7, MAG, 4, 3, 2),
+	# Magma (Erde + Feuer: physische Angriffe +, Rüstung +)
+	_attack_skill("SKILL_MAGMA_PHYS_LAVA_FIST", MAGMA, 33.0, 0.55, PHYS, 3, 2, 2),
+	_attack_skill("SKILL_MAGMA_MAG_MAGMA_BURST", MAGMA, 30.0, 0.5, MAG, 3, 2, 2),
+	_shield_skill("SKILL_MAGMA_ARMOR_OBSIDIAN_PLATE", MAGMA, 28.0, 0.5, PHYS, 3, 2, 1),
+	_shield_skill("SKILL_MAGMA_WARD_EMBER_CRUST", MAGMA, 25.0, 0.45, MAG, 3, 2, 1),
+	_attack_skill("SKILL_MAGMA_PHYS_ERUPTION_SLAM", MAGMA, 48.0, 0.7, PHYS, 4, 3, 2),
+	# Eis (Luft + Wasser: magische Angriffe +, Magie-Schilde +)
+	_attack_skill("SKILL_ICE_PHYS_ICICLE_JAB", ICE, 30.0, 0.5, PHYS, 3, 2, 2),
+	_attack_skill("SKILL_ICE_MAG_FROST_RAY", ICE, 33.0, 0.55, MAG, 3, 2, 2),
+	_shield_skill("SKILL_ICE_ARMOR_ICE_PLATE", ICE, 25.0, 0.45, PHYS, 3, 2, 1),
+	_shield_skill("SKILL_ICE_WARD_FROST_MIRROR", ICE, 28.0, 0.5, MAG, 3, 2, 1),
+	_attack_skill("SKILL_ICE_MAG_BLIZZARD", ICE, 48.0, 0.7, MAG, 4, 3, 2),
+	# Staub (Erde + Luft: magische Angriffe +, Rüstung +)
+	_attack_skill("SKILL_DUST_PHYS_SAND_CLAW", DUST, 30.0, 0.5, PHYS, 3, 2, 2),
+	_attack_skill("SKILL_DUST_MAG_DUST_DEVIL", DUST, 33.0, 0.55, MAG, 3, 2, 2),
+	_shield_skill("SKILL_DUST_ARMOR_DUNE_WALL", DUST, 28.0, 0.5, PHYS, 3, 2, 1),
+	_shield_skill("SKILL_DUST_WARD_SAND_VEIL", DUST, 25.0, 0.45, MAG, 3, 2, 1),
+	_attack_skill("SKILL_DUST_MAG_SANDSTORM", DUST, 48.0, 0.7, MAG, 4, 3, 2),
+	# Schlamm (Erde + Wasser: beide Schilde +, Top-Skill ist ein Schild)
+	_attack_skill("SKILL_MUD_PHYS_MUD_SLAM", MUD, 30.0, 0.5, PHYS, 3, 2, 2),
+	_attack_skill("SKILL_MUD_MAG_BOG_PULSE", MUD, 30.0, 0.5, MAG, 3, 2, 2),
+	_shield_skill("SKILL_MUD_ARMOR_CLAY_SHELL", MUD, 28.0, 0.5, PHYS, 3, 2, 1),
+	_shield_skill("SKILL_MUD_WARD_SILT_SEAL", MUD, 28.0, 0.5, MAG, 3, 2, 1),
+	_shield_skill("SKILL_MUD_ARMOR_LANDSLIDE_WALL", MUD, 48.0, 0.7, PHYS, 4, 3, 2),
+	# Gewitter (Luft + Wasser + Feuer: beide Angriffsarten +, Magie-Schild +)
+	_attack_skill("SKILL_THUNDERSTORM_PHYS_STORM_FIST", THUNDERSTORM, 60.0, 0.8, PHYS, 3, 3, 3),
+	_attack_skill("SKILL_THUNDERSTORM_MAG_CHAIN_LIGHTNING", THUNDERSTORM, 60.0, 0.8, MAG, 3, 3, 3),
+	_shield_skill("SKILL_THUNDERSTORM_ARMOR_STORM_PLATE", THUNDERSTORM, 55.0, 0.75, PHYS, 3, 3, 3),
+	_shield_skill("SKILL_THUNDERSTORM_WARD_CLOUD_DOME", THUNDERSTORM, 60.0, 0.8, MAG, 3, 3, 3),
+	_attack_skill("SKILL_THUNDERSTORM_MAG_SKYFALL", THUNDERSTORM, 80.0, 1.0, MAG, 4, 4, 3),
+	# Vulkan (Erde + Feuer + Wasser: physische Angriffe +, beide Schilde +)
+	_attack_skill("SKILL_VOLCANO_PHYS_CALDERA_CRUSH", VOLCANO, 60.0, 0.8, PHYS, 3, 3, 3),
+	_attack_skill("SKILL_VOLCANO_MAG_PYROCLAST", VOLCANO, 55.0, 0.75, MAG, 3, 3, 3),
+	_shield_skill("SKILL_VOLCANO_ARMOR_BASALT_FORT", VOLCANO, 60.0, 0.8, PHYS, 3, 3, 3),
+	_shield_skill("SKILL_VOLCANO_WARD_GEYSER_SHIELD", VOLCANO, 60.0, 0.8, MAG, 3, 3, 3),
+	_attack_skill("SKILL_VOLCANO_PHYS_MAGMA_TITAN", VOLCANO, 80.0, 1.0, PHYS, 4, 4, 3),
+	# Aschesturm (Erde + Luft + Feuer: beide Angriffsarten +, Rüstung +)
+	_attack_skill("SKILL_ASH_STORM_PHYS_CINDER_CLAW", ASH_STORM, 60.0, 0.8, PHYS, 3, 3, 3),
+	_attack_skill("SKILL_ASH_STORM_MAG_ASH_CYCLONE", ASH_STORM, 60.0, 0.8, MAG, 3, 3, 3),
+	_shield_skill("SKILL_ASH_STORM_ARMOR_SLAG_ARMOR", ASH_STORM, 60.0, 0.8, PHYS, 3, 3, 3),
+	_shield_skill("SKILL_ASH_STORM_WARD_SOOT_VEIL", ASH_STORM, 55.0, 0.75, MAG, 3, 3, 3),
+	_attack_skill("SKILL_ASH_STORM_PHYS_ASHEN_ROLLER", ASH_STORM, 80.0, 1.0, PHYS, 4, 4, 3),
+	# Sumpf (Erde + Luft + Wasser: magische Angriffe +, beide Schilde +)
+	_attack_skill("SKILL_SWAMP_PHYS_ROOT_LASH", SWAMP, 55.0, 0.75, PHYS, 3, 3, 3),
+	_attack_skill("SKILL_SWAMP_MAG_MIASMA_CLOUD", SWAMP, 60.0, 0.8, MAG, 3, 3, 3),
+	_shield_skill("SKILL_SWAMP_ARMOR_MANGROVE_WALL", SWAMP, 60.0, 0.8, PHYS, 3, 3, 3),
+	_shield_skill("SKILL_SWAMP_WARD_MARSH_MIST", SWAMP, 60.0, 0.8, MAG, 3, 3, 3),
+	_attack_skill("SKILL_SWAMP_MAG_BOG_MAW", SWAMP, 80.0, 1.0, MAG, 4, 4, 3),
+	# Sonder-Fähigkeiten (todo.txt 1-4, 9-11)
+	_boon_skill("SKILL_FIRE_BOON_FOCUS_FLAME", FIRE, "crit_next", 50.0, -1, SELF, "atk", 3, 2, 1, "SKILL_BOON_CRIT_NEXT_DESC"),
+	_boon_skill("SKILL_LIGHTNING_BOON_OVERCHARGE", LIGHTNING, "crit", 50.0, 1, SELF, "atk", 4, 3, 2, "SKILL_BOON_CRIT_DESC"),
+	_boon_skill("SKILL_CHAOS_BOON_BATTLE_CRY", CHAOS, "taunt", 1.0, 0, SELF, "def", 2, 2, 1, "SKILL_BOON_TAUNT_DESC"),
+	_boon_skill("SKILL_AIR_BOON_TAILWIND", AIR, "extra_moves", 1.0, 3, ALLY, "speed", 3, 2, 2, "SKILL_BOON_EXTRA_MOVES_DESC"),
+	_boon_skill("SKILL_WATER_BOON_BLOOD_TIDE", WATER, "leech", 20.0, 1, ALLY, "hp", 3, 2, 2, "SKILL_BOON_LEECH_DESC"),
+	_cross_shield_skill("SKILL_CHAOS_WARD_IRON_WILL", CHAOS, 5.0, 0.4, MAG, 3, 2, 1),
+	_cross_shield_skill("SKILL_CHAOS_ARMOR_SPIRIT_GUARD", CHAOS, 5.0, 0.4, PHYS, 3, 2, 1),
+	# Passive (todo.txt 5-8, 12)
+	_with(_passive_skill("SKILL_PASSIVE_BATTLE_FERVOR", LIGHTNING, 20.0, 3, "stat", "SKILL_PASSIVE_STAT_SELF_DESC"), {"passive_stat": "atk", "passive_scope": "self"}),
+	_with(_passive_skill("SKILL_PASSIVE_STORM_SPIRIT", LIGHTNING, 20.0, 3, "stat", "SKILL_PASSIVE_STAT_SELF_DESC"), {"passive_stat": "s_atk", "passive_scope": "self"}),
+	_passive_skill("SKILL_PASSIVE_BULWARK_MASTER", MUD, 1.0, 3, "shield_cost", "SKILL_PASSIVE_SHIELD_COST_DESC"),
+	_with(_passive_skill("SKILL_PASSIVE_DEEP_VITALITY", MUD, 20.0, 3, "stat", "SKILL_PASSIVE_STAT_SELF_DESC"), {"passive_stat": "hp", "passive_scope": "self"}),
+	_passive_skill("SKILL_PASSIVE_PROVOKER", CHAOS, 1.0, 4, "taunt", "SKILL_PASSIVE_TAUNT_DESC"),
+]
+
 ## Aufstiegs-Skill für genau dieses Kombi-Element (frische Kopie), {} für Grundelemente und Chaos
 func ascension_skill(nature: int) -> Dictionary:
 	for skill in ascension_skills:
@@ -1015,6 +1224,105 @@ func _flat_shield_skill(skill_name: String, nature: int, value: float, scaling: 
 		"tier": 1,
 		"shop_cost": {"min": 5, "max": 15},
 		"handle": func(props): add_shield(props)
+	}
+
+## Angriff auf ein Ziel mit Stufe, Abklingzeit und Kosten (Entwürfe, siehe draft_skills)
+func _attack_skill(skill_name: String, nature: int, value: float, scaling: float, damage_type: int, tier: int, cooldown: int, cost: int) -> Dictionary:
+	return {
+		"cost": cost,
+		"name": skill_name,
+		"nature": nature,
+		"value": value,
+		"scaling": scaling,
+		"cooldown": cooldown,
+		"damage_type": damage_type,
+		"effect": "damage",
+		"description": "SKILL_DAMAGE_PHYSICAL_DESC" if damage_type == Enums.SKILL_DAMAGE_TYPE.PHYSICAL else "SKILL_DAMAGE_ABILITY_DESC",
+		"target": Enums.CARD_TARGETS.SINGLE_ENEMY,
+		"scouted": false,
+		"tier": tier,
+		"shop_cost": {"min": 5 * tier, "max": 15 * tier},
+		"handle": func(props): deal_damage(props)
+	}
+
+## Schild auf ein eigenes Monster mit Stufe, Abklingzeit und Kosten (Entwürfe, siehe draft_skills)
+func _shield_skill(skill_name: String, nature: int, value: float, scaling: float, damage_type: int, tier: int, cooldown: int, cost: int) -> Dictionary:
+	return {
+		"cost": cost,
+		"name": skill_name,
+		"nature": nature,
+		"value": value,
+		"scaling": scaling,
+		"cooldown": cooldown,
+		"damage_type": damage_type,
+		"effect": "shield",
+		"description": "SKILL_SHIELD_PHYSICAL_DESC" if damage_type == Enums.SKILL_DAMAGE_TYPE.PHYSICAL else "SKILL_SHIELD_ABILITY_DESC",
+		"target": Enums.CARD_TARGETS.SINGLE_FRIEND,
+		"scouted": false,
+		"tier": tier,
+		"shop_cost": {"min": 5 * tier, "max": 15 * tier},
+		"handle": func(props): add_shield(props)
+	}
+
+## Kreuz-Schild: Rüstung aus der Sp. Verteidigung bzw. Magie-Schild aus der Verteidigung (scaling_stat, shield_amount)
+func _cross_shield_skill(skill_name: String, nature: int, value: float, scaling: float, damage_type: int, tier: int, cooldown: int, cost: int) -> Dictionary:
+	return {
+		"cost": cost,
+		"name": skill_name,
+		"nature": nature,
+		"value": value,
+		"scaling": scaling,
+		"scaling_stat": "s_def" if damage_type == Enums.SKILL_DAMAGE_TYPE.PHYSICAL else "def",
+		"cooldown": cooldown,
+		"damage_type": damage_type,
+		"effect": "shield",
+		"description": "SKILL_SHIELD_PHYSICAL_FROM_SPD_DESC" if damage_type == Enums.SKILL_DAMAGE_TYPE.PHYSICAL else "SKILL_SHIELD_ABILITY_FROM_DEF_DESC",
+		"target": Enums.CARD_TARGETS.SINGLE_FRIEND,
+		"scouted": false,
+		"tier": tier,
+		"shop_cost": {"min": 5 * tier, "max": 15 * tier},
+		"handle": func(props): add_shield(props)
+	}
+
+## Sonder-Verstärkung (add_boon): boon = Art (BOON_KINDS), value = Stärke, turns = eigene Züge des Ziels (-1 = bis verbraucht),
+## target SELF oder SINGLE_FRIEND, icon_stat = Symbol auf der Karte (affected_stat)
+func _boon_skill(skill_name: String, nature: int, boon: String, value: float, turns: int, target: int, icon_stat: String, tier: int, cooldown: int, cost: int, description: String) -> Dictionary:
+	return {
+		"cost": cost,
+		"name": skill_name,
+		"nature": nature,
+		"value": value,
+		"cooldown": cooldown,
+		"damage_type": Enums.SKILL_DAMAGE_TYPE.ABILITY,
+		"effect": "boon",
+		"boon": boon,
+		"buff_turns": turns,
+		"icon_stat": icon_stat,
+		"description": description,
+		"target": target,
+		"scouted": false,
+		"tier": tier,
+		"shop_cost": {"min": 5 * tier, "max": 15 * tier},
+		"handle": func(props): add_boon(props)
+	}
+
+## Passiver Skill (effect "passive", passive = Art, siehe Passive weiter oben), kann nicht ausgespielt werden
+func _passive_skill(skill_name: String, nature: int, value: float, tier: int, passive: String, description: String) -> Dictionary:
+	return {
+		"cost": 0,
+		"name": skill_name,
+		"nature": nature,
+		"value": value,
+		"cooldown": 0,
+		"damage_type": Enums.SKILL_DAMAGE_TYPE.ABILITY,
+		"effect": "passive",
+		"passive": passive,
+		"description": description,
+		"target": Enums.CARD_TARGETS.TEAM_FRIEND,
+		"scouted": false,
+		"tier": tier,
+		"shop_cost": {"min": 5 * tier, "max": 15 * tier},
+		"handle": func(_props): pass
 	}
 
 ## Extra einer Karte (siehe "Extras" weiter oben). stat "" und turns 0, wo sie nicht gebraucht werden.
