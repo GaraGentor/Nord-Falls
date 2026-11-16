@@ -891,7 +891,8 @@ var starter_skills = [
 	_flat_shield_skill("SKILL_AIR_ARMOR_WEAK", AIR, 2.0, 0.2, PHYS, 0),
 	_flat_shield_skill("SKILL_AIR_WARD_LIGHT", AIR, 5.0, 0.3, MAG, 0),
 	_flat_shield_skill("SKILL_AIR_WARD_WEAK", AIR, 2.0, 0.2, MAG, 0),
-	# Zusätzliche Ei-Attacken der Startmonster (State.INITIAL_MONS), physisch bzw. magisch nach dem höheren Angriffswert:
+	# Zusätzliche Ei-Attacken der Startmonster (State.INITIAL_MONS), durch Fangen & Opfern freizuschalten
+	# (Monmap unlockable_egg_skills), physisch bzw. magisch nach dem höheren Angriffswert:
 	#   Angreifer: Kleiner Punch / Kleine [Element]kanone 5 + 0,3 (keine Abklingzeit),
 	#              Punch / [Element]kanone 12 + 0,4 (Abklingzeit 1)
 	#   Tanks:     Leichte Rückhand / Leichte [Element]kanone 8 + 0,3 (Abklingzeit 1),

@@ -135,7 +135,7 @@ var mons = [
 		#   Vert.: Nutzloser Stoß, Leichter Schild (Rüstung), Nutzloser Magie-Schild
 		#   Sp. Vert.: Nutzloser Stoß, Leichter Magie-Schild, Nutzloser Schild (Rüstung)
 		#   Nutzloser Stoß ist magisch, wenn Sp. Ang. höher als Ang. ist.
-		# Optional, vorerst leer: unlockable_egg_skills (durch Opfern), milestone_egg_skills (Skills.MILESTONES),
+		# Optional: unlockable_egg_skills (durch Fangen & Opfern, bisher nur bei den Startmonstern), milestone_egg_skills (Skills.MILESTONES),
 		# bounty_egg_skills (Skills.BOUNTIES)
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_MAG_LIGHT_STRIKE", "SKILL_AIR_WARD_WEAK"],
@@ -148,9 +148,9 @@ var mons = [
 		"stats": [190, 210],
 		"preferred_stats": {"hp": 18, "atk": 14, "def": 25, "s_atk": 14, "s_def": 19, "speed": 10},
 		"max_upgrades": 2,
-		# Startmonster (Tank): zusätzlich Leichter Wasserschild (Sp. Vert., ergänzt den Muschelschild) und Leichte Rückhand
-		"default_egg_skills": ["SKILL_WATER_PHYS_WEAK_THRUST", "SKILL_WATER_ARMOR_LIGHT", "SKILL_WATER_WARD_WEAK",
-			"SKILL_WATER_WARD_PLAIN", "SKILL_WATER_PHYS_BACKHAND"],
+		"default_egg_skills": ["SKILL_WATER_PHYS_WEAK_THRUST", "SKILL_WATER_ARMOR_LIGHT", "SKILL_WATER_WARD_WEAK"],
+		# Startmonster (Tank), durch Fangen & Opfern: Leichter Wasserschild (Sp. Vert., ergänzt den Muschelschild) und Leichte Rückhand
+		"unlockable_egg_skills": ["SKILL_WATER_WARD_PLAIN", "SKILL_WATER_PHYS_BACKHAND"],
 	},
 	# Schattflaum: Federgeist aus violettem Rauch
 	{
@@ -170,9 +170,9 @@ var mons = [
 		"stats": [190, 210],
 		"preferred_stats": {"hp": 16, "atk": 27, "def": 22, "s_atk": 8, "s_def": 12, "speed": 15},
 		"max_upgrades": 2,
-		# Startmonster (Angreifer): zusätzlich Kleiner Punch und Punch
-		"default_egg_skills": ["SKILL_FIRE_PHYS_LIGHT_THRUST", "SKILL_FIRE_PHYS_LIGHT_STRIKE", "SKILL_FIRE_ARMOR_WEAK",
-			"SKILL_FIRE_PHYS_SMALL_PUNCH", "SKILL_FIRE_PHYS_PUNCH"],
+		"default_egg_skills": ["SKILL_FIRE_PHYS_LIGHT_THRUST", "SKILL_FIRE_PHYS_LIGHT_STRIKE", "SKILL_FIRE_ARMOR_WEAK"],
+		# Startmonster (Angreifer), durch Fangen & Opfern: Kleiner Punch und Punch
+		"unlockable_egg_skills": ["SKILL_FIRE_PHYS_SMALL_PUNCH", "SKILL_FIRE_PHYS_PUNCH"],
 	},
 	# Glotzlibelle: Libelle mit Stielaugen
 	{
@@ -182,9 +182,9 @@ var mons = [
 		"stats": [190, 210],
 		"preferred_stats": {"hp": 13, "atk": 18, "def": 11, "s_atk": 20, "s_def": 14, "speed": 24},
 		"max_upgrades": 2,
-		# Startmonster (Angreifer): zusätzlich Kleine Windkanone und Windkanone
-		"default_egg_skills": ["SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_MAG_LIGHT_STRIKE", "SKILL_AIR_WARD_WEAK",
-			"SKILL_AIR_MAG_SMALL_CANNON", "SKILL_AIR_MAG_CANNON"],
+		"default_egg_skills": ["SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_MAG_LIGHT_STRIKE", "SKILL_AIR_WARD_WEAK"],
+		# Startmonster (Angreifer), durch Fangen & Opfern: Kleine Windkanone und Windkanone
+		"unlockable_egg_skills": ["SKILL_AIR_MAG_SMALL_CANNON", "SKILL_AIR_MAG_CANNON"],
 	},
 	# Borkenhieb: Baumkrieger mit zwei Runenäxten
 	{
@@ -446,25 +446,15 @@ var mons = [
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_EARTH_MAG_LIGHT_THRUST", "SKILL_EARTH_MAG_LIGHT_STRIKE", "SKILL_EARTH_WARD_WEAK"],
 	},
-	# Blutmähne: Mantikor mit Runenpanzer (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
+	# Blutmähne: Mantikor mit Runenpanzer
 	{
 		"name": "33",
-		"rarity": Enums.MON_RARITY.MYTHIC,
-		"initial_type": Enums.MON_TYPES.EARTH,
-		"stats": [260, 280],
+		"rarity": Enums.MON_RARITY.LEGENDARY,
+		"initial_type": Enums.MON_TYPES.FIRE,
+		"stats": [245, 265],
 		"preferred_stats": {"hp": 16, "atk": 26, "def": 16, "s_atk": 12, "s_def": 12, "speed": 18},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_EARTH_PHYS_LIGHT_THRUST", "SKILL_EARTH_PHYS_LIGHT_STRIKE", "SKILL_EARTH_ARMOR_WEAK"],
-	},
-	# Leerwurm: Schuppenwyrm mit violetten Flammen (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
-	{
-		"name": "35",
-		"rarity": Enums.MON_RARITY.MYTHIC,
-		"initial_type": Enums.MON_TYPES.AIR,
-		"stats": [260, 280],
-		"preferred_stats": {"hp": 14, "atk": 16, "def": 12, "s_atk": 24, "s_def": 16, "speed": 18},
-		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_MAG_LIGHT_STRIKE", "SKILL_AIR_WARD_WEAK"],
+		"default_egg_skills": ["SKILL_FIRE_PHYS_LIGHT_THRUST", "SKILL_FIRE_PHYS_LIGHT_STRIKE", "SKILL_FIRE_ARMOR_WEAK"],
 	},
 	# Staubgreifer: Sandgeist mit Steinklingen an langen Ranken (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -606,22 +596,22 @@ var mons = [
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_EARTH_PHYS_WEAK_THRUST", "SKILL_EARTH_ARMOR_LIGHT", "SKILL_EARTH_WARD_WEAK"],
 	},
-	# Sonnensphinx: geflügelter Goldlöwe mit Krone, Neben-Elemente Staub und Blitz
+	# Sonnensphinx: geflügelter Goldlöwe mit Krone, Neben-Elemente Staub und Blitz (mythisch, nur bei Bossen)
 	{
 		"name": "51",
-		"rarity": Enums.MON_RARITY.LEGENDARY,
+		"rarity": Enums.MON_RARITY.MYTHIC,
 		"initial_type": Enums.MON_TYPES.AIR,
-		"stats": [245, 265],
+		"stats": [260, 280],
 		"preferred_stats": {"hp": 16, "atk": 20, "def": 14, "s_atk": 22, "s_def": 16, "speed": 12},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_MAG_LIGHT_STRIKE", "SKILL_AIR_WARD_WEAK"],
 	},
-	# Strudeldrache: Seedrache, der Wasserstrudel um sich zieht (mythisch, nur bei Bossen)
+	# Strudeldrache: Seedrache, der Wasserstrudel um sich zieht
 	{
 		"name": "52",
-		"rarity": Enums.MON_RARITY.MYTHIC,
+		"rarity": Enums.MON_RARITY.EPIC,
 		"initial_type": Enums.MON_TYPES.WATER,
-		"stats": [260, 280],
+		"stats": [230, 250],
 		"preferred_stats": {"hp": 18, "atk": 16, "def": 14, "s_atk": 24, "s_def": 16, "speed": 12},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_WATER_MAG_LIGHT_THRUST", "SKILL_WATER_MAG_LIGHT_STRIKE", "SKILL_WATER_WARD_WEAK"],
@@ -706,12 +696,12 @@ var mons = [
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_WATER_MAG_LIGHT_THRUST", "SKILL_WATER_MAG_LIGHT_STRIKE", "SKILL_WATER_WARD_WEAK"],
 	},
-	# Rankenrachen: Pflanzenbestie mit Giftflecken und triefendem Maul (mythisch, nur bei Bossen)
+	# Rankenrachen: Pflanzenbestie mit Giftflecken und triefendem Maul
 	{
 		"name": "61",
-		"rarity": Enums.MON_RARITY.MYTHIC,
+		"rarity": Enums.MON_RARITY.EPIC,
 		"initial_type": Enums.MON_TYPES.EARTH,
-		"stats": [260, 280],
+		"stats": [230, 250],
 		"preferred_stats": {"hp": 20, "atk": 26, "def": 18, "s_atk": 14, "s_def": 12, "speed": 10},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_EARTH_PHYS_LIGHT_THRUST", "SKILL_EARTH_PHYS_LIGHT_STRIKE", "SKILL_EARTH_ARMOR_WEAK"],
@@ -796,12 +786,12 @@ var mons = [
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_EARTH_PHYS_LIGHT_THRUST", "SKILL_EARTH_PHYS_LIGHT_STRIKE", "SKILL_EARTH_ARMOR_WEAK"],
 	},
-	# Sonnenwächter: silberner Ritter mit Sonnenring und Flammenhand
+	# Sonnenwächter: silberner Ritter mit Sonnenring und Flammenhand (mythisch, nur bei Bossen)
 	{
 		"name": "71",
-		"rarity": Enums.MON_RARITY.LEGENDARY,
+		"rarity": Enums.MON_RARITY.MYTHIC,
 		"initial_type": Enums.MON_TYPES.FIRE,
-		"stats": [245, 265],
+		"stats": [260, 280],
 		"preferred_stats": {"hp": 16, "atk": 24, "def": 20, "s_atk": 18, "s_def": 14, "speed": 8},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_FIRE_PHYS_LIGHT_THRUST", "SKILL_FIRE_PHYS_LIGHT_STRIKE", "SKILL_FIRE_ARMOR_WEAK"],
@@ -816,15 +806,15 @@ var mons = [
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_MAG_LIGHT_STRIKE", "SKILL_AIR_WARD_WEAK"],
 	},
-	# Moorschrecken: gehörnter Sumpfdämon mit Moos- und Algenpanzer
+	# Moorschrecken: gehörnter Sumpfdämon mit Moos- und Algenpanzer (mythisch, nur bei Bossen)
 	{
 		"name": "73",
-		"rarity": Enums.MON_RARITY.EPIC,
-		"initial_type": Enums.MON_TYPES.WATER,
-		"stats": [230, 250],
+		"rarity": Enums.MON_RARITY.MYTHIC,
+		"initial_type": Enums.MON_TYPES.EARTH,
+		"stats": [260, 280],
 		"preferred_stats": {"hp": 18, "atk": 26, "def": 16, "s_atk": 18, "s_def": 12, "speed": 10},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_WATER_PHYS_LIGHT_THRUST", "SKILL_WATER_PHYS_LIGHT_STRIKE", "SKILL_WATER_ARMOR_WEAK"],
+		"default_egg_skills": ["SKILL_EARTH_PHYS_LIGHT_THRUST", "SKILL_EARTH_PHYS_LIGHT_STRIKE", "SKILL_EARTH_ARMOR_WEAK"],
 	},
 	# Blattfee: Ahornblatt-Fee mit gläsernen Flügeln
 	{
@@ -915,8 +905,23 @@ var mons = [
 		"preferred_stats": {"hp": 22, "atk": 8, "def": 20, "s_atk": 14, "s_def": 28, "speed": 8},
 		"max_upgrades": 2,
 		# Sp. Vert. am höchsten: Nutzloser Erdstoß, Leichter Kristallschild, Nutzloser Steinschild,
-		# als Startmonster zusätzlich Leichter Schild (Vert., ergänzt den Kristallschild) und Leichte Erdkanone
-		"default_egg_skills": ["SKILL_EARTH_MAG_WEAK_THRUST", "SKILL_EARTH_WARD_LIGHT", "SKILL_EARTH_ARMOR_WEAK",
-			"SKILL_EARTH_ARMOR_PLAIN", "SKILL_EARTH_MAG_LIGHT_CANNON"],
+		# als Startmonster durch Fangen & Opfern: Leichter Schild (Vert., ergänzt den Kristallschild) und Leichte Erdkanone
+		"default_egg_skills": ["SKILL_EARTH_MAG_WEAK_THRUST", "SKILL_EARTH_WARD_LIGHT", "SKILL_EARTH_ARMOR_WEAK"],
+		"unlockable_egg_skills": ["SKILL_EARTH_ARMOR_PLAIN", "SKILL_EARTH_MAG_LIGHT_CANNON"],
+	},
+	# Weltenfresser: gehörnte Schattenwolke mit Reißzähnen und Rauchranken, Endboss des Runs (Chaos, alle vier Elemente).
+	# final_boss: taucht weder wild noch als normaler Boss auf, nur als Hauptgegner im Boss-Kampf des letzten Bioms
+	# (Map.roll_boss_enemies). Im Endboss-Kampf kann nicht gefangen werden.
+	{
+		"name": "84",
+		"rarity": Enums.MON_RARITY.MYTHIC,
+		"initial_type": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.FIRE | Enums.MON_TYPES.WATER | Enums.MON_TYPES.AIR,
+		"final_boss": true,
+		"stats": [285, 305],
+		"preferred_stats": {"hp": 22, "atk": 18, "def": 14, "s_atk": 24, "s_def": 14, "speed": 8},
+		"max_upgrades": 2,
+		# Sp. Ang. am höchsten, eine Basis-Attacke je Element
+		"default_egg_skills": ["SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_FIRE_MAG_LIGHT_STRIKE", "SKILL_WATER_WARD_WEAK",
+			"SKILL_EARTH_ARMOR_WEAK"],
 	},
 ]

@@ -131,7 +131,8 @@ func take_active() -> Array:
 ## Art eines Bosses: Seltenheit gewichtet nach BOSS_RARITY_WEIGHTS (mythic: mythisch),
 ## bevorzugt mit einem Element des aktuellen Bioms
 func roll_species(depth: int, mythic := false) -> String:
-	var all = Monmap.mons.filter(func(meta): return not meta.has("bounty_target"))
+	# der Endboss (Monmap final_boss) kommt nur über Map.roll_boss_enemies in den letzten Boss-Kampf
+	var all = Monmap.mons.filter(func(meta): return not meta.has("bounty_target") and not meta.get("final_boss", false))
 	var rarity: int = Enums.MON_RARITY.MYTHIC if mythic else _roll_boss_rarity(depth, all)
 	var candidates = all.filter(func(meta): return meta.get("rarity", Enums.MON_RARITY.COMMON) == rarity)
 	if candidates.is_empty():

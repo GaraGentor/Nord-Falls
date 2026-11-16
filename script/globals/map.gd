@@ -195,7 +195,8 @@ func owned_rarity_counts() -> Dictionary:
 
 ## Arten, die wild auftauchen dürfen: keine eigenen Kopfgeld-Arten, keine mythischen (nur Bosse)
 func wild_species() -> Array:
-	return Monmap.mons.filter(func(meta): return not meta.has("bounty_target") and meta.rarity != Enums.MON_RARITY.MYTHIC)
+	return Monmap.mons.filter(func(meta): return not meta.has("bounty_target") and meta.rarity != Enums.MON_RARITY.MYTHIC \
+		and not meta.get("final_boss", false))
 
 ## Zieht eine wilde Art aus dem Pool, gewichtet nach RARITY_SPAWN_WEIGHTS.
 ## max_rarity begrenzt die Seltenheit (Begleiter sind nie seltener als das erste Monster des Kampfs).
@@ -376,7 +377,7 @@ func roll_weighted(counts: Array, t: float) -> int:
 
 # Würfelt die Gegner aller Kampf- und Boss-Felder und des Biom-Bosses, dazu die Boss-Relikte der Boss-Kämpfe
 func generate_encounters(grid: Array) -> void:
-	boss_enemies = roll_boss_enemies()
+	boss_enemies = roll_boss_enemies(0, is_last_biome())
 	# jedes Relikt nur einmal pro Run: der Biom-Boss wählt zuerst, die Boss-Felder teilen sich den Rest
 	boss_relics = BossRelics.random_relics()
 	var taken: Array = boss_relics.duplicate()
@@ -411,14 +412,29 @@ func roll_fight_enemies(fight_index: int, forced_count := 0) -> Array[Monster]:
 			enemies[0] = Helper.generate_mons({"count": 1, "bounty": bounty})[0]
 	return enemies
 
+## Ist das aktuelle Biom das letzte des Runs? Dessen Biom-Boss ist der Endboss.
+func is_last_biome() -> bool:
+	return State.map_level == map_settings.size() - 1
+
+## Art des Endbosses (Monmap final_boss)
+func final_boss_species() -> String:
+	for meta in Monmap.mons:
+		if meta.get("final_boss", false):
+			return meta.name
+	return ""
+
 ## Bosse sind immer seltene oder legendäre Arten (selten auch eine mythische) und tragen Trophäen. Die Boss-Relikte würfelt generate_encounters dazu.
-func roll_boss_enemies(forced_count := 0) -> Array[Monster]:
+## final: Endboss-Kampf, der Endboss (final_boss_species) steht vorne, die übrigen Plätze sind normale, nie mythische Bosse.
+func roll_boss_enemies(forced_count := 0, final := false) -> Array[Monster]:
 	var depth := encounter_depth()
 	var count: int = forced_count if forced_count > 0 else BOSS_ENCOUNTERS[depth].count
-	# ab und zu ist einer der Bosse mythisch, nie mehrere
-	var mythic_slot := randi() % count if BossRelics.roll_mythic(depth) else -1
 	var species := []
-	for i in count:
+	var final_species := final_boss_species() if final else ""
+	if final_species != "":
+		species.append(final_species)
+	# ab und zu ist einer der Bosse mythisch, nie mehrere (im Endboss-Kampf nie neben dem Endboss)
+	var mythic_slot := randi() % count if final_species == "" and BossRelics.roll_mythic(depth) else -1
+	for i in range(species.size(), count):
 		species.append(BossRelics.roll_species(depth, i == mythic_slot))
 	var bosses := Helper.generate_mons({"count": count, "species": species})
 	for boss in bosses:

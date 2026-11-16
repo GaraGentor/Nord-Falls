@@ -380,7 +380,6 @@ MONSTER_29,Tempest Djinn,Sturmdschinn
 MONSTER_30,Volcafist,Vulkanfaust
 MONSTER_31,Dust Monarch,Staubkönig
 MONSTER_33,Bloodmane,Blutmähne
-MONSTER_35,Voidwyrm,Leerwurm
 MONSTER_36,Dustgrasp,Staubgreifer
 MONSTER_37,Mosscolossus,Mooskoloss
 MONSTER_38,Gorgon Viper,Gorgonatter
@@ -426,6 +425,7 @@ MONSTER_79,Seer Fiend,Seherdämon
 MONSTER_80,Swirlsoul,Strudelseele
 MONSTER_81,Ironspider,Panzerspinne
 MONSTER_82,Mosscube,Mooswürfel
+MONSTER_84,Worldeater,Weltenfresser
 TURN_WHEEL_ROUND,Round {round},Runde {round}
 SKILL_RAPTOR_DIVE,Raptor Dive,Raubvogelsturz
 SKILL_HUNTERS_GALE,Hunter's Gale,Jägerböe

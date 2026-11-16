@@ -146,7 +146,7 @@ func _build_main() -> void:
 	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(list)
 
-	var is_last_biome: bool = State.map_level == Map.map_settings.size() - 1
+	var is_last_biome: bool = Map.is_last_biome()
 	_add_section(list, "Kämpfe", [
 		[tr(Map.type_label(Map.PATH_TYPE.COMBAT)) + " ...", _open_fight_page.bind(_change_scene.bind(BATTLE_PATH))],
 		["BOSS-FELD ...", _open_fight_page.bind(_start_map_boss, true)],

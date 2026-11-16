@@ -513,7 +513,7 @@ func _take_enemies(fight_index: int) -> Array[Monster]:
 	var forced_count: int = DebugSettings.take_enemy_count(0)
 	if not planned.is_empty() and forced_count == 0:
 		return planned
-	return Map.roll_boss_enemies(forced_count) if is_boss_battle else Map.roll_fight_enemies(fight_index, forced_count)
+	return Map.roll_boss_enemies(forced_count, State.is_final_boss) if is_boss_battle else Map.roll_fight_enemies(fight_index, forced_count)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:

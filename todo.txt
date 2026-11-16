@@ -1,15 +1,1 @@
-1. Entferne den Schlundwurm aus dem Spiel ((lösche auch die Bilder raus.)
-2. Mach den Dünenstachler
-3. Der Lavaritter kommt auch aus dem spiel ((lösche auch die Bilder raus.).
-4. Nebelspuk kommt zu Luft wesen (passe mir die attacken auch an)
-5. Schlammschlund kommt zu erde
-6. Nachthydra kommt aus dem spiel. (lösche auch die Bilder raus.)
-7. Höllenwächter kommt aus dem spiel. (lösche auch die Bilder raus.)
-8. Für mir die 82 als Monster hinzu und mach das als Starmonster anstelle des Wolkenkauz. (passe hier auch die fähigkeiten nach den stats an der Cube kann etwas mehr s-def lastig sein)
-
-Erst danach:
-9. Füge den Startmonstern eine neue EI Attacke hinzu.
-	> Die Damage dealer bekommen eine EI Attacke Kleiner Punch / Kleine [ELEMENT_KANONE] jeweils 5 atk und 0,3 ANG 0 CD
-	> Die Tanks bekomme eine EI Attacke "Leichter Schild" oder "Leicher [ELEMENT_SCHILD]" jeweils für 5 + 0.3 S_DEF
-	> Die Tanks bekommen noch eine EI Attacke "Leichte Rückhand" die "Leichte [ELEMENT_Kanone]" jeweils für 8 atk und 0,3 ATK und 1CD 
-	> Die Damage Dealer bekommen noch eine EI Attacke "Punch" / [ELEMENT KAnone] jeweils mit 12 + 0,4 atk / satk mit 1 CD
+1. Füge die 84 als neues Monster & Endboss hinzu.
