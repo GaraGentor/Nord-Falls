@@ -1,0 +1,24 @@
+Rules für die Fähigkeiten Verteilung (Initiale Fähigkeiten, EI Attacken Freischaltungen, Meilensteine). Das Betrifft nicht die gleichen Regeln für einen Kampf. Im Kampf kommen noch sonder Regeln dazu. Allerdings können die Monster gleiche Fähigkeiten besitzen wie hier beschrieben (falls nicht schon alles Random verteilt wird nach element aus einem größen Pool)
+- Monster bekommen neue fähigkeiten zugewiesen favorisiert nach deren Stat Punkten je höher die Stat für einen Wert (außer HP und Initiative), dann bekommt das Monster dementsprechend eher einen Defensiven skill nach Stat.
+- Monster bekommen nach schwirigkeit der Meilensteine "Bessere Skills"
+- Gewöhnliche Monster bekommen keine Skills mit weiteren Elementen
+- Gewöhnliche Monster bekommen höchstens 1-2 rarität 3 Fähigkeiten bei EI Attacken und Meilensteine
+- Gewöhnliche Monster können auch fähigkeiten bekommen, die sie nicht ganz auf ihre Stats passen in schwächerer Form z.B.: Ein Monster mit hoher Defensive kann keine High Attacke Fähigkeit freischalten können
+- Ungewöhnliche Mosnter haben zu beginn tlw. eine Stärkere fähigkeit für ihre Beste Stat.
+- Ungewöhnliche Monster können mehr rarität (2-3) fähigkeiten für Ei Attacken und Meilensteine haben (sinngemäß nach deren höchten Stat) sind keine Fähigkeiten mehr da, dann für den zweit besten stat
+- Ungewöhnliche Monster können Buffs Freischalten als EI Attacke 
+- Seltene Monster können passive und Buffs freischalten als EI Attacke
+- Seltene Monster haben bessere Initiale Fähigkeiten equivalent zu deren stats (ähnlich wie bei den Starter Monster nur besser maximal seltenheit 2)
+- Seltene Monster haben mehr bessere Fähigkeiten zum freischalten
+- Seltene Monster können auch passende Element kombinationen Fähigkeiten haben allerdings vom niedrigsten seltenheits grad
+- Epische Monster können auch passende Element kombinationen Fähigkeiten haben allerdings vom seltenheits 1 oder 2
+- Epische Monster können direkt ein verbesserten raritäts 3 fähigkeit besitzen und auch mehr davon freischalten (tlw. auch die die 0 cd haben und 1 skill point brauchen zum nutzen)
+- Epische Monster können Passive und Buffs haben
+- Epische Monster sollen keine Schwache fähigkeiten bekommen
+- Legendäre Monster können auch Stufe 3 Fähigkeiten als MeilenStein Freischalten
+- Legendäre Monster sollen keine Schwache Fähigkeiten bekommen und auch nicht freischalten können
+- Legendäre Monster haben generell bessere fähigkeiten
+- Legendäre Monster können einen Rarität 4 Passive freischalten als Meilenstein
+- Legendäre Monster können rarität 4 Buffs freischalten als EI Attacke oder Meilenstein
+- Legendäre Monster können rarität 4 Fähigkeiten freischalten als EI Attacke oder Meilenstein (diese können auch 2 elemente oder höher haben)
+- Mytische Monster werden behandelt wie legendäre monster
