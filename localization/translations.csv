@@ -299,9 +299,23 @@ SKILL_UNDERTOW,Undertow,Sog
 SKILL_MAELSTROM,Maelstrom,Mahlstrom
 SKILL_NORTHERN_TIDE,Northern Tide,Nordmeerflut
 MILESTONE_UNLOCKED,New egg move for {mon}: {skills},Neue Ei-Attacke für {mon}: {skills}
-MILESTONE_HINT_BOSS_1,"Milestone egg move: defeat a biome boss with this monster as your starter (it has to still be in your team)","Meilenstein-Ei-Attacke: Besiege einen Biom-Boss mit diesem Monster als Start-Monster (es muss noch im Team sein)"
-MILESTONE_HINT_BOSS_5,"Milestone egg move: defeat 5 biome bosses with this monster as your starter (it has to still be in your team)","Meilenstein-Ei-Attacke: Besiege 5 Biom-Bosse mit diesem Monster als Start-Monster (es muss noch im Team sein)"
-MILESTONE_HINT_GAME_WIN,"Milestone egg move: finish the game with this monster as your starter (it has to still be in your team)","Meilenstein-Ei-Attacke: Beende das Spiel mit diesem Monster als Start-Monster (es muss noch im Team sein)"
+MILESTONE_HINT_BOSS_1,"Milestone egg move: with this monster as your starter (still in your team): defeat the 1st biome boss","Meilenstein-Ei-Attacke: Mit diesem Monster als Start-Monster (es muss noch im Team sein): Besiege den 1. Biom-Boss"
+MILESTONE_HINT_BOSS_2,"Milestone egg move: with this monster as your starter (still in your team): defeat the 2nd biome boss in one run","Meilenstein-Ei-Attacke: Mit diesem Monster als Start-Monster (es muss noch im Team sein): Besiege in einem Run den 2. Biom-Boss"
+MILESTONE_HINT_BOSS_3,"Milestone egg move: with this monster as your starter (still in your team): defeat the 3rd biome boss in one run","Meilenstein-Ei-Attacke: Mit diesem Monster als Start-Monster (es muss noch im Team sein): Besiege in einem Run den 3. Biom-Boss"
+MILESTONE_HINT_BOSS_4,"Milestone egg move: with this monster as your starter (still in your team): defeat the 4th biome boss in one run","Meilenstein-Ei-Attacke: Mit diesem Monster als Start-Monster (es muss noch im Team sein): Besiege in einem Run den 4. Biom-Boss"
+MILESTONE_HINT_FLAWLESS_1,"Milestone egg move: with this monster as your starter (still in your team): defeat the 1st biome boss without any of your monsters being knocked out","Meilenstein-Ei-Attacke: Mit diesem Monster als Start-Monster (es muss noch im Team sein): Besiege den 1. Biom-Boss, ohne dass eines deiner Monster K.O. geht"
+MILESTONE_HINT_FLAWLESS_2,"Milestone egg move: with this monster as your starter (still in your team): defeat the 2nd biome boss without any of your monsters being knocked out in this run","Meilenstein-Ei-Attacke: Mit diesem Monster als Start-Monster (es muss noch im Team sein): Besiege den 2. Biom-Boss, ohne dass in diesem Run eines deiner Monster K.O. geht"
+MILESTONE_HINT_FLAWLESS_3,"Milestone egg move: with this monster as your starter (still in your team): defeat the 3rd biome boss without any of your monsters being knocked out in this run","Meilenstein-Ei-Attacke: Mit diesem Monster als Start-Monster (es muss noch im Team sein): Besiege den 3. Biom-Boss, ohne dass in diesem Run eines deiner Monster K.O. geht"
+MILESTONE_HINT_FINISHER_1,"Milestone egg move: with this monster as your starter (still in your team): land the final blow of a biome boss fight with it","Meilenstein-Ei-Attacke: Mit diesem Monster als Start-Monster (es muss noch im Team sein): Lande damit den letzten Treffer eines Biom-Boss-Kampfs"
+MILESTONE_HINT_FINISHER_2,"Milestone egg move: with this monster as your starter (still in your team): land the final blow of 2 biome boss fights in one run with it","Meilenstein-Ei-Attacke: Mit diesem Monster als Start-Monster (es muss noch im Team sein): Lande damit in einem Run den letzten Treffer von 2 Biom-Boss-Kämpfen"
+MILESTONE_HINT_FINISHER_3,"Milestone egg move: with this monster as your starter (still in your team): land the final blow of 3 biome boss fights in one run with it","Meilenstein-Ei-Attacke: Mit diesem Monster als Start-Monster (es muss noch im Team sein): Lande damit in einem Run den letzten Treffer von 3 Biom-Boss-Kämpfen"
+MILESTONE_HINT_KILLS_5,"Milestone egg move: with this monster as your starter (still in your team): knock out 5 enemies with it in one run (last hit)","Meilenstein-Ei-Attacke: Mit diesem Monster als Start-Monster (es muss noch im Team sein): Schlage damit in einem Run 5 Gegner K.O. (letzter Treffer)"
+MILESTONE_HINT_KILLS_8,"Milestone egg move: with this monster as your starter (still in your team): knock out 8 enemies with it in one run (last hit)","Meilenstein-Ei-Attacke: Mit diesem Monster als Start-Monster (es muss noch im Team sein): Schlage damit in einem Run 8 Gegner K.O. (letzter Treffer)"
+MILESTONE_HINT_KILLS_10,"Milestone egg move: with this monster as your starter (still in your team): knock out 10 enemies with it in one run (last hit)","Meilenstein-Ei-Attacke: Mit diesem Monster als Start-Monster (es muss noch im Team sein): Schlage damit in einem Run 10 Gegner K.O. (letzter Treffer)"
+MILESTONE_HINT_KILLS_15,"Milestone egg move: with this monster as your starter (still in your team): knock out 15 enemies with it in one run (last hit)","Meilenstein-Ei-Attacke: Mit diesem Monster als Start-Monster (es muss noch im Team sein): Schlage damit in einem Run 15 Gegner K.O. (letzter Treffer)"
+MILESTONE_HINT_BOUNTY,"Milestone egg move: with this monster as your starter (still in your team): defeat a bounty monster with it (last hit, catching does not count). While this is open, bounties show up","Meilenstein-Ei-Attacke: Mit diesem Monster als Start-Monster (es muss noch im Team sein): Erlege damit ein Kopfgeld-Monster (letzter Treffer, Fangen zählt nicht). Solange das offen ist, tauchen Kopfgelder auf"
+MILESTONE_HINT_NEW_ELEMENT,"Milestone egg move: with this monster as your starter (still in your team): give it a new element (potion or last will)","Meilenstein-Ei-Attacke: Mit diesem Monster als Start-Monster (es muss noch im Team sein): Gib ihm ein neues Element (Trank oder Letzter Wille)"
+MILESTONE_HINT_CHAOS,"Milestone egg move: with this monster as your starter (still in your team): make it reach Chaos (all four elements)","Meilenstein-Ei-Attacke: Mit diesem Monster als Start-Monster (es muss noch im Team sein): Bring es zu Chaos (alle vier Elemente)"
 ELEMENT_AIR,Air,Luft
 ELEMENT_WATER,Water,Wasser
 ELEMENT_FIRE,Fire,Feuer
@@ -489,16 +503,19 @@ SKILL_TROPHY_DELUGE,Trophy Deluge,Trophäensintflut
 SKILL_TROPHY_SURGE,Trophy Surge,Trophäenentladung
 CONFIGURATOR_LOCKED_BOUNTY,Locked (bounty hunter),Gesperrt (Bounty Hunter)
 BOUNTY_ALPHA,Alpha {mon},Alpha {mon}
-BOUNTY_NORTHERN_WARDEN,Northern Warden {mon},Nordwächter {mon}
 BOUNTY_UNLOCKED,Bounty claimed! New egg move for {mon}: {skill},Kopfgeld kassiert! Neue Ei-Attacke für {mon}: {skill}
-BOUNTY_HINT_ALPHA_1,"Bounty hunter: defeat Alpha Gustmane with this monster (last hit). Catching it or a knockout by a teammate does not count","Bounty Hunter: Besiege Alpha Böenmähne mit diesem Monster (letzter Treffer). Fangen oder ein K.O. durch ein Team-Mitglied zählt nicht"
-BOUNTY_HINT_ALPHA_2,"Bounty hunter: defeat Alpha Beaconclaw (from biome 2) with this monster (last hit). Catching it or a knockout by a teammate does not count","Bounty Hunter: Besiege Alpha Leuchtkrabbe (ab Biom 2) mit diesem Monster (letzter Treffer). Fangen oder ein K.O. durch ein Team-Mitglied zählt nicht"
-BOUNTY_HINT_NORTHERN_WARDEN,"Bounty hunter: defeat the Northern Warden (from biome 4) with this monster (last hit). Catching it or a knockout by a teammate does not count","Bounty Hunter: Besiege den Nordwächter (ab Biom 4) mit diesem Monster (letzter Treffer). Fangen oder ein K.O. durch ein Team-Mitglied zählt nicht"
+BOUNTY_HINT,"Bounty hunter: defeat {mon} (from biome {biome}) with this monster (last hit). Catching it or a knockout by a teammate does not count","Bounty Hunter: Besiege {mon} (ab Biom {biome}) mit diesem Monster (letzter Treffer). Fangen oder ein K.O. durch ein Team-Mitglied zählt nicht"
+BOUNTY_SOURCE,"Bounty hunter: you defeated {mon} with this monster (last hit)","Bounty Hunter: Du hast {mon} mit diesem Monster besiegt (letzter Treffer)"
 JUDGEMENT_RELEASE_CONFIRM,Release anyway,Trotzdem freilassen
 JUDGEMENT_STARTER_WARNING,"If you release {mon}, your starter won't collect any milestone progress for the rest of this run.","Wenn du {mon} freilässt, sammelt dein Start-Monster in diesem Run keinen Meilenstein-Fortschritt mehr."
 JUDGEMENT_STARTER_MILESTONE_LINE,{skill}: {stat} {progress}/{count},{skill}: {stat} {progress}/{count}
-MILESTONE_STAT_BIOME_BOSS_KILLS,Biome bosses,Biom-Bosse
-MILESTONE_STAT_GAME_WINS,Wins,Siege
+MILESTONE_STAT_RUN_BOSSES,Biome bosses this run,Biom-Bosse in diesem Run
+MILESTONE_STAT_FLAWLESS_BOSSES,Bosses without a knockout,Bosse ohne K.O.
+MILESTONE_STAT_BOSS_FINISHERS,Final blows on bosses,Letzte Treffer gegen Bosse
+MILESTONE_STAT_STARTER_KILLS,Knockouts this run,K.O.s in diesem Run
+MILESTONE_STAT_STARTER_BOUNTIES,Bounties,Kopfgelder
+MILESTONE_STAT_NEW_ELEMENTS,New elements,Neue Elemente
+MILESTONE_STAT_ELEMENTS,Elements,Elemente
 RUN_END_WIN,Victory!,Sieg!
 RUN_END_LOSE,Defeat,Niederlage
 RUN_END_WIN_SUB,You made it all the way north. Thanks for playing!,Du hast es bis in den Norden geschafft. Danke fürs Spielen!
@@ -718,12 +735,23 @@ EGG_SOURCE_SACRIFICE,Unlocked (caught & sacrificed),Freigeschaltet (gefangen & g
 EGG_SOURCE_SACRIFICE_HINT,"Egg move: you caught this monster and sacrificed it","Ei-Attacke: Du hast dieses Monster gefangen und geopfert"
 EGG_SOURCE_MILESTONE,Unlocked (milestone),Freigeschaltet (Meilenstein)
 EGG_SOURCE_BOUNTY,Unlocked (bounty hunter),Freigeschaltet (Bounty Hunter)
-MILESTONE_SOURCE_BOSS_1,"Milestone egg move: you defeated a biome boss with this monster as your starter","Meilenstein-Ei-Attacke: Du hast einen Biom-Boss mit diesem Monster als Start-Monster besiegt"
-MILESTONE_SOURCE_BOSS_5,"Milestone egg move: you defeated 5 biome bosses with this monster as your starter","Meilenstein-Ei-Attacke: Du hast 5 Biom-Bosse mit diesem Monster als Start-Monster besiegt"
-MILESTONE_SOURCE_GAME_WIN,"Milestone egg move: you finished the game with this monster as your starter","Meilenstein-Ei-Attacke: Du hast das Spiel mit diesem Monster als Start-Monster beendet"
-BOUNTY_SOURCE_ALPHA_1,"Bounty hunter: you defeated Alpha Gustmane with this monster (last hit)","Bounty Hunter: Du hast Alpha Böenmähne mit diesem Monster besiegt (letzter Treffer)"
-BOUNTY_SOURCE_ALPHA_2,"Bounty hunter: you defeated Alpha Beaconclaw with this monster (last hit)","Bounty Hunter: Du hast Alpha Leuchtkrabbe mit diesem Monster besiegt (letzter Treffer)"
-BOUNTY_SOURCE_NORTHERN_WARDEN,"Bounty hunter: you defeated the Northern Warden with this monster (last hit)","Bounty Hunter: Du hast den Nordwächter mit diesem Monster besiegt (letzter Treffer)"
+MILESTONE_SOURCE_BOSS_1,"Milestone egg move: as your starter, this monster defeated the 1st biome boss","Meilenstein-Ei-Attacke: Als Start-Monster hat es den 1. Biom-Boss besiegt"
+MILESTONE_SOURCE_BOSS_2,"Milestone egg move: as your starter, this monster defeated the 2nd biome boss in one run","Meilenstein-Ei-Attacke: Als Start-Monster hat es in einem Run den 2. Biom-Boss besiegt"
+MILESTONE_SOURCE_BOSS_3,"Milestone egg move: as your starter, this monster defeated the 3rd biome boss in one run","Meilenstein-Ei-Attacke: Als Start-Monster hat es in einem Run den 3. Biom-Boss besiegt"
+MILESTONE_SOURCE_BOSS_4,"Milestone egg move: as your starter, this monster defeated the 4th biome boss in one run","Meilenstein-Ei-Attacke: Als Start-Monster hat es in einem Run den 4. Biom-Boss besiegt"
+MILESTONE_SOURCE_FLAWLESS_1,"Milestone egg move: as your starter, this monster defeated the 1st biome boss without a single knockout","Meilenstein-Ei-Attacke: Als Start-Monster hat es den 1. Biom-Boss ohne ein einziges K.O. besiegt"
+MILESTONE_SOURCE_FLAWLESS_2,"Milestone egg move: as your starter, this monster defeated the 2nd biome boss without a single knockout","Meilenstein-Ei-Attacke: Als Start-Monster hat es den 2. Biom-Boss ohne ein einziges K.O. besiegt"
+MILESTONE_SOURCE_FLAWLESS_3,"Milestone egg move: as your starter, this monster defeated the 3rd biome boss without a single knockout","Meilenstein-Ei-Attacke: Als Start-Monster hat es den 3. Biom-Boss ohne ein einziges K.O. besiegt"
+MILESTONE_SOURCE_FINISHER_1,"Milestone egg move: as your starter, this monster landed the final blow of a biome boss fight","Meilenstein-Ei-Attacke: Als Start-Monster hat es den letzten Treffer eines Biom-Boss-Kampfs gelandet"
+MILESTONE_SOURCE_FINISHER_2,"Milestone egg move: as your starter, this monster landed the final blow of 2 biome boss fights in one run","Meilenstein-Ei-Attacke: Als Start-Monster hat es in einem Run den letzten Treffer von 2 Biom-Boss-Kämpfen gelandet"
+MILESTONE_SOURCE_FINISHER_3,"Milestone egg move: as your starter, this monster landed the final blow of 3 biome boss fights in one run","Meilenstein-Ei-Attacke: Als Start-Monster hat es in einem Run den letzten Treffer von 3 Biom-Boss-Kämpfen gelandet"
+MILESTONE_SOURCE_KILLS_5,"Milestone egg move: as your starter, this monster knocked out 5 enemies in one run","Meilenstein-Ei-Attacke: Als Start-Monster hat es in einem Run 5 Gegner K.O. geschlagen"
+MILESTONE_SOURCE_KILLS_8,"Milestone egg move: as your starter, this monster knocked out 8 enemies in one run","Meilenstein-Ei-Attacke: Als Start-Monster hat es in einem Run 8 Gegner K.O. geschlagen"
+MILESTONE_SOURCE_KILLS_10,"Milestone egg move: as your starter, this monster knocked out 10 enemies in one run","Meilenstein-Ei-Attacke: Als Start-Monster hat es in einem Run 10 Gegner K.O. geschlagen"
+MILESTONE_SOURCE_KILLS_15,"Milestone egg move: as your starter, this monster knocked out 15 enemies in one run","Meilenstein-Ei-Attacke: Als Start-Monster hat es in einem Run 15 Gegner K.O. geschlagen"
+MILESTONE_SOURCE_BOUNTY,"Milestone egg move: as your starter, this monster claimed a bounty","Meilenstein-Ei-Attacke: Als Start-Monster hat es ein Kopfgeld erlegt"
+MILESTONE_SOURCE_NEW_ELEMENT,"Milestone egg move: as your starter, this monster gained a new element","Meilenstein-Ei-Attacke: Als Start-Monster hat es ein neues Element bekommen"
+MILESTONE_SOURCE_CHAOS,"Milestone egg move: as your starter, this monster reached Chaos","Meilenstein-Ei-Attacke: Als Start-Monster hat es Chaos erreicht"
 JAILER_TEAR_COUNT_ONE,{amount} Boss Tear,{amount} Boss Träne
 JAILER_TEAR_COUNT_MANY,{amount} Boss Tears,{amount} Boss Tränen
 TREASURE_HINT,Drag all the essence into the bag.,Zieh die ganze Essenz in die Tasche.

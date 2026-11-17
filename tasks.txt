@@ -13,7 +13,6 @@ PT 1 Done muss man testen.
 > End Boss hinzufügen
 > Schwarze Tür dropped beim Endboss als loot, beim aufheben wird direkt ein neuer Endboss kampf getriggert mit dem Clue, dass dort der Endboss gefangen werden kann und der Run beendet wird ohne loot.
 > Was mit One Way Use Items?
-> EI Attacke für das erste mal Chaos erreicht (Meilenstein)
 > Battle animationen. (Slash Heal etc.)
 	> fehlen noch die spezial dinger...
 

@@ -15,11 +15,6 @@ const MAX_TEAM := 2
 const DRAG_THRESHOLD := 10.0
 # Anteil der KP, mit dem ein wiederbelebtes Monster zurückkommt
 const REVIVE_HP_SHARE := 0.3
-# Anzeigenamen der Meilenstein-Zähler (siehe Skills.MILESTONES)
-const MILESTONE_STAT_LABELS = {
-	"biome_boss_kills": "MILESTONE_STAT_BIOME_BOSS_KILLS",
-	"game_wins": "MILESTONE_STAT_GAME_WINS",
-}
 
 enum Zone { SLOT_1, SLOT_2, TEACH, SACRIFICE, RELEASE }
 const ZONE_TITLES = {
@@ -375,8 +370,8 @@ func _starter_warning() -> String:
 	for milestone in Skills.get_locked_milestones(State.starter_name):
 		lines.append(tr("JUDGEMENT_STARTER_MILESTONE_LINE").format({
 			"skill": tr(milestone.skill),
-			"stat": tr(MILESTONE_STAT_LABELS.get(milestone.stat, milestone.stat)),
-			"progress": SaveManager.get_milestone_progress(State.starter_name, milestone.stat),
+			"stat": tr("MILESTONE_STAT_" + milestone.stat.to_upper()),
+			"progress": mini(Skills.milestone_progress(milestone.stat), milestone.count),
 			"count": milestone.count,
 		}))
 	return "\n".join(PackedStringArray(lines))

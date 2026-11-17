@@ -2,10 +2,14 @@
 //
 //   node tools/skill_verteilung.js             verteilt neu: schreibt monmap.gd und skill_verteilung.txt
 //   node tools/skill_verteilung.js --nur-text  nur skill_verteilung.txt (Vorschau, monmap.gd bleibt)
+//   node tools/skill_verteilung.js --seed=abc  Meilensteine mit einem anderen Seed neu würfeln
 //
 // Liest bei jedem Lauf script/globals/monmap.gd (Seltenheit, Element, preferred_stats, affinity, affinity_triple)
-// und script/globals/skills.gd (welche Skills es gibt). Kein Zufall: gleiche Daten -> gleiche Verteilung.
-// Geschrieben werden default_egg_skills, unlockable_egg_skills und milestone_egg_skills. bounty_egg_skills bleibt.
+// und script/globals/skills.gd (welche Skills es gibt). Skills: kein Zufall, gleiche Daten -> gleiche Verteilung.
+// Meilensteine (welche Bedingung pro Art) werden gewürfelt, mit festem Seed pro Art (MILESTONE_SEED + Name):
+// ein neuer Lauf würfelt dasselbe, solange Seed und Tabellen (MILESTONE_SLOTS) gleich bleiben.
+// Geschrieben werden default_egg_skills, unlockable_egg_skills, milestone_egg_skills und bounty_egg_skills,
+// dazu die Liste Skills.BOUNTIES in skills.gd (ein gewürfeltes Kopfgeld pro Art, siehe BOUNTY_DEPTH).
 // Danach sortiert es die Skill-Listen in skills.gd: Pool (Start/Ei-Attacke), milestone_skills (nur Meilenstein),
 // reward_skills (von keiner Art benutzt, ab Stufe 2: nur im Couvert), draft_skills (unbenutzt, Stufe 1).
 //   - Arten mit "skills_manual": true werden nicht angefasst (von Hand gepflegt).
@@ -23,6 +27,8 @@ const PLAN = path.join(ROOT, 'skill_verteilung.txt');
 const MARK_START = '### AUTOMATISCH ERZEUGT AB HIER (tools/skill_verteilung.js) ###';
 const MARK_END = '### AUTOMATISCH ERZEUGT BIS HIER ###';
 const ONLY_TEXT = process.argv.includes('--nur-text');
+const SEED_ARG = process.argv.find(a => a.startsWith('--seed='));
+const MILESTONE_SEED = SEED_ARG ? SEED_ARG.slice(7) : 'meilensteine-1';
 
 // ─────────────────────────
 // Daten-Tabellen
@@ -66,6 +72,55 @@ const comboOf = elements => {
 };
 const ELEM_PASSIVE = { FIRE: 'element_power (Feuer-Angriffe +10 %)', AIR: 'magic_power (magische Angriffe +10 %)', EARTH: 'shield_power (Rüstung +10 %)', WATER: 's_shield_power (Magie-Schilde +10 %)' };
 
+// Meilensteine (Schlüssel wie Skills.MILESTONES in skills.gd). Pro Art drei Plätze, pro Platz wird eine Bedingung
+// gewürfelt [Schlüssel, Gewicht]. Alles gilt innerhalb EINES Runs mit der Art als Start-Monster.
+// Standard: Gewöhnlich/Ungewöhnlich Boss 1 + Boss 3, ab Selten Boss 2 + Boss 4, dritter Platz Chaos
+// (bei Gewöhnlich/Ungewöhnlich manchmal nur "ein neues Element"). Den Endboss gibt es als Meilenstein nicht mehr.
+const MILESTONE_SLOTS = {
+  low: [
+    [['boss_1', 55], ['kills_5', 25], ['finisher_1', 20]],
+    [['boss_3', 50], ['kills_10', 15], ['flawless_2', 15], ['bounty', 10], ['finisher_2', 10]],
+    [['chaos', 60], ['new_element', 40]],
+  ],
+  high: [
+    [['boss_2', 50], ['kills_8', 20], ['flawless_1', 15], ['finisher_2', 15]],
+    [['boss_4', 50], ['kills_15', 15], ['flawless_3', 10], ['bounty', 15], ['finisher_3', 10]],
+    [['chaos', 100]],
+  ],
+};
+// Schwierigkeit: die drei Meilenstein-Skills (schwach -> stark) gehen in dieser Reihenfolge an die Bedingungen
+const MILESTONE_DIFFICULTY = {
+  boss_1: 1, finisher_1: 1.5, kills_5: 2, flawless_1: 2, new_element: 2, boss_2: 2, finisher_2: 2.5, kills_8: 2.5,
+  boss_3: 3, flawless_2: 3, kills_10: 3, bounty: 3.5, finisher_3: 3.5, boss_4: 4, kills_15: 4, flawless_3: 4, chaos: 5,
+};
+const MILESTONE_LABEL = {
+  boss_1: 'Boss 1', boss_2: 'Boss 2', boss_3: 'Boss 3', boss_4: 'Boss 4', flawless_1: 'Boss 1 ohne K.O.', flawless_2: 'Boss 2 ohne K.O.',
+  flawless_3: 'Boss 3 ohne K.O.', finisher_1: '1x letzter Boss-Treffer', finisher_2: '2x letzter Boss-Treffer', finisher_3: '3x letzter Boss-Treffer',
+  kills_5: '5 K.O.s', kills_8: '8 K.O.s', kills_10: '10 K.O.s', kills_15: '15 K.O.s', bounty: 'Kopfgeld', new_element: 'neues Element', chaos: 'Chaos',
+};
+// kleiner Zufallsgenerator mit Seed (xmur3 + mulberry32), damit jeder Lauf gleich würfelt
+function rng(seedText) {
+  let h = 1779033703 ^ seedText.length;
+  for (let i = 0; i < seedText.length; i++) { h = Math.imul(h ^ seedText.charCodeAt(i), 3432918353); h = (h << 13) | (h >>> 19); }
+  let a = h >>> 0;
+  return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+function rollMilestones(mon) {
+  const rand = rng(MILESTONE_SEED + ':' + mon.id);
+  const slots = MILESTONE_SLOTS[['COMMON', 'UNCOMMON'].includes(mon.rarity) ? 'low' : 'high'];
+  return slots.map(options => {
+    let roll = rand() * options.reduce((s, [, w]) => s + w, 0);
+    for (const [key, w] of options) if ((roll -= w) < 0) return key;
+    return options[options.length - 1][0];
+  });
+}
+// Bedingungen nach Schwierigkeit sortieren und die Skills (schwach -> stark) zuordnen
+function assignMilestones(mon, skills) {
+  const keys = rollMilestones(mon).map((k, i) => [k, i])
+    .sort((x, y) => MILESTONE_DIFFICULTY[x[0]] - MILESTONE_DIFFICULTY[y[0]] || x[1] - y[1]).map(([k]) => k);
+  return Object.fromEntries(keys.map((k, i) => [k, skills[i]]));
+}
+
 // ─────────────────────────
 // Einlesen
 
@@ -96,6 +151,7 @@ while ((bm = blockRe.exec(monmapText))) {
     id: g(/"name": "([^"]+)"/), label: before.replace(/^\s*#\s*/, '').split(':')[0].trim(), rarity: g(/MON_RARITY\.(\w+)/),
     type: g(/"initial_type": ([^,\r\n]+)/).replace(/Enums\.MON_TYPES\./g, ''), ps,
     manual: /\n\t\t"skills_manual": true/.test(body), co: aff && comboOf(aff), tri: tri && comboOf(tri), // manual: nur echte Feldzeile
+    bountyTarget: /\n\t\t"bounty_target":/.test(body),
     def: list('default_egg_skills'), unl: list('unlockable_egg_skills'), body, bodyStart,
   });
 }
@@ -171,34 +227,47 @@ function plan(mon) {
     case 'COMMON':
       p.def = commonDefault(el, cs, mon.ps);
       p.egg = [weakOf(el, k4), base(el, k3, 2), base(el, k1, 2)];
-      p.ms = { boss_1: base(el, k2, 2), boss_5: base(el, k1, 3), game_win: base(el, k2, 3) };
+      p.ms = [base(el, k2, 2), base(el, k1, 3), base(el, k2, 3)];
       break;
     case 'UNCOMMON':
       if (isAtk(k1)) p.def = [t1.strong(el, k1), t1.thrust(el, k1), lightOf(el, k2)];
       else p.def = [t1.shield(el, k1), t1.thrust(el, ba), k2 === ba ? t1.strike(el, k2) : lightOf(el, k2)];
       p.egg = [weakOf(el, k4), base(el, k2, 2), base(el, k1, 3), buffT2(el, k1)];
-      p.ms = { boss_1: base(el, k3, 2), boss_5: base(el, k1, 2), game_win: base(el, k2, 3) };
+      p.ms = [base(el, k3, 2), base(el, k1, 2), base(el, k2, 3)];
       break;
     case 'RARE':
       p.def = [base(el, k1, 2), isAtk(k2) ? t1.strong(el, k2) : t1.shield(el, k2), t1.small(el, ba)];
       p.egg = [base(el, k1, 3), base(el, k2, 3), base(el, k3, 2), isAtk(k1) ? buffT2(el, k1) : passiveT3(el)];
-      p.ms = { boss_1: base(el, k2, 2), boss_5: combo(co, k2, 0), game_win: combo(co, k1, 0) };
+      p.ms = [base(el, k2, 2), combo(co, k2, 0), combo(co, k1, 0)];
       break;
     case 'EPIC':
       p.def = [base(el, k1, 3), base(el, k2, 2), t1.small(el, ba)];
       p.egg = [base(el, k2, 3), swift(el, k1), base(el, k3, 3), buffT3(el, k1)];
-      p.ms = { boss_1: combo(co, k2, 0), boss_5: combo(co, k1, 0), game_win: epicPassive(el, co, cs) };
+      p.ms = [combo(co, k2, 0), combo(co, k1, 0), epicPassive(el, co, cs)];
       break;
     case 'LEGENDARY':
     case 'MYTHIC':
       p.def = [base(el, k1, 3), base(el, k2, 3), swift(el, ba)];
       p.egg = [combo(co, k1, 1), combo(co, k2, 1), mon.rarity === 'MYTHIC' ? top(tri) : top(co), buffT4(co)];
       p.ms = mon.rarity === 'MYTHIC'
-        ? { boss_1: combo(tri, k1, 1), boss_5: top(co), game_win: passiveT4(co) }
-        : { boss_1: combo(tri, k1, 0), boss_5: combo(tri, k1, 1), game_win: passiveT4(co) };
+        ? [combo(tri, k1, 1), top(co), passiveT4(co)]
+        : [combo(tri, k1, 0), combo(tri, k1, 1), passiveT4(co)];
       break;
   }
+  // Meilenstein-Skills (schwach -> stark) auf die gewürfelten Bedingungen verteilen
+  p.ms = assignMilestones(mon, p.ms);
   if (STARTERS.includes(mon.id)) { p.def = mon.def; p.egg = mon.unl; }
+  // Kopfgeld-Ei-Attacke: der erste Kandidat, den es gibt und den die Art noch nicht hat
+  const taken = new Set([...p.def, ...p.egg, ...Object.values(p.ms)]);
+  const bountyCandidates = {
+    COMMON: () => [base(el, k3, 3), base(el, k4, 2), base(el, k4, 3)],
+    UNCOMMON: () => [base(el, k3, 3), base(el, k4, 3), base(el, k2, 2)],
+    RARE: () => [combo(co, k3, 0), combo(co, k4, 0), base(el, k4, 3)],
+    EPIC: () => [combo(co, k3, 0), combo(co, k4, 0), base(el, k4, 3)],
+    LEGENDARY: () => [combo(tri, k2, 0), combo(tri, k2, 1), combo(co, k3, 1)],
+    MYTHIC: () => [combo(tri, k2, 1), combo(tri, k3, 1), combo(co, k3, 1)],
+  }[mon.rarity]();
+  p.bounty = bountyCandidates.find(s => exists(s) && !taken.has(s)) || null;
   return p;
 }
 
@@ -217,9 +286,31 @@ for (const mon of mons) {
 if (unknown.size) problems.push('Skills aus den Tabellen gibt es nicht in skills.gd: ' + [...unknown].join(', '));
 
 // ─────────────────────────
+// Kopfgelder: pro Art eins, Ziel ist ein zufälliges Alpha-Monster. Je seltener die Art, die die Attacke bekommt,
+// desto tiefer liegt das Kopfgeld (min_depth = Biom - 1). Stufen-Bonus nach Tiefe. Gewürfelt mit Seed wie die Meilensteine.
+const BOUNTY_DEPTH = { COMMON: 0, UNCOMMON: 1, RARE: 2, EPIC: 3, LEGENDARY: 4, MYTHIC: 4 };
+const BOUNTY_LEVEL_BONUS = [2, 2, 3, 3, 4];
+const RARITY_ORDER = ['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY', 'MYTHIC'];
+const bountyTargets = mons.filter(m => !m.manual && !m.bountyTarget && m.rarity !== 'MYTHIC');
+const bounties = [];
+for (const mon of mons) {
+  const p = plans.get(mon.id);
+  if (!p || !p.bounty) continue;
+  const rand = rng(MILESTONE_SEED + ':bounty:' + mon.id);
+  // Ziel höchstens so selten wie die belohnte Art (ab Legendär alles bis Legendär)
+  const cap = RARITY_ORDER.indexOf(mon.rarity);
+  const options = bountyTargets.filter(t => RARITY_ORDER.indexOf(t.rarity) <= cap);
+  const target = options[Math.floor(rand() * options.length)];
+  const depth = BOUNTY_DEPTH[mon.rarity];
+  const key = 'alpha_' + mon.id;
+  bounties.push({ key, mon: target.id, label: target.label, level_bonus: BOUNTY_LEVEL_BONUS[depth], min_depth: depth, owner: mon.id });
+  p.bountyKey = key;
+}
+
+// ─────────────────────────
 // monmap.gd schreiben
 
-const KEYS = [['default_egg_skills', '[', ']'], ['unlockable_egg_skills', '[', ']'], ['milestone_egg_skills', '{', '}']];
+const KEYS = [['default_egg_skills', '[', ']'], ['unlockable_egg_skills', '[', ']'], ['milestone_egg_skills', '{', '}'], ['bounty_egg_skills', '{', '}']];
 // geplante Skills: bis es sie gibt der Ersatz (falls vorgesehen), sonst weglassen
 const real = arr => arr.map(s => s.startsWith('*') ? FALLBACK[s] : s).filter(Boolean);
 
@@ -234,6 +325,7 @@ function rewriteBody(body, p) {
     ms.forEach(([k, s]) => lines.push(`\t\t\t"${k}": "${s}",`));
     lines.push('\t\t},');
   }
+  if (p.bounty && p.bountyKey) lines.push(`\t\t"bounty_egg_skills": {"${p.bountyKey}": "${p.bounty}"},`);
   const found = [];
   for (const [key, open, close] of KEYS) {
     const re = new RegExp(`\\r?\\n\\t\\t"${key}": \\${open}[^\\${close}]*\\${close},`);
@@ -277,7 +369,7 @@ if (!ONLY_TEXT && !problems.length) {
 //   von keiner Art benutzt, Stufe 1       -> draft_skills
 // starter_skills, standard_skills, bounty_skills und ascension_skills bleiben unberührt.
 
-const MANAGED = ['egg_skills', 'defensive_skills', 'buff_skills', 'passive_skills', 'area_skills', 'milestone_skills', 'reward_skills', 'draft_skills'];
+const MANAGED = ['egg_skills', 'defensive_skills', 'buff_skills', 'passive_skills', 'area_skills', 'milestone_skills', 'bounty_skills', 'reward_skills', 'draft_skills'];
 // Baustein -> [Pool-Liste, Index des Arguments "tier" (null = immer Stufe 1)]
 const BUILDERS = {
   _flat_attack_skill: ['egg_skills', null], _attack_skill: ['egg_skills', 5],
@@ -341,15 +433,17 @@ function sortSkillLists() {
   const skills = [];
   for (const list of MANAGED) readList(text, list).entries.forEach(e => skills.push(describe(e, skills.length)));
   // Wer wird wie benutzt?
-  const pool = new Set(), ms = new Set();
+  const pool = new Set(), ms = new Set(), bs = new Set();
   const msOf = body => { const x = body.match(/"milestone_egg_skills": \{([^}]*)\}/); return x ? (x[1].match(/SKILL_\w+/g) || []) : []; };
   for (const mon of mons) {
     if (mon.manual) { [...mon.def, ...mon.unl].forEach(s => pool.add(s)); msOf(mon.body).forEach(s => ms.add(s)); continue; }
     const p = plans.get(mon.id);
     real([...p.def, ...p.egg]).forEach(s => pool.add(s));
     real(Object.values(p.ms)).forEach(s => ms.add(s));
+    if (p.bounty) bs.add(p.bounty);
   }
-  const target = s => pool.has(s.name) ? s.pool : ms.has(s.name) ? 'milestone_skills' : s.tier >= 2 ? 'reward_skills' : 'draft_skills';
+  const target = s => pool.has(s.name) ? s.pool : ms.has(s.name) ? 'milestone_skills' : bs.has(s.name) ? 'bounty_skills'
+    : s.tier >= 2 ? 'reward_skills' : 'draft_skills';
   const elemIndex = s => { const i = ELEM_ORDER.indexOf(s.nature); return i < 0 ? ELEM_ORDER.length : i; };
   const counts = {};
   // von hinten ersetzen, damit die Positionen stimmen
@@ -376,6 +470,20 @@ function sortSkillLists() {
 
 let lists = null;
 if (!ONLY_TEXT && !problems.length) lists = sortSkillLists();
+
+// Skills.BOUNTIES in skills.gd neu schreiben (Texte: BOUNTY_HINT / BOUNTY_SOURCE mit {mon} und {biome})
+if (!ONLY_TEXT && !problems.length) {
+  const text = fs.readFileSync(SKILLS, 'utf8');
+  const head = text.indexOf('const BOUNTIES = [');
+  if (head < 0) throw new Error('skills.gd: const BOUNTIES fehlt');
+  const close = matching(text, text.indexOf('[', head));
+  const rows = bounties.map(b => `\t{"key": "${b.key}", "mon": "${b.mon}", "level_bonus": ${b.level_bonus}, "min_depth": ${b.min_depth}, `
+    + `"label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},`);
+  const out = 'const BOUNTIES = [\n\t# automatisch erzeugt (tools/skill_verteilung.js): key = alpha_<Art, die die Ei-Attacke bekommt>, mon = Ziel\n'
+    + rows.join('\n') + '\n]';
+  const next = text.slice(0, head) + out + text.slice(close + 1);
+  if (next !== text) fs.writeFileSync(SKILLS, next);
+}
 
 // ─────────────────────────
 // skill_verteilung.txt (Teil C und D zwischen den Markierungen)
@@ -410,7 +518,9 @@ for (const r of Object.keys(RLABEL)) {
     if (p.problems.length) { txt += `  FEHLER: ${p.problems.join('; ')}\n`; continue; }
     txt += `  Start:      ${p.def.map(short).join(', ')}\n`;
     txt += `  Ei-Attacke: ${p.egg.map(short).join(', ')}${STARTERS.includes(mon.id) ? '   (Startmonster: bleibt wie heute)' : ''}\n`;
-    txt += `  Meilenst.:  boss_1 ${short(p.ms.boss_1)} | boss_5 ${short(p.ms.boss_5)} | game_win ${short(p.ms.game_win)}\n`;
+    txt += `  Meilenst.:  ${Object.entries(p.ms).map(([k, s]) => `${MILESTONE_LABEL[k] || k}: ${short(s)}`).join(' | ')}\n`;
+    const bt = bounties.find(b => b.owner === mon.id);
+    if (bt) txt += `  Kopfgeld:   ${short(p.bounty)} (Alpha ${bt.label || '#' + bt.mon}, ab Biom ${bt.min_depth + 1}, +${bt.level_bonus} Stufen)\n`;
   }
 }
 const planText = fs.readFileSync(PLAN, 'utf8');

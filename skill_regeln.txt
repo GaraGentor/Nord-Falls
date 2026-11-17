@@ -21,8 +21,8 @@ Die Liste pro Art steht in skill_verteilung.txt Teil D.
   das gilt pro enthaltenem Element auch in den Kombis.
 
   Standardwerte der Kampfbalance (DebugSettings, gelten in jedem Build, das Debug-Menü kann sie nur lokal ändern):
-    KP-Multiplikator 2,0, Stufen-Sockel 0, Growth 2 (ein Viertel des vollen Zuwachses aus der BST),
-    20 % der BST fest auf KP, Trophäen pro Biom 3 / 4 / 4 / 5 / 5 Punkte, Bosse tragen keine Trophäen.
+	KP-Multiplikator 2,0, Stufen-Sockel 0, Growth 2 (ein Viertel des vollen Zuwachses aus der BST),
+	20 % der BST fest auf KP, Trophäen pro Biom 3 / 4 / 4 / 5 / 5 Punkte, Bosse tragen keine Trophäen.
 
 
 2. STUFEN (tier 1-4)
@@ -30,19 +30,19 @@ Die Liste pro Art steht in skill_verteilung.txt Teil D.
   Stufe = Seltenheit des Skills. Je höher, desto seltener wild und beim Trainer (TIER_WEIGHTS).
 
   Grundelement   Stufe 1 Start      Leichter Stoß 5 + 0,2 (CD 0), Leichter Schlag 8 + 0,3 (CD 1), Nutzloser Stoß 2 + 0,2,
-                                    Leichter Schild 5 + 0,3, Nutzloser Schild 2 + 0,2
-                 Stufe 1 verstärkt  Punch / Kanone 12 + 0,4 (CD 1), Kleiner Punch / Kleine Kanone 5 + 0,3 (CD 0),
-                                    Rückhand / Leichte Kanone 8 + 0,3 (CD 1, "schwache Form")
-                 Stufe 2 (CD 1, 1)  Angriff 12 + 0,30 (+ 13 + 0,33)   Schild 12 + 0,30 (+ 14 + 0,33)
-                 Stufe 3 (CD 2, 1)  Angriff 15 + 0,37 (+ 17 + 0,40)   Schild 16 + 0,37 (+ 18 + 0,40)
-                 Stufe 3 schnell    CD 0, 1 Aktion, Werte wie Stufe 2 ("verbesserte Stufe 3" für Episch und höher)
+									Leichter Schild 5 + 0,3, Nutzloser Schild 2 + 0,2
+				 Stufe 1 verstärkt  Punch / Kanone 12 + 0,4 (CD 1), Kleiner Punch / Kleine Kanone 5 + 0,3 (CD 0),
+									Rückhand / Leichte Kanone 8 + 0,3 (CD 1, "schwache Form")
+				 Stufe 2 (CD 1, 1)  Angriff 12 + 0,30 (+ 13 + 0,33)   Schild 12 + 0,30 (+ 14 + 0,33)
+				 Stufe 3 (CD 2, 1)  Angriff 15 + 0,37 (+ 17 + 0,40)   Schild 16 + 0,37 (+ 18 + 0,40)
+				 Stufe 3 schnell    CD 0, 1 Aktion, Werte wie Stufe 2 ("verbesserte Stufe 3" für Episch und höher)
   Zweier-Kombi   Stufe 2 leicht     18 + 0,35 (+ 20 + 0,40), CD 1, 1 Aktion
-                 Stufe 3 Angriff    30 + 0,50 (+ 33 + 0,55), CD 2, 2 Aktionen
-                 Stufe 3 Schild     25 + 0,45 (+ 28 + 0,50), CD 2, 1 Aktion
-                 Stufe 4 Top        45 + 0,65 (+ 48 + 0,70), CD 3, 2 Aktionen
+				 Stufe 3 Angriff    30 + 0,50 (+ 33 + 0,55), CD 2, 2 Aktionen
+				 Stufe 3 Schild     25 + 0,45 (+ 28 + 0,50), CD 2, 1 Aktion
+				 Stufe 4 Top        45 + 0,65 (+ 48 + 0,70), CD 3, 2 Aktionen
   Dreier-Kombi   Stufe 3 leicht     20 + 0,50 (+ 22 + 0,55), CD 1, 1 Aktion
-                 Stufe 3 stark      55 + 0,75 (+ 60 + 0,80), CD 3, 3 Aktionen
-                 Stufe 4 Top        75 + 0,95 (+ 80 + 1,00), CD 4, 3 Aktionen
+				 Stufe 3 stark      55 + 0,75 (+ 60 + 0,80), CD 3, 3 Aktionen
+				 Stufe 4 Top        75 + 0,95 (+ 80 + 1,00), CD 4, 3 Aktionen
   Dreier-Schilde kosten 3 Aktionen: genau die verbilligt der Bollwerkmeister.
 
 
@@ -53,22 +53,28 @@ Kategorien: die vier Kampfwerte (Ang., Sp. Ang., Vert., Sp. Vert.) aus preferred
   Hohe Vert./Sp. Vert. -> die besten Skills sind Schilde, hoher (Sp.) Ang. -> Angriffe.
 Neben-Element ab Selten: "affinity" in monmap.gd, genau EINE Zweier-Kombi mit dem Grundelement der Art (nach Aussehen).
   Ab Legendär zusätzlich "affinity_triple": eine Dreier-Kombi, die das Neben-Element enthält.
-Meilensteine werden mit der Schwierigkeit besser: boss_1 < boss_5 < game_win (zählen nur mit der Art als Start-Monster).
+Meilensteine: drei pro Art, alle innerhalb EINES Runs mit der Art als Start-Monster (muss noch im Team sein).
+  Standard Gewöhnlich/Ungewöhnlich: Boss 1 + Boss 3 + Chaos (manchmal statt Chaos nur "ein neues Element").
+  Standard ab Selten: Boss 2 + Boss 4 + Chaos. Der Endboss ist kein Meilenstein mehr.
+  Pro Platz würfelt das Werkzeug (MILESTONE_SLOTS, fester Seed) auch Varianten: x K.O.s durch das Start-Monster,
+  Boss n ohne ein einziges K.O. im Run, letzter Treffer in n Boss-Kämpfen, Kopfgeld erlegen (Bounty Hunter).
+  Die drei Skills unten (schwach -> stark) gehen nach MILESTONE_DIFFICULTY an die leichteste bis schwerste Bedingung.
+  Bedingungen und Zähler: Skills.MILESTONES und Skills.milestone_progress in skills.gd.
 "Schwach" = Nutzlos-/WEAK-Skills und Stufe-1-Standards. Jede Art ab Ungewöhnlich hat einen Angriff ohne Abklingzeit.
 Startmonster (State.INITIAL_MONS) behalten Start-Skills und Ei-Attacken, bekommen nur Meilensteine.
 "skills_manual": true = die Art wird von Hand gepflegt (Endboss Weltenfresser).
 
-                Start (3)                          Ei-Attacken (Fangen & Opfern)                 Meilensteine boss_1 / boss_5 / game_win
+				Start (3)                          Ei-Attacken (Fangen & Opfern)                 Meilensteine leicht / mittel / schwer
   Gewöhnlich    Standard nach dem höchsten Wert     K4 schwache Form, K3 St.2, K1 St.2           K2 St.2 / K1 St.3 / K2 St.3
-                                                    (keine Kombis, keine Buffs, höchstens 2x St.3)
+													(keine Kombis, keine Buffs, höchstens 2x St.3)
   Ungewöhnlich  K1 verstärkt (Punch/Kanone, nur     K4 schwache Form, K2 St.2, K1 St.3,          K3 St.2 / K1 St.2 / K2 St.3
-                wenn Angriff), Stoß CD 0, K2        Buff St.2 auf den K1-Wert
+				wenn Angriff), Stoß CD 0, K2        Buff St.2 auf den K1-Wert
   Selten        K1 St.2, K2 verstärkt, Kleiner      K1 St.3, K2 St.3, K3 St.2,                   K2 St.2 / Kombi leicht K2 / Kombi leicht K1
-                Punch/Kanone (CD 0)                 Buff St.2 (Angreifer) oder Passiv St.3 (Tank)
+				Punch/Kanone (CD 0)                 Buff St.2 (Angreifer) oder Passiv St.3 (Tank)
   Episch        K1 St.3, K2 St.2, Kleiner           K2 St.3, K1 St.3 schnell (CD 0), K3 St.3,    Kombi leicht K2 / Kombi leicht K1 / Passiv St.3
-                Punch/Kanone (CD 0)                 Buff St.3 (Team oder Sonder-Buff)
+				Punch/Kanone (CD 0)                 Buff St.3 (Team oder Sonder-Buff)
   Legendär      K1 St.3, K2 St.3, St.3 schnell      Kombi stark K1, Kombi stark K2,              Dreier leicht K1 / Dreier stark K1 / Passiv St.4
-                (beste Angriffskategorie)           Kombi-Top St.4, Kombi-Buff St.4
+				(beste Angriffskategorie)           Kombi-Top St.4, Kombi-Buff St.4
   Mythisch      wie Legendär                        wie Legendär, aber Dreier-Top St.4           Dreier stark K1 / Kombi-Top St.4 / Passiv St.4
 
 Kombi-Skills: Selten und Episch nur die leichten (Stufe 2), Legendär und Mythisch auch starke, Top und Dreier.
@@ -83,7 +89,7 @@ Pro Art 3 Start-Skills + 3-4 Ei-Attacken + 3 Meilensteine = bis zu 10 Optionen f
   stat, partner     12      +x % für den Partner (das nächste Monster im Team) - nicht beim Trainer
   stat, team        6-8     +x % für jedes Monster im Team (weniger als auf eins)
   element_power     10/15   eigene Angriffe, die ALLE Elemente von passive_element haben. Stufe 3: Feuer-Passiv (10),
-                            Stufe 4: Kombi-Kraft (15) - Magma-Passiv zählt für Magma, Vulkan, Aschesturm und Chaos
+							Stufe 4: Kombi-Kraft (15) - Magma-Passiv zählt für Magma, Vulkan, Aschesturm und Chaos
   magic_power       10      eigene magische Angriffe (Luft-Passiv)
   shield_power      10      eigene physische Schilde (Erd-Passiv)
   s_shield_power    10      eigene magische Schilde (Wasser-Passiv)
@@ -113,26 +119,29 @@ Mehrere Extras auf einer Karte nur bei seltenen Quellen (Couvert, Trophäen, Stu
   Stufe 2  ein eigenes Monster +25 % für 2 Züge (CD 2), auf den besten Wert der Art (K1)
   Stufe 3  das ganze Team +12 % für 2 Züge (CD 3)
   Stufe 4  Kombi-Buffs, Team +15-18 % oder Einzel +35 % für 3 Züge (CD 3, 2 Aktionen), nicht beim Trainer
-           Magma Team Ang., Schlamm Team Vert., Staub Team Sp. Ang., Eis Einzel Sp. Ang., Dampf Team Sp. Vert. + Heilung,
-           Blitz: Überladung (alle Angriffe kritisch)
+		   Magma Team Ang., Schlamm Team Vert., Staub Team Sp. Ang., Eis Einzel Sp. Ang., Dampf Team Sp. Vert. + Heilung,
+		   Blitz: Überladung (alle Angriffe kritisch)
   Sonder-Verstärkungen (Stufe 2-4): Fokusflamme (nächster Angriff kritisch), Überladung, Rückenwind (+1 Aktion),
-           Blutgezeiten (Lebensraub), Kampfschrei (Aggro).
+		   Blutgezeiten (Lebensraub), Kampfschrei (Aggro).
 
 
 7. QUELLEN UND LISTEN IN SKILLS.GD
 ==================================
 Den Inhalt der Listen sortiert das Werkzeug bei jedem Lauf (neue Skills einfach in draft_skills schreiben):
   Gemeinsamer Pool   egg_skills, defensive_skills, buff_skills, passive_skills, area_skills: Start-Skills und Ei-Attacken
-                     der Arten. Daraus würfeln wilde Monster (Biom-Pool) und der Trainer ab Stufe 2
-                     ("trainer": false = nie beim Trainer: Stufe 4, Kombi-Top). Ab Stufe 2 auch im Couvert.
+					 der Arten. Daraus würfeln wilde Monster (Biom-Pool) und der Trainer ab Stufe 2
+					 ("trainer": false = nie beim Trainer: Stufe 4, Kombi-Top). Ab Stufe 2 auch im Couvert.
+  Kopfgeld           bounty_skills: Skills, die eine Art NUR über ihr Kopfgeld hat (nie wild, Trainer, Couvert).
+                     Das Werkzeug würfelt pro Art ein Kopfgeld (Skills.BOUNTIES, Ziel = zufälliges Alpha-Monster höchstens
+                     so selten wie die Art). Biom nach Seltenheit der belohnten Art: Gewöhnlich 1, Ungewöhnlich 2,
+                     Selten 3, Episch 4, Legendär/Mythisch 5 (BOUNTY_DEPTH). Freigeschaltet für die Art mit dem letzten Treffer.
   Meilensteine       milestone_skills: Skills, die eine Art NUR als Meilenstein hat. Nie wild, nie beim Trainer, nie im Couvert.
   Couvert            reward_skills: Skills ab Stufe 2, die keine Art benutzt - nur im Couvert zu bekommen.
   Entwürfe           draft_skills: unbenutzte Skills der Stufe 1 und neue Skills bis zum nächsten Lauf.
-                     Wiki-Seite "Unbenutzt" zeigt alle Skills, die keine Art hat.
+					 Wiki-Seite "Unbenutzt" zeigt alle Skills, die keine Art hat.
 Nicht vom Werkzeug angefasst:
   Start-Skills       starter_skills (Stufe 1, Start der Arten und Ei-Attacken der Startmonster)
   Standard-Skills    standard_skills, beim Trinken eines Tranks (ElementGainOverlay), vorerst leer
-  Kopfgeld           bounty_skills: nur über Kopfgelder, vorerst leer
   Aufstieg           ascension_skills: einer pro Kombi-Element, nur über den Trank, vorerst leer
 
 
@@ -142,12 +151,12 @@ Nicht vom Werkzeug angefasst:
   ohne Skills, die in diesem Run schon jemand aus einem Couvert gelernt hat. Mindestens einer ist fürs Team einsetzbar.
   Erst wird die Stufe gezogen, dann ein Skill dieser Stufe. Gewicht nach der durchschnittlichen Seltenheit des Teams
   (0 = gewöhnlich ... 5 = mythisch, Skills.reward_tier_weights):
-    Team im Schnitt    Stufe 2  Stufe 3  Stufe 4
-    gewöhnlich (0)       50       35        0     <- nur gewöhnliche Monster: höchstens Stufe 3
-    ungewöhnlich (1)     44       37       13
-    selten (2)           38       39       21
-    episch (3)           32       41       29
-    legendär (4)         26       43       37
+	Team im Schnitt    Stufe 2  Stufe 3  Stufe 4
+	gewöhnlich (0)       50       35        0     <- nur gewöhnliche Monster: höchstens Stufe 3
+	ungewöhnlich (1)     44       37       13
+	selten (2)           38       39       21
+	episch (3)           32       41       29
+	legendär (4)         26       43       37
   Schon ein seltenes Monster unter Gewöhnlichen (Schnitt 0,5) öffnet Stufe 4 (etwa jeder zehnte Skill).
 
 
@@ -162,5 +171,4 @@ Nicht vom Werkzeug angefasst:
   - "Konter": Schild, der beim Brechen den Angreifer schwächt.
   - Initiative-Raub (Blitz): Ziel -10 % INI, Wirker +10 %.
   - Status reinigen (Wasser-Unterstützung), sobald es mehr Statuseffekte gibt.
-  - Meilenstein "zum ersten Mal Chaos erreicht" (tasks.txt) als Chaos-Passiv.
   Element-Effekte selbst: siehe balancing_plan.txt Punkt 1 und script/globals/element_effects.gd.

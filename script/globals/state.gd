@@ -124,6 +124,13 @@ var run_ep_earned := 0
 var run_team: Array[String] = []
 # K.O.s eigener Monster in Reihenfolge, der letzte Eintrag hat den Run beendet (siehe record_own_faint)
 var run_deaths: Array[Dictionary] = []
+# Meilenstein-Zähler des Start-Monsters in diesem Run (Skills.milestone_progress)
+var run_starter_kills := 0
+var run_starter_bounties := 0
+var run_boss_finishers := 0
+var run_flawless_bosses := 0
+# in diesem Run freigeschaltete Meilenstein-Ei-Attacken (für den Endbildschirm)
+var run_milestone_unlocks: Array = []
 # gegnerische Monster pro Tiefe: Art -> letzte Sichtung (Stufe, Element, Werte), siehe record_sighting
 var run_sightings: Array = []
 # Stufe der Team-Monster beim Run-Ende: Art -> höchste Stufe
@@ -181,6 +188,11 @@ func reset() -> void:
 	run_ep_earned = 0
 	run_team = []
 	run_deaths = []
+	run_starter_kills = 0
+	run_starter_bounties = 0
+	run_boss_finishers = 0
+	run_flawless_bosses = 0
+	run_milestone_unlocks = []
 	biome_pools = []
 	run_sightings = []
 	run_team_levels = {}

@@ -717,7 +717,7 @@ func get_egg_skill_source(mon_name: String, skill_name: String) -> Array:
 			return ["EGG_SOURCE_MILESTONE", milestone.source_hint]
 	for bounty in BOUNTIES:
 		if meta.get("bounty_egg_skills", {}).get(bounty.key, "") == skill_name:
-			return ["EGG_SOURCE_BOUNTY", bounty.source_hint]
+			return ["EGG_SOURCE_BOUNTY", bounty_text(bounty, bounty.source_hint)]
 	return []
 
 # Kategorien der Ei-Attacken für die Übersicht in der Start-Auswahl, in Anzeigereihenfolge.
@@ -805,38 +805,108 @@ func egg_skill_category(skill: Dictionary) -> String:
 # ─────────────────────────
 # Meilenstein-Ei-Attacken: feste Freischaltungen pro Art, gezählt wird nur mit der Art als Start-Monster
 # und nur, solange das Start-Monster selbst noch im Team ist (ausgetauscht oder K.O. = kein Fortschritt).
-# Welcher Skill zu welchem Meilenstein gehört, steht in Monmap (milestone_egg_skills).
-# Sie tauchen nie bei wilden Monstern oder im Biom-Pool auf, man bekommt sie nur über den Meilenstein.
-# stat ist der Zähler in SaveManager (pro Art), hint der Freischalt-Hinweis im Konfigurator,
-# source_hint die Beschreibung, wie die Attacke freigeschaltet wurde.
+# Alle Bedingungen gelten innerhalb EINES Runs, Fortschritt nimmt man nicht in den nächsten Run mit.
+# Welche Meilensteine eine Art hat und welcher Skill dazugehört, steht in Monmap (milestone_egg_skills, Schlüssel = key),
+# gewürfelt von tools/skill_verteilung.js. Sie tauchen nie bei wilden Monstern oder im Biom-Pool auf.
+# stat: Zähler des laufenden Runs (milestone_progress), count: nötiger Wert, hint: Freischalt-Hinweis im Konfigurator,
+# source_hint: Beschreibung, wie die Attacke freigeschaltet wurde.
+# Neuer Meilenstein: hier eintragen, Texte in translations.csv, Zähler in milestone_progress, Würfel-Tabellen im Werkzeug.
 const MILESTONES = [
-	{"key": "boss_1", "stat": "biome_boss_kills", "count": 1, "hint": "MILESTONE_HINT_BOSS_1", "source_hint": "MILESTONE_SOURCE_BOSS_1"},
-	{"key": "boss_5", "stat": "biome_boss_kills", "count": 5, "hint": "MILESTONE_HINT_BOSS_5", "source_hint": "MILESTONE_SOURCE_BOSS_5"},
-	{"key": "game_win", "stat": "game_wins", "count": 1, "hint": "MILESTONE_HINT_GAME_WIN", "source_hint": "MILESTONE_SOURCE_GAME_WIN"},
+	# den n-ten Biom-Boss besiegen (Boss 5 ist der Endboss und kein Meilenstein)
+	{"key": "boss_1", "stat": "run_bosses", "count": 1, "hint": "MILESTONE_HINT_BOSS_1", "source_hint": "MILESTONE_SOURCE_BOSS_1"},
+	{"key": "boss_2", "stat": "run_bosses", "count": 2, "hint": "MILESTONE_HINT_BOSS_2", "source_hint": "MILESTONE_SOURCE_BOSS_2"},
+	{"key": "boss_3", "stat": "run_bosses", "count": 3, "hint": "MILESTONE_HINT_BOSS_3", "source_hint": "MILESTONE_SOURCE_BOSS_3"},
+	{"key": "boss_4", "stat": "run_bosses", "count": 4, "hint": "MILESTONE_HINT_BOSS_4", "source_hint": "MILESTONE_SOURCE_BOSS_4"},
+	# den n-ten Biom-Boss besiegen, ohne dass in diesem Run ein eigenes Monster K.O. ging
+	{"key": "flawless_1", "stat": "flawless_bosses", "count": 1, "hint": "MILESTONE_HINT_FLAWLESS_1", "source_hint": "MILESTONE_SOURCE_FLAWLESS_1"},
+	{"key": "flawless_2", "stat": "flawless_bosses", "count": 2, "hint": "MILESTONE_HINT_FLAWLESS_2", "source_hint": "MILESTONE_SOURCE_FLAWLESS_2"},
+	{"key": "flawless_3", "stat": "flawless_bosses", "count": 3, "hint": "MILESTONE_HINT_FLAWLESS_3", "source_hint": "MILESTONE_SOURCE_FLAWLESS_3"},
+	# das Start-Monster landet den letzten Treffer eines Biom-Boss-Kampfs
+	{"key": "finisher_1", "stat": "boss_finishers", "count": 1, "hint": "MILESTONE_HINT_FINISHER_1", "source_hint": "MILESTONE_SOURCE_FINISHER_1"},
+	{"key": "finisher_2", "stat": "boss_finishers", "count": 2, "hint": "MILESTONE_HINT_FINISHER_2", "source_hint": "MILESTONE_SOURCE_FINISHER_2"},
+	{"key": "finisher_3", "stat": "boss_finishers", "count": 3, "hint": "MILESTONE_HINT_FINISHER_3", "source_hint": "MILESTONE_SOURCE_FINISHER_3"},
+	# K.O.s durch das Start-Monster (letzter Treffer)
+	{"key": "kills_5", "stat": "starter_kills", "count": 5, "hint": "MILESTONE_HINT_KILLS_5", "source_hint": "MILESTONE_SOURCE_KILLS_5"},
+	{"key": "kills_8", "stat": "starter_kills", "count": 8, "hint": "MILESTONE_HINT_KILLS_8", "source_hint": "MILESTONE_SOURCE_KILLS_8"},
+	{"key": "kills_10", "stat": "starter_kills", "count": 10, "hint": "MILESTONE_HINT_KILLS_10", "source_hint": "MILESTONE_SOURCE_KILLS_10"},
+	{"key": "kills_15", "stat": "starter_kills", "count": 15, "hint": "MILESTONE_HINT_KILLS_15", "source_hint": "MILESTONE_SOURCE_KILLS_15"},
+	# Bounty Hunter: das Start-Monster erlegt ein Kopfgeld-Monster (letzter Treffer); solange offen, tauchen Kopfgelder auf
+	{"key": "bounty", "stat": "starter_bounties", "count": 1, "hint": "MILESTONE_HINT_BOUNTY", "source_hint": "MILESTONE_SOURCE_BOUNTY"},
+	# Elemente des Start-Monsters (Tränke, Letzter Wille)
+	{"key": "new_element", "stat": "new_elements", "count": 1, "hint": "MILESTONE_HINT_NEW_ELEMENT", "source_hint": "MILESTONE_SOURCE_NEW_ELEMENT"},
+	{"key": "chaos", "stat": "elements", "count": 4, "hint": "MILESTONE_HINT_CHAOS", "source_hint": "MILESTONE_SOURCE_CHAOS"},
 ]
 
-# Noch gesperrte Meilensteine der Art als [{skill, hint, ...}].
+func get_milestone(key: String) -> Dictionary:
+	for milestone in MILESTONES:
+		if milestone.key == key:
+			return milestone
+	return {}
+
+# Noch gesperrte Meilensteine der Art als [{skill, hint, ...}], in der Reihenfolge aus Monmap.
 func get_locked_milestones(mon_name: String) -> Array:
 	var skills_by_key = Monmap.mon_metainfos_by_name(mon_name).get("milestone_egg_skills", {})
 	var locked = []
-	for milestone in MILESTONES:
-		var skill_name = skills_by_key.get(milestone.key, "")
-		if skill_name != "" and not SaveManager.is_egg_skill_unlocked(mon_name, skill_name):
+	for key in skills_by_key:
+		var milestone := get_milestone(key)
+		var skill_name = skills_by_key[key]
+		if milestone.is_empty():
+			push_warning("Monmap: unbekannter Meilenstein '%s' bei '%s'" % [key, mon_name])
+		elif not SaveManager.is_egg_skill_unlocked(mon_name, skill_name):
 			var entry = milestone.duplicate()
 			entry.skill = skill_name
 			locked.append(entry)
 	return locked
 
-# Zählt einen Meilenstein-Zähler der Art hoch und liefert die Namen der dadurch neu freigeschalteten Skills.
-func add_milestone_progress(mon_name: String, stat: String) -> Array:
-	if mon_name == "" or not State.is_starter_in_team():
+# Stand eines Meilenstein-Zählers im laufenden Run (siehe MILESTONES stat).
+func milestone_progress(stat: String) -> int:
+	var starter: Monster = State.starter
+	match stat:
+		"run_bosses":
+			return State.map_level
+		"flawless_bosses":
+			return State.run_flawless_bosses
+		"boss_finishers":
+			return State.run_boss_finishers
+		"starter_kills":
+			return State.run_starter_kills
+		"starter_bounties":
+			return State.run_starter_bounties
+		"new_elements":
+			if starter == null:
+				return 0
+			return _count_elements(starter._type & ~int(Monmap.mon_metainfos_by_name(starter._name).initial_type))
+		"elements":
+			return 0 if starter == null else _count_elements(starter._type)
+	return 0
+
+func _count_elements(mask: int) -> int:
+	var count := 0
+	for element in [EARTH, FIRE, WATER, AIR]:
+		if mask & element:
+			count += 1
+	return count
+
+# Hat das Start-Monster noch einen offenen Meilenstein dieses Zählers? (z. B. damit Kopfgelder auftauchen)
+func starter_wants(stat: String) -> bool:
+	return State.is_starter_in_team() and get_locked_milestones(State.starter_name).any(func(m): return m.stat == stat)
+
+# Prüft nach jedem Fortschritt alle offenen Meilensteine des Start-Monsters, schaltet erreichte frei und meldet sie.
+# Liefert die Namen der neu freigeschalteten Skills (stehen auch in State.run_milestone_unlocks fürs Run-Ende).
+func check_milestones() -> Array:
+	if State.starter_name == "" or not State.is_starter_in_team():
 		return []
-	SaveManager.add_milestone_progress(mon_name, stat)
 	var unlocked = []
-	for milestone in get_locked_milestones(mon_name):
-		if SaveManager.get_milestone_progress(mon_name, milestone.stat) >= milestone.count:
-			SaveManager.unlock_egg_skill(mon_name, milestone.skill)
+	for milestone in get_locked_milestones(State.starter_name):
+		if milestone_progress(milestone.stat) >= milestone.count:
+			SaveManager.unlock_egg_skill(State.starter_name, milestone.skill)
 			unlocked.append(milestone.skill)
+	if not unlocked.is_empty():
+		State.run_milestone_unlocks.append_array(unlocked)
+		Helper.show_unlock_message(tr("MILESTONE_UNLOCKED").format({
+			"mon": Helper.mon_display_name(State.starter_name),
+			"skills": ", ".join(PackedStringArray(unlocked.map(func(skill_name): return tr(skill_name)))),
+		}))
 	return unlocked
 
 # ─────────────────────────
@@ -845,13 +915,88 @@ func add_milestone_progress(mon_name: String, stat: String) -> Array:
 # Monmap (bounty_egg_skills). K.O. durch ein anderes Team-Mitglied oder Fangen zählt nicht.
 # mon: Art des Kopfgeld-Monsters, level_bonus: Stufen über dem Kampf, min_depth: ab welcher Biom-Tiefe es auftaucht,
 # label: Anzeigename (Platzhalter {mon} = Name der Art), hint: Freischalt-Hinweis im Konfigurator,
-# source_hint: Beschreibung, wie die Attacke freigeschaltet wurde.
-# Beispiele, bis es eigene Monster für die Kopfgelder gibt. Bekommt ein Kopfgeld eine eigene Art, trägt diese in
-# Monmap "bounty_target": "<key>" und kommt in den normalen Spawn-Pool: dann zählt jedes Auftauchen als Kopfgeld-Monster.
+# source_hint: Beschreibung, wie die Attacke freigeschaltet wurde (beide mit {mon} und {biome}, siehe bounty_text).
+# Die Liste würfelt tools/skill_verteilung.js: ein Kopfgeld pro Art, je seltener die belohnte Art, desto tieferes Biom.
+# Bekommt ein Kopfgeld eine eigene Art, trägt diese in Monmap "bounty_target": "<key>" und kommt in den normalen
+# Spawn-Pool: dann zählt jedes Auftauchen als Kopfgeld-Monster.
 const BOUNTIES = [
-	{"key": "alpha_1", "mon": "1", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT_ALPHA_1", "source_hint": "BOUNTY_SOURCE_ALPHA_1"},
-	{"key": "alpha_2", "mon": "2", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT_ALPHA_2", "source_hint": "BOUNTY_SOURCE_ALPHA_2"},
-	{"key": "northern_warden", "mon": "1", "level_bonus": 4, "min_depth": 3, "label": "BOUNTY_NORTHERN_WARDEN", "hint": "BOUNTY_HINT_NORTHERN_WARDEN", "source_hint": "BOUNTY_SOURCE_NORTHERN_WARDEN"},
+	# automatisch erzeugt (tools/skill_verteilung.js): key = alpha_<Art, die die Ei-Attacke bekommt>, mon = Ziel
+	{"key": "alpha_1", "mon": "22", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_2", "mon": "4", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_3", "mon": "80", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_4", "mon": "18", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_5", "mon": "21", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_6", "mon": "13", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_7", "mon": "43", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_8", "mon": "2", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_9", "mon": "5", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_10", "mon": "3", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_11", "mon": "81", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_12", "mon": "75", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_13", "mon": "41", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_14", "mon": "17", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_15", "mon": "15", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_16", "mon": "4", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_17", "mon": "59", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_18", "mon": "81", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_19", "mon": "46", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_20", "mon": "16", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_21", "mon": "64", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_22", "mon": "18", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_23", "mon": "82", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_24", "mon": "17", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_25", "mon": "7", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_26", "mon": "76", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_27", "mon": "10", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_28", "mon": "24", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_29", "mon": "22", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_30", "mon": "68", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_31", "mon": "81", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_33", "mon": "46", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_36", "mon": "15", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_37", "mon": "46", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_38", "mon": "11", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_39", "mon": "19", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_40", "mon": "5", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_41", "mon": "41", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_42", "mon": "64", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_43", "mon": "11", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_45", "mon": "16", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_46", "mon": "46", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_47", "mon": "17", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_48", "mon": "46", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_49", "mon": "22", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_50", "mon": "64", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_51", "mon": "16", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_52", "mon": "76", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_53", "mon": "40", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_54", "mon": "15", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_55", "mon": "14", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_56", "mon": "67", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_57", "mon": "36", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_59", "mon": "15", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_60", "mon": "6", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_61", "mon": "21", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_62", "mon": "3", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_63", "mon": "18", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_64", "mon": "81", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_66", "mon": "1", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_67", "mon": "11", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_68", "mon": "9", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_69", "mon": "20", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_70", "mon": "74", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_71", "mon": "57", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_72", "mon": "63", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_73", "mon": "15", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_74", "mon": "4", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_75", "mon": "21", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_76", "mon": "56", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_77", "mon": "3", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_78", "mon": "24", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_79", "mon": "64", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_80", "mon": "76", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_81", "mon": "11", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_82", "mon": "11", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 ]
 
 # Chance pro normalem Kampf, dass ein Kopfgeld-Monster eingestreut wird (zusätzlich zu denen, die von selbst kommen).
@@ -873,12 +1018,25 @@ func get_locked_bounties(mon_name: String) -> Array:
 		if skill_name != "" and not SaveManager.is_egg_skill_unlocked(mon_name, skill_name):
 			var entry = bounty.duplicate()
 			entry.skill = skill_name
+			entry.hint = bounty_text(bounty, bounty.hint)
 			locked.append(entry)
 	return locked
 
+# Hinweis- bzw. Quellen-Text eines Kopfgelds mit Zielname und Biom (tr() lässt fertige Texte unverändert).
+func bounty_text(bounty: Dictionary, key: String) -> String:
+	return tr(key).format({
+		"mon": tr(bounty.label).format({"mon": Helper.mon_display_name(bounty.mon)}),
+		"biome": bounty.min_depth + 1,
+	})
+
 # Kopfgelder, die für mindestens ein Team-Monster noch etwas freischalten und in dieser Biom-Tiefe auftauchen.
+# Hat das Start-Monster den Meilenstein "bounty" offen, zählt jedes Kopfgeld dieser Tiefe.
 func get_open_bounties(team: Array, depth: int) -> Array:
 	var keys = []
+	if starter_wants("starter_bounties"):
+		for bounty in BOUNTIES:
+			if bounty.min_depth <= depth:
+				keys.append(bounty.key)
 	for mon in team:
 		for bounty in get_locked_bounties(mon._name):
 			if bounty.min_depth <= depth and not keys.has(bounty.key):
@@ -1255,36 +1413,46 @@ var milestone_skills = [
 	_attack_skill("SKILL_SWAMP_MAG_SPORE_PUFF", SWAMP, 22.0, 0.55, MAG, 3, 1, 1),
 ]
 # Kopfgeld-Ei-Attacken (Skills.BOUNTIES)
-var bounty_skills = []
+var bounty_skills = [
+	# Dampf
+	_shield_skill("SKILL_STEAM_WARD_HAZE_SHIELD", STEAM, 20.0, 0.4, MAG, 2, 1, 1),
+	# Blitz
+	_shield_skill("SKILL_LIGHTNING_ARMOR_CHARGE_PLATE", LIGHTNING, 18.0, 0.35, PHYS, 2, 1, 1),
+	# Magma
+	_shield_skill("SKILL_MAGMA_WARD_HEAT_SHIMMER", MAGMA, 18.0, 0.35, MAG, 2, 1, 1),
+	# Staub
+	_attack_skill("SKILL_DUST_MAG_DUST_SHOT", DUST, 20.0, 0.4, MAG, 2, 1, 1),
+	_shield_skill("SKILL_DUST_WARD_DUST_CLOAK", DUST, 18.0, 0.35, MAG, 2, 1, 1),
+	# Gewitter
+	_shield_skill("SKILL_THUNDERSTORM_ARMOR_STORM_PLATE", THUNDERSTORM, 55.0, 0.75, PHYS, 3, 3, 3),
+	_attack_skill("SKILL_THUNDERSTORM_PHYS_SQUALL_STRIKE", THUNDERSTORM, 22.0, 0.55, PHYS, 3, 1, 1),
+	_shield_skill("SKILL_THUNDERSTORM_ARMOR_RAIN_GUARD", THUNDERSTORM, 20.0, 0.5, PHYS, 3, 1, 1),
+	_shield_skill("SKILL_THUNDERSTORM_WARD_STORM_VEIL", THUNDERSTORM, 22.0, 0.55, MAG, 3, 1, 1),
+	# Aschesturm
+	_shield_skill("SKILL_ASH_STORM_ARMOR_CINDER_SHELL", ASH_STORM, 22.0, 0.55, PHYS, 3, 1, 1),
+	_shield_skill("SKILL_ASH_STORM_WARD_SMOKE_SCREEN", ASH_STORM, 20.0, 0.5, MAG, 3, 1, 1),
+	# Sumpf
+	_shield_skill("SKILL_SWAMP_WARD_BOG_MIST", SWAMP, 22.0, 0.55, MAG, 3, 1, 1),
+]
 # Nur im Couvert der Bosse: Skills ab Stufe 2, die keine Art benutzt
 var reward_skills = [
 	# Feuer
 	_boon_skill("SKILL_FIRE_BOON_FOCUS_FLAME", FIRE, "crit_next", 50.0, -1, SELF, "atk", 3, 2, 1, "SKILL_BOON_CRIT_NEXT_DESC"),
 	# Dampf
-	_shield_skill("SKILL_STEAM_WARD_HAZE_SHIELD", STEAM, 20.0, 0.4, MAG, 2, 1, 1),
 	_shield_skill("SKILL_STEAM_ARMOR_VAPOR_PLATE", STEAM, 25.0, 0.45, PHYS, 3, 2, 1),
 	_shield_skill("SKILL_STEAM_WARD_FOG_BARRIER", STEAM, 28.0, 0.5, MAG, 3, 2, 1),
 	# Blitz
-	_shield_skill("SKILL_LIGHTNING_ARMOR_CHARGE_PLATE", LIGHTNING, 18.0, 0.35, PHYS, 2, 1, 1),
 	_shield_skill("SKILL_LIGHTNING_WARD_SPARK_FIELD", LIGHTNING, 25.0, 0.45, MAG, 3, 2, 1),
 	# Magma
-	_shield_skill("SKILL_MAGMA_WARD_HEAT_SHIMMER", MAGMA, 18.0, 0.35, MAG, 2, 1, 1),
 	_attack_skill("SKILL_MAGMA_MAG_MAGMA_BURST", MAGMA, 30.0, 0.5, MAG, 3, 2, 2),
 	_shield_skill("SKILL_MAGMA_WARD_EMBER_CRUST", MAGMA, 25.0, 0.45, MAG, 3, 2, 1),
 	# Eis
 	_shield_skill("SKILL_ICE_ARMOR_ICE_PLATE", ICE, 25.0, 0.45, PHYS, 3, 2, 1),
-	# Staub
-	_attack_skill("SKILL_DUST_MAG_DUST_SHOT", DUST, 20.0, 0.4, MAG, 2, 1, 1),
-	_shield_skill("SKILL_DUST_WARD_DUST_CLOAK", DUST, 18.0, 0.35, MAG, 2, 1, 1),
 	# Schlamm
 	_shield_skill("SKILL_MUD_ARMOR_CLAY_SHELL", MUD, 28.0, 0.5, PHYS, 3, 2, 1),
 	_with(_passive_skill("SKILL_PASSIVE_DEEP_VITALITY", MUD, 20.0, 3, "stat", "SKILL_PASSIVE_STAT_SELF_DESC"), {"passive_stat": "hp", "passive_scope": "self"}),
 	# Gewitter
-	_shield_skill("SKILL_THUNDERSTORM_ARMOR_STORM_PLATE", THUNDERSTORM, 55.0, 0.75, PHYS, 3, 3, 3),
 	_shield_skill("SKILL_THUNDERSTORM_WARD_CLOUD_DOME", THUNDERSTORM, 60.0, 0.8, MAG, 3, 3, 3),
-	_attack_skill("SKILL_THUNDERSTORM_PHYS_SQUALL_STRIKE", THUNDERSTORM, 22.0, 0.55, PHYS, 3, 1, 1),
-	_shield_skill("SKILL_THUNDERSTORM_ARMOR_RAIN_GUARD", THUNDERSTORM, 20.0, 0.5, PHYS, 3, 1, 1),
-	_shield_skill("SKILL_THUNDERSTORM_WARD_STORM_VEIL", THUNDERSTORM, 22.0, 0.55, MAG, 3, 1, 1),
 	# Vulkan
 	_attack_skill("SKILL_VOLCANO_MAG_PYROCLAST", VOLCANO, 55.0, 0.75, MAG, 3, 3, 3),
 	_shield_skill("SKILL_VOLCANO_WARD_GEYSER_SHIELD", VOLCANO, 60.0, 0.8, MAG, 3, 3, 3),
@@ -1294,14 +1462,11 @@ var reward_skills = [
 	# Aschesturm
 	_shield_skill("SKILL_ASH_STORM_ARMOR_SLAG_ARMOR", ASH_STORM, 60.0, 0.8, PHYS, 3, 3, 3),
 	_shield_skill("SKILL_ASH_STORM_WARD_SOOT_VEIL", ASH_STORM, 55.0, 0.75, MAG, 3, 3, 3),
-	_shield_skill("SKILL_ASH_STORM_ARMOR_CINDER_SHELL", ASH_STORM, 22.0, 0.55, PHYS, 3, 1, 1),
-	_shield_skill("SKILL_ASH_STORM_WARD_SMOKE_SCREEN", ASH_STORM, 20.0, 0.5, MAG, 3, 1, 1),
 	# Sumpf
 	_shield_skill("SKILL_SWAMP_ARMOR_MANGROVE_WALL", SWAMP, 60.0, 0.8, PHYS, 3, 3, 3),
 	_shield_skill("SKILL_SWAMP_WARD_MARSH_MIST", SWAMP, 60.0, 0.8, MAG, 3, 3, 3),
 	_attack_skill("SKILL_SWAMP_PHYS_REED_WHIP", SWAMP, 20.0, 0.5, PHYS, 3, 1, 1),
 	_shield_skill("SKILL_SWAMP_ARMOR_MOSS_HIDE", SWAMP, 22.0, 0.55, PHYS, 3, 1, 1),
-	_shield_skill("SKILL_SWAMP_WARD_BOG_MIST", SWAMP, 22.0, 0.55, MAG, 3, 1, 1),
 	# Chaos
 	_boon_skill("SKILL_CHAOS_BOON_BATTLE_CRY", CHAOS, "taunt", 1.0, 0, SELF, "def", 2, 2, 1, "SKILL_BOON_TAUNT_DESC"),
 	_cross_shield_skill("SKILL_CHAOS_WARD_IRON_WILL", CHAOS, 5.0, 0.4, MAG, 3, 2, 1),

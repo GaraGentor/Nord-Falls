@@ -72,8 +72,7 @@ func _ready() -> void:
 	_show_deaths()
 	_init_search()
 
-	if State.run_won:
-		_show_unlocks(Skills.add_milestone_progress(State.starter_name, "game_wins"))
+	_show_unlocks(State.run_milestone_unlocks)
 
 # ─────────────────────────
 # K.O.s eigener Monster (State.run_deaths), bei einer Niederlage ist der letzte der Run-beendende Treffer

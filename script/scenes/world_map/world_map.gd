@@ -432,17 +432,15 @@ func _on_boss_button_pressed() -> void:
 			start_biome_boss()
 
 ## Biom-Boss besiegt und Beute abgehandelt: weiter ins nächste Biom, nach dem letzten endet der Run mit einem Sieg.
-## Boss-Felder auf der Karte zählen nicht für den Meilenstein und die Faule-Eier-Ladung.
+## Boss-Felder auf der Karte zählen nicht für die Meilensteine und die Faule-Eier-Ladung.
 func _finish_biome() -> void:
 	State.is_boss_fight = false
-	var unlocked: Array = Skills.add_milestone_progress(State.starter_name, "biome_boss_kills")
-	if not unlocked.is_empty():
-		Helper.show_unlock_message(tr("MILESTONE_UNLOCKED").format({
-			"mon": Helper.mon_display_name(State.starter_name),
-			"skills": ", ".join(PackedStringArray(unlocked.map(func(skill_name): return tr(skill_name)))),
-		}))
 	SaveManager.add_reroll_charge()
 	State.map_level += 1
+	# Meilensteine "n-ter Biom-Boss" zählen State.map_level, "ohne K.O." nur solange noch kein eigenes Monster fiel
+	if State.run_deaths.is_empty():
+		State.run_flawless_bosses += 1
+	Skills.check_milestones()
 	State.biome_fight_index = 0
 	if State.map_level == Map.map_settings.size():
 		State.end_run(true)

@@ -509,7 +509,11 @@ const starterTag = (m) => isStarter(m) ? `<span class="tag starter" title="${esc
 // Wie man eine Meilenstein- bzw. Kopfgeld-Ei-Attacke freischaltet
 function milestoneHow(key) {
 	const def = DATA.milestones.find((m) => m.key === key);
-	return def ? `${def.count}× ${tr("MILESTONE_STAT_" + def.stat.toUpperCase())}` : key;
+	return def ? milestoneName(def) : key;
+}
+// Meilenstein kurz: "Biom-Bosse in diesem Run: 3" (alle Meilensteine gelten innerhalb eines Runs)
+function milestoneName(def) {
+	return `${tr("MILESTONE_STAT_" + def.stat.toUpperCase())}: ${def.count}`;
 }
 function bountyHow(key) {
 	const def = DATA.bounties.find((b) => b.key === key);
@@ -896,7 +900,7 @@ function renderUnlocks() {
 	const rewards = (field, key) => DATA.mons.filter((m) => m[field]?.[key])
 		.map((m) => `<li>${esc(monName(m.name))}: ${skillLabel(m[field][key])}</li>`).join("");
 	const msHtml = ms.map((m) => `<article class="card">
-		<h3>${esc(m.count)}× ${esc(tr("MILESTONE_STAT_" + m.stat.toUpperCase()))}</h3>
+		<h3>${esc(milestoneName(m))}</h3>
 		<p class="small muted" style="margin:4px 0 0">${hl(tr(m.hint))}</p>
 		<div class="skill-group"><h4>${ui("reward")}</h4><ul class="skill-list">${rewards("milestone_egg_skills", m.key) || ui("none")}</ul></div>
 	</article>`).join("");
@@ -906,7 +910,7 @@ function renderUnlocks() {
 			<dt>${ui("appearsFrom")}</dt><dd>${b.min_depth + 1}</dd>
 			<dt>${ui("levelBonus")}</dt><dd>+${b.level_bonus}</dd>
 		</dl>
-		<p class="small muted" style="margin:8px 0 0">${hl(tr(b.hint))}</p>
+		<p class="small muted" style="margin:8px 0 0">${hl(tr(b.hint, { mon: tr(b.label, { mon: monName(b.mon) }), biome: b.min_depth + 1 }))}</p>
 		<div class="skill-group"><h4>${ui("reward")}</h4><ul class="skill-list">${rewards("bounty_egg_skills", b.key) || ui("none")}</ul></div>
 	</article>`).join("");
 	return header("unlocks") +

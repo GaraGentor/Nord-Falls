@@ -327,6 +327,9 @@ func add_gem(stat: String, bonus: int, count := 1) -> void:
 func gain_element(element: int) -> void:
 	_type = ColorMap.add_element(_type, element)
 	_gained_elements |= element
+	# Meilensteine "neues Element" / "Chaos" des Start-Monsters
+	if self == State.starter:
+		Skills.check_milestones()
 
 # Außerhalb des Kampfes aufrufen, das Monster muss schon wieder im Team stehen (passive KP-Boni zählen mit).
 func revive(share: float) -> void:

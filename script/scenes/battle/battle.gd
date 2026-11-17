@@ -549,6 +549,18 @@ func round_won():
 func upgrade_mons():
 	pass
 
+## Meilenstein-Zähler, wenn das Start-Monster den letzten Treffer gelandet hat (nicht im Übungskampf):
+## K.O.s, Kopfgelder und der letzte Treffer eines Biom-Boss-Kampfs (Boss-Felder auf der Karte zählen nicht).
+func _count_starter_kill(defeated: Monster) -> void:
+	if not _practice_snapshot.is_empty() or State.starter == null or defeated._last_hit_by != State.starter:
+		return
+	State.run_starter_kills += 1
+	if defeated._bounty != "":
+		State.run_starter_bounties += 1
+	if State.is_boss_fight and State.enemy_mons.all(func(mon: Monster): return not mon.is_alive()):
+		State.run_boss_finishers += 1
+	Skills.check_milestones()
+
 func _check_game_over(last_fainted:Monster) -> void:
 	if _battle_over:
 		return
@@ -569,6 +581,7 @@ func _check_game_over(last_fainted:Monster) -> void:
 		var bounty_skill = Skills.claim_bounty(last_fainted)
 		if bounty_skill != "":
 			Helper.show_unlock_message(tr("BOUNTY_UNLOCKED").format({"skill": tr(bounty_skill), "mon": Helper.mon_display_name(last_fainted._last_hit_by._name)}))
+		_count_starter_kill(last_fainted)
 		# mit dem letzten Gegner zerbrechen die Relikte des Kampfs, erst danach geht es weiter
 		if not BossRelics.active.is_empty() and State.enemy_mons.all(func(mon: Monster): return not mon.is_alive()):
 			_pending_breaks += 1

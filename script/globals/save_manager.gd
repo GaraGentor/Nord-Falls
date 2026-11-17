@@ -14,8 +14,8 @@ const DEFAULT_DATA := {
 	"seen_monsters": [],
 	# freigeschaltete Ei-Attacken: Monster-Name -> [Skill-Namen]
 	"egg_skills": {},
-	# Meilenstein-Fortschritt pro Art als Start-Monster: Monster-Name -> {Zähler -> Anzahl} (siehe Skills.MILESTONES)
-	# freigeschaltete Meilenstein-Ei-Attacken landen wie die anderen in egg_skills
+	# alter Meilenstein-Fortschritt über mehrere Runs, wird nicht mehr benutzt (Meilensteine gelten jetzt pro Run,
+	# siehe Skills.MILESTONES). Freigeschaltete Meilenstein-Ei-Attacken landen wie die anderen in egg_skills
 	"milestones": {},
 	# zuletzt im Ei-Konfigurator gewählte Ei-Attacken pro Art: Monster-Name -> [Skill-Namen], nächstes Mal vorausgewählt
 	"egg_loadouts": {},
@@ -147,15 +147,6 @@ func set_egg_loadout(monster_name: String, skill_names: Array) -> void:
 
 func is_egg_skill_unlocked(monster_name: String, skill_name: String) -> bool:
 	return save_data["egg_skills"].get(monster_name, []).has(skill_name)
-
-func add_milestone_progress(monster_name: String, stat: String, amount := 1):
-	if not save_data["milestones"].has(monster_name):
-		save_data["milestones"][monster_name] = {}
-	save_data["milestones"][monster_name][stat] = get_milestone_progress(monster_name, stat) + amount
-	save_game()
-
-func get_milestone_progress(monster_name: String, stat: String) -> int:
-	return int(save_data["milestones"].get(monster_name, {}).get(stat, 0))
 
 func add_reroll_charge():
 	save_data["reroll_charges"] = mini(int(save_data["reroll_charges"]) + 1, REROLL_CHARGES_NEEDED)
