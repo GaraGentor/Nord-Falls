@@ -159,6 +159,7 @@ func _build_main() -> void:
 	fields.append(["SCHATZ AUTOMATISCH", _collect_treasure])
 	fields.append(["GLÜCKSRAD", _open_wheel])
 	fields.append(["VOID", _open_void])
+	fields.append(["AUSEINANDERSETZUNG", _open_confrontation])
 	_add_section(list, "Felder", fields)
 
 	_add_section(list, "Nach dem Kampf", [
@@ -639,6 +640,10 @@ func _open_field(type: Map.PATH_TYPE) -> void:
 func _open_wheel() -> void:
 	close()
 	map.open_wheel_event()
+
+func _open_confrontation() -> void:
+	close()
+	map.open_confrontation_event()
 
 func _open_void() -> void:
 	if not Relics.can_swap() and not _prepare_relic_swap():

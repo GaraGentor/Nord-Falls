@@ -1,29 +1,43 @@
 class_name SkillReplacePicker
-extends VBoxContainer
+extends JudgementDialog
 
 ## Auswahl, welcher Skill vergessen wird, wenn ein Monster keinen freien Slot mehr hat.
+## Zeigt die Skills als Karten wie beim Lehren im Judgement (JudgementDialog.pick_replace) und liegt
+## auf einer eigenen CanvasLayer über allem, egal wo sie geöffnet wird (Skill-Belohnung, Trainer, neues Element).
 ## picked liefert den Index des zu ersetzenden Skills oder -1 bei Abbruch, danach entfernt sich die Auswahl selbst.
 signal picked(index: int)
 
-func _init(mon: Monster) -> void:
-	theme = preload("res://script/ui/materials/pixel_font_theme.tres")
-	alignment = BoxContainer.ALIGNMENT_CENTER
-	add_theme_constant_override("separation", 8)
-	var title := Label.new()
-	title.text = tr("JUDGEMENT_REPLACE_TITLE").format({"max": Skills.MAX_SKILLS})
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	add_child(title)
-	for i in mon._skills.size():
-		var button := Button.new()
-		button.text = tr("JUDGEMENT_REPLACE").format({"skill": tr(mon._skills[i].name)})
-		button.add_theme_color_override("font_color", Helper.color_by_type(mon._skills[i].nature))
-		button.flat = true
-		button.pressed.connect(picked.emit.bind(i))
-		add_child(button)
-	var cancel := Button.new()
-	cancel.text = tr("COMMON_CANCEL")
-	cancel.flat = true
-	cancel.pressed.connect(picked.emit.bind(-1))
-	add_child(cancel)
-	picked.connect(func(_index): queue_free())
+const LAYER := 110
+const FONT_THEME = preload("res://script/ui/materials/pixel_font_theme.tres")
+
+var _mon: Monster
+var _skill: Dictionary
+
+## Öffnet die Auswahl für mon, der skill lernen soll. parent ist nur der Platz im Baum.
+static func open(parent: Node, mon: Monster, skill: Dictionary) -> SkillReplacePicker:
+	var layer := CanvasLayer.new()
+	layer.layer = LAYER
+	# aus einer anderen Ebene heraus (z. B. ElementGainOverlay) eine Ebene darüber
+	var node: Node = parent
+	while node:
+		if node is CanvasLayer:
+			layer.layer = maxi(LAYER, node.layer + 1)
+			break
+		node = node.get_parent()
+	var picker := SkillReplacePicker.new()
+	picker._mon = mon
+	picker._skill = skill
+	picker.theme = FONT_THEME
+	layer.add_child(picker)
+	picker.picked.connect(func(_index): layer.queue_free())
+	parent.add_child(layer)
+	return picker
+
+func _ready() -> void:
+	super()
+	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	_run.call_deferred()
+
+func _run() -> void:
+	var index: int = await pick_replace(_mon, _skill)
+	picked.emit(index)

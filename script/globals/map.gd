@@ -76,14 +76,54 @@ enum EVENT_TYPE {
 	CAMP = 0,
 	WHEEL,
 	VOID,
+	CONFRONTATION,
 }
 
 # Was ein EVENT-Feld auslöst, Wahrscheinlichkeit in Prozent (alle zusammen sollten 100 ergeben)
 var event_chances = {
-	EVENT_TYPE.CAMP: 40,
-	EVENT_TYPE.WHEEL: 40,
-	EVENT_TYPE.VOID: 20,
+	EVENT_TYPE.CAMP: 35,
+	EVENT_TYPE.WHEEL: 30,
+	EVENT_TYPE.VOID: 15,
+	EVENT_TYPE.CONFRONTATION: 20,
 }
+
+## Auseinandersetzung (confrontation_event.gd): so viele Gegner mehr als ein Kampf am Ende des Bioms, pro Biom-Tiefe.
+## Mehr als CONFRONTATION_MAX_ENEMIES gibt es nie.
+const CONFRONTATION_EXTRA_ENEMIES := [0, 1, 1, 1, 1]
+const CONFRONTATION_MAX_ENEMIES := 3
+
+## Grundelemente, die gegen das Biom am stärksten sind (Feuer-Biom -> Wasser, Dampf -> Wasser und Erde).
+## Ist keins im Vorteil (Chaos), alle Grundelemente.
+func counter_elements(biome: int) -> Array:
+	var best := 0
+	var result := []
+	for element in Enums.MON_TYPES.values():
+		var score := Skills.element_score(element, biome)
+		if score > best:
+			best = score
+			result = [element]
+		elif score == best and score > 0:
+			result.append(element)
+	return result if not result.is_empty() else Enums.MON_TYPES.values()
+
+## Gegner einer Auseinandersetzung: wilde Arten mit einem Element aus counter_elements, ohne Biom-Element obendrauf,
+## gezählt wie am Ende des Bioms plus CONFRONTATION_EXTRA_ENEMIES. Seltenheit wie bei normalen Kämpfen (pick_wild_species).
+func roll_confrontation_enemies() -> Array[Monster]:
+	var depth := encounter_depth()
+	var extra: int = CONFRONTATION_EXTRA_ENEMIES[clampi(depth, 0, CONFRONTATION_EXTRA_ENEMIES.size() - 1)]
+	var count := mini(roll_weighted(ENCOUNTERS[depth].counts, 1.0) + extra, CONFRONTATION_MAX_ENEMIES)
+	var counters := counter_elements(State.current_biome())
+	var pool = wild_species().filter(func(meta): return counters.any(func(element): return meta.initial_type & element)) \
+		.map(func(meta): return meta.name)
+	var species := []
+	var max_rarity: int = Enums.MON_RARITY.LEGENDARY
+	for i in count:
+		var species_name := pick_wild_species(pool, max_rarity)
+		# wie bei normalen Kämpfen: die Begleiter sind nie seltener als das erste Monster
+		if i == 0:
+			max_rarity = Monmap.rarity_of(species_name)
+		species.append(species_name)
+	return Helper.generate_mons({"count": count, "species": species, "biome_element": false})
 
 # Würfelt anhand von event_chances, welches Ereignis ein EVENT-Feld auslöst.
 # Der Void kommt nur, wenn sich mindestens ein Relikt tauschen lässt.
@@ -160,19 +200,26 @@ const RARITY_SPAWN_WEIGHTS := {
 ## - depth: frühestens ab dieser Biom-Tiefe (0-basiert, 1 = Biom 2)
 ## - owned: so viele Arten der jeweiligen Seltenheit muss man besitzen (Sammlung: Start-Monster und gefangene Arten,
 ##   Helper.get_all_owned_monster_names). Gezählt wird genau diese Seltenheit, ein episches Monster zählt nicht als seltenes.
+## - wild_only: gilt nur für wilde Monster, Bosse dürfen die Seltenheit trotzdem haben
 ## Seltenheiten ohne Eintrag sind immer erlaubt.
 const RARITY_UNLOCKS := {
+	# epische Monster erst, wenn man ein seltenes gefangen hat (Bosse ausgenommen)
+	Enums.MON_RARITY.EPIC: {"depth": 0, "owned": {Enums.MON_RARITY.RARE: 1}, "wild_only": true},
 	Enums.MON_RARITY.LEGENDARY: {"depth": 1, "owned": {Enums.MON_RARITY.RARE: 3, Enums.MON_RARITY.EPIC: 1}},
 	Enums.MON_RARITY.MYTHIC: {"depth": 2, "owned": {Enums.MON_RARITY.EPIC: 2, Enums.MON_RARITY.LEGENDARY: 1}},
 }
 
-## Darf diese Seltenheit in der Biom-Tiefe auftauchen (RARITY_UNLOCKS)? depth < 0: aktuelle Tiefe
-func is_rarity_unlocked(rarity: int, depth := -1) -> bool:
+## Darf diese Seltenheit in der Biom-Tiefe auftauchen (RARITY_UNLOCKS)? depth < 0: aktuelle Tiefe.
+## boss: für Bosse fallen Einträge mit wild_only weg.
+func is_rarity_unlocked(rarity: int, depth := -1, boss := false) -> bool:
 	if depth < 0:
 		depth = encounter_depth()
 	if depth < rarity_min_depth(rarity):
 		return false
-	var needed: Dictionary = RARITY_UNLOCKS.get(rarity, {}).get("owned", {})
+	var unlock: Dictionary = RARITY_UNLOCKS.get(rarity, {})
+	if boss and unlock.get("wild_only", false):
+		return true
+	var needed: Dictionary = unlock.get("owned", {})
 	if needed.is_empty():
 		return true
 	var owned := owned_rarity_counts()

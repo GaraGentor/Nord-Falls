@@ -18,11 +18,18 @@ const SKILL_CARD_HEIGHT := 185.0
 # Vier statt drei Karten pro Reihe, sonst passen sehr viele Erbstücke nicht in die Höhe
 const WIDE_PANEL_WIDTH := 1180.0
 const MAX_CARDS_NORMAL_WIDTH := 9
+## Platz für Überschrift, Hinweis, Knöpfe und Ränder; der Rest der Bildschirmhöhe gehört den Karten (scrollt)
+const SCROLL_RESERVED_HEIGHT := 300.0
+const MIN_SCROLL_HEIGHT := 200.0
+## Bilder der Erbstücke (Trophäen, Trank)
+const GIFT_ART_SIZE := Vector2(56, 56)
+const TreasureScript = "res://script/scenes/treasure/treasure.gd"
 
 var _panel: PanelContainer
 var _title: Label
 var _warning: Label
 var _content: HFlowContainer
+var _scroll: ScrollContainer
 var _back: Button
 var _cancel: Button
 var _confirm: Button
@@ -48,11 +55,20 @@ func _ready() -> void:
 	box.add_child(_title)
 	_warning = _label(14, GOLD)
 	box.add_child(_warning)
+	# viele Karten (z. B. Erbstücke) scrollen, statt den Dialog über den Bildschirm wachsen zu lassen
+	_scroll = ScrollContainer.new()
+	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	box.add_child(_scroll)
+	# auf dem Handy fangen die Karten den Finger ab, ohne DragScroll käme Godots Touch-Scroll nie an
+	DragScroll.attach(_scroll)
 	_content = HFlowContainer.new()
 	_content.alignment = FlowContainer.ALIGNMENT_CENTER
+	_content.size_flags_horizontal = SIZE_EXPAND_FILL
 	_content.add_theme_constant_override("h_separation", 12)
 	_content.add_theme_constant_override("v_separation", 12)
-	box.add_child(_content)
+	_scroll.add_child(_content)
+	_content.minimum_size_changed.connect(_fit_scroll)
+	get_viewport().size_changed.connect(_fit_scroll)
 
 	var buttons := HBoxContainer.new()
 	buttons.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -120,6 +136,21 @@ func teach(teacher: Monster, targets: Array, warning: String) -> Dictionary:
 				return {"skill": skill, "target": target, "replace": result.value}
 	visible = false
 	return {}
+
+## Nur die Wahl, welcher Skill für skill weicht (Skill-Belohnung, Trainer, neues Element über SkillReplacePicker):
+## dieselben Karten wie beim Lehren. Liefert den Index oder -1 bei Abbruch.
+func pick_replace(mon: Monster, skill: Dictionary) -> int:
+	_reset("")
+	_back.visible = false
+	_title.text = tr("JUDGEMENT_TEACH_PICK_REPLACE").format({
+		"mon": Helper.mon_battle_name(mon), "max": Skills.MAX_SKILLS, "skill": _skill_name(skill)})
+	for i in mon._skills.size():
+		var card = _skill_card(mon._skills[i], "", mon)
+		card.pressed.connect(_choice.emit.bind({"value": i}))
+	visible = true
+	var result: Dictionary = await _choice
+	visible = false
+	return result.get("value", -1)
 
 # Liefert den Fang, der sein Leben gibt, oder null beim Überspringen.
 func revive(fallen: Monster, catches: Array, hp_percent: int) -> Monster:
@@ -239,6 +270,7 @@ func _gift_card(gift: Dictionary, heirs: Array) -> Button:
 		var name_label := _label(19, GOLD if gift.kind == "gems" else Helper.color_by_type(gift.element))
 		name_label.text = gift_name(gift)
 		lines.add_child(name_label)
+		lines.add_child(_gift_art(gift))
 		var desc := _label(14, TEXT_COLOR)
 		desc.text = _gems_text(gift.gems) if gift.kind == "gems" else tr("LAST_WILL_ELEMENT_DESC")
 		lines.add_child(desc)
@@ -249,6 +281,24 @@ func _gift_card(gift: Dictionary, heirs: Array) -> Button:
 	if not possible:
 		_disable(card)
 	return card
+
+## Bild des Erbstücks: jede Trophäe mit ihrem Bild, beim Element der Trank in seiner Farbe
+func _gift_art(gift: Dictionary) -> Control:
+	var row := HFlowContainer.new()
+	row.alignment = FlowContainer.ALIGNMENT_CENTER
+	row.mouse_filter = MOUSE_FILTER_IGNORE
+	var arts: Array[Control] = []
+	if gift.kind == "gems":
+		for stat in gift.gems:
+			arts.append(GemField.gem_icon(stat))
+	else:
+		# zur Laufzeit geladen: treasure.gd hängt über das Element-Overlay selbst an diesem Dialog
+		arts.append(load(TreasureScript).potion_art(gift.element))
+	for art in arts:
+		art.custom_minimum_size = GIFT_ART_SIZE
+		art.mouse_filter = MOUSE_FILTER_IGNORE
+		row.add_child(art)
+	return row
 
 func _gems_text(gems: Dictionary) -> String:
 	var parts = []
@@ -284,9 +334,16 @@ func confirm(title: String, text: String, confirm_label: String) -> bool:
 # ─────────────────────────
 # Aufbau
 
+## Karten so hoch wie nötig, höchstens bis der Dialog den Bildschirm füllt, darüber scrollen sie
+func _fit_scroll() -> void:
+	var limit := maxf(get_viewport_rect().size.y - SCROLL_RESERVED_HEIGHT, MIN_SCROLL_HEIGHT)
+	_scroll.custom_minimum_size.y = minf(_content.get_combined_minimum_size().y, limit)
+
 func _reset(warning: String) -> void:
 	for child in _content.get_children():
+		_content.remove_child(child)
 		child.queue_free()
+	_scroll.scroll_vertical = 0
 	_warning.text = warning
 	_warning.visible = warning != ""
 	_confirm.visible = false
@@ -294,24 +351,27 @@ func _reset(warning: String) -> void:
 	_panel.custom_minimum_size.x = PANEL_WIDTH
 
 func _skill_name(skill: Dictionary) -> String:
-	return tr(skill.name) if skill.scouted else tr("BATTLE_UNKNOWN_SKILL").format(skill)
+	return tr(skill.name) if skill.get("scouted", true) else tr("BATTLE_UNKNOWN_SKILL").format(skill)
 
 ## Aufbau wie die Kampfkarte (SkillCardFace): oben Kosten, Sterne, Abklingzeit, unten Gesamtwert und Element.
 ## mon: Besitzer für den Gesamtwert (null = Formel). Unbekannte Skills zeigen nur Sterne und Element.
 func _skill_card(skill: Dictionary, note: String, mon: Monster = null) -> Button:
 	var card := _card(Vector2(270, SKILL_CARD_HEIGHT))
 	var lines := _card_lines(card)
+	var scouted: bool = skill.get("scouted", true)
 	var top_row := SkillCardFace.TopRow.new()
 	lines.add_child(top_row)
-	top_row.show_skill(skill, skill.scouted)
+	top_row.show_skill(skill, scouted)
 	var name_label := _label(19, SkillCardPaper.readable_color(Helper.color_by_type(skill.nature)))
 	name_label.text = _skill_name(skill)
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lines.add_child(name_label)
+	# höchstens zwei Zeilen, lange Namen werden kleiner
+	SkillCardFace.fit_title(name_label, 19)
 	var desc := _label(13, MUTED)
 	desc.max_lines_visible = 3
 	desc.size_flags_vertical = SIZE_EXPAND_FILL
-	desc.text = Helper.skill_description(skill) if skill.scouted else tr("BATTLE_UNKNOWN_SKILL_HINT")
+	desc.text = Helper.skill_description(skill) if scouted else tr("BATTLE_UNKNOWN_SKILL_HINT")
 	lines.add_child(desc)
 	if note != "":
 		var note_label := _label(13, GOLD)
@@ -319,7 +379,7 @@ func _skill_card(skill: Dictionary, note: String, mon: Monster = null) -> Button
 		lines.add_child(note_label)
 	var bottom_row := SkillCardFace.BottomRow.new()
 	lines.add_child(bottom_row)
-	bottom_row.show_skill(skill, mon, skill.scouted)
+	bottom_row.show_skill(skill, mon, scouted)
 	SkillCardPaper.attach(card, skill)
 	# Text nicht auf den Papierrahmen setzen
 	for side in ["left", "right", "top", "bottom"]:

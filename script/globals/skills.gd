@@ -682,9 +682,14 @@ func get_locked_egg_skills(mon_name: String) -> Array:
 	return meta.get("unlockable_egg_skills", []).filter(
 		func(skill_name): return not SaveManager.is_egg_skill_unlocked(mon_name, skill_name))
 
+# Ei-Attacken lassen sich nur für Arten freischalten, die in der Ei-Auswahl stehen
+# (Start-Arten und gefangene, deren Ei schon eingesammelt wurde: Helper.get_all_owned_monster_names).
+func can_unlock_egg_skills(mon_name: String) -> bool:
+	return Helper.get_all_owned_monster_names().has(mon_name)
+
 # Ist dieser Skill eines Monsters eine Ei-Attacke, die durch Opfern freigeschaltet werden kann?
 func is_unlockable_egg_skill(mon: Monster, skill: Dictionary) -> bool:
-	return skill.get("egg_skill", false) and get_locked_egg_skills(mon._name).has(skill.name)
+	return skill.get("egg_skill", false) and can_unlock_egg_skills(mon._name) and get_locked_egg_skills(mon._name).has(skill.name)
 
 # Alle Ei-Attacken der Art: {"available": freigeschaltete, "locked": noch gesperrte (fangen & opfern, Meilensteine, Kopfgelder),
 # "hints": gesperrter Skill -> [Sperr-Label, Freischalt-Hinweis] wie im Konfigurator}.
@@ -1038,6 +1043,9 @@ func get_open_bounties(team: Array, depth: int) -> Array:
 			if bounty.min_depth <= depth:
 				keys.append(bounty.key)
 	for mon in team:
+		# Arten, die nicht in der Ei-Auswahl stehen, schalten nichts frei (can_unlock_egg_skills)
+		if not can_unlock_egg_skills(mon._name):
+			continue
 		for bounty in get_locked_bounties(mon._name):
 			if bounty.min_depth <= depth and not keys.has(bounty.key):
 				keys.append(bounty.key)
@@ -1047,7 +1055,7 @@ func get_open_bounties(team: Array, depth: int) -> Array:
 # Liefert den Namen der neu freigeschalteten Ei-Attacke oder "".
 func claim_bounty(defeated: Monster) -> String:
 	var killer = defeated._last_hit_by
-	if defeated._bounty == "" or killer == null or not State.mons.has(killer):
+	if defeated._bounty == "" or killer == null or not State.mons.has(killer) or not can_unlock_egg_skills(killer._name):
 		return ""
 	var skill_name = Monmap.mon_metainfos_by_name(killer._name).get("bounty_egg_skills", {}).get(defeated._bounty, "")
 	if skill_name == "" or SaveManager.is_egg_skill_unlocked(killer._name, skill_name):

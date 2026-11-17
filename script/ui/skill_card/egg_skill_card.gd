@@ -54,6 +54,8 @@ func _build(skill: Dictionary, mon: Monster, locked_label: String, locked_hint: 
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	lines.add_child(name_label)
+	# höchstens zwei Zeilen, lange Namen werden kleiner
+	SkillCardFace.fit_title(name_label, 18)
 
 	# Mitte: nur die Beschreibung scrollt
 	_scroll = AutoScrollContainer.new()

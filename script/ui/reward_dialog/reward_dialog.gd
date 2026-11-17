@@ -573,40 +573,21 @@ func _skill_target_tooltip(mon: Monster, skill: Dictionary) -> String:
 		lines.append(tr("TRAINER_REPLACES"))
 	return "\n".join(lines)
 
-## Bringt mon den Skill bei. Hat es keinen freien Slot, wählt man mittig über picker_parent, welcher vergessen wird.
+## Bringt mon den Skill bei. Hat es keinen freien Slot, wählt man in einem Karten-Dialog (SkillReplacePicker), welcher vergessen wird.
 ## Liefert false, wenn das abgebrochen wurde.
 func learn_skill(skill: Dictionary, mon: Monster, picker_parent: Control) -> bool:
 	var learned := Skills.learnable_copy(skill)
 	if mon._skills.size() < Skills.MAX_SKILLS:
 		mon._skills.append(learned)
 		return true
-	_replace_picker = SkillReplacePicker.new(mon)
-	var picker_box := _picker_box(tr(skill.name), picker_parent)
+	# wie im Judgement: die Skills des Monsters als Karten, eine davon weicht
+	_replace_picker = SkillReplacePicker.open(picker_parent, mon, skill)
 	var index: int = await _replace_picker.picked
-	picker_box.queue_free()
 	_replace_picker = null
 	if index == -1:
 		return false
 	mon._skills[index] = learned
 	return true
-
-func _picker_box(skill_title: String, parent: Control) -> Control:
-	var center := CenterContainer.new()
-	center.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
-	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var panel := PanelContainer.new()
-	center.add_child(panel)
-	var box := VBoxContainer.new()
-	IronPlate.frame(panel, box, 20, 20)
-	var title := Label.new()
-	title.theme = LABEL_THEME
-	title.text = skill_title
-	title.add_theme_color_override("font_color", SkillDetailPopup.GOLD)
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	box.add_child(title)
-	box.add_child(_replace_picker)
-	parent.add_child(center)
-	return center
 
 func _add_card(card_title: String, text: String, icon: Control, drag: Dictionary) -> RewardCard:
 	var card := RewardCard.new()

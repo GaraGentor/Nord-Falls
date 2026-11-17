@@ -39,8 +39,8 @@ var RELICS := {
 		"icon": "res://assets/ui/icons/sword.svg",
 		"rarity": Rarity.RARE,
 		"hooks": {
-			# nur eigene Monster profitieren
-			"moves": func(value: int, mon: Monster) -> int: return value + 1 if State.mons.has(mon) else value,
+			# eigene UND gegnerische Monster bekommen eine Aktion mehr (battle.gd _plan_intent fragt den Hook für Gegner ab)
+			"moves": func(value: int, _mon: Monster) -> int: return value + 1,
 		},
 	},
 	"lucky_charm": {

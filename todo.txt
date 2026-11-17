@@ -1,39 +1,20 @@
-1. Füge mir eine Feuer Fähigkeit hinzu, die den nächsten Treffer Kritisch landet. (2CD 1 SkillPunkt 3 Sterne)
-2. Füge mir eine Feuer & Luft Fähigkeit hinzu, die die komplette nächste runde Kritische Treffer Landen (3CD 2SkillPunkte 4 Sterne)
-3. Füge mir eine Wasser & Erd & Luft & Feuer Fähigkeit hinzu, die die aufmerksamkeit der Monster zieht. (2CD 1 Skill Punkt 2 Sterne)
-4. Füge mir eine Luft Fähigkeit hinzu, die es erlaubt einem Befreundetem Monster zusätzliche Skill Punkt zu geben hält 3 Runden an und kann auch auf sich selbst angewendet werden (2CD 2SkillPunkt 3 Sterne)
-5. Füge mir eine (Luft, Feuer) Passive hinzu, die Physische Stärke (Stats) um 20% Steigert
-6. Füge mir eine (Luft, Feuer) Passive hinzu, die Magische Stärke (Stats) um 20% Steigert
-7. Füge mir eine (Erd & Wasser) Passive hinzu, die die Kosten 3er Schild Fähigkeiten um 1 Skill Punkt verringern
-8. Füge mir eine Passive hinzu, die die KP Stats um 20% erhöhen (Wasser und Erde)
-9. Füge mir eine Wasser Fähigkeit hinzu, die einem Verbündetem Monster die komplette nächste Runde Lebensraus 20% Lebensraub gibt. Kann auch auf sich selber angewendet werden (2CD 2SkillPunkte 3Sterne)
-10. Füge mir eine Wasser & Erd & Luft & Feuer Fähigkeit hinzu, die es erlaubt über die DEF ein Magisches schild zu bekommen 5 + 0.4 DEF Stat (2CD, 1SkillPunkt, 3 Sterne)
-11. Füge mir eine Wasser & Erd & Luft & Feuer Fähigkeit hinzu, die es erlaubt über die M_DEF ein Schild zu bekommen 5 + 0.4 DEF Stat (2CD, 1SkillPunkt, 3 Sterne)
-12. Füge mir eine Passive hinzu, die dauerhaft die aggro der gegner zieht (4Sterne)
-
-
-Nun generiere mir ein paar Standard Attacken und Schilde zu Feuer, Wasser, Erde und Luft.
-Schaue, dass S_Atk Fähigkeiten bei Luft etwas stärker sind,
-ATK Fähigkieten bei Feuer etwas stärker sind,
-SDEF Fähigkeiten bei Wasser etwas stärker sind,
-DEF Fähigkeiten Bei Etde etwas stärker sind.
-
-Die Werte sollen vernünftig balanciert werden mit CD, SP, Seltenheit, Base ATK, Base S_atk, Base Def und S_DEF und Stat Bonus.
-1Element 0.2 - 0.4 Stat Modifier
-Seltene Fähigkeiten können minimal stärker sein als andere. Tlw. kann auch die Fähigkeiten Stärke etwas höher sein (z.B.: 15 atk und 15 schild)
-
-Dazu kommen noch die anderen Elemente hinzu:
-Das sind die Stat Modifier
-2Elemente 0.4 - 0.7 Stat Modifier
-3Elemente 0.7 - 1.0 Stat Modifier
-Hier können auch die fähigkeiten Stärke tlw auf 60 oder 80 hoch gehen. (je nach seltenheit und element).
-
-Denk dir die passenden namen dazu aus.
-Vergebe Sie noch keinem Monster.
-Füge SIe keinem Shop hinzu.
-Füge Sie nicht der Fähigkeiten auswahl hinzu.
-Füge Sie nicht einem Trank hinzu.
-Füge mir im Wiki auch eine bessere Übersicht ein welche Fähigkeiten noch unused von irgendeinem Monster sind.
-
-Zudem mach mir eine Liste mit weiteren Passiven Ideen & "Buff" Fähigkeiten und speicher die in eine Txt ab. (Bitte mehr als nur 10... ca. 30 wären cool)
-Dabei kann es auch um modifikatoren, stuns, buffs, blenden, etc. fähigkeiten sein. Sei Kreativ (unabhängig von den elementen)
+1. Ich möchte, dass EI-Attacken nur freischaltbar sind, wenn man auch die Monster besitzt / gefangen hat und in der EI Auswahl erscheint
+2. Ich möchte, dass keine EPischen Monster erscheinen können (außer klar bei Bossen), wenn man kein Seltenes Monster gefangen hat.
+3. Die Überschrift der Fähigkeiten soll nicht 3zeilig werden. Bei Langem Text soll es maximal 2 Zeilen haben und danach soll die schrift kleiner werden sodass es passt.
+4. Wenn ich ein Boss fange, möchte ich nicht dass es direkt als EI Belohnung beim Loot erscheint. Das fühlt sich etwas gecheated an.
+5. Wenn ich einem MOnster ein Trank gebe, ist ja die möglichkeit noch da zufällig fähigkeiten zu bekommen. Mach es so, dass man von dem gleichen Typ 2 Fähigkeiten zur auswahl bekommt (egal ob buff, passive oder offensiven) die sollen allerdings von der niedrigsten rarität kommen (1 Stern)
+6. Die Kriegstrommel soll sich etwas ändern. Diese soll den eigenen und gegnerischen Monster ein zusätzlichen Zug geben.
+7. Das Boss Relikt mit dem 50% wahrscheinlichkeit ein treffer zu verfehlen soll auf 20% runter geschraubt werden
+8. Wenn eine Fähigkeit ein Buff ist, dann will ich das Icon auch unten Rechts haben und die Züge, wie lang etwas gebuffed ist (das macht mehr sinn)
+9. Wenn ich zu viel Hinterlasse (beim TOd eines meiner Monster), wächst der Dialog so groß, dass ich nix mehr machen aknn. Hier soll der Container auch scrollbar sein (denk auch an mobile ;). Dazu möchte ich bei Trophaen das Bild der Trophae sehen und bei Tränken den Tank. Die Fähigkeiten können so bleiben.
+10. Wenn ich auf ein Element Chip drücke. Möchte ich auch die Schwächen des Elements direkt sehen (und nicht nur auf dem Pfad)
+11. Ich möchte bei einem ? (ereignis auf der Karte) ein neues Feld haben.
+	> Hier kommt es zu einer auseinander Setzung.
+	Ich habe die Wahl ob ich weiter gehen möchte oder einen Kampf anfangen will
+	Wenn ich den Kampf angehe, dann bekomme ich gegner (je nach biom auch dann mehr) die sehr gut für das aktuelle Biom ist. z.B.: Bin ich in einem Feuer Biom, dann sollen dort Wasser Monster als gegner auftauchen.
+12. Beim Fähigkeiten Lernen (wenn die Belohnung kommt sich eine fähigkeit auszusuchen) und ich alle skills eines mosnters voll habe, dann bekomme ich eine liste mit namen der skills die ersetzt werden sollen. Beim Judgement allerdings bekomme ich die Fähigkeiten Karten als ansicht um besser zu erkennen was ich ersetzen kann in einem Dialog. Dieser soll dort auch sein. Beim Trainer bitte auch einsetzen.
+13. Wenn im Laden 2 Relikte angeboten werden, sollen nicht beide verschwinden wenn ich eines davon kaufe.
+14. Senke mir die Preise im Laden für Relikte auf 35 pro relikt.
+15. Senke mir die Preise im Laden für eine Trophäe auf 20 ME.
+16. Nimm den schlüssel aus dem Laden raus. Das ist dort irgendwie Kontra Produktiv.
+17. Mache mir 3 Prompts. Die der Stimmung passen sollte damit Gemini mir Bilder generiert. Die Bilder sollen als Hintergründe für das Ausruhen sein, Cozy night sky mit fläche in der mitte, damit das lager feuer dort chillen kann. Für den Laden, eine einfache wand mit boden. Für den Trainer eine wiese und für den Kerkermeister ein Hof. Ich denke das wäre besser als die komischen wellen oder? Speicher mir die Prompts in eine eigene txt.

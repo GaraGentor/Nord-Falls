@@ -123,7 +123,9 @@ func generate_mons(props: Dictionary = {
 		var newMon = Monster.new(default_props.level, mon_meta_data)
 		# eigene Kopfgeld-Arten (Monmap bounty_target) sind auch bei normalem Auftauchen das Kopfgeld-Monster
 		newMon._bounty = bounty.key if i == 0 and not bounty.is_empty() else mon_meta_data.get("bounty_target", "")
-		add_biome_element(newMon)
+		# Auseinandersetzung (Map.roll_confrontation_enemies): Gegner behalten ihr eigenes Element
+		if props.get("biome_element", true):
+			add_biome_element(newMon)
 		roll_wild_skills(newMon, mon_meta_data)
 		roll_egg_skill(newMon)
 		mons.append(newMon)
@@ -175,7 +177,10 @@ func roll_egg_skill(mon: Monster) -> void:
 		add_egg_skill(mon)
 
 # Gibt dem Monster eine noch nicht freigeschaltete Ei-Attacke seiner Art, falls es noch eine gibt.
+# Nur Arten aus der Ei-Auswahl tragen Ei-Attacken, alle anderen könnten sie ohnehin nicht freischalten.
 func add_egg_skill(mon: Monster) -> void:
+	if not Skills.can_unlock_egg_skills(mon._name):
+		return
 	var locked = Skills.get_locked_egg_skills(mon._name)
 	if locked.is_empty():
 		return

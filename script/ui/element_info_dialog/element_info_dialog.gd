@@ -51,6 +51,35 @@ func _build(content: VBoxContainer) -> void:
 		_row(lists, tr("ELEMENT_INFO_CONTAINS"), contains)
 	if level < 4:
 		_row(lists, tr("ELEMENT_INFO_PART_OF"), part_of)
+	_add_matchups(lists)
+
+## Stärken und Schwächen wie im Biom-Info (BiomeInfoDialog), hier für ein Monster bzw. einen Skill dieses Elements:
+## wen seine Angriffe hart treffen, wessen Angriffe es hart treffen und wem es gut standhält
+func _add_matchups(box: VBoxContainer) -> void:
+	box.add_child(_section(tr("ELEMENT_INFO_MATCHUPS")))
+	var strong := []
+	var weak := []
+	var resists := []
+	for element in Enums.MON_TYPES.values():
+		var attack := Skills.element_multiplier(_mask, element)
+		if attack > 1.0:
+			strong.append([element, "x" + Helper.format_number(attack)])
+		var defense := Skills.element_multiplier(element, _mask)
+		if defense > 1.0:
+			weak.append([element, "x" + Helper.format_number(defense)])
+		elif defense < 1.0:
+			resists.append([element, "x" + Helper.format_number(defense)])
+	_matchup_row(box, tr("ELEMENT_INFO_STRONG"), InfoDialog.STRONG_COLOR, strong)
+	_matchup_row(box, tr("ELEMENT_INFO_WEAK"), InfoDialog.WEAK_COLOR, weak)
+	_matchup_row(box, tr("ELEMENT_INFO_RESISTS"), InfoDialog.STRONG_COLOR, resists)
+
+## Wie _row, je Eintrag [element, Zusatz] ein Chip mit kleinem Zusatztext in der Farbe der Zeile
+func _matchup_row(box: VBoxContainer, caption: String, color: Color, entries: Array) -> void:
+	var flow := _captioned_row(box, caption, color, ENTRIES_WIDTH)
+	if entries.is_empty():
+		flow.add_child(_none_label())
+	for entry in entries:
+		flow.add_child(_chip_entry(entry[0], entry[1], color))
 
 ## Stufe groß als Element-Platten (wie die Element-Chips) in den Farben der Grundelemente
 func _big_glyph() -> Control:

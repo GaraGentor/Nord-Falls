@@ -7,6 +7,8 @@ const DRAG_THRESHOLD := 12.0
 ## so weit nach oben gezogen wird aus einem Wischen doch noch Drag & Drop,
 ## damit ein seitliches Zucken am Anfang den Drag nicht verhindert
 const SWIPE_TO_DRAG := 40.0
+## Schriftgröße des Namens, lange Namen werden kleiner statt dreizeilig (SkillCardFace.fit_title)
+const TITLE_FONT_SIZE := 18
 
 @export var name_label: Label
 ## Beschreibung mit gelb hervorgehobenen Werten (Helper.skill_description rich)
@@ -58,6 +60,7 @@ func _init_card() -> void:
 	else:
 		_paper.set_skill(skill)
 	name_label.text = tr(skill.name)
+	SkillCardFace.fit_title(name_label, TITLE_FONT_SIZE)
 	name_label.self_modulate = SkillCardPaper.readable_color(Helper.color_by_type(skill.nature))
 	# Kosten, wie das Monster sie zahlt (Bollwerkmeister verbilligt teure Schilde)
 	_top_row.show_skill(skill, true, Skills.skill_cost(mon, skill) if mon != null else -1)

@@ -202,7 +202,11 @@ func _build_battlefield() -> void:
 func _add_egg_loot() -> void:
 	var unlocked: Array = SaveManager.save_data.catched_monsters.duplicate()
 	unlocked.append_array(State.INITIAL_MONS)
-	var missing := State.mons.filter(func(mon: Monster): return not unlocked.has(mon._name))
+	# ein gerade gefangener Boss bringt nicht direkt sein eigenes Ei, das fühlt sich geschenkt an
+	var missing := State.mons.filter(func(mon: Monster): return not unlocked.has(mon._name) and not mon._is_boss)
+	# ab jetzt zählt er als normales Team-Monster: sein Ei kann ein späterer Boss-Kampf bringen
+	for mon: Monster in State.mons:
+		mon._is_boss = false
 	if missing.is_empty():
 		return
 	var mon_name: String = missing.pick_random()._name

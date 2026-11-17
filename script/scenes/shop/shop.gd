@@ -12,7 +12,6 @@ const GemField = preload("res://script/scenes/gems/gems.gd")
 const RelicReward = preload("res://script/scenes/relic_reward/relic_reward.gd")
 const Treasure = preload("res://script/scenes/treasure/treasure.gd")
 
-const KEY_ICON = preload("res://assets/ui/icons/key.svg")
 const SHELF_TEXTURE = preload("res://assets/ui/shop/shelf.svg")
 const PROPS_MATERIAL = preload("res://script/scenes/jailer/jailer_props_material.tres")
 const PIXEL_FONT = preload("res://script/ui/fonts/pxelfont/PixelifySans-VariableFont_wght.ttf")
@@ -20,18 +19,15 @@ const GOLD := SkillDetailPopup.GOLD
 const NO_OUTLINE := Color(1, 1, 0, 0)
 
 ## Preise: grob ein Kampf bringt 10-30 EP, ein Biom also etwa 100-150 EP.
-## Elemente sind die günstigste Ware, damit sich ein zweites Element früh lohnt. Edelsteine steigen
-## mit der Tiefe (wie ihr Bonus). Relics sind die teuerste Ware, weil es sie sonst nur als Boss-Belohnung gibt.
 ## Der Laden lohnt sich durch die Wahl: Tränke mit gezieltem Element (Schatzkisten haben nur zufällige),
-## Trophäen mit frei wählbarem Wert (Beute ist zufällig) und mehrere Relikte, von denen eins gekauft wird.
+## Trophäen mit frei wählbarem Wert (Beute ist zufällig) und Relikte, die es sonst nur als Boss-Belohnung gibt.
+## Schlüssel gibt es hier nicht (mehr), die bringen nur Kämpfe.
 const ELEMENT_PRICE := 45
-## pro Biom-Tiefe (State.map_level)
-const GEM_PRICES := [50, 65, 80, 100, 120]
-const RELIC_PRICES := [120, 140, 160, 180, 200]
-## eine Kiste bringt im Schnitt etwa so viel Essenz zurück, dazu manchmal einen Trank (Treasure.POTION_CHANCE)
-const KEY_PRICE := 60
+## pro Trophäe, unabhängig von der Biom-Tiefe
+const GEM_PRICE := 20
+## pro Relikt; jedes angebotene Relikt lässt sich einzeln kaufen
+const RELIC_PRICE := 35
 const GEM_OFFERS := 2
-## so viele Relikte zur Auswahl, nur eins davon lässt sich kaufen
 const RELIC_OFFERS := 2
 
 ## Regale, alle Maße in Bühnen-Pixeln: innere Kante neben der Kasse, von dort gehen sie nach außen
@@ -41,8 +37,7 @@ const SHELF_LAYOUT := [
 	{"side": -1, "y": 90.0, "width": 370.0},
 	{"side": 1, "y": 90.0, "width": 370.0},
 	{"side": -1, "y": 296.0, "width": 345.0},
-	# breiter: zwei Relikte und der Schlüssel brauchen Platz für ihre Preise
-	{"side": 1, "y": 296.0, "width": 440.0},
+	{"side": 1, "y": 296.0, "width": 370.0},
 ]
 const SHELF_POTIONS_LEFT := 0
 const SHELF_POTIONS_RIGHT := 1
@@ -587,13 +582,12 @@ func _fill_shelves() -> void:
 	_add_gem_offers()
 	_filling_shelf = SHELF_RELICS
 	_add_relic_offers()
-	_add_key_offer()
 	# die Bühne kennt ihre Größe erst nach dem ersten Layout
 	await get_tree().process_frame
 	_layout_stage()
 
 func _depth() -> int:
-	return clampi(State.map_level, 0, GEM_PRICES.size() - 1)
+	return maxi(State.map_level, 0)
 
 ## Trophäen starten mit verschiedenen Werten, die Pfeile schalten den Wert frei um
 func _add_gem_offers() -> void:
@@ -603,7 +597,7 @@ func _add_gem_offers() -> void:
 	for stat in stats.slice(0, GEM_OFFERS):
 		var card: ShelfItem = GemField.add_gem_card(self, stat, _trophy_bonus)
 		card.add_switch(_switch_trophy.bind(card), tr("SHOP_TROPHY_SWITCH"))
-		set_price(card, GEM_PRICES[_depth()])
+		set_price(card, GEM_PRICE)
 
 ## Nächster bzw. vorheriger Wert: Name, Text, Bild und was beim Ablegen passiert wechseln mit
 func _switch_trophy(step: int, item: ShelfItem) -> void:
@@ -622,19 +616,12 @@ func _switch_trophy(step: int, item: ShelfItem) -> void:
 		_popup.show_item(item, _stage.size.x / 2, POPUP_TOP)
 	_update_previews()
 
-## Mehrere Relikte zur Wahl, wer eins kauft, lässt die anderen stehen (_taken)
+## Mehrere Relikte, jedes einzeln kaufbar: wer eins kauft, behält die anderen im Regal
 func _add_relic_offers() -> void:
 	var unowned = Relics.shop_offers()
 	unowned.shuffle()
 	for id in unowned.slice(0, RELIC_OFFERS):
-		var card: ShelfItem = RelicReward.add_relic_card(self, id)
-		card.drag.relic_choice = true
-		card.description += "\n" + tr("SHOP_RELIC_PICK_ONE")
-		set_price(card, RELIC_PRICES[_depth()])
-
-func _add_key_offer() -> void:
-	var take := func(): State.keys += 1
-	set_price(add_bag_card(tr("KEY_NAME"), tr("KEY_DESC"), texture_icon(KEY_ICON), take), KEY_PRICE)
+		set_price(RelicReward.add_relic_card(self, id), RELIC_PRICE)
 
 ## Karten der gemeinsamen Helfer (Trank, Edelstein, Relikt, Schlüssel) landen als Ware im aktuellen Regal
 func _add_card(card_title: String, text: String, icon: Control, drag: Dictionary) -> RewardCard:
@@ -752,12 +739,6 @@ func mark_sold(card: RewardCard) -> void:
 func _taken(card: RewardCard) -> void:
 	var mouse := get_global_mouse_position()
 	pay(card)
-	# nur ein Relikt pro Besuch: die anderen sind damit weg
-	if card.drag.get("relic_choice", false):
-		for shelf in _shelves:
-			for other: ShelfItem in shelf.items:
-				if other != card and other.drag.get("relic_choice", false) and not other.sold:
-					mark_sold(other)
 	for field in _mon_fields:
 		if field.covers(mouse):
 			field.celebrate()

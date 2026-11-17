@@ -669,12 +669,13 @@ func _clear_fainted_mons() -> Array:
 ## Gegner halten sich an dieselben Regeln wie der Spieler (Element, Kosten, Abklingzeit, Passive nicht ausspielbar).
 ## Nur Angriffe ohne Abklingzeit dürfen mehrfach im selben Zug vorkommen.
 ## Geplant wird vor dem Zug: Abklingzeiten zählen zu dessen Beginn noch einmal herunter, daher reicht <= 1.
-## Kerkermeister-Verbesserungen und Relics gelten nur für eigene Monster, Gegner haben _initial_moves (gewürfelt in _generate_battle).
+## Kerkermeister-Verbesserungen gelten nur für eigene Monster, Gegner haben _initial_moves (gewürfelt in _generate_battle).
+## Der Relic-Hook "moves" (Kriegstrommel) gilt auch für Gegner.
 func _plan_intent(emon: Monster) -> void:
 	emon._intent = []
 	if not emon.is_alive() or _opponents_of(emon).is_empty():
 		return
-	var moves: int = emon._initial_moves + roundi(emon.boon_value("extra_moves"))
+	var moves: int = Relics.modify("moves", emon._initial_moves, emon) + roundi(emon.boon_value("extra_moves"))
 	var once_used = []
 	while true:
 		var options = emon._skills.filter(func(skill): return _can_plan(emon, skill, moves) and not once_used.has(skill))

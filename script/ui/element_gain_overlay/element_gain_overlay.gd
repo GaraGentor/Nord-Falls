@@ -1,9 +1,7 @@
 extends CanvasLayer
 
 ## Belohnung für ein neues Element: Trinkt ein Monster einen Element-Trank und wird dadurch z. B. von Wasser zu Dampf,
-## darf es eine neue Fähigkeit lernen. Zur Wahl stehen der Aufstiegs-Skill des neuen Kombi-Elements
-## (Skills.ascension_skills, Chaos hat keinen) und die Standard-Skills des getrunkenen Grundelements, die zu seinen
-## beiden besten Kampfwerten passen (Skills.standard_skills). So kommt man an alle Standard-Skills.
+## darf es eine neue Fähigkeit lernen. Zur Wahl stehen zwei zufällige 1-Stern-Skills des getrunkenen Elements (offers_for).
 ## Wie bei den Boss-Relikten (BossRelicOverlay) wird alles abgedunkelt, in der Mitte stehen die Karten mit je einem
 ## Lernen-Knopf, darunter "Nichts lernen". Hat das Monster schon alle Plätze belegt, wählt man danach, welcher Skill weicht.
 
@@ -25,8 +23,9 @@ const CARD_WIDTH := 280
 const CARD_POP_SECONDS := 0.35
 const CARD_START_SCALE := 0.6
 
-## So viele Standard-Skills des neuen Grundelements stehen zur Wahl (nach den besten Kampfwerten des Monsters)
-const STANDARD_OFFERS := 2
+## So viele Skills des getrunkenen Elements stehen zur Wahl, alle von dieser Stufe (1 Stern)
+const OFFERS := 2
+const OFFER_TIER := 1
 
 ## Nach dem Trinken aufrufen (old_type = Typ vor dem Trank). Gibt es nichts Neues zu lernen, passiert nichts.
 ## Läuft für sich (auch wenn der Dialog mit dem Trank schon zu ist), man muss nicht darauf warten.
@@ -41,23 +40,14 @@ static func reward(mon: Monster, old_type: int) -> void:
 	await overlay._play(mon, offers)
 	overlay.queue_free()
 
-## Aufstiegs-Skill (falls es einen gibt) und Standard-Skills der neuen Grundelemente, die das Monster noch nicht kennt
+## OFFERS zufällige Skills der niedrigsten Stufe (OFFER_TIER) genau des getrunkenen Elements, egal welcher Art
+## (Angriff, Schild, Buff, Passiv, Fläche), die das Monster noch nicht kennt. Aus dem gemeinsamen Pool (Skills.pool_skills).
 static func offers_for(mon: Monster, old_type: int) -> Array:
-	var offers := []
-	var ascension := Skills.ascension_skill(mon._type)
-	if not ascension.is_empty() and not Skills.knows_skill(mon, ascension.name):
-		offers.append(ascension)
-	var categories := Skills.categories_by_stat(mon)
-	for element in Enums.MON_TYPES.values():
-		if not (mon._type & element) or old_type & element:
-			continue
-		var added := 0
-		for category in categories:
-			var skill := Skills.standard_skill(element, category)
-			if added < STANDARD_OFFERS and not skill.is_empty() and not Skills.knows_skill(mon, skill.name):
-				offers.append(skill)
-				added += 1
-	return offers
+	var gained := mon._type & ~old_type
+	var candidates := Skills.pool_skills().filter(func(skill): return skill.nature == gained and skill.tier == OFFER_TIER \
+		and not Skills.knows_skill(mon, skill.name))
+	candidates.shuffle()
+	return candidates.slice(0, OFFERS).map(func(skill): return Skills.get_skill(skill.name))
 
 var _root: Control
 
@@ -140,10 +130,8 @@ func _play(mon: Monster, offers: Array) -> void:
 			# kein freier Platz: hier entscheidet sich, welcher Skill weicht (Abbrechen = neuen Skill nicht lernen)
 			card_row.queue_free()
 			skip.queue_free()
-			var picker := SkillReplacePicker.new(mon)
-			var panel := PanelContainer.new()
-			IronPlate.frame(panel, picker, 20, 14)
-			button_row.add_child(panel)
+			# Karten-Dialog wie im Judgement
+			var picker := SkillReplacePicker.open(self, mon, offers[choice])
 			var index: int = await picker.picked
 			if index != -1:
 				mon._skills[index] = learned

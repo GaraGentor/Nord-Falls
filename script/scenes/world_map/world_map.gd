@@ -34,6 +34,7 @@ const GEM_SCENE := preload("res://script/scenes/gems/gems.tscn")
 const SKILL_REWARD_SCENE := preload("res://script/scenes/skill_reward/skill_reward.tscn")
 const WHEEL_EVENT := preload("res://script/scenes/wheel_event/wheel_event.gd")
 const VOID_EVENT := preload("res://script/scenes/void_event/void_event.gd")
+const CONFRONTATION_EVENT := preload("res://script/scenes/confrontation_event/confrontation_event.gd")
 const HUB_CAMP := preload("res://script/scenes/hub_camp/hub_camp.gd")
 const DEBUG_MENU := preload("res://script/scenes/world_map/map_debug_menu.gd")
 const POTION_REWARD := preload("res://script/scenes/potion_reward/potion_reward.gd")
@@ -413,9 +414,14 @@ func call_random_event() -> void:
 			open_wheel_event()
 		Map.EVENT_TYPE.VOID:
 			open_void_event()
+		Map.EVENT_TYPE.CONFRONTATION:
+			open_confrontation_event()
 
 func open_wheel_event() -> void:
 	view_container.add_child(WHEEL_EVENT.new())
+
+func open_confrontation_event() -> void:
+	view_container.add_child(CONFRONTATION_EVENT.new())
 
 func open_void_event() -> void:
 	view_container.add_child(VOID_EVENT.new())

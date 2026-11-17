@@ -1,0 +1,39 @@
+Hintergrund-Prompts für Gemini (ersetzen die Wellen-Hintergründe)
+=================================================================
+
+Du hattest 3 Prompts geschrieben, aber 4 Orte genannt (Ausruhen, Laden, Trainer, Kerkermeister) – darum sind es hier 4.
+Die Prompts sind auf Englisch, weil Bildmodelle damit meist genauer arbeiten.
+
+Gemeinsame Regeln in allen Prompts:
+- Querformat 16:9, für ein Mobile-/PC-Spiel im Querformat
+- Die Mitte bleibt frei und ruhig (dort stehen Lagerfeuer, Kasse, Trainer bzw. Kerkermeister und die Monster)
+- Gedämpfte Farben und wenig Kontrast, damit UI, Karten und Monster davor lesbar bleiben
+- Kein Text, keine Figuren, keine Monster, kein UI im Bild
+- Stil passend zu den bisherigen Concept-Art-Icons: gemalt, leicht körnig, gemütlich
+
+
+1) Ausruhen (Lager)
+-------------------
+A cozy fantasy night scene as a 2D game background, 16:9 landscape. A calm, deep blue night sky full of soft stars and a faint milky way, a few gentle clouds, a small moon low on one side. Below, a quiet clearing of soft grass and earth with a wide, flat, empty area in the exact center of the image where a campfire will be placed later. Dark silhouettes of pine trees and low hills frame the left and right edges, a few fireflies glowing softly near the ground. Warm, peaceful, safe mood. Muted colors, low contrast, painterly concept-art style with a subtle grain, slight pixel-art feel. Even lighting with no strong light source in the middle. No people, no creatures, no campfire, no text, no UI.
+
+
+2) Laden
+--------
+A simple interior wall with a floor as a 2D game background for a small fantasy shop, 16:9 landscape, straight-on front view. The upper two thirds show a plain, slightly worn wall of warm wooden planks or plastered stone, the lower third a clean wooden floor with a soft horizon line between them. The center of the wall stays completely empty and evenly lit, so a self-checkout machine and shelves can be placed in front of it later. Only very subtle details at the outer edges: a faint lamp glow, a small crack, a bit of shadow in the corners. Cozy, tidy, calm mood. Muted warm browns and beige, low contrast, painterly concept-art style with a subtle grain, slight pixel-art feel. No shelves, no items, no people, no creatures, no text, no UI.
+
+
+3) Trainer
+----------
+A wide, peaceful meadow as a 2D game background, 16:9 landscape, eye-level view. Soft green grass with a few small wildflowers, gently rolling ground, a light blue sky with a couple of fluffy clouds, a soft tree line and distant hills on the horizon. The center of the image is an open, flat patch of short grass, like a training ground, left completely free so a trainer and monsters can stand there later. A few small rocks or a wooden fence post only at the far left and right edges. Fresh, friendly, motivating daytime mood. Muted greens and blues, low contrast, painterly concept-art style with a subtle grain, slight pixel-art feel. No people, no creatures, no text, no UI.
+
+
+4) Kerkermeister
+----------------
+A quiet stone courtyard of an old fortress as a 2D game background, 16:9 landscape, straight-on view. Weathered grey cobblestones on the ground, tall stone walls with a closed wooden gate and a few iron bars in the background, some moss and ivy creeping over the stones, two unlit torch holders at the sides. Overcast, slightly dim light, a bit mysterious but not scary. The center of the courtyard is an empty, flat cobblestone area so the jailer, chains and monsters can be placed there later. Muted greys, cool greens and a touch of rust, low contrast, painterly concept-art style with a subtle grain, slight pixel-art feel. No people, no creatures, no text, no UI.
+
+
+Tipps
+-----
+- Wenn Gemini die Mitte trotzdem füllt: "leave the center empty" ans Ende hängen oder "negative space in the center" dazuschreiben.
+- Für einheitliche Bilder alle vier im selben Chat erzeugen und beim zweiten bis vierten Bild "in the same style as the previous image" dazuschreiben.
+- Zu den Wellen: ja, ruhige Bilder mit freier Mitte passen besser, weil sie zeigen, wo man gerade ist. Wichtig ist nur, dass sie gedämpft bleiben, sonst wird der Laden mit seinen vielen Regalen schnell unruhig.

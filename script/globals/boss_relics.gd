@@ -23,7 +23,7 @@ const EMBER_FLOOR_SHARE := 0.05
 ## Bongos: Schild wie ein Block-Skill mit diesem Wert, also (Sp.) Verteidigung x 25 %
 const BONGOS_SHIELD_VALUE := 25.0
 ## Nebelmaschine: Chance, dass ein Angriff auf den Träger verfehlt
-const FOG_MISS_CHANCE := 0.5
+const FOG_MISS_CHANCE := 0.2
 ## Mikrofon: Heilung in stummen Runden, Anteil der fehlenden KP
 const MICROPHONE_HEAL_SHARE := 0.1
 ## Magische Dornen: Anteil des erlittenen Schadens, der zum Angreifer zurückprallt
@@ -144,7 +144,7 @@ func roll_species(depth: int, mythic := false) -> String:
 ## Seltenheit eines nicht-mythischen Bosses: nur freigeschaltete Seltenheiten, von denen es Arten gibt
 func _roll_boss_rarity(depth: int, species: Array) -> int:
 	var rarities = BOSS_RARITY_WEIGHTS.keys().filter(func(rarity):
-		return Map.is_rarity_unlocked(rarity, depth) \
+		return Map.is_rarity_unlocked(rarity, depth, true) \
 			and species.any(func(meta): return meta.get("rarity", Enums.MON_RARITY.COMMON) == rarity))
 	if rarities.is_empty():
 		return Enums.MON_RARITY.RARE
