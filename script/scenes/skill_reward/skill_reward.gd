@@ -1,6 +1,7 @@
 extends ChestRewardDialog
 
-## Skill-Auswahl aus dem Couvert der Bosse: das Couvert springt auf, darin liegen einzigartige Skills ohne Preis.
+## Skill-Auswahl aus dem Couvert der Bosse: das Couvert springt auf, darin liegen Skills der Stufen 2-4 ohne Preis
+## (Skills.reward_offers, je seltener das Team, desto eher Stufe 4).
 ## Einer davon wird auf ein Monster gezogen, damit ist der Dialog vorbei. Man darf auch ohne Skill gehen.
 
 const ACCENT := Color(0.8, 0.6, 0.3)

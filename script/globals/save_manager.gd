@@ -65,9 +65,9 @@ func load_game():
 		save_data = parsed
 		_drop_removed_mons()
 
-## Aus dem Spiel entfernte Monster-Arten (Schlundwurm, Lavaritter, Leerwurm, Nachthydra, Höllenwächter).
+## Aus dem Spiel entfernte Monster-Arten (Schlundwurm, Lavaritter, Leerwurm, Nachthydra, Höllenwächter, Schattenreißer).
 ## Hier fest eingetragen, weil SaveManager vor Monmap geladen wird.
-const REMOVED_MONS := ["32", "34", "35", "44", "65"]
+const REMOVED_MONS := ["32", "34", "35", "44", "58", "65"]
 
 ## Alte Spielstände: entfernte Arten fliegen raus, sonst stürzen Ei-Auswahl, Pools und Sammlung
 ## bei Monmap.mon_metainfos_by_name ab.

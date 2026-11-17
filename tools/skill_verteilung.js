@@ -6,6 +6,8 @@
 // Liest bei jedem Lauf script/globals/monmap.gd (Seltenheit, Element, preferred_stats, affinity, affinity_triple)
 // und script/globals/skills.gd (welche Skills es gibt). Kein Zufall: gleiche Daten -> gleiche Verteilung.
 // Geschrieben werden default_egg_skills, unlockable_egg_skills und milestone_egg_skills. bounty_egg_skills bleibt.
+// Danach sortiert es die Skill-Listen in skills.gd: Pool (Start/Ei-Attacke), milestone_skills (nur Meilenstein),
+// reward_skills (von keiner Art benutzt, ab Stufe 2: nur im Couvert), draft_skills (unbenutzt, Stufe 1).
 //   - Arten mit "skills_manual": true werden nicht angefasst (von Hand gepflegt).
 //   - Startmonster (STARTERS) behalten Start-Skills und Ei-Attacken, bekommen nur die Meilensteine.
 //   - Geplante Skills, die es in skills.gd noch nicht gibt, kommen nicht in monmap.gd (sonst Warnung beim Start),
@@ -134,7 +136,7 @@ const buffT3 = (el, st) => (el === 'FIRE' && st === 'atk') ? 'SKILL_FIRE_BOON_FO
 const buffT4 = co => co === 'LIGHTNING' ? 'SKILL_LIGHTNING_BOON_OVERCHARGE'
   : planned(`SKILL_${co}_BUFF_T4`, 'Stufe 4, Kombi-Buff: Team +15-18 % oder Einzel +35 % für 3 Züge (nach Kombi-Thema), CD 3, 2 Aktionen, "trainer": false');
 const passiveT3 = el => planned(`SKILL_PASSIVE_${el}_POWER`, `Stufe 3, Passiv ${ELEM_PASSIVE[el]}`);
-const passiveT4 = co => planned(`SKILL_PASSIVE_${co}_T4`, 'Stufe 4, Passiv: z. B. Resonanz (Element-Effekt +30 %) plus Werte-Bonus +10 %, "trainer": false, "wild": false');
+const passiveT4 = co => planned(`SKILL_PASSIVE_${co}_T4`, 'Stufe 4, Passiv element_power 15 mit passive_element = Kombi (Angriffe mit allen Elementen der Kombi +15 %), "trainer": false, nur Meilenstein');
 const swift = (el, c) => planned(`SKILL_${el}_${CAT[c]}_${BASE[el][c][1]}_SWIFT`, `Stufe 3, schnelle Variante von ${BASE[el][c][1]}: CD 0, 1 Aktion, ca. 12 + 0,30 (Element-Charakter +)`,
   isAtk(c) ? t1.small(el, c) : t1.shield(el, c));
 const epicPassive = (el, co, cs) => {
@@ -268,6 +270,114 @@ if (!ONLY_TEXT && !problems.length) {
 }
 
 // ─────────────────────────
+// skills.gd: Skill-Listen neu einsortieren (siehe Kommentar "Skill-Listen" dort)
+//   Start-Skill oder Ei-Attacke einer Art -> Pool-Liste nach Art des Skills
+//   nur Meilenstein                       -> milestone_skills
+//   von keiner Art benutzt, ab Stufe 2    -> reward_skills (nur im Couvert)
+//   von keiner Art benutzt, Stufe 1       -> draft_skills
+// starter_skills, standard_skills, bounty_skills und ascension_skills bleiben unberührt.
+
+const MANAGED = ['egg_skills', 'defensive_skills', 'buff_skills', 'passive_skills', 'area_skills', 'milestone_skills', 'reward_skills', 'draft_skills'];
+// Baustein -> [Pool-Liste, Index des Arguments "tier" (null = immer Stufe 1)]
+const BUILDERS = {
+  _flat_attack_skill: ['egg_skills', null], _attack_skill: ['egg_skills', 5],
+  _flat_shield_skill: ['defensive_skills', null], _shield_skill: ['defensive_skills', 5], _cross_shield_skill: ['defensive_skills', 5],
+  _buff_skill: ['buff_skills', 5], _team_buff_skill: ['buff_skills', 5], _boon_skill: ['buff_skills', 7],
+  _passive_skill: ['passive_skills', 3], _area_skill: ['area_skills', 3],
+};
+const ELEM_ORDER = ['FIRE', 'WATER', 'EARTH', 'AIR', 'STEAM', 'LIGHTNING', 'MAGMA', 'ICE', 'DUST', 'MUD', 'THUNDERSTORM', 'VOLCANO', 'ASH_STORM', 'SWAMP', 'CHAOS'];
+const ELEM_DE = { FIRE: 'Feuer', WATER: 'Wasser', EARTH: 'Erde', AIR: 'Luft', STEAM: 'Dampf', LIGHTNING: 'Blitz', MAGMA: 'Magma', ICE: 'Eis', DUST: 'Staub',
+  MUD: 'Schlamm', THUNDERSTORM: 'Gewitter', VOLCANO: 'Vulkan', ASH_STORM: 'Aschesturm', SWAMP: 'Sumpf', CHAOS: 'Chaos' };
+
+// An Kommas auf oberster Ebene trennen (Klammern und Strings zählen mit)
+function splitTop(s) {
+  const parts = [];
+  let depth = 0, inStr = false, cur = '';
+  for (const ch of s) {
+    if (inStr) { cur += ch; if (ch === '"') inStr = false; continue; }
+    if (ch === '"') inStr = true;
+    else if ('([{'.includes(ch)) depth++;
+    else if (')]}'.includes(ch)) depth--;
+    else if (ch === ',' && depth === 0) { parts.push(cur); cur = ''; continue; }
+    cur += ch;
+  }
+  if (cur.trim()) parts.push(cur);
+  return parts.map(p => p.trim()).filter(Boolean);
+}
+// Inhalt zwischen der Klammer bei open und ihrem Gegenstück
+function matching(s, open) {
+  let depth = 0, inStr = false;
+  for (let i = open; i < s.length; i++) {
+    const ch = s[i];
+    if (inStr) { if (ch === '"') inStr = false; continue; }
+    if (ch === '"') inStr = true;
+    else if ('([{'.includes(ch)) depth++;
+    else if (')]}'.includes(ch) && --depth === 0) return i;
+  }
+  throw new Error('Klammer ohne Gegenstück');
+}
+function readList(text, name) {
+  const head = text.indexOf(`var ${name} = [`);
+  if (head < 0) throw new Error(`skills.gd: var ${name} fehlt`);
+  const open = text.indexOf('[', head), close = matching(text, open);
+  const body = text.slice(open + 1, close).split(/\r?\n/).filter(l => !l.trim().startsWith('#')).join('\n');
+  return { start: head, end: close + 1, entries: splitTop(body) };
+}
+function describe(entry, order) {
+  const name = (entry.match(/"(SKILL_\w+)"/) || [])[1];
+  const builder = Object.keys(BUILDERS).find(bd => entry.includes(bd + '('));
+  if (!name || !builder) throw new Error('Skill nicht erkannt: ' + entry.slice(0, 80));
+  const open = entry.indexOf(builder + '(') + builder.length;
+  const args = splitTop(entry.slice(open + 1, matching(entry, open)));
+  const tierArg = BUILDERS[builder][1];
+  const tier = tierArg === null ? 1 : +args[tierArg];
+  // "wild": false braucht es nicht mehr, Meilenstein-Skills liegen in milestone_skills
+  let clean = entry.replace(/\{\s*"wild": false\s*\}/g, '{}').replace(/,\s*"wild": false/g, '').replace(/"wild": false,\s*/g, '').replace(/^_with\(([\s\S]*),\s*\{\s*\}\)$/, '$1');
+  return { name, builder, tier, nature: args[1], pool: BUILDERS[builder][0], text: clean, order };
+}
+
+function sortSkillLists() {
+  let text = fs.readFileSync(SKILLS, 'utf8');
+  const skills = [];
+  for (const list of MANAGED) readList(text, list).entries.forEach(e => skills.push(describe(e, skills.length)));
+  // Wer wird wie benutzt?
+  const pool = new Set(), ms = new Set();
+  const msOf = body => { const x = body.match(/"milestone_egg_skills": \{([^}]*)\}/); return x ? (x[1].match(/SKILL_\w+/g) || []) : []; };
+  for (const mon of mons) {
+    if (mon.manual) { [...mon.def, ...mon.unl].forEach(s => pool.add(s)); msOf(mon.body).forEach(s => ms.add(s)); continue; }
+    const p = plans.get(mon.id);
+    real([...p.def, ...p.egg]).forEach(s => pool.add(s));
+    real(Object.values(p.ms)).forEach(s => ms.add(s));
+  }
+  const target = s => pool.has(s.name) ? s.pool : ms.has(s.name) ? 'milestone_skills' : s.tier >= 2 ? 'reward_skills' : 'draft_skills';
+  const elemIndex = s => { const i = ELEM_ORDER.indexOf(s.nature); return i < 0 ? ELEM_ORDER.length : i; };
+  const counts = {};
+  // von hinten ersetzen, damit die Positionen stimmen
+  for (const list of [...MANAGED].sort((x, y) => readList(text, y).start - readList(text, x).start)) {
+    const mine = skills.filter(s => target(s) === list).sort((x, y) => elemIndex(x) - elemIndex(y) || x.tier - y.tier || x.order - y.order);
+    counts[list] = mine.length;
+    let out = `var ${list} = [`;
+    if (mine.length) {
+      let last = null;
+      for (const s of mine) {
+        if (s.nature !== last) { out += `\n\t# ${ELEM_DE[s.nature] || s.nature}`; last = s.nature; }
+        const lines = s.text.split(/\r?\n/).map(l => l.trim());
+        out += '\n\t' + lines[0] + lines.slice(1).map(l => '\n\t\t' + l).join('') + ',';
+      }
+      out += '\n]';
+    } else out += ']';
+    const { start, end } = readList(text, list);
+    text = text.slice(0, start) + out + text.slice(end);
+  }
+  const before = fs.readFileSync(SKILLS, 'utf8');
+  if (text !== before) fs.writeFileSync(SKILLS, text);
+  return { counts, changed: text !== before, reward: skills.filter(s => target(s) === 'reward_skills') };
+}
+
+let lists = null;
+if (!ONLY_TEXT && !problems.length) lists = sortSkillLists();
+
+// ─────────────────────────
 // skill_verteilung.txt (Teil C und D zwischen den Markierungen)
 
 const RLABEL = { COMMON: 'Gewöhnlich', UNCOMMON: 'Ungewöhnlich', RARE: 'Selten', EPIC: 'Episch', LEGENDARY: 'Legendär', MYTHIC: 'Mythisch' };
@@ -276,6 +386,14 @@ let txt = '';
 txt += `Neue Skills, die noch fehlen (${NEW.size}). Sobald es sie in skills.gd gibt, trägt der nächste Lauf sie in monmap.gd ein:\n`;
 for (const [id, d] of [...NEW.entries()].sort()) txt += `  ${short(id).padEnd(36)} ${d}\n`;
 if (!NEW.size) txt += '  keine\n';
+if (lists) {
+  txt += '\nSkill-Listen in skills.gd nach diesem Lauf:\n';
+  for (const [list, n] of Object.entries(lists.counts)) txt += `  ${list.padEnd(18)} ${n}\n`;
+  const byTier = {};
+  lists.reward.forEach(s => (byTier[s.tier] = byTier[s.tier] || []).push(s.name.replace('SKILL_', '')));
+  txt += '\nNur im Couvert (reward_skills, von keiner Art benutzt), dazu kommt der gemeinsame Pool ab Stufe 2:\n';
+  for (const tier of Object.keys(byTier).sort()) txt += `  Stufe ${tier}: ${byTier[tier].join(', ')}\n`;
+}
 txt += '\n\nTEIL D: VERTEILUNG PRO ART\n==========================\n';
 for (const r of Object.keys(RLABEL)) {
   const group = mons.filter(m => m.rarity === r);
@@ -310,3 +428,4 @@ if (problems.length) {
   process.exit(1);
 }
 console.log(ONLY_TEXT ? 'Nur Text: skill_verteilung.txt aktualisiert.' : `monmap.gd: ${changed.length} Arten geändert${changed.length ? ' (' + changed.reverse().join(', ') + ')' : ''}. skill_verteilung.txt aktualisiert.`);
+if (lists) console.log(`skills.gd: ${lists.changed ? 'Listen neu sortiert' : 'unverändert'} (${Object.entries(lists.counts).map(([k, v]) => k + ' ' + v).join(', ')})`);

@@ -7,9 +7,10 @@ const PATH := "user://debug_settings.json"
 const STATS := ["hp", "atk", "def", "s_atk", "s_def", "speed"]
 const MAX_RESERVED := 100
 ## Globales Wachstum pro Stufe (Mon._base_stat), skaliert den Zuwachs aller Werte aller Monster im gleichen Verhältnis:
-## DEFAULT_GROWTH = Wachstum wie gewohnt aus der BST, 0 = kein Wachstum, halber Wert = halber Zuwachs, doppelter = doppelter.
-## Stufe 1 bleibt immer gleich.
-const DEFAULT_GROWTH := 8.0
+## FULL_GROWTH = voller Zuwachs aus der BST, 0 = kein Wachstum, halber Wert = halber Zuwachs, doppelter = doppelter.
+## Stufe 1 bleibt immer gleich. Standard ist DEFAULT_GROWTH (ein Viertel des vollen Zuwachses).
+const FULL_GROWTH := 8.0
+const DEFAULT_GROWTH := 2.0
 ## Bereich und kleinster Schritt im Debug-Menü
 const GROWTH_RANGE := [0.0, 100.0]
 const GROWTH_STEP := 0.5
@@ -17,16 +18,18 @@ const GROWTH_STEP := 0.5
 const MODE := "classic"
 
 ## Einstellungen rund um den Schaden (Skills.calc_damage rechnet mit festen Werten, siehe Skills "Schadensformel"):
-## level_offset 0 = Werte linear zur Stufe, hp_scale 1 = KP wie bisher.
-const DAMAGE_DEFAULTS := {"level_offset": 0.0, "hp_scale": 1.0}
+## level_offset 0 = Werte linear zur Stufe, hp_scale 2 = doppelte KP (längere Kämpfe).
+const DAMAGE_DEFAULTS := {"level_offset": 0.0, "hp_scale": 2.0}
 ## [min, max, Schritt] pro Zahlen-Einstellung
 const DAMAGE_RANGES := {
 	"level_offset": [0.0, 50.0, 1.0],
 	"hp_scale": [0.5, 6.0, 0.25],
 }
 
-## Kampfmodus -> Wert -> Prozent der BST, die fest diesem Wert gehören
-var _reserved := {MODE: {}}
+## Standard: so viel Prozent der BST gehören fest einem Wert (der Rest wird wie gewohnt verteilt)
+const DEFAULT_RESERVED := {"hp": 20}
+## Kampfmodus -> Wert -> Prozent der BST, die fest diesem Wert gehören (fehlt = DEFAULT_RESERVED)
+var _reserved := {}
 ## Kampfmodus -> globales Wachstum pro Stufe (fehlt = DEFAULT_GROWTH)
 var _growth := {}
 ## Kampfmodus -> Einstellungen der Schadensformel (fehlende Keys = DAMAGE_DEFAULTS)
@@ -41,11 +44,12 @@ var _disabled_relics := []
 
 ## Trophäen-Bonus pro Biom-Tiefe in festen Punkten auf den Wert, gilt für alle Arten gleich (Feld, Beute, Shop, Bosse).
 ## Leer = DEFAULT_TROPHY_BONUS, im Debug-Menü pro Biom änderbar.
-const DEFAULT_TROPHY_BONUS := [15, 20, 25, 30, 35]
+const DEFAULT_TROPHY_BONUS := [3, 4, 4, 5, 5]
 const TROPHY_BONUS_RANGE := [0, 200]
 var _trophy_bonus: Array = []
-## Tragen Bosse (Boss-Felder und Biom-Bosse) zusätzlich Trophäen? Im Debug-Menü abschaltbar.
-var _boss_trophies := true
+## Tragen Bosse (Boss-Felder und Biom-Bosse) zusätzlich Trophäen? Standard: nein, im Debug-Menü einschaltbar.
+const DEFAULT_BOSS_TROPHIES := false
+var _boss_trophies := DEFAULT_BOSS_TROPHIES
 
 ## Im Debug-Menü gewählte Gegnerzahl für den nächsten Kampf, 0 = wie im normalen Spiel. Wird nicht gespeichert.
 var next_enemy_count := 0
@@ -65,7 +69,7 @@ func _ready() -> void:
 		_damage.merge(parsed.get("damage_formula", {}), true)
 		_disabled_relics = parsed.get("disabled_relics", [])
 		_trophy_bonus = parsed.get("trophy_bonus", [])
-		_boss_trophies = bool(parsed.get("boss_trophies", true))
+		_boss_trophies = bool(parsed.get("boss_trophies", DEFAULT_BOSS_TROPHIES))
 
 func save() -> void:
 	var file := FileAccess.open(PATH, FileAccess.WRITE)
@@ -137,7 +141,7 @@ func take_boss_trophies():
 
 ## Reservierter Anteil eines Werts in Prozent
 func reserved(stat: String) -> int:
-	return int(_reserved[MODE].get(stat, 0))
+	return int(_reserved.get(MODE, DEFAULT_RESERVED).get(stat, 0))
 
 func reserved_total() -> int:
 	var total := 0
@@ -148,11 +152,13 @@ func reserved_total() -> int:
 ## Über alle Werte hinweg kann höchstens die ganze BST reserviert werden
 func set_reserved(stat: String, percent: int) -> void:
 	var others := reserved_total() - reserved(stat)
+	if not _reserved.has(MODE):
+		_reserved[MODE] = DEFAULT_RESERVED.duplicate()
 	_reserved[MODE][stat] = clampi(percent, 0, MAX_RESERVED - others)
 	save()
 
 func reset_reserved() -> void:
-	_reserved[MODE] = {}
+	_reserved.erase(MODE)
 	save()
 
 ## Anteil an der BST nach Reserve: fester Teil plus der übliche Anteil am Rest.
@@ -172,10 +178,10 @@ func reset_growth() -> void:
 	_growth.erase(MODE)
 	save()
 
-## Faktor auf den üblichen Zuwachs pro Stufe. Beispiel: bei 8 bekommt ATK +10 und Initiative +20 pro Stufe,
-## bei 4 dann +5 und +10, bei 0 nichts mehr.
+## Faktor auf den vollen Zuwachs pro Stufe. Beispiel: bei 8 (FULL_GROWTH) bekommt ATK +10 und Initiative +20 pro Stufe,
+## bei 4 dann +5 und +10, beim Standard 2 noch +2,5 und +5, bei 0 nichts mehr.
 func growth_factor() -> float:
-	return growth() / DEFAULT_GROWTH
+	return growth() / FULL_GROWTH
 
 ## Faktor einer Stufe auf den Wert von Stufe 1 (Mon._base_stat).
 ## Ohne Sockel wächst er linear (Stufe 10 = 10x Stufe 1). Mit Sockel ist er so normiert, dass die Startstufe gleich bleibt,

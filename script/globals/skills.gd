@@ -79,8 +79,10 @@ func damage_factor(from: Monster, to: Monster, skill: Dictionary) -> float:
 	var bonus := 0.0
 	if not is_physical(skill):
 		bonus += own_passive_sum(from, "magic_power")
+	# der Angriff muss alle Elemente des Passivs haben (Magma-Passiv: Magma, Vulkan, Aschesturm, Chaos)
 	for passive in own_passives(from, "element_power"):
-		if skill.nature & passive.get("passive_element", 0):
+		var passive_element: int = passive.get("passive_element", 0)
+		if passive_element != 0 and skill.nature & passive_element == passive_element:
 			bonus += effective_skill(from, passive).value
 	bonus = bonus / 100.0 + from.charge(charge_kind(skill))
 	for extra in extras(skill):
@@ -432,7 +434,7 @@ const TIER_WEIGHTS = {1: 50, 2: 25, 3: 10, 4: 3}
 
 # Liefert eine frische Kopie des Skills mit diesem Namen (aus allen Skill-Listen) oder {}.
 func get_skill(skill_name: String) -> Dictionary:
-	for list in [starter_skills, standard_skills, egg_skills, defensive_skills, buff_skills, passive_skills, area_skills, bounty_skills, reward_skills, ascension_skills, draft_skills]:
+	for list in [starter_skills, standard_skills, egg_skills, defensive_skills, buff_skills, passive_skills, area_skills, milestone_skills, bounty_skills, reward_skills, ascension_skills, draft_skills]:
 		for skill in list:
 			if skill.name == skill_name:
 				var copy = skill.duplicate(true)
@@ -445,7 +447,7 @@ func has_skill(skill_name: String) -> bool:
 
 ## Gemeinsamer Pool aller Ei-Attacken und Effekt-Skills (Schilde, Buffs, Passive, Flächenschaden).
 ## Aus ihm würfeln wilde Monster (Biom-Pool) und der Trainer, die Arten verweisen in Monmap darauf.
-## Standard-Skills, Kopfgeld-, Couvert- und Aufstiegs-Skills gehören nicht dazu.
+## Standard-, Meilenstein-, Kopfgeld-, Couvert- und Aufstiegs-Skills gehören nicht dazu.
 func pool_skills() -> Array:
 	return egg_skills + defensive_skills + buff_skills + passive_skills + area_skills
 
@@ -453,7 +455,7 @@ func pool_skills() -> Array:
 func effect_skills() -> Array:
 	return defensive_skills + buff_skills + passive_skills + area_skills
 
-## Tauchen bei wilden Monstern im Biom-Pool auf (Feld "wild": false = nur über Ei-Attacken der Arten)
+## Tauchen bei wilden Monstern im Biom-Pool auf (Feld "wild": false = nie wild; Meilenstein-Skills liegen ohnehin nicht im Pool)
 func is_wild_skill(skill: Dictionary) -> bool:
 	return skill.get("wild", true)
 
@@ -1016,49 +1018,25 @@ var starter_skills = [
 	_flat_shield_skill("SKILL_AIR_WARD_PLAIN", AIR, 5.0, 0.3, MAG, 0),
 ]
 
-# Die übrigen Listen sind vorerst leer, die Skills werden Stück für Stück neu verteilt.
-# Standard-Skills: ein Trank mit neuem Grundelement bietet sie zum Lernen an (ElementGainOverlay)
+# Standard-Skills: ein Trank mit neuem Grundelement bietet sie zum Lernen an (ElementGainOverlay). Vorerst leer.
 var standard_skills = []
-# Gemeinsamer Pool: wilde Monster (Biom-Pool) und Trainer
-var egg_skills = []
-var defensive_skills = []
-var buff_skills = []
-var passive_skills = []
-var area_skills = []
-# Kopfgeld-Ei-Attacken (Skills.BOUNTIES)
-var bounty_skills = []
-# Einzigartige Skills aus dem Couvert der Bosse
-var reward_skills = []
-
-# So viele Skills bietet ein Couvert zur Auswahl.
-const REWARD_SKILL_OFFERS := 3
-
-# Auswahl fürs Couvert: noch von niemandem gelernte einzigartige Skills, mindestens einer davon für das Team sofort einsetzbar,
-# sofern es so einen noch gibt.
-func reward_offers() -> Array:
-	var pool: Array = reward_skills.filter(func(skill): return not State.taught_reward_skills.has(skill.name))
-	pool.shuffle()
-	var offers := pool.slice(0, REWARD_SKILL_OFFERS)
-	var usable := func(skill): return State.mons.any(func(mon): return can_use(mon, skill))
-	if not offers.is_empty() and not offers.any(usable):
-		var fitting := pool.filter(usable)
-		if not fitting.is_empty():
-			offers[0] = fitting[0]
-	return offers.map(func(skill): return get_skill(skill.name))
-
-# Aufstiegs-Skills: Trinkt ein Monster einen Element-Trank und steigt dadurch zu einem Kombi-Element auf,
-# kann es den Skill genau dieses Elements lernen (Treasure.add_potion_card, ElementGainOverlay). Vorerst leer.
-var ascension_skills = []
 
 # ─────────────────────────
-# Entwürfe: fertige Skills, die noch NIRGENDS vergeben sind (keine Art, kein Pool, kein Trainer, kein Shop, kein Trank,
-# kein Couvert). get_skill findet sie, das Wiki listet sie unter "Unbenutzt". Zum Vergeben in die passende Liste
-# verschieben bzw. in Monmap eintragen.
+# Skill-Listen. Den INHALT von egg_skills, defensive_skills, buff_skills, passive_skills, area_skills, milestone_skills,
+# reward_skills und draft_skills sortiert tools/skill_verteilung.js bei jedem Lauf neu (Regeln in skill_regeln.txt):
+#   Ei-Attacke oder Start-Skill einer Art -> gemeinsamer Pool (nach Art des Skills: Angriff, Schild, Buff, Passiv, Fläche)
+#   nur Meilenstein einer Art            -> milestone_skills (nie wild, nie beim Trainer, nie im Couvert)
+#   von keiner Art benutzt, ab Stufe 2   -> reward_skills (nur im Couvert)
+#   von keiner Art benutzt, Stufe 1      -> draft_skills
+# Neue Skills einfach in eine dieser Listen schreiben (am besten draft_skills), das Werkzeug ordnet sie ein.
+# Kommentare INNERHALB dieser Listen schreibt das Werkzeug selbst (Element-Überschriften), eigene gehen verloren.
+# "trainer": false = nicht beim Trainer (Stufe 4, Kombi-Top), bleibt am Skill stehen.
 #
 # Werte (fester Wert + Anteil x Wert, siehe Schadensformel). Element-Charakter: Feuer physische Angriffe, Luft magische
 # Angriffe, Erde Rüstung, Wasser Magie-Schild etwas stärker ("+"): gilt pro enthaltenem Element auch in den Kombis.
 #   Grundelement   Stufe 2 (CD 1, 1 Aktion)    Angriff 12 + 0,30 (+ 13 + 0,33)   Schild 12 + 0,30 (+ 14 + 0,33)
 #                  Stufe 3 (CD 2, 1 Aktion)    Angriff 15 + 0,37 (+ 17 + 0,40)   Schild 16 + 0,37 (+ 18 + 0,40)
+#                  Stufe 3 schnell (CD 0, 1)   Angriff 12 + 0,30 (+ 13 + 0,33)   Schild 12 + 0,30 (+ 14 + 0,33)
 #   Zweier-Kombi   Stufe 3 Angriff (CD 2, 2)   30 + 0,50 (+ 33 + 0,55)
 #                  Stufe 3 Schild  (CD 2, 1)   25 + 0,45 (+ 28 + 0,50)
 #                  Stufe 4 Top     (CD 3, 2)   45 + 0,65 (+ 48 + 0,70)
@@ -1068,160 +1046,355 @@ var ascension_skills = []
 #   Zweier-Kombi   Stufe 2 (CD 1, 1 Aktion)    18 + 0,35 (+ 20 + 0,40)
 #   Dreier-Kombi   Stufe 3 (CD 1, 1 Aktion)    20 + 0,50 (+ 22 + 0,55)
 # Dreier-Schilde kosten 3 Aktionen: genau die verbilligt der Bollwerkmeister.
-var draft_skills = [
-	# Feuer (physische Angriffe +)
+# Buffs: Stufe 2 ein Monster +25 % für 2 Züge (CD 2), Stufe 3 ganzes Team +12 % für 2 Züge (CD 3),
+#   Stufe 4 Kombi-Buffs Team +15-18 % oder Einzel +35 % für 3 Züge (CD 3, 2 Aktionen).
+# Passive: Stufe 3 Element-Passive des Grundelements (+10 %), Stufe 4 Kombi-Kraft (Angriffe mit allen Elementen der Kombi +15 %).
+
+# Gemeinsamer Pool (wilde Monster im Biom-Pool, Trainer, Couvert ab Stufe 2): Angriffe
+var egg_skills = [
+	# Feuer
 	_attack_skill("SKILL_FIRE_PHYS_FLAME_FIST", FIRE, 13.0, 0.33, PHYS, 2, 1, 1),
-	_attack_skill("SKILL_FIRE_PHYS_BLAZE_RUSH", FIRE, 17.0, 0.4, PHYS, 3, 2, 1),
 	_attack_skill("SKILL_FIRE_MAG_SPARK_SHOT", FIRE, 12.0, 0.3, MAG, 2, 1, 1),
+	_attack_skill("SKILL_FIRE_PHYS_BLAZE_RUSH_SWIFT", FIRE, 13.0, 0.33, PHYS, 3, 0, 1),
+	_attack_skill("SKILL_FIRE_MAG_FIREBALL_SWIFT", FIRE, 12.0, 0.3, MAG, 3, 0, 1),
+	_attack_skill("SKILL_FIRE_PHYS_BLAZE_RUSH", FIRE, 17.0, 0.4, PHYS, 3, 2, 1),
 	_attack_skill("SKILL_FIRE_MAG_FIREBALL", FIRE, 15.0, 0.37, MAG, 3, 2, 1),
-	_shield_skill("SKILL_FIRE_ARMOR_CINDER_PLATE", FIRE, 12.0, 0.3, PHYS, 2, 1, 1),
-	_shield_skill("SKILL_FIRE_ARMOR_FLAME_WALL", FIRE, 16.0, 0.37, PHYS, 3, 2, 1),
-	_shield_skill("SKILL_FIRE_WARD_HEAT_VEIL", FIRE, 12.0, 0.3, MAG, 2, 1, 1),
-	_shield_skill("SKILL_FIRE_WARD_PHOENIX_AURA", FIRE, 16.0, 0.37, MAG, 3, 2, 1),
-	# Wasser (Magie-Schilde +)
+	# Wasser
 	_attack_skill("SKILL_WATER_PHYS_TIDE_SLAP", WATER, 12.0, 0.3, PHYS, 2, 1, 1),
-	_attack_skill("SKILL_WATER_PHYS_BREAKER", WATER, 15.0, 0.37, PHYS, 3, 2, 1),
 	_attack_skill("SKILL_WATER_MAG_BUBBLE_BEAM", WATER, 12.0, 0.3, MAG, 2, 1, 1),
+	_attack_skill("SKILL_WATER_MAG_HYDRO_LANCE_SWIFT", WATER, 12.0, 0.3, MAG, 3, 0, 1),
+	_attack_skill("SKILL_WATER_PHYS_BREAKER", WATER, 15.0, 0.37, PHYS, 3, 2, 1),
 	_attack_skill("SKILL_WATER_MAG_HYDRO_LANCE", WATER, 15.0, 0.37, MAG, 3, 2, 1),
-	_shield_skill("SKILL_WATER_ARMOR_SHELL", WATER, 12.0, 0.3, PHYS, 2, 1, 1),
-	_shield_skill("SKILL_WATER_ARMOR_CORAL_WALL", WATER, 16.0, 0.37, PHYS, 3, 2, 1),
-	_shield_skill("SKILL_WATER_WARD_MIST_VEIL", WATER, 14.0, 0.33, MAG, 2, 1, 1),
-	_shield_skill("SKILL_WATER_WARD_TIDAL_DOME", WATER, 18.0, 0.4, MAG, 3, 2, 1),
-	# Erde (Rüstung +)
+	# Erde
 	_attack_skill("SKILL_EARTH_PHYS_BOULDER_BASH", EARTH, 12.0, 0.3, PHYS, 2, 1, 1),
-	_attack_skill("SKILL_EARTH_PHYS_QUAKE_STOMP", EARTH, 15.0, 0.37, PHYS, 3, 2, 1),
 	_attack_skill("SKILL_EARTH_MAG_PEBBLE_STORM", EARTH, 12.0, 0.3, MAG, 2, 1, 1),
+	_attack_skill("SKILL_EARTH_PHYS_QUAKE_STOMP_SWIFT", EARTH, 12.0, 0.3, PHYS, 3, 0, 1),
+	_attack_skill("SKILL_EARTH_MAG_GEO_PULSE_SWIFT", EARTH, 12.0, 0.3, MAG, 3, 0, 1),
+	_attack_skill("SKILL_EARTH_PHYS_QUAKE_STOMP", EARTH, 15.0, 0.37, PHYS, 3, 2, 1),
 	_attack_skill("SKILL_EARTH_MAG_GEO_PULSE", EARTH, 15.0, 0.37, MAG, 3, 2, 1),
-	_shield_skill("SKILL_EARTH_ARMOR_STONE_SKIN", EARTH, 14.0, 0.33, PHYS, 2, 1, 1),
-	_shield_skill("SKILL_EARTH_ARMOR_GRANITE_BASTION", EARTH, 18.0, 0.4, PHYS, 3, 2, 1),
-	_shield_skill("SKILL_EARTH_WARD_CLAY_SEAL", EARTH, 12.0, 0.3, MAG, 2, 1, 1),
-	_shield_skill("SKILL_EARTH_WARD_CRYSTAL_SEAL", EARTH, 16.0, 0.37, MAG, 3, 2, 1),
-	# Luft (magische Angriffe +)
+	# Luft
 	_attack_skill("SKILL_AIR_PHYS_GUST_KICK", AIR, 12.0, 0.3, PHYS, 2, 1, 1),
-	_attack_skill("SKILL_AIR_PHYS_CYCLONE_CLAW", AIR, 15.0, 0.37, PHYS, 3, 2, 1),
 	_attack_skill("SKILL_AIR_MAG_WIND_BLADE", AIR, 13.0, 0.33, MAG, 2, 1, 1),
+	_attack_skill("SKILL_AIR_PHYS_CYCLONE_CLAW_SWIFT", AIR, 12.0, 0.3, PHYS, 3, 0, 1),
+	_attack_skill("SKILL_AIR_MAG_TEMPEST_RAY_SWIFT", AIR, 13.0, 0.33, MAG, 3, 0, 1),
+	_attack_skill("SKILL_AIR_PHYS_CYCLONE_CLAW", AIR, 15.0, 0.37, PHYS, 3, 2, 1),
 	_attack_skill("SKILL_AIR_MAG_TEMPEST_RAY", AIR, 17.0, 0.4, MAG, 3, 2, 1),
-	_shield_skill("SKILL_AIR_ARMOR_DRAFT_GUARD", AIR, 12.0, 0.3, PHYS, 2, 1, 1),
-	_shield_skill("SKILL_AIR_ARMOR_GALE_WALL", AIR, 16.0, 0.37, PHYS, 3, 2, 1),
-	_shield_skill("SKILL_AIR_WARD_BREEZE_VEIL", AIR, 12.0, 0.3, MAG, 2, 1, 1),
-	_shield_skill("SKILL_AIR_WARD_SKY_DOME", AIR, 16.0, 0.37, MAG, 3, 2, 1),
-	# Dampf (Feuer + Wasser: physische Angriffe +, Magie-Schilde +)
+	# Dampf
 	_attack_skill("SKILL_STEAM_PHYS_SCALD_STRIKE", STEAM, 33.0, 0.55, PHYS, 3, 2, 2),
 	_attack_skill("SKILL_STEAM_MAG_STEAM_JET", STEAM, 30.0, 0.5, MAG, 3, 2, 2),
-	_shield_skill("SKILL_STEAM_ARMOR_VAPOR_PLATE", STEAM, 25.0, 0.45, PHYS, 3, 2, 1),
-	_shield_skill("SKILL_STEAM_WARD_FOG_BARRIER", STEAM, 28.0, 0.5, MAG, 3, 2, 1),
 	_attack_skill("SKILL_STEAM_PHYS_STEAM_HAMMER", STEAM, 48.0, 0.7, PHYS, 4, 3, 2),
-	# Blitz (Feuer + Luft: beide Angriffsarten +)
+	# Blitz
 	_attack_skill("SKILL_LIGHTNING_PHYS_VOLT_PUNCH", LIGHTNING, 33.0, 0.55, PHYS, 3, 2, 2),
 	_attack_skill("SKILL_LIGHTNING_MAG_ARC_BOLT", LIGHTNING, 33.0, 0.55, MAG, 3, 2, 2),
-	_shield_skill("SKILL_LIGHTNING_ARMOR_STATIC_PLATE", LIGHTNING, 25.0, 0.45, PHYS, 3, 2, 1),
-	_shield_skill("SKILL_LIGHTNING_WARD_SPARK_FIELD", LIGHTNING, 25.0, 0.45, MAG, 3, 2, 1),
-	_attack_skill("SKILL_LIGHTNING_MAG_THUNDERCLAP", LIGHTNING, 48.0, 0.7, MAG, 4, 3, 2),
-	# Magma (Erde + Feuer: physische Angriffe +, Rüstung +)
+	_with(_attack_skill("SKILL_LIGHTNING_MAG_THUNDERCLAP", LIGHTNING, 48.0, 0.7, MAG, 4, 3, 2), {"trainer": false}),
+	# Magma
 	_attack_skill("SKILL_MAGMA_PHYS_LAVA_FIST", MAGMA, 33.0, 0.55, PHYS, 3, 2, 2),
-	_attack_skill("SKILL_MAGMA_MAG_MAGMA_BURST", MAGMA, 30.0, 0.5, MAG, 3, 2, 2),
-	_shield_skill("SKILL_MAGMA_ARMOR_OBSIDIAN_PLATE", MAGMA, 28.0, 0.5, PHYS, 3, 2, 1),
-	_shield_skill("SKILL_MAGMA_WARD_EMBER_CRUST", MAGMA, 25.0, 0.45, MAG, 3, 2, 1),
-	_attack_skill("SKILL_MAGMA_PHYS_ERUPTION_SLAM", MAGMA, 48.0, 0.7, PHYS, 4, 3, 2),
-	# Eis (Luft + Wasser: magische Angriffe +, Magie-Schilde +)
+	_with(_attack_skill("SKILL_MAGMA_PHYS_ERUPTION_SLAM", MAGMA, 48.0, 0.7, PHYS, 4, 3, 2), {"trainer": false}),
+	# Eis
 	_attack_skill("SKILL_ICE_PHYS_ICICLE_JAB", ICE, 30.0, 0.5, PHYS, 3, 2, 2),
 	_attack_skill("SKILL_ICE_MAG_FROST_RAY", ICE, 33.0, 0.55, MAG, 3, 2, 2),
-	_shield_skill("SKILL_ICE_ARMOR_ICE_PLATE", ICE, 25.0, 0.45, PHYS, 3, 2, 1),
-	_shield_skill("SKILL_ICE_WARD_FROST_MIRROR", ICE, 28.0, 0.5, MAG, 3, 2, 1),
-	_attack_skill("SKILL_ICE_MAG_BLIZZARD", ICE, 48.0, 0.7, MAG, 4, 3, 2),
-	# Staub (Erde + Luft: magische Angriffe +, Rüstung +)
+	_with(_attack_skill("SKILL_ICE_MAG_BLIZZARD", ICE, 48.0, 0.7, MAG, 4, 3, 2), {"trainer": false}),
+	# Staub
 	_attack_skill("SKILL_DUST_PHYS_SAND_CLAW", DUST, 30.0, 0.5, PHYS, 3, 2, 2),
 	_attack_skill("SKILL_DUST_MAG_DUST_DEVIL", DUST, 33.0, 0.55, MAG, 3, 2, 2),
-	_shield_skill("SKILL_DUST_ARMOR_DUNE_WALL", DUST, 28.0, 0.5, PHYS, 3, 2, 1),
-	_shield_skill("SKILL_DUST_WARD_SAND_VEIL", DUST, 25.0, 0.45, MAG, 3, 2, 1),
-	_attack_skill("SKILL_DUST_MAG_SANDSTORM", DUST, 48.0, 0.7, MAG, 4, 3, 2),
-	# Schlamm (Erde + Wasser: beide Schilde +, Top-Skill ist ein Schild)
+	_with(_attack_skill("SKILL_DUST_MAG_SANDSTORM", DUST, 48.0, 0.7, MAG, 4, 3, 2), {"trainer": false}),
+	# Schlamm
 	_attack_skill("SKILL_MUD_PHYS_MUD_SLAM", MUD, 30.0, 0.5, PHYS, 3, 2, 2),
 	_attack_skill("SKILL_MUD_MAG_BOG_PULSE", MUD, 30.0, 0.5, MAG, 3, 2, 2),
-	_shield_skill("SKILL_MUD_ARMOR_CLAY_SHELL", MUD, 28.0, 0.5, PHYS, 3, 2, 1),
+	# Gewitter
+	_with(_attack_skill("SKILL_THUNDERSTORM_MAG_SKYFALL", THUNDERSTORM, 80.0, 1.0, MAG, 4, 4, 3), {"trainer": false}),
+	# Aschesturm
+	_with(_attack_skill("SKILL_ASH_STORM_PHYS_ASHEN_ROLLER", ASH_STORM, 80.0, 1.0, PHYS, 4, 4, 3), {"trainer": false}),
+	# Sumpf
+	_with(_attack_skill("SKILL_SWAMP_MAG_BOG_MAW", SWAMP, 80.0, 1.0, MAG, 4, 4, 3), {"trainer": false}),
+]
+# Gemeinsamer Pool: Schilde
+var defensive_skills = [
+	# Feuer
+	_shield_skill("SKILL_FIRE_ARMOR_CINDER_PLATE", FIRE, 12.0, 0.3, PHYS, 2, 1, 1),
+	_shield_skill("SKILL_FIRE_WARD_HEAT_VEIL", FIRE, 12.0, 0.3, MAG, 2, 1, 1),
+	_shield_skill("SKILL_FIRE_ARMOR_FLAME_WALL", FIRE, 16.0, 0.37, PHYS, 3, 2, 1),
+	_shield_skill("SKILL_FIRE_WARD_PHOENIX_AURA", FIRE, 16.0, 0.37, MAG, 3, 2, 1),
+	# Wasser
+	_shield_skill("SKILL_WATER_ARMOR_SHELL", WATER, 12.0, 0.3, PHYS, 2, 1, 1),
+	_shield_skill("SKILL_WATER_WARD_MIST_VEIL", WATER, 14.0, 0.33, MAG, 2, 1, 1),
+	_shield_skill("SKILL_WATER_ARMOR_CORAL_WALL", WATER, 16.0, 0.37, PHYS, 3, 2, 1),
+	_shield_skill("SKILL_WATER_WARD_TIDAL_DOME", WATER, 18.0, 0.4, MAG, 3, 2, 1),
+	# Erde
+	_shield_skill("SKILL_EARTH_ARMOR_STONE_SKIN", EARTH, 14.0, 0.33, PHYS, 2, 1, 1),
+	_shield_skill("SKILL_EARTH_WARD_CLAY_SEAL", EARTH, 12.0, 0.3, MAG, 2, 1, 1),
+	_shield_skill("SKILL_EARTH_ARMOR_GRANITE_BASTION_SWIFT", EARTH, 14.0, 0.33, PHYS, 3, 0, 1),
+	_shield_skill("SKILL_EARTH_ARMOR_GRANITE_BASTION", EARTH, 18.0, 0.4, PHYS, 3, 2, 1),
+	_shield_skill("SKILL_EARTH_WARD_CRYSTAL_SEAL", EARTH, 16.0, 0.37, MAG, 3, 2, 1),
+	# Luft
+	_shield_skill("SKILL_AIR_ARMOR_DRAFT_GUARD", AIR, 12.0, 0.3, PHYS, 2, 1, 1),
+	_shield_skill("SKILL_AIR_WARD_BREEZE_VEIL", AIR, 12.0, 0.3, MAG, 2, 1, 1),
+	_shield_skill("SKILL_AIR_ARMOR_GALE_WALL", AIR, 16.0, 0.37, PHYS, 3, 2, 1),
+	_shield_skill("SKILL_AIR_WARD_SKY_DOME", AIR, 16.0, 0.37, MAG, 3, 2, 1),
+	# Blitz
+	_shield_skill("SKILL_LIGHTNING_ARMOR_STATIC_PLATE", LIGHTNING, 25.0, 0.45, PHYS, 3, 2, 1),
+	# Magma
+	_shield_skill("SKILL_MAGMA_ARMOR_OBSIDIAN_PLATE", MAGMA, 28.0, 0.5, PHYS, 3, 2, 1),
+	# Eis
+	_shield_skill("SKILL_ICE_WARD_FROST_MIRROR", ICE, 28.0, 0.5, MAG, 3, 2, 1),
+	# Staub
+	_shield_skill("SKILL_DUST_WARD_SAND_VEIL", DUST, 25.0, 0.45, MAG, 3, 2, 1),
+	_shield_skill("SKILL_DUST_ARMOR_DUNE_WALL", DUST, 28.0, 0.5, PHYS, 3, 2, 1),
+	# Schlamm
 	_shield_skill("SKILL_MUD_WARD_SILT_SEAL", MUD, 28.0, 0.5, MAG, 3, 2, 1),
-	_shield_skill("SKILL_MUD_ARMOR_LANDSLIDE_WALL", MUD, 48.0, 0.7, PHYS, 4, 3, 2),
-	# Gewitter (Luft + Wasser + Feuer: beide Angriffsarten +, Magie-Schild +)
-	_attack_skill("SKILL_THUNDERSTORM_PHYS_STORM_FIST", THUNDERSTORM, 60.0, 0.8, PHYS, 3, 3, 3),
-	_attack_skill("SKILL_THUNDERSTORM_MAG_CHAIN_LIGHTNING", THUNDERSTORM, 60.0, 0.8, MAG, 3, 3, 3),
-	_shield_skill("SKILL_THUNDERSTORM_ARMOR_STORM_PLATE", THUNDERSTORM, 55.0, 0.75, PHYS, 3, 3, 3),
-	_shield_skill("SKILL_THUNDERSTORM_WARD_CLOUD_DOME", THUNDERSTORM, 60.0, 0.8, MAG, 3, 3, 3),
-	_attack_skill("SKILL_THUNDERSTORM_MAG_SKYFALL", THUNDERSTORM, 80.0, 1.0, MAG, 4, 4, 3),
-	# Vulkan (Erde + Feuer + Wasser: physische Angriffe +, beide Schilde +)
-	_attack_skill("SKILL_VOLCANO_PHYS_CALDERA_CRUSH", VOLCANO, 60.0, 0.8, PHYS, 3, 3, 3),
-	_attack_skill("SKILL_VOLCANO_MAG_PYROCLAST", VOLCANO, 55.0, 0.75, MAG, 3, 3, 3),
-	_shield_skill("SKILL_VOLCANO_ARMOR_BASALT_FORT", VOLCANO, 60.0, 0.8, PHYS, 3, 3, 3),
-	_shield_skill("SKILL_VOLCANO_WARD_GEYSER_SHIELD", VOLCANO, 60.0, 0.8, MAG, 3, 3, 3),
-	_attack_skill("SKILL_VOLCANO_PHYS_MAGMA_TITAN", VOLCANO, 80.0, 1.0, PHYS, 4, 4, 3),
-	# Aschesturm (Erde + Luft + Feuer: beide Angriffsarten +, Rüstung +)
-	_attack_skill("SKILL_ASH_STORM_PHYS_CINDER_CLAW", ASH_STORM, 60.0, 0.8, PHYS, 3, 3, 3),
-	_attack_skill("SKILL_ASH_STORM_MAG_ASH_CYCLONE", ASH_STORM, 60.0, 0.8, MAG, 3, 3, 3),
-	_shield_skill("SKILL_ASH_STORM_ARMOR_SLAG_ARMOR", ASH_STORM, 60.0, 0.8, PHYS, 3, 3, 3),
-	_shield_skill("SKILL_ASH_STORM_WARD_SOOT_VEIL", ASH_STORM, 55.0, 0.75, MAG, 3, 3, 3),
-	_attack_skill("SKILL_ASH_STORM_PHYS_ASHEN_ROLLER", ASH_STORM, 80.0, 1.0, PHYS, 4, 4, 3),
-	# Sumpf (Erde + Luft + Wasser: magische Angriffe +, beide Schilde +)
-	_attack_skill("SKILL_SWAMP_PHYS_ROOT_LASH", SWAMP, 55.0, 0.75, PHYS, 3, 3, 3),
-	_attack_skill("SKILL_SWAMP_MAG_MIASMA_CLOUD", SWAMP, 60.0, 0.8, MAG, 3, 3, 3),
-	_shield_skill("SKILL_SWAMP_ARMOR_MANGROVE_WALL", SWAMP, 60.0, 0.8, PHYS, 3, 3, 3),
-	_shield_skill("SKILL_SWAMP_WARD_MARSH_MIST", SWAMP, 60.0, 0.8, MAG, 3, 3, 3),
-	_attack_skill("SKILL_SWAMP_MAG_BOG_MAW", SWAMP, 80.0, 1.0, MAG, 4, 4, 3),
-	# Leichte Zweier-Kombis (Stufe 2, CD 1, 1 Aktion)
+	_with(_shield_skill("SKILL_MUD_ARMOR_LANDSLIDE_WALL", MUD, 48.0, 0.7, PHYS, 4, 3, 2), {"trainer": false}),
+]
+# Gemeinsamer Pool: Buffs und Sonder-Verstärkungen
+var buff_skills = [
+	# Feuer
+	_buff_skill("SKILL_FIRE_BUFF_ATK", FIRE, "atk", 25.0, 2, 2, 2, 1),
+	_buff_skill("SKILL_FIRE_BUFF_S_ATK", FIRE, "s_atk", 25.0, 2, 2, 2, 1),
+	_team_buff_skill("SKILL_FIRE_BUFF_TEAM_S_ATK", FIRE, "s_atk", 12.0, 2, 3, 3, 1),
+	# Wasser
+	_buff_skill("SKILL_WATER_BUFF_ATK", WATER, "atk", 25.0, 2, 2, 2, 1),
+	_buff_skill("SKILL_WATER_BUFF_DEF", WATER, "def", 25.0, 2, 2, 2, 1),
+	_buff_skill("SKILL_WATER_BUFF_S_ATK", WATER, "s_atk", 25.0, 2, 2, 2, 1),
+	_buff_skill("SKILL_WATER_BUFF_S_DEF", WATER, "s_def", 25.0, 2, 2, 2, 1),
+	_boon_skill("SKILL_WATER_BOON_BLOOD_TIDE", WATER, "leech", 20.0, 1, ALLY, "hp", 3, 2, 2, "SKILL_BOON_LEECH_DESC"),
+	# Erde
+	_buff_skill("SKILL_EARTH_BUFF_ATK", EARTH, "atk", 25.0, 2, 2, 2, 1),
+	_buff_skill("SKILL_EARTH_BUFF_DEF", EARTH, "def", 25.0, 2, 2, 2, 1),
+	_buff_skill("SKILL_EARTH_BUFF_S_ATK", EARTH, "s_atk", 25.0, 2, 2, 2, 1),
+	_team_buff_skill("SKILL_EARTH_BUFF_TEAM_ATK", EARTH, "atk", 12.0, 2, 3, 3, 1),
+	_team_buff_skill("SKILL_EARTH_BUFF_TEAM_DEF", EARTH, "def", 12.0, 2, 3, 3, 1),
+	_team_buff_skill("SKILL_EARTH_BUFF_TEAM_S_ATK", EARTH, "s_atk", 12.0, 2, 3, 3, 1),
+	# Luft
+	_buff_skill("SKILL_AIR_BUFF_ATK", AIR, "atk", 25.0, 2, 2, 2, 1),
+	_buff_skill("SKILL_AIR_BUFF_DEF", AIR, "def", 25.0, 2, 2, 2, 1),
+	_buff_skill("SKILL_AIR_BUFF_S_ATK", AIR, "s_atk", 25.0, 2, 2, 2, 1),
+	_boon_skill("SKILL_AIR_BOON_TAILWIND", AIR, "extra_moves", 1.0, 3, ALLY, "speed", 3, 2, 2, "SKILL_BOON_EXTRA_MOVES_DESC"),
+	# Dampf
+	_with(_team_buff_skill("SKILL_STEAM_BUFF_T4", STEAM, "s_def", 15.0, 2, 4, 3, 2), {"trainer": false, "extras": [_extra("heal", 8.0, "", 0, 1.0)]}),
+	# Blitz
+	_with(_boon_skill("SKILL_LIGHTNING_BOON_OVERCHARGE", LIGHTNING, "crit", 50.0, 1, SELF, "atk", 4, 3, 2, "SKILL_BOON_CRIT_DESC"), {"trainer": false}),
+	# Magma
+	_with(_team_buff_skill("SKILL_MAGMA_BUFF_T4", MAGMA, "atk", 18.0, 2, 4, 3, 2), {"trainer": false}),
+	# Eis
+	_with(_buff_skill("SKILL_ICE_BUFF_T4", ICE, "s_atk", 35.0, 3, 4, 3, 2), {"trainer": false}),
+	# Staub
+	_with(_team_buff_skill("SKILL_DUST_BUFF_T4", DUST, "s_atk", 15.0, 2, 4, 3, 2), {"trainer": false}),
+	# Schlamm
+	_with(_team_buff_skill("SKILL_MUD_BUFF_T4", MUD, "def", 18.0, 2, 4, 3, 2), {"trainer": false}),
+]
+# Gemeinsamer Pool: Passive
+var passive_skills = [
+	# Wasser
+	_passive_skill("SKILL_PASSIVE_WATER_POWER", WATER, 10.0, 3, "s_shield_power", "SKILL_PASSIVE_S_SHIELD_POWER_DESC"),
+	# Erde
+	_passive_skill("SKILL_PASSIVE_EARTH_POWER", EARTH, 10.0, 3, "shield_power", "SKILL_PASSIVE_SHIELD_POWER_DESC"),
+]
+# Gemeinsamer Pool: Flächenschaden
+var area_skills = []
+# Nur über Meilensteine (Skills.MILESTONES): nicht im Pool, nicht beim Trainer, nicht im Couvert
+var milestone_skills = [
+	# Feuer
+	_with(_passive_skill("SKILL_PASSIVE_FIRE_POWER", FIRE, 10.0, 3, "element_power", "SKILL_PASSIVE_ELEMENT_POWER_DESC"), {"passive_element": FIRE}),
+	# Luft
+	_passive_skill("SKILL_PASSIVE_AIR_POWER", AIR, 10.0, 3, "magic_power", "SKILL_PASSIVE_MAGIC_POWER_DESC"),
+	# Dampf
 	_attack_skill("SKILL_STEAM_PHYS_HOT_JAB", STEAM, 20.0, 0.4, PHYS, 2, 1, 1),
 	_attack_skill("SKILL_STEAM_MAG_VAPOR_PUFF", STEAM, 18.0, 0.35, MAG, 2, 1, 1),
 	_shield_skill("SKILL_STEAM_ARMOR_STEAM_COAT", STEAM, 18.0, 0.35, PHYS, 2, 1, 1),
-	_shield_skill("SKILL_STEAM_WARD_HAZE_SHIELD", STEAM, 20.0, 0.4, MAG, 2, 1, 1),
+	_with(_passive_skill("SKILL_PASSIVE_STEAM_T4", STEAM, 15.0, 4, "element_power", "SKILL_PASSIVE_ELEMENT_POWER_DESC"), {"passive_element": STEAM, "trainer": false}),
+	# Blitz
 	_attack_skill("SKILL_LIGHTNING_PHYS_SHOCK_TAP", LIGHTNING, 20.0, 0.4, PHYS, 2, 1, 1),
 	_attack_skill("SKILL_LIGHTNING_MAG_SPARK_BOLT", LIGHTNING, 20.0, 0.4, MAG, 2, 1, 1),
-	_shield_skill("SKILL_LIGHTNING_ARMOR_CHARGE_PLATE", LIGHTNING, 18.0, 0.35, PHYS, 2, 1, 1),
 	_shield_skill("SKILL_LIGHTNING_WARD_ION_VEIL", LIGHTNING, 18.0, 0.35, MAG, 2, 1, 1),
+	_with(_passive_skill("SKILL_PASSIVE_BATTLE_FERVOR", LIGHTNING, 20.0, 3, "stat", "SKILL_PASSIVE_STAT_SELF_DESC"), {"passive_stat": "atk", "passive_scope": "self"}),
+	_with(_passive_skill("SKILL_PASSIVE_STORM_SPIRIT", LIGHTNING, 20.0, 3, "stat", "SKILL_PASSIVE_STAT_SELF_DESC"), {"passive_stat": "s_atk", "passive_scope": "self"}),
+	_with(_passive_skill("SKILL_PASSIVE_LIGHTNING_T4", LIGHTNING, 15.0, 4, "element_power", "SKILL_PASSIVE_ELEMENT_POWER_DESC"),
+		{"passive_element": LIGHTNING, "trainer": false}),
+	# Magma
 	_attack_skill("SKILL_MAGMA_PHYS_EMBER_KNUCKLE", MAGMA, 20.0, 0.4, PHYS, 2, 1, 1),
 	_attack_skill("SKILL_MAGMA_MAG_LAVA_SPIT", MAGMA, 18.0, 0.35, MAG, 2, 1, 1),
 	_shield_skill("SKILL_MAGMA_ARMOR_PUMICE_SKIN", MAGMA, 20.0, 0.4, PHYS, 2, 1, 1),
-	_shield_skill("SKILL_MAGMA_WARD_HEAT_SHIMMER", MAGMA, 18.0, 0.35, MAG, 2, 1, 1),
+	_with(_passive_skill("SKILL_PASSIVE_MAGMA_T4", MAGMA, 15.0, 4, "element_power", "SKILL_PASSIVE_ELEMENT_POWER_DESC"),
+		{"passive_element": MAGMA, "trainer": false}),
+	# Eis
 	_attack_skill("SKILL_ICE_PHYS_FROST_BITE", ICE, 18.0, 0.35, PHYS, 2, 1, 1),
 	_attack_skill("SKILL_ICE_MAG_SNOW_FLURRY", ICE, 20.0, 0.4, MAG, 2, 1, 1),
 	_shield_skill("SKILL_ICE_ARMOR_RIME_COAT", ICE, 18.0, 0.35, PHYS, 2, 1, 1),
 	_shield_skill("SKILL_ICE_WARD_SNOW_VEIL", ICE, 20.0, 0.4, MAG, 2, 1, 1),
+	_with(_passive_skill("SKILL_PASSIVE_ICE_T4", ICE, 15.0, 4, "element_power", "SKILL_PASSIVE_ELEMENT_POWER_DESC"),
+		{"passive_element": ICE, "trainer": false}),
+	# Staub
 	_attack_skill("SKILL_DUST_PHYS_GRIT_PUNCH", DUST, 18.0, 0.35, PHYS, 2, 1, 1),
-	_attack_skill("SKILL_DUST_MAG_DUST_SHOT", DUST, 20.0, 0.4, MAG, 2, 1, 1),
 	_shield_skill("SKILL_DUST_ARMOR_SANDSTONE_SKIN", DUST, 20.0, 0.4, PHYS, 2, 1, 1),
-	_shield_skill("SKILL_DUST_WARD_DUST_CLOAK", DUST, 18.0, 0.35, MAG, 2, 1, 1),
+	_with(_passive_skill("SKILL_PASSIVE_DUST_T4", DUST, 15.0, 4, "element_power", "SKILL_PASSIVE_ELEMENT_POWER_DESC"),
+		{"passive_element": DUST, "trainer": false}),
+	# Schlamm
 	_attack_skill("SKILL_MUD_PHYS_MUD_PUNCH", MUD, 18.0, 0.35, PHYS, 2, 1, 1),
 	_attack_skill("SKILL_MUD_MAG_SLUDGE_SHOT", MUD, 18.0, 0.35, MAG, 2, 1, 1),
 	_shield_skill("SKILL_MUD_ARMOR_MUD_COAT", MUD, 20.0, 0.4, PHYS, 2, 1, 1),
 	_shield_skill("SKILL_MUD_WARD_PEAT_SEAL", MUD, 20.0, 0.4, MAG, 2, 1, 1),
-	# Leichte Dreier-Kombis (Stufe 3, CD 1, 1 Aktion)
-	_attack_skill("SKILL_THUNDERSTORM_PHYS_SQUALL_STRIKE", THUNDERSTORM, 22.0, 0.55, PHYS, 3, 1, 1),
+	_passive_skill("SKILL_PASSIVE_BULWARK_MASTER", MUD, 1.0, 3, "shield_cost", "SKILL_PASSIVE_SHIELD_COST_DESC"),
+	_with(_passive_skill("SKILL_PASSIVE_MUD_T4", MUD, 15.0, 4, "element_power", "SKILL_PASSIVE_ELEMENT_POWER_DESC"),
+		{"passive_element": MUD, "trainer": false}),
+	# Gewitter
+	_attack_skill("SKILL_THUNDERSTORM_PHYS_STORM_FIST", THUNDERSTORM, 60.0, 0.8, PHYS, 3, 3, 3),
+	_attack_skill("SKILL_THUNDERSTORM_MAG_CHAIN_LIGHTNING", THUNDERSTORM, 60.0, 0.8, MAG, 3, 3, 3),
 	_attack_skill("SKILL_THUNDERSTORM_MAG_STATIC_RAIN", THUNDERSTORM, 22.0, 0.55, MAG, 3, 1, 1),
-	_shield_skill("SKILL_THUNDERSTORM_ARMOR_RAIN_GUARD", THUNDERSTORM, 20.0, 0.5, PHYS, 3, 1, 1),
-	_shield_skill("SKILL_THUNDERSTORM_WARD_STORM_VEIL", THUNDERSTORM, 22.0, 0.55, MAG, 3, 1, 1),
+	# Vulkan
+	_attack_skill("SKILL_VOLCANO_PHYS_CALDERA_CRUSH", VOLCANO, 60.0, 0.8, PHYS, 3, 3, 3),
 	_attack_skill("SKILL_VOLCANO_PHYS_VOLCANIC_FIST", VOLCANO, 22.0, 0.55, PHYS, 3, 1, 1),
-	_attack_skill("SKILL_VOLCANO_MAG_FUME_BURST", VOLCANO, 20.0, 0.5, MAG, 3, 1, 1),
+	_shield_skill("SKILL_VOLCANO_ARMOR_BASALT_FORT", VOLCANO, 60.0, 0.8, PHYS, 3, 3, 3),
 	_shield_skill("SKILL_VOLCANO_ARMOR_LAVA_CRUST", VOLCANO, 22.0, 0.55, PHYS, 3, 1, 1),
-	_shield_skill("SKILL_VOLCANO_WARD_STEAM_VENT", VOLCANO, 22.0, 0.55, MAG, 3, 1, 1),
+	# Aschesturm
+	_attack_skill("SKILL_ASH_STORM_PHYS_CINDER_CLAW", ASH_STORM, 60.0, 0.8, PHYS, 3, 3, 3),
+	_attack_skill("SKILL_ASH_STORM_MAG_ASH_CYCLONE", ASH_STORM, 60.0, 0.8, MAG, 3, 3, 3),
 	_attack_skill("SKILL_ASH_STORM_PHYS_SOOT_STRIKE", ASH_STORM, 22.0, 0.55, PHYS, 3, 1, 1),
 	_attack_skill("SKILL_ASH_STORM_MAG_EMBER_GUST", ASH_STORM, 22.0, 0.55, MAG, 3, 1, 1),
+	# Sumpf
+	_attack_skill("SKILL_SWAMP_PHYS_ROOT_LASH", SWAMP, 55.0, 0.75, PHYS, 3, 3, 3),
+	_attack_skill("SKILL_SWAMP_MAG_MIASMA_CLOUD", SWAMP, 60.0, 0.8, MAG, 3, 3, 3),
+	_attack_skill("SKILL_SWAMP_MAG_SPORE_PUFF", SWAMP, 22.0, 0.55, MAG, 3, 1, 1),
+]
+# Kopfgeld-Ei-Attacken (Skills.BOUNTIES)
+var bounty_skills = []
+# Nur im Couvert der Bosse: Skills ab Stufe 2, die keine Art benutzt
+var reward_skills = [
+	# Feuer
+	_boon_skill("SKILL_FIRE_BOON_FOCUS_FLAME", FIRE, "crit_next", 50.0, -1, SELF, "atk", 3, 2, 1, "SKILL_BOON_CRIT_NEXT_DESC"),
+	# Dampf
+	_shield_skill("SKILL_STEAM_WARD_HAZE_SHIELD", STEAM, 20.0, 0.4, MAG, 2, 1, 1),
+	_shield_skill("SKILL_STEAM_ARMOR_VAPOR_PLATE", STEAM, 25.0, 0.45, PHYS, 3, 2, 1),
+	_shield_skill("SKILL_STEAM_WARD_FOG_BARRIER", STEAM, 28.0, 0.5, MAG, 3, 2, 1),
+	# Blitz
+	_shield_skill("SKILL_LIGHTNING_ARMOR_CHARGE_PLATE", LIGHTNING, 18.0, 0.35, PHYS, 2, 1, 1),
+	_shield_skill("SKILL_LIGHTNING_WARD_SPARK_FIELD", LIGHTNING, 25.0, 0.45, MAG, 3, 2, 1),
+	# Magma
+	_shield_skill("SKILL_MAGMA_WARD_HEAT_SHIMMER", MAGMA, 18.0, 0.35, MAG, 2, 1, 1),
+	_attack_skill("SKILL_MAGMA_MAG_MAGMA_BURST", MAGMA, 30.0, 0.5, MAG, 3, 2, 2),
+	_shield_skill("SKILL_MAGMA_WARD_EMBER_CRUST", MAGMA, 25.0, 0.45, MAG, 3, 2, 1),
+	# Eis
+	_shield_skill("SKILL_ICE_ARMOR_ICE_PLATE", ICE, 25.0, 0.45, PHYS, 3, 2, 1),
+	# Staub
+	_attack_skill("SKILL_DUST_MAG_DUST_SHOT", DUST, 20.0, 0.4, MAG, 2, 1, 1),
+	_shield_skill("SKILL_DUST_WARD_DUST_CLOAK", DUST, 18.0, 0.35, MAG, 2, 1, 1),
+	# Schlamm
+	_shield_skill("SKILL_MUD_ARMOR_CLAY_SHELL", MUD, 28.0, 0.5, PHYS, 3, 2, 1),
+	_with(_passive_skill("SKILL_PASSIVE_DEEP_VITALITY", MUD, 20.0, 3, "stat", "SKILL_PASSIVE_STAT_SELF_DESC"), {"passive_stat": "hp", "passive_scope": "self"}),
+	# Gewitter
+	_shield_skill("SKILL_THUNDERSTORM_ARMOR_STORM_PLATE", THUNDERSTORM, 55.0, 0.75, PHYS, 3, 3, 3),
+	_shield_skill("SKILL_THUNDERSTORM_WARD_CLOUD_DOME", THUNDERSTORM, 60.0, 0.8, MAG, 3, 3, 3),
+	_attack_skill("SKILL_THUNDERSTORM_PHYS_SQUALL_STRIKE", THUNDERSTORM, 22.0, 0.55, PHYS, 3, 1, 1),
+	_shield_skill("SKILL_THUNDERSTORM_ARMOR_RAIN_GUARD", THUNDERSTORM, 20.0, 0.5, PHYS, 3, 1, 1),
+	_shield_skill("SKILL_THUNDERSTORM_WARD_STORM_VEIL", THUNDERSTORM, 22.0, 0.55, MAG, 3, 1, 1),
+	# Vulkan
+	_attack_skill("SKILL_VOLCANO_MAG_PYROCLAST", VOLCANO, 55.0, 0.75, MAG, 3, 3, 3),
+	_shield_skill("SKILL_VOLCANO_WARD_GEYSER_SHIELD", VOLCANO, 60.0, 0.8, MAG, 3, 3, 3),
+	_attack_skill("SKILL_VOLCANO_MAG_FUME_BURST", VOLCANO, 20.0, 0.5, MAG, 3, 1, 1),
+	_shield_skill("SKILL_VOLCANO_WARD_STEAM_VENT", VOLCANO, 22.0, 0.55, MAG, 3, 1, 1),
+	_attack_skill("SKILL_VOLCANO_PHYS_MAGMA_TITAN", VOLCANO, 80.0, 1.0, PHYS, 4, 4, 3),
+	# Aschesturm
+	_shield_skill("SKILL_ASH_STORM_ARMOR_SLAG_ARMOR", ASH_STORM, 60.0, 0.8, PHYS, 3, 3, 3),
+	_shield_skill("SKILL_ASH_STORM_WARD_SOOT_VEIL", ASH_STORM, 55.0, 0.75, MAG, 3, 3, 3),
 	_shield_skill("SKILL_ASH_STORM_ARMOR_CINDER_SHELL", ASH_STORM, 22.0, 0.55, PHYS, 3, 1, 1),
 	_shield_skill("SKILL_ASH_STORM_WARD_SMOKE_SCREEN", ASH_STORM, 20.0, 0.5, MAG, 3, 1, 1),
+	# Sumpf
+	_shield_skill("SKILL_SWAMP_ARMOR_MANGROVE_WALL", SWAMP, 60.0, 0.8, PHYS, 3, 3, 3),
+	_shield_skill("SKILL_SWAMP_WARD_MARSH_MIST", SWAMP, 60.0, 0.8, MAG, 3, 3, 3),
 	_attack_skill("SKILL_SWAMP_PHYS_REED_WHIP", SWAMP, 20.0, 0.5, PHYS, 3, 1, 1),
-	_attack_skill("SKILL_SWAMP_MAG_SPORE_PUFF", SWAMP, 22.0, 0.55, MAG, 3, 1, 1),
 	_shield_skill("SKILL_SWAMP_ARMOR_MOSS_HIDE", SWAMP, 22.0, 0.55, PHYS, 3, 1, 1),
 	_shield_skill("SKILL_SWAMP_WARD_BOG_MIST", SWAMP, 22.0, 0.55, MAG, 3, 1, 1),
-	# Sonder-Fähigkeiten (todo.txt 1-4, 9-11)
-	_boon_skill("SKILL_FIRE_BOON_FOCUS_FLAME", FIRE, "crit_next", 50.0, -1, SELF, "atk", 3, 2, 1, "SKILL_BOON_CRIT_NEXT_DESC"),
-	_boon_skill("SKILL_LIGHTNING_BOON_OVERCHARGE", LIGHTNING, "crit", 50.0, 1, SELF, "atk", 4, 3, 2, "SKILL_BOON_CRIT_DESC"),
+	# Chaos
 	_boon_skill("SKILL_CHAOS_BOON_BATTLE_CRY", CHAOS, "taunt", 1.0, 0, SELF, "def", 2, 2, 1, "SKILL_BOON_TAUNT_DESC"),
-	_boon_skill("SKILL_AIR_BOON_TAILWIND", AIR, "extra_moves", 1.0, 3, ALLY, "speed", 3, 2, 2, "SKILL_BOON_EXTRA_MOVES_DESC"),
-	_boon_skill("SKILL_WATER_BOON_BLOOD_TIDE", WATER, "leech", 20.0, 1, ALLY, "hp", 3, 2, 2, "SKILL_BOON_LEECH_DESC"),
 	_cross_shield_skill("SKILL_CHAOS_WARD_IRON_WILL", CHAOS, 5.0, 0.4, MAG, 3, 2, 1),
 	_cross_shield_skill("SKILL_CHAOS_ARMOR_SPIRIT_GUARD", CHAOS, 5.0, 0.4, PHYS, 3, 2, 1),
-	# Passive (todo.txt 5-8, 12)
-	_with(_passive_skill("SKILL_PASSIVE_BATTLE_FERVOR", LIGHTNING, 20.0, 3, "stat", "SKILL_PASSIVE_STAT_SELF_DESC"), {"passive_stat": "atk", "passive_scope": "self"}),
-	_with(_passive_skill("SKILL_PASSIVE_STORM_SPIRIT", LIGHTNING, 20.0, 3, "stat", "SKILL_PASSIVE_STAT_SELF_DESC"), {"passive_stat": "s_atk", "passive_scope": "self"}),
-	_passive_skill("SKILL_PASSIVE_BULWARK_MASTER", MUD, 1.0, 3, "shield_cost", "SKILL_PASSIVE_SHIELD_COST_DESC"),
-	_with(_passive_skill("SKILL_PASSIVE_DEEP_VITALITY", MUD, 20.0, 3, "stat", "SKILL_PASSIVE_STAT_SELF_DESC"), {"passive_stat": "hp", "passive_scope": "self"}),
 	_passive_skill("SKILL_PASSIVE_PROVOKER", CHAOS, 1.0, 4, "taunt", "SKILL_PASSIVE_TAUNT_DESC"),
 ]
+
+# ─────────────────────────
+# Couvert der Bosse (Fähigkeiten-Belohnung): REWARD_SKILL_OFFERS Skills der Stufen 2-4 zur Auswahl, ohne Preis.
+# Gezogen wird aus reward_skills und dem gemeinsamen Pool (ohne Meilenstein-Skills), was in diesem Run noch niemand
+# aus einem Couvert gelernt hat. Die Stufe hängt von der Seltenheit des Teams ab (reward_tier_weights):
+# je seltener das Team, desto eher Stufe 4. Ein Team nur aus gewöhnlichen Monstern bekommt höchstens Stufe 3.
+const REWARD_SKILL_OFFERS := 3
+const REWARD_MIN_TIER := 2
+
+## Durchschnittliche Seltenheit des Teams: 0 = nur gewöhnliche ... 5 = nur mythische (Enums.MON_RARITY)
+func team_rarity() -> float:
+	if State.mons.is_empty():
+		return 0.0
+	var total := 0.0
+	for mon in State.mons:
+		total += Monmap.rarity_of(mon._name)
+	return total / State.mons.size()
+
+## Gewicht pro Stufe im Couvert. Stufe 4 gibt es erst, wenn mindestens ein Monster seltener als gewöhnlich ist.
+##   Team im Schnitt    Stufe 2  Stufe 3  Stufe 4
+##   gewöhnlich (0)       50       35        0
+##   ungewöhnlich (1)     44       37       13
+##   selten (2)           38       39       21
+##   episch (3)           32       41       29
+##   legendär (4)         26       43       37
+func reward_tier_weights(rarity: float) -> Dictionary:
+	return {
+		2: maxf(50.0 - 6.0 * rarity, 10.0),
+		3: 35.0 + 2.0 * rarity,
+		4: 0.0 if rarity <= 0.0 else 5.0 + 8.0 * rarity,
+	}
+
+## Alles, was ein Couvert gerade anbieten kann (ab REWARD_MIN_TIER, in diesem Run noch nicht aus einem Couvert gelernt)
+func reward_pool() -> Array:
+	var seen := {}
+	var pool := []
+	for skill in reward_skills + pool_skills():
+		if skill.get("tier", 1) < REWARD_MIN_TIER or seen.has(skill.name) or State.taught_reward_skills.has(skill.name):
+			continue
+		seen[skill.name] = true
+		pool.append(skill)
+	return pool
+
+# Auswahl fürs Couvert: Stufe nach der Seltenheit des Teams, mindestens ein Skill für das Team sofort einsetzbar,
+# sofern es so einen noch gibt.
+func reward_offers() -> Array:
+	var weights := reward_tier_weights(team_rarity())
+	var pool: Array = reward_pool().filter(func(skill): return weights.get(skill.tier, 0.0) > 0.0)
+	var offers := []
+	for i in REWARD_SKILL_OFFERS:
+		var skill = _pick_reward(pool, weights)
+		if skill == null:
+			break
+		offers.append(skill)
+		pool.erase(skill)
+	var usable := func(skill): return State.mons.any(func(mon): return can_use(mon, skill))
+	if not offers.is_empty() and not offers.any(usable):
+		var fitting := pool.filter(usable)
+		if not fitting.is_empty():
+			offers[0] = _pick_reward(fitting, weights)
+	return offers.map(func(skill): return get_skill(skill.name))
+
+## Zieht zuerst eine Stufe nach Gewicht (nur Stufen, die es im Pool gibt), dann zufällig einen Skill dieser Stufe
+func _pick_reward(pool: Array, weights: Dictionary):
+	if pool.is_empty():
+		return null
+	var by_tier := {}
+	for skill in pool:
+		by_tier.get_or_add(skill.tier, []).append(skill)
+	var total := 0.0
+	for tier in by_tier:
+		total += weights.get(tier, 0.0)
+	var roll := randf() * total
+	for tier in by_tier:
+		roll -= weights.get(tier, 0.0)
+		if roll <= 0.0:
+			return by_tier[tier].pick_random()
+	return pool.pick_random()
+
+# Aufstiegs-Skills: Trinkt ein Monster einen Element-Trank und steigt dadurch zu einem Kombi-Element auf,
+# kann es den Skill genau dieses Elements lernen (Treasure.add_potion_card, ElementGainOverlay). Vorerst leer.
+var ascension_skills = []
+
+# ─────────────────────────
+# Entwürfe: Skills der Stufe 1, die keine Art benutzt, und neue Skills, bis tools/skill_verteilung.js sie einsortiert.
+# get_skill findet sie, das Wiki listet sie unter "Unbenutzt". Werte-Tabelle: siehe oben bei den Skill-Listen.
+var draft_skills = []
 
 ## Aufstiegs-Skill für genau dieses Kombi-Element (frische Kopie), {} für Grundelemente und Chaos
 func ascension_skill(nature: int) -> Dictionary:
@@ -1327,6 +1500,46 @@ func _cross_shield_skill(skill_name: String, nature: int, value: float, scaling:
 		"tier": tier,
 		"shop_cost": {"min": 5 * tier, "max": 15 * tier},
 		"handle": func(props): add_shield(props)
+	}
+
+## Buff auf ein eigenes Monster (add_buff): value % mehr auf stat für turns eigene Züge des Ziels
+func _buff_skill(skill_name: String, nature: int, stat: String, value: float, turns: int, tier: int, cooldown: int, cost: int) -> Dictionary:
+	return {
+		"cost": cost,
+		"name": skill_name,
+		"nature": nature,
+		"value": value,
+		"cooldown": cooldown,
+		"damage_type": Enums.SKILL_DAMAGE_TYPE.ABILITY,
+		"effect": "buff",
+		"buff_stat": stat,
+		"buff_turns": turns,
+		"description": "SKILL_BUFF_SINGLE_DESC",
+		"target": Enums.CARD_TARGETS.SINGLE_FRIEND,
+		"scouted": false,
+		"tier": tier,
+		"shop_cost": {"min": 5 * tier, "max": 15 * tier},
+		"handle": func(props): add_buff(props)
+	}
+
+## Buff auf jedes eigene Monster (add_buff pro Monster)
+func _team_buff_skill(skill_name: String, nature: int, stat: String, value: float, turns: int, tier: int, cooldown: int, cost: int) -> Dictionary:
+	return {
+		"cost": cost,
+		"name": skill_name,
+		"nature": nature,
+		"value": value,
+		"cooldown": cooldown,
+		"damage_type": Enums.SKILL_DAMAGE_TYPE.ABILITY,
+		"effect": "buff",
+		"buff_stat": stat,
+		"buff_turns": turns,
+		"description": "SKILL_BUFF_TEAM_DESC",
+		"target": Enums.CARD_TARGETS.TEAM_FRIEND,
+		"scouted": false,
+		"tier": tier,
+		"shop_cost": {"min": 5 * tier, "max": 15 * tier},
+		"handle": func(props): add_buff(props)
 	}
 
 ## Sonder-Verstärkung (add_boon): boon = Art (BOON_KINDS), value = Stärke, turns = eigene Züge des Ziels (-1 = bis verbraucht),

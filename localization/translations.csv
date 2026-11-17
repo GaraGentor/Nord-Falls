@@ -401,7 +401,6 @@ MONSTER_54,Shardhulk,Splitterkoloss
 MONSTER_55,Steelshark,Stahlhai
 MONSTER_56,Hauntshack,Spukhütte
 MONSTER_57,Mantablade,Rochenklinge
-MONSTER_58,Gloomreaver,Schattenreißer
 MONSTER_59,Sandsouls,Sandseelen
 MONSTER_60,Bogwraith,Moorgeist
 MONSTER_61,Vinemaw,Rankenrachen
@@ -1199,3 +1198,42 @@ SKILL_SWAMP_PHYS_REED_WHIP,Reed Whip,Schilfpeitsche
 SKILL_SWAMP_MAG_SPORE_PUFF,Spore Puff,Sporenwolke
 SKILL_SWAMP_ARMOR_MOSS_HIDE,Moss Hide,Moospanzer
 SKILL_SWAMP_WARD_BOG_MIST,Bog Mist,Sumpfdunst
+SKILL_FIRE_PHYS_BLAZE_RUSH_SWIFT,Swift Blaze Rush,Flinker Glutansturm
+SKILL_FIRE_MAG_FIREBALL_SWIFT,Quick Fireball,Schnellfeuerball
+SKILL_WATER_MAG_HYDRO_LANCE_SWIFT,Swift Hydro Lance,Flinke Hydrolanze
+SKILL_EARTH_PHYS_QUAKE_STOMP_SWIFT,Swift Quake Stomp,Flinker Bebenstampfer
+SKILL_EARTH_MAG_GEO_PULSE_SWIFT,Quick Geo Pulse,Schneller Geopuls
+SKILL_AIR_PHYS_CYCLONE_CLAW_SWIFT,Swift Cyclone Claw,Flinke Zyklonklaue
+SKILL_AIR_MAG_TEMPEST_RAY_SWIFT,Quick Tempest Ray,Schneller Sturmstrahl
+SKILL_EARTH_ARMOR_GRANITE_BASTION_SWIFT,Instant Bastion,Blitzbastion
+SKILL_FIRE_BUFF_ATK,Kindle,Entfachen
+SKILL_FIRE_BUFF_S_ATK,Ember Mind,Glutsinn
+SKILL_WATER_BUFF_ATK,Riptide Strength,Sogkraft
+SKILL_WATER_BUFF_DEF,Coral Guard,Korallenhut
+SKILL_WATER_BUFF_S_ATK,Tide Insight,Gezeitensinn
+SKILL_WATER_BUFF_S_DEF,Tide Shelter,Gezeitenhort
+SKILL_EARTH_BUFF_ATK,Rock Fury,Felsenwut
+SKILL_EARTH_BUFF_DEF,Ironbark,Eisenborke
+SKILL_EARTH_BUFF_S_ATK,Geode Gleam,Geodenglanz
+SKILL_AIR_BUFF_ATK,Gale Edge,Böenschneide
+SKILL_AIR_BUFF_DEF,Wind Guard,Windwehr
+SKILL_AIR_BUFF_S_ATK,Storm Clarity,Sturmklarheit
+SKILL_FIRE_BUFF_TEAM_S_ATK,Blaze Anthem,Flammenhymne
+SKILL_EARTH_BUFF_TEAM_ATK,War Stomp,Kriegsstampfen
+SKILL_EARTH_BUFF_TEAM_DEF,Mountain Chant,Berggesang
+SKILL_EARTH_BUFF_TEAM_S_ATK,Crystal Choir,Kristallchor
+SKILL_MAGMA_BUFF_T4,Forge Fury,Schmiedezorn
+SKILL_MUD_BUFF_T4,Mire Bulwark,Sumpfwall
+SKILL_DUST_BUFF_T4,Desert Mirage,Wüstenspiegelung
+SKILL_ICE_BUFF_T4,Prism Focus,Prismenfokus
+SKILL_PASSIVE_FIRE_POWER,Inner Blaze,Innere Glut
+SKILL_PASSIVE_AIR_POWER,Wind Mind,Windsinn
+SKILL_PASSIVE_EARTH_POWER,Stone Soul,Steinseele
+SKILL_PASSIVE_WATER_POWER,Still Depths,Stille Tiefe
+SKILL_PASSIVE_LIGHTNING_T4,Static Core,Statischer Kern
+SKILL_PASSIVE_MAGMA_T4,Molten Heart,Glutkern
+SKILL_PASSIVE_ICE_T4,Eternal Frost,Ewiger Frost
+SKILL_PASSIVE_DUST_T4,Eye of the Sandstorm,Auge des Sandsturms
+SKILL_PASSIVE_MUD_T4,Heart of the Mire,Herz des Moores
+SKILL_STEAM_BUFF_T4,Thermal Veil,Thermalschleier
+SKILL_PASSIVE_STEAM_T4,Pressure Core,Druckkern

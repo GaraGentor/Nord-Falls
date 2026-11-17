@@ -21,9 +21,9 @@ TEIL A: DEUTUNG DER REGELN
 - Kombi-Elemente: jede Art ab Selten bekommt genau EIN Neben-Element (Zweier-Kombi mit ihrem Grundelement), nach Aussehen.
   Legendär/Mythisch zusätzlich eine Dreier-Kombi, die das Neben-Element enthält.
   Steht in monmap.gd als "affinity" bzw. "affinity_triple" (z. B. Enums.MON_TYPES.EARTH | Enums.MON_TYPES.WATER).
-    Selten/Episch: nur die leichten Kombi-Skills (Stufe 2 = niedrigste Kombi-Stufe), nur über Meilensteine.
-    Legendär/Mythisch: starke Kombi-Skills (Stufe 3), Kombi-Top (Stufe 4), Dreier-Kombis.
-    Mythisch wie Legendär, nur der Stufe-4-Ei-Skill ist der Dreier-Top statt des Zweier-Tops.
+	Selten/Episch: nur die leichten Kombi-Skills (Stufe 2 = niedrigste Kombi-Stufe), nur über Meilensteine.
+	Legendär/Mythisch: starke Kombi-Skills (Stufe 3), Kombi-Top (Stufe 4), Dreier-Kombis.
+	Mythisch wie Legendär, nur der Stufe-4-Ei-Skill ist der Dreier-Top statt des Zweier-Tops.
 - Meilensteine werden besser mit der Schwierigkeit: boss_1 < boss_5 < game_win.
 - "Schwach" = die Nutzlos-/WEAK-Skills und die Stufe-1-Standards. Epische/Legendäre bekommen keine davon.
   Damit jede stärkere Art in jedem Zug angreifen kann, haben Selten/Episch einen Kleinen Punch/Kleine Kanone (5 + 0,3, CD 0),
@@ -36,17 +36,17 @@ TEIL B: SCHABLONE PRO SELTENHEIT
 ================================
 (K1-K4 = Kategorie 1-4, "St.2" = Stufe-2-Skill des Grundelements in dieser Kategorie, BA = beste Angriffskategorie)
 
-                Start (3)                          Ei-Attacken (Fangen & Opfern)                 Meilensteine boss_1 / boss_5 / game_win
+				Start (3)                          Ei-Attacken (Fangen & Opfern)                 Meilensteine boss_1 / boss_5 / game_win
   Gewöhnlich    wie heute (Standard nach K1)        K4 schwache Form, K3 St.2, K1 St.2           K2 St.2 / K1 St.3 / K2 St.3
-                                                    (keine Kombis, keine Buffs, nur 2x St.3)
+													(keine Kombis, keine Buffs, nur 2x St.3)
   Ungewöhnlich  K1 verstärkt (Punch/Kanone, nur     K4 schwache Form, K2 St.2, K1 St.3,          K3 St.2 / K1 St.2 / K2 St.3
-                wenn Angriff), BA Stoß CD 0, K2     Buff St.2 auf den K1-Wert
+				wenn Angriff), BA Stoß CD 0, K2     Buff St.2 auf den K1-Wert
   Selten        K1 St.2, K2 verstärkt, Kleiner      K1 St.3, K2 St.3, K3 St.2,                   K2 St.2 / Kombi leicht K2 / Kombi leicht K1
-                Punch/Kanone (BA, CD 0)             Buff St.2 (Angreifer) oder Passiv St.3 (Tank)
+				Punch/Kanone (BA, CD 0)             Buff St.2 (Angreifer) oder Passiv St.3 (Tank)
   Episch        K1 St.3, K2 St.2, Kleiner           K2 St.3, K1 St.3 schnell (CD 0), K3 St.3,    Kombi leicht K2 / Kombi leicht K1 / Passiv St.3
-                Punch/Kanone (BA, CD 0)             Buff St.3 (Team oder Sonder-Buff)
+				Punch/Kanone (BA, CD 0)             Buff St.3 (Team oder Sonder-Buff)
   Legendär      K1 St.3, K2 St.3, BA St.3 schnell   Kombi stark K1, Kombi stark K2,              Dreier leicht K1 / Dreier stark K1 / Passiv St.4
-                                                    Kombi-Top St.4, Buff St.4
+													Kombi-Top St.4, Buff St.4
   Mythisch      wie Legendär                        wie Legendär, aber Dreier-Top St.4           Dreier stark K1 / Kombi-Top St.4 / Passiv St.4
 
 Pro Art: 3 Start-Skills + 3-4 Ei-Attacken + 3 Meilensteine = bis zu 10 Optionen für 6 Plätze (MAX_SKILLS).
@@ -64,44 +64,23 @@ in die passende Liste umziehen (egg_skills / defensive_skills / buff_skills / pa
 Werte sind Vorschläge.
 
 ### AUTOMATISCH ERZEUGT AB HIER (tools/skill_verteilung.js) ###
-Neue Skills, die noch fehlen (37). Sobald es sie in skills.gd gibt, trägt der nächste Lauf sie in monmap.gd ein:
-  AIR_BUFF_ATK                         Stufe 2, Buff: ein eigenes Monster Ang. +25 % für 2 Züge, CD 2, 1 Aktion
-  AIR_BUFF_DEF                         Stufe 2, Buff: ein eigenes Monster Vert. +25 % für 2 Züge, CD 2, 1 Aktion
-  AIR_BUFF_S_ATK                       Stufe 2, Buff: ein eigenes Monster Sp. Ang. +25 % für 2 Züge, CD 2, 1 Aktion
-  AIR_MAG_TEMPEST_RAY_SWIFT            Stufe 3, schnelle Variante von TEMPEST_RAY: CD 0, 1 Aktion, ca. 12 + 0,30 (Element-Charakter +)
-  AIR_PHYS_CYCLONE_CLAW_SWIFT          Stufe 3, schnelle Variante von CYCLONE_CLAW: CD 0, 1 Aktion, ca. 12 + 0,30 (Element-Charakter +)
-  DUST_BUFF_T4                         Stufe 4, Kombi-Buff: Team +15-18 % oder Einzel +35 % für 3 Züge (nach Kombi-Thema), CD 3, 2 Aktionen, "trainer": false
-  EARTH_ARMOR_GRANITE_BASTION_SWIFT    Stufe 3, schnelle Variante von GRANITE_BASTION: CD 0, 1 Aktion, ca. 12 + 0,30 (Element-Charakter +)
-  EARTH_BUFF_ATK                       Stufe 2, Buff: ein eigenes Monster Ang. +25 % für 2 Züge, CD 2, 1 Aktion
-  EARTH_BUFF_DEF                       Stufe 2, Buff: ein eigenes Monster Vert. +25 % für 2 Züge, CD 2, 1 Aktion
-  EARTH_BUFF_S_ATK                     Stufe 2, Buff: ein eigenes Monster Sp. Ang. +25 % für 2 Züge, CD 2, 1 Aktion
-  EARTH_BUFF_TEAM_ATK                  Stufe 3, Buff: ganzes Team Ang. +12 % für 2 Züge, CD 3, 1 Aktion
-  EARTH_BUFF_TEAM_DEF                  Stufe 3, Buff: ganzes Team Vert. +12 % für 2 Züge, CD 3, 1 Aktion
-  EARTH_BUFF_TEAM_S_ATK                Stufe 3, Buff: ganzes Team Sp. Ang. +12 % für 2 Züge, CD 3, 1 Aktion
-  EARTH_MAG_GEO_PULSE_SWIFT            Stufe 3, schnelle Variante von GEO_PULSE: CD 0, 1 Aktion, ca. 12 + 0,30 (Element-Charakter +)
-  EARTH_PHYS_QUAKE_STOMP_SWIFT         Stufe 3, schnelle Variante von QUAKE_STOMP: CD 0, 1 Aktion, ca. 12 + 0,30 (Element-Charakter +)
-  FIRE_BUFF_ATK                        Stufe 2, Buff: ein eigenes Monster Ang. +25 % für 2 Züge, CD 2, 1 Aktion
-  FIRE_BUFF_S_ATK                      Stufe 2, Buff: ein eigenes Monster Sp. Ang. +25 % für 2 Züge, CD 2, 1 Aktion
-  FIRE_BUFF_TEAM_S_ATK                 Stufe 3, Buff: ganzes Team Sp. Ang. +12 % für 2 Züge, CD 3, 1 Aktion
-  FIRE_MAG_FIREBALL_SWIFT              Stufe 3, schnelle Variante von FIREBALL: CD 0, 1 Aktion, ca. 12 + 0,30 (Element-Charakter +)
-  FIRE_PHYS_BLAZE_RUSH_SWIFT           Stufe 3, schnelle Variante von BLAZE_RUSH: CD 0, 1 Aktion, ca. 12 + 0,30 (Element-Charakter +)
-  ICE_BUFF_T4                          Stufe 4, Kombi-Buff: Team +15-18 % oder Einzel +35 % für 3 Züge (nach Kombi-Thema), CD 3, 2 Aktionen, "trainer": false
-  MAGMA_BUFF_T4                        Stufe 4, Kombi-Buff: Team +15-18 % oder Einzel +35 % für 3 Züge (nach Kombi-Thema), CD 3, 2 Aktionen, "trainer": false
-  MUD_BUFF_T4                          Stufe 4, Kombi-Buff: Team +15-18 % oder Einzel +35 % für 3 Züge (nach Kombi-Thema), CD 3, 2 Aktionen, "trainer": false
-  PASSIVE_AIR_POWER                    Stufe 3, Passiv magic_power (magische Angriffe +10 %)
-  PASSIVE_DUST_T4                      Stufe 4, Passiv: z. B. Resonanz (Element-Effekt +30 %) plus Werte-Bonus +10 %, "trainer": false, "wild": false
-  PASSIVE_EARTH_POWER                  Stufe 3, Passiv shield_power (Rüstung +10 %)
-  PASSIVE_FIRE_POWER                   Stufe 3, Passiv element_power (Feuer-Angriffe +10 %)
-  PASSIVE_ICE_T4                       Stufe 4, Passiv: z. B. Resonanz (Element-Effekt +30 %) plus Werte-Bonus +10 %, "trainer": false, "wild": false
-  PASSIVE_LIGHTNING_T4                 Stufe 4, Passiv: z. B. Resonanz (Element-Effekt +30 %) plus Werte-Bonus +10 %, "trainer": false, "wild": false
-  PASSIVE_MAGMA_T4                     Stufe 4, Passiv: z. B. Resonanz (Element-Effekt +30 %) plus Werte-Bonus +10 %, "trainer": false, "wild": false
-  PASSIVE_MUD_T4                       Stufe 4, Passiv: z. B. Resonanz (Element-Effekt +30 %) plus Werte-Bonus +10 %, "trainer": false, "wild": false
-  PASSIVE_WATER_POWER                  Stufe 3, Passiv s_shield_power (Magie-Schilde +10 %)
-  WATER_BUFF_ATK                       Stufe 2, Buff: ein eigenes Monster Ang. +25 % für 2 Züge, CD 2, 1 Aktion
-  WATER_BUFF_DEF                       Stufe 2, Buff: ein eigenes Monster Vert. +25 % für 2 Züge, CD 2, 1 Aktion
-  WATER_BUFF_S_ATK                     Stufe 2, Buff: ein eigenes Monster Sp. Ang. +25 % für 2 Züge, CD 2, 1 Aktion
-  WATER_BUFF_S_DEF                     Stufe 2, Buff: ein eigenes Monster Sp. Vert. +25 % für 2 Züge, CD 2, 1 Aktion
-  WATER_MAG_HYDRO_LANCE_SWIFT          Stufe 3, schnelle Variante von HYDRO_LANCE: CD 0, 1 Aktion, ca. 12 + 0,30 (Element-Charakter +)
+Neue Skills, die noch fehlen (0). Sobald es sie in skills.gd gibt, trägt der nächste Lauf sie in monmap.gd ein:
+  keine
+
+Skill-Listen in skills.gd nach diesem Lauf:
+  draft_skills       0
+  reward_skills      37
+  milestone_skills   44
+  area_skills        0
+  passive_skills     2
+  buff_skills        24
+  defensive_skills   24
+  egg_skills         42
+
+Nur im Couvert (reward_skills, von keiner Art benutzt), dazu kommt der gemeinsame Pool ab Stufe 2:
+  Stufe 2: STEAM_WARD_HAZE_SHIELD, LIGHTNING_ARMOR_CHARGE_PLATE, MAGMA_WARD_HEAT_SHIMMER, DUST_MAG_DUST_SHOT, DUST_WARD_DUST_CLOAK, CHAOS_BOON_BATTLE_CRY
+  Stufe 3: FIRE_BOON_FOCUS_FLAME, STEAM_ARMOR_VAPOR_PLATE, STEAM_WARD_FOG_BARRIER, LIGHTNING_WARD_SPARK_FIELD, MAGMA_MAG_MAGMA_BURST, MAGMA_WARD_EMBER_CRUST, ICE_ARMOR_ICE_PLATE, MUD_ARMOR_CLAY_SHELL, PASSIVE_DEEP_VITALITY, THUNDERSTORM_ARMOR_STORM_PLATE, THUNDERSTORM_WARD_CLOUD_DOME, THUNDERSTORM_PHYS_SQUALL_STRIKE, THUNDERSTORM_ARMOR_RAIN_GUARD, THUNDERSTORM_WARD_STORM_VEIL, VOLCANO_MAG_PYROCLAST, VOLCANO_WARD_GEYSER_SHIELD, VOLCANO_MAG_FUME_BURST, VOLCANO_WARD_STEAM_VENT, ASH_STORM_ARMOR_SLAG_ARMOR, ASH_STORM_WARD_SOOT_VEIL, ASH_STORM_ARMOR_CINDER_SHELL, ASH_STORM_WARD_SMOKE_SCREEN, SWAMP_ARMOR_MANGROVE_WALL, SWAMP_WARD_MARSH_MIST, SWAMP_PHYS_REED_WHIP, SWAMP_ARMOR_MOSS_HIDE, SWAMP_WARD_BOG_MIST, CHAOS_WARD_IRON_WILL, CHAOS_ARMOR_SPIRIT_GUARD
+  Stufe 4: VOLCANO_PHYS_MAGMA_TITAN, PASSIVE_PROVOKER
 
 
 TEIL D: VERTEILUNG PRO ART
@@ -226,103 +205,103 @@ UNGEWÖHNLICH (17 Arten)
 #3 Schattflaum  [Ungewöhnlich, AIR]
   Werte: KP 12 | Ang 8 | Vert 12 | SpAng 27 | SpVert 21 | Init 20   Reihenfolge: Sp. Ang. > Sp. Vert. > Vert. > Ang.
   Start:      AIR_MAG_CANNON, AIR_MAG_LIGHT_THRUST, AIR_WARD_LIGHT
-  Ei-Attacke: AIR_PHYS_BACKHAND, AIR_WARD_BREEZE_VEIL, AIR_MAG_TEMPEST_RAY, *AIR_BUFF_S_ATK
+  Ei-Attacke: AIR_PHYS_BACKHAND, AIR_WARD_BREEZE_VEIL, AIR_MAG_TEMPEST_RAY, AIR_BUFF_S_ATK
   Meilenst.:  boss_1 AIR_ARMOR_DRAFT_GUARD | boss_5 AIR_MAG_WIND_BLADE | game_win AIR_WARD_SKY_DOME
 
 #8 Glutmolch  [Ungewöhnlich, FIRE]
   Werte: KP 17 | Ang 16 | Vert 15 | SpAng 24 | SpVert 14 | Init 14   Reihenfolge: Sp. Ang. > Ang. > Vert. > Sp. Vert.
   Start:      FIRE_MAG_CANNON, FIRE_MAG_LIGHT_THRUST, FIRE_PHYS_LIGHT_STRIKE
-  Ei-Attacke: FIRE_WARD_PLAIN, FIRE_PHYS_FLAME_FIST, FIRE_MAG_FIREBALL, *FIRE_BUFF_S_ATK
+  Ei-Attacke: FIRE_WARD_PLAIN, FIRE_PHYS_FLAME_FIST, FIRE_MAG_FIREBALL, FIRE_BUFF_S_ATK
   Meilenst.:  boss_1 FIRE_ARMOR_CINDER_PLATE | boss_5 FIRE_MAG_SPARK_SHOT | game_win FIRE_PHYS_BLAZE_RUSH
 
 #9 Quallolotl  [Ungewöhnlich, WATER]
   Werte: KP 24 | Ang 10 | Vert 14 | SpAng 20 | SpVert 22 | Init 10   Reihenfolge: Sp. Vert. > Sp. Ang. > Vert. > Ang.
   Start:      WATER_WARD_LIGHT, WATER_MAG_LIGHT_THRUST, WATER_MAG_LIGHT_STRIKE
-  Ei-Attacke: WATER_PHYS_BACKHAND, WATER_MAG_BUBBLE_BEAM, WATER_WARD_TIDAL_DOME, *WATER_BUFF_S_DEF
+  Ei-Attacke: WATER_PHYS_BACKHAND, WATER_MAG_BUBBLE_BEAM, WATER_WARD_TIDAL_DOME, WATER_BUFF_S_DEF
   Meilenst.:  boss_1 WATER_ARMOR_SHELL | boss_5 WATER_WARD_MIST_VEIL | game_win WATER_MAG_HYDRO_LANCE
 
 #15 Nebelspuk  [Ungewöhnlich, AIR]
   Werte: KP 14 | Ang 6 | Vert 14 | SpAng 26 | SpVert 24 | Init 16   Reihenfolge: Sp. Ang. > Sp. Vert. > Vert. > Ang.
   Start:      AIR_MAG_CANNON, AIR_MAG_LIGHT_THRUST, AIR_WARD_LIGHT
-  Ei-Attacke: AIR_PHYS_BACKHAND, AIR_WARD_BREEZE_VEIL, AIR_MAG_TEMPEST_RAY, *AIR_BUFF_S_ATK
+  Ei-Attacke: AIR_PHYS_BACKHAND, AIR_WARD_BREEZE_VEIL, AIR_MAG_TEMPEST_RAY, AIR_BUFF_S_ATK
   Meilenst.:  boss_1 AIR_ARMOR_DRAFT_GUARD | boss_5 AIR_MAG_WIND_BLADE | game_win AIR_WARD_SKY_DOME
 
 #17 Glutskorpion  [Ungewöhnlich, FIRE]
   Werte: KP 16 | Ang 24 | Vert 22 | SpAng 14 | SpVert 12 | Init 12   Reihenfolge: Ang. > Vert. > Sp. Ang. > Sp. Vert.
   Start:      FIRE_PHYS_PUNCH, FIRE_PHYS_LIGHT_THRUST, FIRE_ARMOR_LIGHT
-  Ei-Attacke: FIRE_WARD_PLAIN, FIRE_ARMOR_CINDER_PLATE, FIRE_PHYS_BLAZE_RUSH, *FIRE_BUFF_ATK
+  Ei-Attacke: FIRE_WARD_PLAIN, FIRE_ARMOR_CINDER_PLATE, FIRE_PHYS_BLAZE_RUSH, FIRE_BUFF_ATK
   Meilenst.:  boss_1 FIRE_MAG_SPARK_SHOT | boss_5 FIRE_PHYS_FLAME_FIST | game_win FIRE_ARMOR_FLAME_WALL
 
 #20 Dampfhorn  [Ungewöhnlich, WATER]
   Werte: KP 22 | Ang 14 | Vert 22 | SpAng 18 | SpVert 16 | Init 8   Reihenfolge: Vert. > Sp. Ang. > Sp. Vert. > Ang.
   Start:      WATER_ARMOR_LIGHT, WATER_MAG_LIGHT_THRUST, WATER_MAG_LIGHT_STRIKE
-  Ei-Attacke: WATER_PHYS_BACKHAND, WATER_MAG_BUBBLE_BEAM, WATER_ARMOR_CORAL_WALL, *WATER_BUFF_DEF
+  Ei-Attacke: WATER_PHYS_BACKHAND, WATER_MAG_BUBBLE_BEAM, WATER_ARMOR_CORAL_WALL, WATER_BUFF_DEF
   Meilenst.:  boss_1 WATER_WARD_MIST_VEIL | boss_5 WATER_ARMOR_SHELL | game_win WATER_MAG_HYDRO_LANCE
 
 #24 Voltkäfer  [Ungewöhnlich, AIR]
   Werte: KP 14 | Ang 22 | Vert 24 | SpAng 14 | SpVert 12 | Init 14   Reihenfolge: Vert. > Ang. > Sp. Ang. > Sp. Vert.
   Start:      AIR_ARMOR_LIGHT, AIR_PHYS_LIGHT_THRUST, AIR_PHYS_LIGHT_STRIKE
-  Ei-Attacke: AIR_WARD_PLAIN, AIR_PHYS_GUST_KICK, AIR_ARMOR_GALE_WALL, *AIR_BUFF_DEF
+  Ei-Attacke: AIR_WARD_PLAIN, AIR_PHYS_GUST_KICK, AIR_ARMOR_GALE_WALL, AIR_BUFF_DEF
   Meilenst.:  boss_1 AIR_MAG_WIND_BLADE | boss_5 AIR_ARMOR_DRAFT_GUARD | game_win AIR_PHYS_CYCLONE_CLAW
 
 #26 Aschwirbel  [Ungewöhnlich, AIR]
   Werte: KP 12 | Ang 10 | Vert 12 | SpAng 26 | SpVert 18 | Init 22   Reihenfolge: Sp. Ang. > Sp. Vert. > Vert. > Ang.
   Start:      AIR_MAG_CANNON, AIR_MAG_LIGHT_THRUST, AIR_WARD_LIGHT
-  Ei-Attacke: AIR_PHYS_BACKHAND, AIR_WARD_BREEZE_VEIL, AIR_MAG_TEMPEST_RAY, *AIR_BUFF_S_ATK
+  Ei-Attacke: AIR_PHYS_BACKHAND, AIR_WARD_BREEZE_VEIL, AIR_MAG_TEMPEST_RAY, AIR_BUFF_S_ATK
   Meilenst.:  boss_1 AIR_ARMOR_DRAFT_GUARD | boss_5 AIR_MAG_WIND_BLADE | game_win AIR_WARD_SKY_DOME
 
 #36 Staubgreifer  [Ungewöhnlich, EARTH]
   Werte: KP 12 | Ang 22 | Vert 12 | SpAng 16 | SpVert 14 | Init 24   Reihenfolge: Ang. > Sp. Ang. > Sp. Vert. > Vert.
   Start:      EARTH_PHYS_PUNCH, EARTH_PHYS_LIGHT_THRUST, EARTH_MAG_LIGHT_STRIKE
-  Ei-Attacke: EARTH_ARMOR_PLAIN, EARTH_MAG_PEBBLE_STORM, EARTH_PHYS_QUAKE_STOMP, *EARTH_BUFF_ATK
+  Ei-Attacke: EARTH_ARMOR_PLAIN, EARTH_MAG_PEBBLE_STORM, EARTH_PHYS_QUAKE_STOMP, EARTH_BUFF_ATK
   Meilenst.:  boss_1 EARTH_WARD_CLAY_SEAL | boss_5 EARTH_PHYS_BOULDER_BASH | game_win EARTH_MAG_GEO_PULSE
 
 #42 Smogfaust  [Ungewöhnlich, AIR]
   Werte: KP 16 | Ang 24 | Vert 14 | SpAng 16 | SpVert 14 | Init 16   Reihenfolge: Ang. > Sp. Ang. > Vert. > Sp. Vert.
   Start:      AIR_PHYS_PUNCH, AIR_PHYS_LIGHT_THRUST, AIR_MAG_LIGHT_STRIKE
-  Ei-Attacke: AIR_WARD_PLAIN, AIR_MAG_WIND_BLADE, AIR_PHYS_CYCLONE_CLAW, *AIR_BUFF_ATK
+  Ei-Attacke: AIR_WARD_PLAIN, AIR_MAG_WIND_BLADE, AIR_PHYS_CYCLONE_CLAW, AIR_BUFF_ATK
   Meilenst.:  boss_1 AIR_ARMOR_DRAFT_GUARD | boss_5 AIR_PHYS_GUST_KICK | game_win AIR_MAG_TEMPEST_RAY
 
 #47 Schwertflosser  [Ungewöhnlich, WATER]
   Werte: KP 13 | Ang 27 | Vert 12 | SpAng 14 | SpVert 12 | Init 22   Reihenfolge: Ang. > Sp. Ang. > Vert. > Sp. Vert.
   Start:      WATER_PHYS_PUNCH, WATER_PHYS_LIGHT_THRUST, WATER_MAG_LIGHT_STRIKE
-  Ei-Attacke: WATER_WARD_PLAIN, WATER_MAG_BUBBLE_BEAM, WATER_PHYS_BREAKER, *WATER_BUFF_ATK
+  Ei-Attacke: WATER_WARD_PLAIN, WATER_MAG_BUBBLE_BEAM, WATER_PHYS_BREAKER, WATER_BUFF_ATK
   Meilenst.:  boss_1 WATER_ARMOR_SHELL | boss_5 WATER_PHYS_TIDE_SLAP | game_win WATER_MAG_HYDRO_LANCE
 
 #50 Keulenschwanz  [Ungewöhnlich, EARTH]
   Werte: KP 22 | Ang 22 | Vert 28 | SpAng 6 | SpVert 14 | Init 8   Reihenfolge: Vert. > Ang. > Sp. Vert. > Sp. Ang.
   Start:      EARTH_ARMOR_LIGHT, EARTH_PHYS_LIGHT_THRUST, EARTH_PHYS_LIGHT_STRIKE
-  Ei-Attacke: EARTH_MAG_LIGHT_CANNON, EARTH_PHYS_BOULDER_BASH, EARTH_ARMOR_GRANITE_BASTION, *EARTH_BUFF_DEF
+  Ei-Attacke: EARTH_MAG_LIGHT_CANNON, EARTH_PHYS_BOULDER_BASH, EARTH_ARMOR_GRANITE_BASTION, EARTH_BUFF_DEF
   Meilenst.:  boss_1 EARTH_WARD_CLAY_SEAL | boss_5 EARTH_ARMOR_STONE_SKIN | game_win EARTH_PHYS_QUAKE_STOMP
 
 #59 Sandseelen  [Ungewöhnlich, EARTH]
   Werte: KP 20 | Ang 14 | Vert 16 | SpAng 26 | SpVert 14 | Init 10   Reihenfolge: Sp. Ang. > Vert. > Ang. > Sp. Vert.
   Start:      EARTH_MAG_CANNON, EARTH_MAG_LIGHT_THRUST, EARTH_ARMOR_LIGHT
-  Ei-Attacke: EARTH_WARD_PLAIN, EARTH_ARMOR_STONE_SKIN, EARTH_MAG_GEO_PULSE, *EARTH_BUFF_S_ATK
+  Ei-Attacke: EARTH_WARD_PLAIN, EARTH_ARMOR_STONE_SKIN, EARTH_MAG_GEO_PULSE, EARTH_BUFF_S_ATK
   Meilenst.:  boss_1 EARTH_PHYS_BOULDER_BASH | boss_5 EARTH_MAG_PEBBLE_STORM | game_win EARTH_ARMOR_GRANITE_BASTION
 
 #63 Spaltknochen  [Ungewöhnlich, AIR]
   Werte: KP 14 | Ang 14 | Vert 12 | SpAng 24 | SpVert 18 | Init 18   Reihenfolge: Sp. Ang. > Sp. Vert. > Ang. > Vert.
   Start:      AIR_MAG_CANNON, AIR_MAG_LIGHT_THRUST, AIR_WARD_LIGHT
-  Ei-Attacke: AIR_ARMOR_PLAIN, AIR_WARD_BREEZE_VEIL, AIR_MAG_TEMPEST_RAY, *AIR_BUFF_S_ATK
+  Ei-Attacke: AIR_ARMOR_PLAIN, AIR_WARD_BREEZE_VEIL, AIR_MAG_TEMPEST_RAY, AIR_BUFF_S_ATK
   Meilenst.:  boss_1 AIR_PHYS_GUST_KICK | boss_5 AIR_MAG_WIND_BLADE | game_win AIR_WARD_SKY_DOME
 
 #70 Scherenhorn  [Ungewöhnlich, EARTH]
   Werte: KP 18 | Ang 26 | Vert 22 | SpAng 10 | SpVert 12 | Init 12   Reihenfolge: Ang. > Vert. > Sp. Vert. > Sp. Ang.
   Start:      EARTH_PHYS_PUNCH, EARTH_PHYS_LIGHT_THRUST, EARTH_ARMOR_LIGHT
-  Ei-Attacke: EARTH_MAG_LIGHT_CANNON, EARTH_ARMOR_STONE_SKIN, EARTH_PHYS_QUAKE_STOMP, *EARTH_BUFF_ATK
+  Ei-Attacke: EARTH_MAG_LIGHT_CANNON, EARTH_ARMOR_STONE_SKIN, EARTH_PHYS_QUAKE_STOMP, EARTH_BUFF_ATK
   Meilenst.:  boss_1 EARTH_WARD_CLAY_SEAL | boss_5 EARTH_PHYS_BOULDER_BASH | game_win EARTH_ARMOR_GRANITE_BASTION
 
 #76 Glühzirpe  [Ungewöhnlich, AIR]
   Werte: KP 14 | Ang 12 | Vert 12 | SpAng 22 | SpVert 18 | Init 22   Reihenfolge: Sp. Ang. > Sp. Vert. > Ang. > Vert.
   Start:      AIR_MAG_CANNON, AIR_MAG_LIGHT_THRUST, AIR_WARD_LIGHT
-  Ei-Attacke: AIR_ARMOR_PLAIN, AIR_WARD_BREEZE_VEIL, AIR_MAG_TEMPEST_RAY, *AIR_BUFF_S_ATK
+  Ei-Attacke: AIR_ARMOR_PLAIN, AIR_WARD_BREEZE_VEIL, AIR_MAG_TEMPEST_RAY, AIR_BUFF_S_ATK
   Meilenst.:  boss_1 AIR_PHYS_GUST_KICK | boss_5 AIR_MAG_WIND_BLADE | game_win AIR_WARD_SKY_DOME
 
 #80 Strudelseele  [Ungewöhnlich, WATER]
   Werte: KP 16 | Ang 10 | Vert 14 | SpAng 24 | SpVert 20 | Init 16   Reihenfolge: Sp. Ang. > Sp. Vert. > Vert. > Ang.
   Start:      WATER_MAG_CANNON, WATER_MAG_LIGHT_THRUST, WATER_WARD_LIGHT
-  Ei-Attacke: WATER_PHYS_BACKHAND, WATER_WARD_MIST_VEIL, WATER_MAG_HYDRO_LANCE, *WATER_BUFF_S_ATK
+  Ei-Attacke: WATER_PHYS_BACKHAND, WATER_WARD_MIST_VEIL, WATER_MAG_HYDRO_LANCE, WATER_BUFF_S_ATK
   Meilenst.:  boss_1 WATER_ARMOR_SHELL | boss_5 WATER_MAG_BUBBLE_BEAM | game_win WATER_WARD_TIDAL_DOME
 
 ==============================================================================================================
@@ -333,112 +312,112 @@ SELTEN (16 Arten)
   Werte: KP 19 | Ang 28 | Vert 20 | SpAng 7 | SpVert 14 | Init 12   Reihenfolge: Ang. > Vert. > Sp. Vert. > Sp. Ang.
   Neben-Element: MUD
   Start:      EARTH_PHYS_BOULDER_BASH, EARTH_ARMOR_LIGHT, EARTH_PHYS_SMALL_PUNCH
-  Ei-Attacke: EARTH_PHYS_QUAKE_STOMP, EARTH_ARMOR_GRANITE_BASTION, EARTH_WARD_CLAY_SEAL, *EARTH_BUFF_ATK
+  Ei-Attacke: EARTH_PHYS_QUAKE_STOMP, EARTH_ARMOR_GRANITE_BASTION, EARTH_WARD_CLAY_SEAL, EARTH_BUFF_ATK
   Meilenst.:  boss_1 EARTH_ARMOR_STONE_SKIN | boss_5 MUD_ARMOR_MUD_COAT | game_win MUD_PHYS_MUD_PUNCH
 
 #10 Glutkoloss  [Selten, FIRE]
   Werte: KP 24 | Ang 26 | Vert 24 | SpAng 8 | SpVert 10 | Init 8   Reihenfolge: Ang. > Vert. > Sp. Vert. > Sp. Ang.
   Neben-Element: MAGMA
   Start:      FIRE_PHYS_FLAME_FIST, FIRE_ARMOR_LIGHT, FIRE_PHYS_SMALL_PUNCH
-  Ei-Attacke: FIRE_PHYS_BLAZE_RUSH, FIRE_ARMOR_FLAME_WALL, FIRE_WARD_HEAT_VEIL, *FIRE_BUFF_ATK
+  Ei-Attacke: FIRE_PHYS_BLAZE_RUSH, FIRE_ARMOR_FLAME_WALL, FIRE_WARD_HEAT_VEIL, FIRE_BUFF_ATK
   Meilenst.:  boss_1 FIRE_ARMOR_CINDER_PLATE | boss_5 MAGMA_ARMOR_PUMICE_SKIN | game_win MAGMA_PHYS_EMBER_KNUCKLE
 
 #13 Kristallwühler  [Selten, EARTH]
   Werte: KP 22 | Ang 22 | Vert 27 | SpAng 6 | SpVert 15 | Init 8   Reihenfolge: Vert. > Ang. > Sp. Vert. > Sp. Ang.
   Neben-Element: DUST
   Start:      EARTH_ARMOR_STONE_SKIN, EARTH_PHYS_PUNCH, EARTH_PHYS_SMALL_PUNCH
-  Ei-Attacke: EARTH_ARMOR_GRANITE_BASTION, EARTH_PHYS_QUAKE_STOMP, EARTH_WARD_CLAY_SEAL, *PASSIVE_EARTH_POWER
+  Ei-Attacke: EARTH_ARMOR_GRANITE_BASTION, EARTH_PHYS_QUAKE_STOMP, EARTH_WARD_CLAY_SEAL, PASSIVE_EARTH_POWER
   Meilenst.:  boss_1 EARTH_PHYS_BOULDER_BASH | boss_5 DUST_PHYS_GRIT_PUNCH | game_win DUST_ARMOR_SANDSTONE_SKIN
 
 #14 Frostfähe  [Selten, WATER]
   Werte: KP 14 | Ang 20 | Vert 12 | SpAng 20 | SpVert 14 | Init 20   Reihenfolge: Ang. > Sp. Ang. > Sp. Vert. > Vert.
   Neben-Element: ICE
   Start:      WATER_PHYS_TIDE_SLAP, WATER_MAG_CANNON, WATER_PHYS_SMALL_PUNCH
-  Ei-Attacke: WATER_PHYS_BREAKER, WATER_MAG_HYDRO_LANCE, WATER_WARD_MIST_VEIL, *WATER_BUFF_ATK
+  Ei-Attacke: WATER_PHYS_BREAKER, WATER_MAG_HYDRO_LANCE, WATER_WARD_MIST_VEIL, WATER_BUFF_ATK
   Meilenst.:  boss_1 WATER_MAG_BUBBLE_BEAM | boss_5 ICE_MAG_SNOW_FLURRY | game_win ICE_PHYS_FROST_BITE
 
 #19 Reifwolf  [Selten, WATER]
   Werte: KP 14 | Ang 24 | Vert 12 | SpAng 18 | SpVert 12 | Init 20   Reihenfolge: Ang. > Sp. Ang. > Vert. > Sp. Vert.
   Neben-Element: ICE
   Start:      WATER_PHYS_TIDE_SLAP, WATER_MAG_CANNON, WATER_PHYS_SMALL_PUNCH
-  Ei-Attacke: WATER_PHYS_BREAKER, WATER_MAG_HYDRO_LANCE, WATER_ARMOR_SHELL, *WATER_BUFF_ATK
+  Ei-Attacke: WATER_PHYS_BREAKER, WATER_MAG_HYDRO_LANCE, WATER_ARMOR_SHELL, WATER_BUFF_ATK
   Meilenst.:  boss_1 WATER_MAG_BUBBLE_BEAM | boss_5 ICE_MAG_SNOW_FLURRY | game_win ICE_PHYS_FROST_BITE
 
 #23 Aschrücken  [Selten, FIRE]
   Werte: KP 20 | Ang 26 | Vert 22 | SpAng 12 | SpVert 12 | Init 8   Reihenfolge: Ang. > Vert. > Sp. Ang. > Sp. Vert.
   Neben-Element: MAGMA
   Start:      FIRE_PHYS_FLAME_FIST, FIRE_ARMOR_LIGHT, FIRE_PHYS_SMALL_PUNCH
-  Ei-Attacke: FIRE_PHYS_BLAZE_RUSH, FIRE_ARMOR_FLAME_WALL, FIRE_MAG_SPARK_SHOT, *FIRE_BUFF_ATK
+  Ei-Attacke: FIRE_PHYS_BLAZE_RUSH, FIRE_ARMOR_FLAME_WALL, FIRE_MAG_SPARK_SHOT, FIRE_BUFF_ATK
   Meilenst.:  boss_1 FIRE_ARMOR_CINDER_PLATE | boss_5 MAGMA_ARMOR_PUMICE_SKIN | game_win MAGMA_PHYS_EMBER_KNUCKLE
 
 #27 Donnerhorn  [Selten, AIR]
   Werte: KP 16 | Ang 12 | Vert 14 | SpAng 26 | SpVert 18 | Init 14   Reihenfolge: Sp. Ang. > Sp. Vert. > Vert. > Ang.
   Neben-Element: LIGHTNING
   Start:      AIR_MAG_WIND_BLADE, AIR_WARD_LIGHT, AIR_MAG_SMALL_CANNON
-  Ei-Attacke: AIR_MAG_TEMPEST_RAY, AIR_WARD_SKY_DOME, AIR_ARMOR_DRAFT_GUARD, *AIR_BUFF_S_ATK
+  Ei-Attacke: AIR_MAG_TEMPEST_RAY, AIR_WARD_SKY_DOME, AIR_ARMOR_DRAFT_GUARD, AIR_BUFF_S_ATK
   Meilenst.:  boss_1 AIR_WARD_BREEZE_VEIL | boss_5 LIGHTNING_WARD_ION_VEIL | game_win LIGHTNING_MAG_SPARK_BOLT
 
 #39 Frostgürtler  [Selten, WATER]
   Werte: KP 20 | Ang 20 | Vert 28 | SpAng 8 | SpVert 16 | Init 8   Reihenfolge: Vert. > Ang. > Sp. Vert. > Sp. Ang.
   Neben-Element: ICE
   Start:      WATER_ARMOR_SHELL, WATER_PHYS_PUNCH, WATER_PHYS_SMALL_PUNCH
-  Ei-Attacke: WATER_ARMOR_CORAL_WALL, WATER_PHYS_BREAKER, WATER_WARD_MIST_VEIL, *PASSIVE_WATER_POWER
+  Ei-Attacke: WATER_ARMOR_CORAL_WALL, WATER_PHYS_BREAKER, WATER_WARD_MIST_VEIL, PASSIVE_WATER_POWER
   Meilenst.:  boss_1 WATER_PHYS_TIDE_SLAP | boss_5 ICE_PHYS_FROST_BITE | game_win ICE_ARMOR_RIME_COAT
 
 #43 Knochenschläger  [Selten, FIRE]
   Werte: KP 13 | Ang 27 | Vert 12 | SpAng 14 | SpVert 12 | Init 22   Reihenfolge: Ang. > Sp. Ang. > Vert. > Sp. Vert.
   Neben-Element: LIGHTNING
   Start:      FIRE_PHYS_FLAME_FIST, FIRE_MAG_CANNON, FIRE_PHYS_SMALL_PUNCH
-  Ei-Attacke: FIRE_PHYS_BLAZE_RUSH, FIRE_MAG_FIREBALL, FIRE_ARMOR_CINDER_PLATE, *FIRE_BUFF_ATK
+  Ei-Attacke: FIRE_PHYS_BLAZE_RUSH, FIRE_MAG_FIREBALL, FIRE_ARMOR_CINDER_PLATE, FIRE_BUFF_ATK
   Meilenst.:  boss_1 FIRE_MAG_SPARK_SHOT | boss_5 LIGHTNING_MAG_SPARK_BOLT | game_win LIGHTNING_PHYS_SHOCK_TAP
 
 #48 Korallenkönig  [Selten, WATER]
   Werte: KP 24 | Ang 10 | Vert 16 | SpAng 20 | SpVert 22 | Init 8   Reihenfolge: Sp. Vert. > Sp. Ang. > Vert. > Ang.
   Neben-Element: MUD
   Start:      WATER_WARD_MIST_VEIL, WATER_MAG_CANNON, WATER_MAG_SMALL_CANNON
-  Ei-Attacke: WATER_WARD_TIDAL_DOME, WATER_MAG_HYDRO_LANCE, WATER_ARMOR_SHELL, *PASSIVE_WATER_POWER
+  Ei-Attacke: WATER_WARD_TIDAL_DOME, WATER_MAG_HYDRO_LANCE, WATER_ARMOR_SHELL, PASSIVE_WATER_POWER
   Meilenst.:  boss_1 WATER_MAG_BUBBLE_BEAM | boss_5 MUD_MAG_SLUDGE_SHOT | game_win MUD_WARD_PEAT_SEAL
 
 #54 Splitterkoloss  [Selten, EARTH]
   Werte: KP 22 | Ang 18 | Vert 24 | SpAng 16 | SpVert 14 | Init 6   Reihenfolge: Vert. > Ang. > Sp. Ang. > Sp. Vert.
   Neben-Element: DUST
   Start:      EARTH_ARMOR_STONE_SKIN, EARTH_PHYS_PUNCH, EARTH_PHYS_SMALL_PUNCH
-  Ei-Attacke: EARTH_ARMOR_GRANITE_BASTION, EARTH_PHYS_QUAKE_STOMP, EARTH_MAG_PEBBLE_STORM, *PASSIVE_EARTH_POWER
+  Ei-Attacke: EARTH_ARMOR_GRANITE_BASTION, EARTH_PHYS_QUAKE_STOMP, EARTH_MAG_PEBBLE_STORM, PASSIVE_EARTH_POWER
   Meilenst.:  boss_1 EARTH_PHYS_BOULDER_BASH | boss_5 DUST_PHYS_GRIT_PUNCH | game_win DUST_ARMOR_SANDSTONE_SKIN
 
 #55 Stahlhai  [Selten, WATER]
   Werte: KP 16 | Ang 26 | Vert 24 | SpAng 10 | SpVert 12 | Init 12   Reihenfolge: Ang. > Vert. > Sp. Vert. > Sp. Ang.
   Neben-Element: STEAM
   Start:      WATER_PHYS_TIDE_SLAP, WATER_ARMOR_LIGHT, WATER_PHYS_SMALL_PUNCH
-  Ei-Attacke: WATER_PHYS_BREAKER, WATER_ARMOR_CORAL_WALL, WATER_WARD_MIST_VEIL, *WATER_BUFF_ATK
+  Ei-Attacke: WATER_PHYS_BREAKER, WATER_ARMOR_CORAL_WALL, WATER_WARD_MIST_VEIL, WATER_BUFF_ATK
   Meilenst.:  boss_1 WATER_ARMOR_SHELL | boss_5 STEAM_ARMOR_STEAM_COAT | game_win STEAM_PHYS_HOT_JAB
 
 #57 Rochenklinge  [Selten, WATER]
   Werte: KP 14 | Ang 26 | Vert 12 | SpAng 16 | SpVert 12 | Init 20   Reihenfolge: Ang. > Sp. Ang. > Vert. > Sp. Vert.
   Neben-Element: STEAM
   Start:      WATER_PHYS_TIDE_SLAP, WATER_MAG_CANNON, WATER_PHYS_SMALL_PUNCH
-  Ei-Attacke: WATER_PHYS_BREAKER, WATER_MAG_HYDRO_LANCE, WATER_ARMOR_SHELL, *WATER_BUFF_ATK
+  Ei-Attacke: WATER_PHYS_BREAKER, WATER_MAG_HYDRO_LANCE, WATER_ARMOR_SHELL, WATER_BUFF_ATK
   Meilenst.:  boss_1 WATER_MAG_BUBBLE_BEAM | boss_5 STEAM_MAG_VAPOR_PUFF | game_win STEAM_PHYS_HOT_JAB
 
 #66 Kristallschlund  [Selten, EARTH]
   Werte: KP 20 | Ang 26 | Vert 24 | SpAng 10 | SpVert 12 | Init 8   Reihenfolge: Ang. > Vert. > Sp. Vert. > Sp. Ang.
   Neben-Element: DUST
   Start:      EARTH_PHYS_BOULDER_BASH, EARTH_ARMOR_LIGHT, EARTH_PHYS_SMALL_PUNCH
-  Ei-Attacke: EARTH_PHYS_QUAKE_STOMP, EARTH_ARMOR_GRANITE_BASTION, EARTH_WARD_CLAY_SEAL, *EARTH_BUFF_ATK
+  Ei-Attacke: EARTH_PHYS_QUAKE_STOMP, EARTH_ARMOR_GRANITE_BASTION, EARTH_WARD_CLAY_SEAL, EARTH_BUFF_ATK
   Meilenst.:  boss_1 EARTH_ARMOR_STONE_SKIN | boss_5 DUST_ARMOR_SANDSTONE_SKIN | game_win DUST_PHYS_GRIT_PUNCH
 
 #72 Piñatadrache  [Selten, AIR]
   Werte: KP 18 | Ang 18 | Vert 14 | SpAng 20 | SpVert 14 | Init 16   Reihenfolge: Sp. Ang. > Ang. > Vert. > Sp. Vert.
   Neben-Element: LIGHTNING
   Start:      AIR_MAG_WIND_BLADE, AIR_PHYS_PUNCH, AIR_MAG_SMALL_CANNON
-  Ei-Attacke: AIR_MAG_TEMPEST_RAY, AIR_PHYS_CYCLONE_CLAW, AIR_ARMOR_DRAFT_GUARD, *AIR_BUFF_S_ATK
+  Ei-Attacke: AIR_MAG_TEMPEST_RAY, AIR_PHYS_CYCLONE_CLAW, AIR_ARMOR_DRAFT_GUARD, AIR_BUFF_S_ATK
   Meilenst.:  boss_1 AIR_PHYS_GUST_KICK | boss_5 LIGHTNING_PHYS_SHOCK_TAP | game_win LIGHTNING_MAG_SPARK_BOLT
 
 #78 Denkwurzel  [Selten, EARTH]
   Werte: KP 20 | Ang 6 | Vert 16 | SpAng 28 | SpVert 22 | Init 8   Reihenfolge: Sp. Ang. > Sp. Vert. > Vert. > Ang.
   Neben-Element: MUD
   Start:      EARTH_MAG_PEBBLE_STORM, EARTH_WARD_LIGHT, EARTH_MAG_SMALL_CANNON
-  Ei-Attacke: EARTH_MAG_GEO_PULSE, EARTH_WARD_CRYSTAL_SEAL, EARTH_ARMOR_STONE_SKIN, *EARTH_BUFF_S_ATK
+  Ei-Attacke: EARTH_MAG_GEO_PULSE, EARTH_WARD_CRYSTAL_SEAL, EARTH_ARMOR_STONE_SKIN, EARTH_BUFF_S_ATK
   Meilenst.:  boss_1 EARTH_WARD_CLAY_SEAL | boss_5 MUD_WARD_PEAT_SEAL | game_win MUD_MAG_SLUDGE_SHOT
 
 ==============================================================================================================
@@ -449,159 +428,152 @@ EPISCH (13 Arten)
   Werte: KP 17 | Ang 8 | Vert 14 | SpAng 25 | SpVert 24 | Init 12   Reihenfolge: Sp. Ang. > Sp. Vert. > Vert. > Ang.
   Neben-Element: MUD
   Start:      EARTH_MAG_GEO_PULSE, EARTH_WARD_CLAY_SEAL, EARTH_MAG_SMALL_CANNON
-  Ei-Attacke: EARTH_WARD_CRYSTAL_SEAL, *EARTH_MAG_GEO_PULSE_SWIFT (bis dahin EARTH_MAG_SMALL_CANNON), EARTH_ARMOR_GRANITE_BASTION, *EARTH_BUFF_TEAM_S_ATK
+  Ei-Attacke: EARTH_WARD_CRYSTAL_SEAL, EARTH_MAG_GEO_PULSE_SWIFT, EARTH_ARMOR_GRANITE_BASTION, EARTH_BUFF_TEAM_S_ATK
   Meilenst.:  boss_1 MUD_WARD_PEAT_SEAL | boss_5 MUD_MAG_SLUDGE_SHOT | game_win PASSIVE_BULWARK_MASTER
 
 #12 Sturmgreif  [Episch, AIR]
   Werte: KP 15 | Ang 22 | Vert 12 | SpAng 22 | SpVert 10 | Init 19   Reihenfolge: Ang. > Sp. Ang. > Vert. > Sp. Vert.
   Neben-Element: LIGHTNING
   Start:      AIR_PHYS_CYCLONE_CLAW, AIR_MAG_WIND_BLADE, AIR_PHYS_SMALL_PUNCH
-  Ei-Attacke: AIR_MAG_TEMPEST_RAY, *AIR_PHYS_CYCLONE_CLAW_SWIFT (bis dahin AIR_PHYS_SMALL_PUNCH), AIR_ARMOR_GALE_WALL, AIR_BOON_TAILWIND
+  Ei-Attacke: AIR_MAG_TEMPEST_RAY, AIR_PHYS_CYCLONE_CLAW_SWIFT, AIR_ARMOR_GALE_WALL, AIR_BOON_TAILWIND
   Meilenst.:  boss_1 LIGHTNING_MAG_SPARK_BOLT | boss_5 LIGHTNING_PHYS_SHOCK_TAP | game_win PASSIVE_BATTLE_FERVOR
 
 #25 Moorpanzer  [Episch, EARTH]
   Werte: KP 26 | Ang 14 | Vert 26 | SpAng 12 | SpVert 16 | Init 6   Reihenfolge: Vert. > Sp. Vert. > Ang. > Sp. Ang.
   Neben-Element: MUD
   Start:      EARTH_ARMOR_GRANITE_BASTION, EARTH_WARD_CLAY_SEAL, EARTH_PHYS_SMALL_PUNCH
-  Ei-Attacke: EARTH_WARD_CRYSTAL_SEAL, *EARTH_ARMOR_GRANITE_BASTION_SWIFT (bis dahin EARTH_ARMOR_LIGHT), EARTH_PHYS_QUAKE_STOMP, *EARTH_BUFF_TEAM_DEF
+  Ei-Attacke: EARTH_WARD_CRYSTAL_SEAL, EARTH_ARMOR_GRANITE_BASTION_SWIFT, EARTH_PHYS_QUAKE_STOMP, EARTH_BUFF_TEAM_DEF
   Meilenst.:  boss_1 MUD_WARD_PEAT_SEAL | boss_5 MUD_ARMOR_MUD_COAT | game_win PASSIVE_BULWARK_MASTER
 
 #28 Dünenbrecher  [Episch, EARTH]
   Werte: KP 20 | Ang 28 | Vert 24 | SpAng 6 | SpVert 12 | Init 10   Reihenfolge: Ang. > Vert. > Sp. Vert. > Sp. Ang.
   Neben-Element: DUST
   Start:      EARTH_PHYS_QUAKE_STOMP, EARTH_ARMOR_STONE_SKIN, EARTH_PHYS_SMALL_PUNCH
-  Ei-Attacke: EARTH_ARMOR_GRANITE_BASTION, *EARTH_PHYS_QUAKE_STOMP_SWIFT (bis dahin EARTH_PHYS_SMALL_PUNCH), EARTH_WARD_CRYSTAL_SEAL, *EARTH_BUFF_TEAM_ATK
-  Meilenst.:  boss_1 DUST_ARMOR_SANDSTONE_SKIN | boss_5 DUST_PHYS_GRIT_PUNCH | game_win *PASSIVE_EARTH_POWER
+  Ei-Attacke: EARTH_ARMOR_GRANITE_BASTION, EARTH_PHYS_QUAKE_STOMP_SWIFT, EARTH_WARD_CRYSTAL_SEAL, EARTH_BUFF_TEAM_ATK
+  Meilenst.:  boss_1 DUST_ARMOR_SANDSTONE_SKIN | boss_5 DUST_PHYS_GRIT_PUNCH | game_win PASSIVE_EARTH_POWER
 
 #37 Mooskoloss  [Episch, EARTH]
   Werte: KP 24 | Ang 16 | Vert 18 | SpAng 18 | SpVert 16 | Init 8   Reihenfolge: Sp. Ang. > Vert. > Ang. > Sp. Vert.
   Neben-Element: MUD
   Start:      EARTH_MAG_GEO_PULSE, EARTH_ARMOR_STONE_SKIN, EARTH_MAG_SMALL_CANNON
-  Ei-Attacke: EARTH_ARMOR_GRANITE_BASTION, *EARTH_MAG_GEO_PULSE_SWIFT (bis dahin EARTH_MAG_SMALL_CANNON), EARTH_PHYS_QUAKE_STOMP, *EARTH_BUFF_TEAM_S_ATK
+  Ei-Attacke: EARTH_ARMOR_GRANITE_BASTION, EARTH_MAG_GEO_PULSE_SWIFT, EARTH_PHYS_QUAKE_STOMP, EARTH_BUFF_TEAM_S_ATK
   Meilenst.:  boss_1 MUD_ARMOR_MUD_COAT | boss_5 MUD_MAG_SLUDGE_SHOT | game_win PASSIVE_BULWARK_MASTER
 
 #40 Runenskarab  [Episch, EARTH]
   Werte: KP 16 | Ang 22 | Vert 22 | SpAng 14 | SpVert 14 | Init 12   Reihenfolge: Ang. > Vert. > Sp. Ang. > Sp. Vert.
   Neben-Element: DUST
   Start:      EARTH_PHYS_QUAKE_STOMP, EARTH_ARMOR_STONE_SKIN, EARTH_PHYS_SMALL_PUNCH
-  Ei-Attacke: EARTH_ARMOR_GRANITE_BASTION, *EARTH_PHYS_QUAKE_STOMP_SWIFT (bis dahin EARTH_PHYS_SMALL_PUNCH), EARTH_MAG_GEO_PULSE, *EARTH_BUFF_TEAM_ATK
-  Meilenst.:  boss_1 DUST_ARMOR_SANDSTONE_SKIN | boss_5 DUST_PHYS_GRIT_PUNCH | game_win *PASSIVE_EARTH_POWER
+  Ei-Attacke: EARTH_ARMOR_GRANITE_BASTION, EARTH_PHYS_QUAKE_STOMP_SWIFT, EARTH_MAG_GEO_PULSE, EARTH_BUFF_TEAM_ATK
+  Meilenst.:  boss_1 DUST_ARMOR_SANDSTONE_SKIN | boss_5 DUST_PHYS_GRIT_PUNCH | game_win PASSIVE_EARTH_POWER
 
 #49 Lohenteufel  [Episch, FIRE]
   Werte: KP 14 | Ang 22 | Vert 12 | SpAng 26 | SpVert 12 | Init 14   Reihenfolge: Sp. Ang. > Ang. > Vert. > Sp. Vert.
   Neben-Element: MAGMA
   Start:      FIRE_MAG_FIREBALL, FIRE_PHYS_FLAME_FIST, FIRE_MAG_SMALL_CANNON
-  Ei-Attacke: FIRE_PHYS_BLAZE_RUSH, *FIRE_MAG_FIREBALL_SWIFT (bis dahin FIRE_MAG_SMALL_CANNON), FIRE_ARMOR_FLAME_WALL, *FIRE_BUFF_TEAM_S_ATK
-  Meilenst.:  boss_1 MAGMA_PHYS_EMBER_KNUCKLE | boss_5 MAGMA_MAG_LAVA_SPIT | game_win *PASSIVE_FIRE_POWER
+  Ei-Attacke: FIRE_PHYS_BLAZE_RUSH, FIRE_MAG_FIREBALL_SWIFT, FIRE_ARMOR_FLAME_WALL, FIRE_BUFF_TEAM_S_ATK
+  Meilenst.:  boss_1 MAGMA_PHYS_EMBER_KNUCKLE | boss_5 MAGMA_MAG_LAVA_SPIT | game_win PASSIVE_FIRE_POWER
 
 #52 Strudeldrache  [Episch, WATER]
   Werte: KP 18 | Ang 16 | Vert 14 | SpAng 24 | SpVert 16 | Init 12   Reihenfolge: Sp. Ang. > Ang. > Sp. Vert. > Vert.
   Neben-Element: ICE
   Start:      WATER_MAG_HYDRO_LANCE, WATER_PHYS_TIDE_SLAP, WATER_MAG_SMALL_CANNON
-  Ei-Attacke: WATER_PHYS_BREAKER, *WATER_MAG_HYDRO_LANCE_SWIFT (bis dahin WATER_MAG_SMALL_CANNON), WATER_WARD_TIDAL_DOME, WATER_BOON_BLOOD_TIDE
-  Meilenst.:  boss_1 ICE_PHYS_FROST_BITE | boss_5 ICE_MAG_SNOW_FLURRY | game_win *PASSIVE_WATER_POWER
+  Ei-Attacke: WATER_PHYS_BREAKER, WATER_MAG_HYDRO_LANCE_SWIFT, WATER_WARD_TIDAL_DOME, WATER_BOON_BLOOD_TIDE
+  Meilenst.:  boss_1 ICE_PHYS_FROST_BITE | boss_5 ICE_MAG_SNOW_FLURRY | game_win PASSIVE_WATER_POWER
 
 #53 Reifdrache  [Episch, AIR]
   Werte: KP 14 | Ang 12 | Vert 12 | SpAng 26 | SpVert 18 | Init 18   Reihenfolge: Sp. Ang. > Sp. Vert. > Ang. > Vert.
   Neben-Element: ICE
   Start:      AIR_MAG_TEMPEST_RAY, AIR_WARD_BREEZE_VEIL, AIR_MAG_SMALL_CANNON
-  Ei-Attacke: AIR_WARD_SKY_DOME, *AIR_MAG_TEMPEST_RAY_SWIFT (bis dahin AIR_MAG_SMALL_CANNON), AIR_PHYS_CYCLONE_CLAW, AIR_BOON_TAILWIND
-  Meilenst.:  boss_1 ICE_WARD_SNOW_VEIL | boss_5 ICE_MAG_SNOW_FLURRY | game_win *PASSIVE_AIR_POWER
+  Ei-Attacke: AIR_WARD_SKY_DOME, AIR_MAG_TEMPEST_RAY_SWIFT, AIR_PHYS_CYCLONE_CLAW, AIR_BOON_TAILWIND
+  Meilenst.:  boss_1 ICE_WARD_SNOW_VEIL | boss_5 ICE_MAG_SNOW_FLURRY | game_win PASSIVE_AIR_POWER
 
 #60 Moorgeist  [Episch, WATER]
   Werte: KP 14 | Ang 10 | Vert 12 | SpAng 28 | SpVert 20 | Init 16   Reihenfolge: Sp. Ang. > Sp. Vert. > Vert. > Ang.
   Neben-Element: MUD
   Start:      WATER_MAG_HYDRO_LANCE, WATER_WARD_MIST_VEIL, WATER_MAG_SMALL_CANNON
-  Ei-Attacke: WATER_WARD_TIDAL_DOME, *WATER_MAG_HYDRO_LANCE_SWIFT (bis dahin WATER_MAG_SMALL_CANNON), WATER_ARMOR_CORAL_WALL, WATER_BOON_BLOOD_TIDE
+  Ei-Attacke: WATER_WARD_TIDAL_DOME, WATER_MAG_HYDRO_LANCE_SWIFT, WATER_ARMOR_CORAL_WALL, WATER_BOON_BLOOD_TIDE
   Meilenst.:  boss_1 MUD_WARD_PEAT_SEAL | boss_5 MUD_MAG_SLUDGE_SHOT | game_win PASSIVE_BULWARK_MASTER
 
 #61 Rankenrachen  [Episch, EARTH]
   Werte: KP 20 | Ang 26 | Vert 18 | SpAng 14 | SpVert 12 | Init 10   Reihenfolge: Ang. > Vert. > Sp. Ang. > Sp. Vert.
   Neben-Element: MUD
   Start:      EARTH_PHYS_QUAKE_STOMP, EARTH_ARMOR_STONE_SKIN, EARTH_PHYS_SMALL_PUNCH
-  Ei-Attacke: EARTH_ARMOR_GRANITE_BASTION, *EARTH_PHYS_QUAKE_STOMP_SWIFT (bis dahin EARTH_PHYS_SMALL_PUNCH), EARTH_MAG_GEO_PULSE, *EARTH_BUFF_TEAM_ATK
+  Ei-Attacke: EARTH_ARMOR_GRANITE_BASTION, EARTH_PHYS_QUAKE_STOMP_SWIFT, EARTH_MAG_GEO_PULSE, EARTH_BUFF_TEAM_ATK
   Meilenst.:  boss_1 MUD_ARMOR_MUD_COAT | boss_5 MUD_PHYS_MUD_PUNCH | game_win PASSIVE_BULWARK_MASTER
 
 #68 Glutkerker  [Episch, FIRE]
   Werte: KP 18 | Ang 16 | Vert 22 | SpAng 26 | SpVert 12 | Init 6   Reihenfolge: Sp. Ang. > Vert. > Ang. > Sp. Vert.
   Neben-Element: MAGMA
   Start:      FIRE_MAG_FIREBALL, FIRE_ARMOR_CINDER_PLATE, FIRE_MAG_SMALL_CANNON
-  Ei-Attacke: FIRE_ARMOR_FLAME_WALL, *FIRE_MAG_FIREBALL_SWIFT (bis dahin FIRE_MAG_SMALL_CANNON), FIRE_PHYS_BLAZE_RUSH, *FIRE_BUFF_TEAM_S_ATK
-  Meilenst.:  boss_1 MAGMA_ARMOR_PUMICE_SKIN | boss_5 MAGMA_MAG_LAVA_SPIT | game_win *PASSIVE_FIRE_POWER
+  Ei-Attacke: FIRE_ARMOR_FLAME_WALL, FIRE_MAG_FIREBALL_SWIFT, FIRE_PHYS_BLAZE_RUSH, FIRE_BUFF_TEAM_S_ATK
+  Meilenst.:  boss_1 MAGMA_ARMOR_PUMICE_SKIN | boss_5 MAGMA_MAG_LAVA_SPIT | game_win PASSIVE_FIRE_POWER
 
 #77 Phönixglut  [Episch, FIRE]
   Werte: KP 14 | Ang 12 | Vert 10 | SpAng 28 | SpVert 14 | Init 22   Reihenfolge: Sp. Ang. > Sp. Vert. > Ang. > Vert.
   Neben-Element: LIGHTNING
   Start:      FIRE_MAG_FIREBALL, FIRE_WARD_HEAT_VEIL, FIRE_MAG_SMALL_CANNON
-  Ei-Attacke: FIRE_WARD_PHOENIX_AURA, *FIRE_MAG_FIREBALL_SWIFT (bis dahin FIRE_MAG_SMALL_CANNON), FIRE_PHYS_BLAZE_RUSH, *FIRE_BUFF_TEAM_S_ATK
+  Ei-Attacke: FIRE_WARD_PHOENIX_AURA, FIRE_MAG_FIREBALL_SWIFT, FIRE_PHYS_BLAZE_RUSH, FIRE_BUFF_TEAM_S_ATK
   Meilenst.:  boss_1 LIGHTNING_WARD_ION_VEIL | boss_5 LIGHTNING_MAG_SPARK_BOLT | game_win PASSIVE_STORM_SPIRIT
 
 ==============================================================================================================
-LEGENDÄR (9 Arten)
+LEGENDÄR (8 Arten)
 ==============================================================================================================
 
 #29 Sturmdschinn  [Legendär, AIR]
-  Werte: KP 14 | Ang 16 | Vert 12 | SpAng 26 | SpVert 14 | Init 18   Reihenfolge: Sp. Ang. > Ang. > Sp. Vert. > Vert.
+  Werte: KP 14 | Ang 10 | Vert 18 | SpAng 26 | SpVert 14 | Init 18   Reihenfolge: Sp. Ang. > Vert. > Sp. Vert. > Ang.
   Neben-Element: LIGHTNING   Dreier-Kombi: THUNDERSTORM
-  Start:      AIR_MAG_TEMPEST_RAY, AIR_PHYS_CYCLONE_CLAW, *AIR_MAG_TEMPEST_RAY_SWIFT (bis dahin AIR_MAG_SMALL_CANNON)
-  Ei-Attacke: LIGHTNING_MAG_ARC_BOLT, LIGHTNING_PHYS_VOLT_PUNCH, LIGHTNING_MAG_THUNDERCLAP, LIGHTNING_BOON_OVERCHARGE
-  Meilenst.:  boss_1 THUNDERSTORM_MAG_STATIC_RAIN | boss_5 THUNDERSTORM_MAG_CHAIN_LIGHTNING | game_win *PASSIVE_LIGHTNING_T4
+  Start:      AIR_MAG_TEMPEST_RAY, AIR_ARMOR_GALE_WALL, AIR_MAG_TEMPEST_RAY_SWIFT
+  Ei-Attacke: LIGHTNING_MAG_ARC_BOLT, LIGHTNING_ARMOR_STATIC_PLATE, LIGHTNING_MAG_THUNDERCLAP, LIGHTNING_BOON_OVERCHARGE
+  Meilenst.:  boss_1 THUNDERSTORM_MAG_STATIC_RAIN | boss_5 THUNDERSTORM_MAG_CHAIN_LIGHTNING | game_win PASSIVE_LIGHTNING_T4
 
 #30 Vulkanfaust  [Legendär, FIRE]
   Werte: KP 22 | Ang 28 | Vert 22 | SpAng 8 | SpVert 12 | Init 8   Reihenfolge: Ang. > Vert. > Sp. Vert. > Sp. Ang.
   Neben-Element: MAGMA   Dreier-Kombi: VOLCANO
-  Start:      FIRE_PHYS_BLAZE_RUSH, FIRE_ARMOR_FLAME_WALL, *FIRE_PHYS_BLAZE_RUSH_SWIFT (bis dahin FIRE_PHYS_SMALL_PUNCH)
-  Ei-Attacke: MAGMA_PHYS_LAVA_FIST, MAGMA_ARMOR_OBSIDIAN_PLATE, MAGMA_PHYS_ERUPTION_SLAM, *MAGMA_BUFF_T4
-  Meilenst.:  boss_1 VOLCANO_PHYS_VOLCANIC_FIST | boss_5 VOLCANO_PHYS_CALDERA_CRUSH | game_win *PASSIVE_MAGMA_T4
+  Start:      FIRE_PHYS_BLAZE_RUSH, FIRE_ARMOR_FLAME_WALL, FIRE_PHYS_BLAZE_RUSH_SWIFT
+  Ei-Attacke: MAGMA_PHYS_LAVA_FIST, MAGMA_ARMOR_OBSIDIAN_PLATE, MAGMA_PHYS_ERUPTION_SLAM, MAGMA_BUFF_T4
+  Meilenst.:  boss_1 VOLCANO_PHYS_VOLCANIC_FIST | boss_5 VOLCANO_PHYS_CALDERA_CRUSH | game_win PASSIVE_MAGMA_T4
 
 #31 Staubkönig  [Legendär, EARTH]
   Werte: KP 14 | Ang 10 | Vert 14 | SpAng 26 | SpVert 20 | Init 16   Reihenfolge: Sp. Ang. > Sp. Vert. > Vert. > Ang.
   Neben-Element: DUST   Dreier-Kombi: ASH_STORM
-  Start:      EARTH_MAG_GEO_PULSE, EARTH_WARD_CRYSTAL_SEAL, *EARTH_MAG_GEO_PULSE_SWIFT (bis dahin EARTH_MAG_SMALL_CANNON)
-  Ei-Attacke: DUST_MAG_DUST_DEVIL, DUST_WARD_SAND_VEIL, DUST_MAG_SANDSTORM, *DUST_BUFF_T4
-  Meilenst.:  boss_1 ASH_STORM_MAG_EMBER_GUST | boss_5 ASH_STORM_MAG_ASH_CYCLONE | game_win *PASSIVE_DUST_T4
+  Start:      EARTH_MAG_GEO_PULSE, EARTH_WARD_CRYSTAL_SEAL, EARTH_MAG_GEO_PULSE_SWIFT
+  Ei-Attacke: DUST_MAG_DUST_DEVIL, DUST_WARD_SAND_VEIL, DUST_MAG_SANDSTORM, DUST_BUFF_T4
+  Meilenst.:  boss_1 ASH_STORM_MAG_EMBER_GUST | boss_5 ASH_STORM_MAG_ASH_CYCLONE | game_win PASSIVE_DUST_T4
 
-#33 Blutmähne  [Legendär, FIRE]
-  Werte: KP 16 | Ang 26 | Vert 16 | SpAng 12 | SpVert 12 | Init 18   Reihenfolge: Ang. > Vert. > Sp. Ang. > Sp. Vert.
-  Neben-Element: LIGHTNING   Dreier-Kombi: ASH_STORM
-  Start:      FIRE_PHYS_BLAZE_RUSH, FIRE_ARMOR_FLAME_WALL, *FIRE_PHYS_BLAZE_RUSH_SWIFT (bis dahin FIRE_PHYS_SMALL_PUNCH)
-  Ei-Attacke: LIGHTNING_PHYS_VOLT_PUNCH, LIGHTNING_ARMOR_STATIC_PLATE, LIGHTNING_MAG_THUNDERCLAP, LIGHTNING_BOON_OVERCHARGE
-  Meilenst.:  boss_1 ASH_STORM_PHYS_SOOT_STRIKE | boss_5 ASH_STORM_PHYS_CINDER_CLAW | game_win *PASSIVE_LIGHTNING_T4
+#33 Blutmähne  [Legendär, EARTH]
+  Werte: KP 16 | Ang 22 | Vert 20 | SpAng 12 | SpVert 12 | Init 18   Reihenfolge: Ang. > Vert. > Sp. Ang. > Sp. Vert.
+  Neben-Element: DUST   Dreier-Kombi: ASH_STORM
+  Start:      EARTH_PHYS_QUAKE_STOMP, EARTH_ARMOR_GRANITE_BASTION, EARTH_PHYS_QUAKE_STOMP_SWIFT
+  Ei-Attacke: DUST_PHYS_SAND_CLAW, DUST_ARMOR_DUNE_WALL, DUST_MAG_SANDSTORM, DUST_BUFF_T4
+  Meilenst.:  boss_1 ASH_STORM_PHYS_SOOT_STRIKE | boss_5 ASH_STORM_PHYS_CINDER_CLAW | game_win PASSIVE_DUST_T4
 
 #38 Gorgonatter  [Legendär, WATER]
   Werte: KP 15 | Ang 14 | Vert 13 | SpAng 26 | SpVert 16 | Init 16   Reihenfolge: Sp. Ang. > Sp. Vert. > Ang. > Vert.
   Neben-Element: MUD   Dreier-Kombi: SWAMP
-  Start:      WATER_MAG_HYDRO_LANCE, WATER_WARD_TIDAL_DOME, *WATER_MAG_HYDRO_LANCE_SWIFT (bis dahin WATER_MAG_SMALL_CANNON)
-  Ei-Attacke: MUD_MAG_BOG_PULSE, MUD_WARD_SILT_SEAL, MUD_ARMOR_LANDSLIDE_WALL, *MUD_BUFF_T4
-  Meilenst.:  boss_1 SWAMP_MAG_SPORE_PUFF | boss_5 SWAMP_MAG_MIASMA_CLOUD | game_win *PASSIVE_MUD_T4
+  Start:      WATER_MAG_HYDRO_LANCE, WATER_WARD_TIDAL_DOME, WATER_MAG_HYDRO_LANCE_SWIFT
+  Ei-Attacke: MUD_MAG_BOG_PULSE, MUD_WARD_SILT_SEAL, MUD_ARMOR_LANDSLIDE_WALL, MUD_BUFF_T4
+  Meilenst.:  boss_1 SWAMP_MAG_SPORE_PUFF | boss_5 SWAMP_MAG_MIASMA_CLOUD | game_win PASSIVE_MUD_T4
 
 #45 Vulkanpanzer  [Legendär, FIRE]
   Werte: KP 22 | Ang 18 | Vert 26 | SpAng 18 | SpVert 10 | Init 6   Reihenfolge: Vert. > Ang. > Sp. Ang. > Sp. Vert.
   Neben-Element: MAGMA   Dreier-Kombi: VOLCANO
-  Start:      FIRE_ARMOR_FLAME_WALL, FIRE_PHYS_BLAZE_RUSH, *FIRE_PHYS_BLAZE_RUSH_SWIFT (bis dahin FIRE_PHYS_SMALL_PUNCH)
-  Ei-Attacke: MAGMA_ARMOR_OBSIDIAN_PLATE, MAGMA_PHYS_LAVA_FIST, MAGMA_PHYS_ERUPTION_SLAM, *MAGMA_BUFF_T4
-  Meilenst.:  boss_1 VOLCANO_ARMOR_LAVA_CRUST | boss_5 VOLCANO_ARMOR_BASALT_FORT | game_win *PASSIVE_MAGMA_T4
+  Start:      FIRE_ARMOR_FLAME_WALL, FIRE_PHYS_BLAZE_RUSH, FIRE_PHYS_BLAZE_RUSH_SWIFT
+  Ei-Attacke: MAGMA_ARMOR_OBSIDIAN_PLATE, MAGMA_PHYS_LAVA_FIST, MAGMA_PHYS_ERUPTION_SLAM, MAGMA_BUFF_T4
+  Meilenst.:  boss_1 VOLCANO_ARMOR_LAVA_CRUST | boss_5 VOLCANO_ARMOR_BASALT_FORT | game_win PASSIVE_MAGMA_T4
 
-#58 Schattenreißer  [Legendär, FIRE]
-  Werte: KP 16 | Ang 28 | Vert 14 | SpAng 18 | SpVert 12 | Init 12   Reihenfolge: Ang. > Sp. Ang. > Vert. > Sp. Vert.
-  Neben-Element: MAGMA   Dreier-Kombi: ASH_STORM
-  Start:      FIRE_PHYS_BLAZE_RUSH, FIRE_MAG_FIREBALL, *FIRE_PHYS_BLAZE_RUSH_SWIFT (bis dahin FIRE_PHYS_SMALL_PUNCH)
-  Ei-Attacke: MAGMA_PHYS_LAVA_FIST, MAGMA_MAG_MAGMA_BURST, MAGMA_PHYS_ERUPTION_SLAM, *MAGMA_BUFF_T4
-  Meilenst.:  boss_1 ASH_STORM_PHYS_SOOT_STRIKE | boss_5 ASH_STORM_PHYS_CINDER_CLAW | game_win *PASSIVE_MAGMA_T4
-
-#62 Gewitterfürst  [Legendär, AIR]
+#62 Gewitterfürst  [Legendär, WATER]
   Werte: KP 14 | Ang 18 | Vert 12 | SpAng 28 | SpVert 12 | Init 16   Reihenfolge: Sp. Ang. > Ang. > Vert. > Sp. Vert.
-  Neben-Element: LIGHTNING   Dreier-Kombi: THUNDERSTORM
-  Start:      AIR_MAG_TEMPEST_RAY, AIR_PHYS_CYCLONE_CLAW, *AIR_MAG_TEMPEST_RAY_SWIFT (bis dahin AIR_MAG_SMALL_CANNON)
-  Ei-Attacke: LIGHTNING_MAG_ARC_BOLT, LIGHTNING_PHYS_VOLT_PUNCH, LIGHTNING_MAG_THUNDERCLAP, LIGHTNING_BOON_OVERCHARGE
-  Meilenst.:  boss_1 THUNDERSTORM_MAG_STATIC_RAIN | boss_5 THUNDERSTORM_MAG_CHAIN_LIGHTNING | game_win *PASSIVE_LIGHTNING_T4
+  Neben-Element: STEAM   Dreier-Kombi: THUNDERSTORM
+  Start:      WATER_MAG_HYDRO_LANCE, WATER_PHYS_BREAKER, WATER_MAG_HYDRO_LANCE_SWIFT
+  Ei-Attacke: STEAM_MAG_STEAM_JET, STEAM_PHYS_SCALD_STRIKE, STEAM_PHYS_STEAM_HAMMER, STEAM_BUFF_T4
+  Meilenst.:  boss_1 THUNDERSTORM_MAG_STATIC_RAIN | boss_5 THUNDERSTORM_MAG_CHAIN_LIGHTNING | game_win PASSIVE_STEAM_T4
 
 #69 Lichtweber  [Legendär, AIR]
   Werte: KP 14 | Ang 8 | Vert 12 | SpAng 28 | SpVert 22 | Init 16   Reihenfolge: Sp. Ang. > Sp. Vert. > Vert. > Ang.
   Neben-Element: ICE   Dreier-Kombi: THUNDERSTORM
-  Start:      AIR_MAG_TEMPEST_RAY, AIR_WARD_SKY_DOME, *AIR_MAG_TEMPEST_RAY_SWIFT (bis dahin AIR_MAG_SMALL_CANNON)
-  Ei-Attacke: ICE_MAG_FROST_RAY, ICE_WARD_FROST_MIRROR, ICE_MAG_BLIZZARD, *ICE_BUFF_T4
-  Meilenst.:  boss_1 THUNDERSTORM_MAG_STATIC_RAIN | boss_5 THUNDERSTORM_MAG_CHAIN_LIGHTNING | game_win *PASSIVE_ICE_T4
+  Start:      AIR_MAG_TEMPEST_RAY, AIR_WARD_SKY_DOME, AIR_MAG_TEMPEST_RAY_SWIFT
+  Ei-Attacke: ICE_MAG_FROST_RAY, ICE_WARD_FROST_MIRROR, ICE_MAG_BLIZZARD, ICE_BUFF_T4
+  Meilenst.:  boss_1 THUNDERSTORM_MAG_STATIC_RAIN | boss_5 THUNDERSTORM_MAG_CHAIN_LIGHTNING | game_win PASSIVE_ICE_T4
 
 ==============================================================================================================
 MYTHISCH (5 Arten)
@@ -610,30 +582,30 @@ MYTHISCH (5 Arten)
 #51 Sonnensphinx  [Mythisch, AIR]
   Werte: KP 16 | Ang 20 | Vert 14 | SpAng 22 | SpVert 16 | Init 12   Reihenfolge: Sp. Ang. > Ang. > Sp. Vert. > Vert.
   Neben-Element: DUST   Dreier-Kombi: ASH_STORM
-  Start:      AIR_MAG_TEMPEST_RAY, AIR_PHYS_CYCLONE_CLAW, *AIR_MAG_TEMPEST_RAY_SWIFT (bis dahin AIR_MAG_SMALL_CANNON)
-  Ei-Attacke: DUST_MAG_DUST_DEVIL, DUST_PHYS_SAND_CLAW, ASH_STORM_PHYS_ASHEN_ROLLER, *DUST_BUFF_T4
-  Meilenst.:  boss_1 ASH_STORM_MAG_ASH_CYCLONE | boss_5 DUST_MAG_SANDSTORM | game_win *PASSIVE_DUST_T4
+  Start:      AIR_MAG_TEMPEST_RAY, AIR_PHYS_CYCLONE_CLAW, AIR_MAG_TEMPEST_RAY_SWIFT
+  Ei-Attacke: DUST_MAG_DUST_DEVIL, DUST_PHYS_SAND_CLAW, ASH_STORM_PHYS_ASHEN_ROLLER, DUST_BUFF_T4
+  Meilenst.:  boss_1 ASH_STORM_MAG_ASH_CYCLONE | boss_5 DUST_MAG_SANDSTORM | game_win PASSIVE_DUST_T4
 
 #71 Sonnenwächter  [Mythisch, FIRE]
   Werte: KP 16 | Ang 24 | Vert 20 | SpAng 18 | SpVert 14 | Init 8   Reihenfolge: Ang. > Vert. > Sp. Ang. > Sp. Vert.
   Neben-Element: LIGHTNING   Dreier-Kombi: THUNDERSTORM
-  Start:      FIRE_PHYS_BLAZE_RUSH, FIRE_ARMOR_FLAME_WALL, *FIRE_PHYS_BLAZE_RUSH_SWIFT (bis dahin FIRE_PHYS_SMALL_PUNCH)
+  Start:      FIRE_PHYS_BLAZE_RUSH, FIRE_ARMOR_FLAME_WALL, FIRE_PHYS_BLAZE_RUSH_SWIFT
   Ei-Attacke: LIGHTNING_PHYS_VOLT_PUNCH, LIGHTNING_ARMOR_STATIC_PLATE, THUNDERSTORM_MAG_SKYFALL, LIGHTNING_BOON_OVERCHARGE
-  Meilenst.:  boss_1 THUNDERSTORM_PHYS_STORM_FIST | boss_5 LIGHTNING_MAG_THUNDERCLAP | game_win *PASSIVE_LIGHTNING_T4
+  Meilenst.:  boss_1 THUNDERSTORM_PHYS_STORM_FIST | boss_5 LIGHTNING_MAG_THUNDERCLAP | game_win PASSIVE_LIGHTNING_T4
 
 #73 Moorschrecken  [Mythisch, EARTH]
   Werte: KP 18 | Ang 26 | Vert 16 | SpAng 18 | SpVert 12 | Init 10   Reihenfolge: Ang. > Sp. Ang. > Vert. > Sp. Vert.
   Neben-Element: MUD   Dreier-Kombi: SWAMP
-  Start:      EARTH_PHYS_QUAKE_STOMP, EARTH_MAG_GEO_PULSE, *EARTH_PHYS_QUAKE_STOMP_SWIFT (bis dahin EARTH_PHYS_SMALL_PUNCH)
-  Ei-Attacke: MUD_PHYS_MUD_SLAM, MUD_MAG_BOG_PULSE, SWAMP_MAG_BOG_MAW, *MUD_BUFF_T4
-  Meilenst.:  boss_1 SWAMP_PHYS_ROOT_LASH | boss_5 MUD_ARMOR_LANDSLIDE_WALL | game_win *PASSIVE_MUD_T4
+  Start:      EARTH_PHYS_QUAKE_STOMP, EARTH_MAG_GEO_PULSE, EARTH_PHYS_QUAKE_STOMP_SWIFT
+  Ei-Attacke: MUD_PHYS_MUD_SLAM, MUD_MAG_BOG_PULSE, SWAMP_MAG_BOG_MAW, MUD_BUFF_T4
+  Meilenst.:  boss_1 SWAMP_PHYS_ROOT_LASH | boss_5 MUD_ARMOR_LANDSLIDE_WALL | game_win PASSIVE_MUD_T4
 
 #79 Seherdämon  [Mythisch, WATER]
   Werte: KP 18 | Ang 16 | Vert 14 | SpAng 26 | SpVert 14 | Init 12   Reihenfolge: Sp. Ang. > Ang. > Vert. > Sp. Vert.
   Neben-Element: ICE   Dreier-Kombi: SWAMP
-  Start:      WATER_MAG_HYDRO_LANCE, WATER_PHYS_BREAKER, *WATER_MAG_HYDRO_LANCE_SWIFT (bis dahin WATER_MAG_SMALL_CANNON)
-  Ei-Attacke: ICE_MAG_FROST_RAY, ICE_PHYS_ICICLE_JAB, SWAMP_MAG_BOG_MAW, *ICE_BUFF_T4
-  Meilenst.:  boss_1 SWAMP_MAG_MIASMA_CLOUD | boss_5 ICE_MAG_BLIZZARD | game_win *PASSIVE_ICE_T4
+  Start:      WATER_MAG_HYDRO_LANCE, WATER_PHYS_BREAKER, WATER_MAG_HYDRO_LANCE_SWIFT
+  Ei-Attacke: ICE_MAG_FROST_RAY, ICE_PHYS_ICICLE_JAB, SWAMP_MAG_BOG_MAW, ICE_BUFF_T4
+  Meilenst.:  boss_1 SWAMP_MAG_MIASMA_CLOUD | boss_5 ICE_MAG_BLIZZARD | game_win PASSIVE_ICE_T4
 
 #84 Weltenfresser  [Mythisch, EARTH | FIRE | WATER | AIR]
   "skills_manual": true - wird von Hand gepflegt, nicht verändert
@@ -642,12 +614,12 @@ MYTHISCH (5 Arten)
 
 TEIL E: UMSETZUNG (Reihenfolge)
 ===============================
-1. Fehlende Skills aus Teil C in skills.gd anlegen (_boon_skill für Buffs, _passive_skill für Passive,
-   _attack_skill/_shield_skill für die schnellen Varianten) + Übersetzungen (localization/*.translation).
-2. Benutzte Draft-Skills in die richtigen Listen verschieben (Basis/Kombi-Angriffe -> egg_skills, Schilde ->
-   defensive_skills, Buffs -> buff_skills, Passive -> passive_skills). Kombi-Top, Stufe-4-Buffs/-Passive: "trainer": false.
-3. node tools/skill_verteilung.js erneut laufen lassen: trägt die jetzt vorhandenen neuen Skills in monmap.gd ein.
-   skill_regeln.txt Punkt 4 an die neuen Regeln anpassen.
+1. ERLEDIGT: fehlende Skills in skills.gd angelegt (Bausteine _buff_skill/_team_buff_skill, Passive, schnelle Varianten),
+   Namen in localization/translations.csv. Stufe-4-Passive: element_power 15 auf die ganze Kombi (der Angriff muss alle
+   Elemente der Kombi haben, damage_factor).
+2. ERLEDIGT: das Werkzeug sortiert bei jedem Lauf auch die Skill-Listen in skills.gd (Pool, milestone_skills,
+   reward_skills fürs Couvert, draft_skills), siehe skill_regeln.txt Punkt 7 und 8.
+3. ERLEDIGT: node tools/skill_verteilung.js hat alles in monmap.gd eingetragen, skill_regeln.txt ist angepasst.
 4. Prüfen: Konfigurator (Ei-Attacken, Meilenstein-Hinweise), wilde Monster/Trainer würfeln aus dem gefüllten Pool,
    Wiki "Unbenutzt" sollte danach fast leer sein.
 5. Balance testen (tools/damage_sim.js): vor allem die schnellen Stufe-3-Skills (CD 0) und die Stufe-4-Buffs.

@@ -685,7 +685,7 @@ func _open_relic_reward() -> void:
 
 func _open_skill_reward() -> void:
 	if Skills.reward_offers().is_empty():
-		Helper.show_unlock_message("Alle einzigartigen Skills sind schon gelernt")
+		Helper.show_unlock_message("Keine Couvert-Skills mehr übrig")
 		return
 	close()
 	map.view_container.add_child(map.SKILL_REWARD_SCENE.instantiate())
@@ -806,8 +806,9 @@ func _refresh_stats_page() -> void:
 	var growth := DebugSettings.growth()
 	_growth_value.text = _format_growth(growth)
 	var total := DebugSettings.reserved_total()
-	var growth_text := "Growth %s (Standard %s = wie gewohnt, 0 = kein Wachstum): jede Stufe bringt %d %% des üblichen Zuwachses." % [
-		_format_growth(growth), _format_growth(DebugSettings.DEFAULT_GROWTH), roundi(DebugSettings.growth_factor() * 100)]
+	var growth_text := "Growth %s (Standard %s, %s = voller Zuwachs aus der BST, 0 = kein Wachstum): jede Stufe bringt %d %% des vollen Zuwachses." % [
+		_format_growth(growth), _format_growth(DebugSettings.DEFAULT_GROWTH), _format_growth(DebugSettings.FULL_GROWTH),
+		roundi(DebugSettings.growth_factor() * 100)]
 	_stats_summary.text = ("Reserviert: %d %%, üblicher Weg: %d %%. Bei %d BST: %d fest, %d werden wie gewohnt verteilt.
 " +
 		"%s Stufe 1 bleibt gleich. Gilt sofort, auch im laufenden Run.") % [
