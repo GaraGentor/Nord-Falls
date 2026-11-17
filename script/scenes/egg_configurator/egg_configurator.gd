@@ -1,287 +1,311 @@
 extends Control
 
 ## Konfigurator nach "Reise beginnen": wähle 3 Ei-Attacken, die dein Monster in den Run mitnimmt.
-## Zur Wahl stehen die Standard-Ei-Attacken der Art und alle freigeschalteten.
-## Alle stehen als große Karten (wie im Kampf) da, gesperrte liegen in Ketten.
-## Die gewählten stehen in der festen Box über der scrollbaren Auswahl, gewählt wird per Ziehen: auf einen Platz ziehen setzt die Attacke ein (eine dort liegende fliegt zurück
-## bzw. tauscht den Platz), aus der Box herausziehen und irgendwo loslassen legt sie zurück in die Auswahl.
+## Zur Wahl stehen die Standard-Ei-Attacken der Art und alle freigeschalteten, dahinter die gesperrten.
+##
+## Ein Kellerraum (ei_attacken.jpg): das Monster steht hinter dem Tisch (eigene Ebene ei_attacken_tisch.png),
+## die Attacken schweben als Karten in einem Bogen von der linken Truhe über den Tisch zur rechten.
+## Höchstens VISIBLE schweben gleichzeitig. Scrollen (Mausrad, Wischen) schiebt sie weiter: die einen
+## verschwinden in der einen Truhe, aus der anderen kommen neue.
+## Mitgenommen wird, was auf dem Tisch liegt: Karte auf einen Platz ziehen (eine dort liegende fliegt zurück in
+## den Bogen bzw. tauscht bei Tisch-zu-Tisch den Platz) oder antippen. Vom Tisch gezogen und irgendwo losgelassen
+## oder angetippt fliegt sie zurück in den Bogen.
+## Gesperrte Attacken lassen sich nicht nehmen: das Monster sagt in einer Sprechblase, wie man sie freischaltet.
+##
+## Alle Positionen stehen in Pixeln des Hintergrundbilds, das den Bildschirm füllt (wie stretch "cover").
+## Jede Karte hat ein Ziel (Bogen, Tisch, Truhe, Finger) und gleitet in _process dorthin.
 
 const SKILLS_TO_PICK := 3
-const TEXT_COLOR := IronPlate.TEXT_COLOR
-const BG_TOP := Color(0.560784, 0.301961, 0.85098, 1)
-const MAP_BACKGROUND := preload("res://script/scenes/world_map/map_background.gdshader")
-const BATTLE_CARD := preload("res://script/scenes/battle/battle_card.tscn")
-const GOLD := SkillCardPaper.GOLD
+## so viele Karten schweben gleichzeitig im Bogen
+const VISIBLE := 6
+## Hintergrund ohne Tisch (ei_attacken.jpg, die Stelle mit der Umgebung aufgefüllt)
+const BACKGROUND := preload("res://assets/sczene_backgrounds/ei_attacken_ohne_tisch.jpg")
+## nur der Tisch aus ei_attacken.jpg, liegt vergrößert vor dem Monster
+const TABLE := preload("res://assets/sczene_backgrounds/ei_attacken_tisch.png")
+## Tisch um TABLE_ZOOM vergrößert, TABLE_PIVOT (Mitte unten zwischen den Beinen) bleibt stehen
+const TABLE_ZOOM := 1.20
+const TABLE_PIVOT := Vector2(686, 312)
+const BACKGROUND_MATERIAL := preload("res://script/ui/shader/background_living_material.tres")
+const IMAGE_SIZE := Vector2(1376, 768)
 const GO_ICON := preload("res://assets/ui/icons/check_go.svg")
-const GRID_SEPARATION := 16
-const EMPTY_SLOT_COLOR := Color(0.2, 0.2, 0.22, 0.85)
-const EMPTY_SLOT_BORDER := Color(0.36, 0.36, 0.38)
-const FLY_SECONDS := 0.35
-## Durchsichtigkeit der Kachel, während sie gezogen wird
-const DRAG_ALPHA := 0.35
-const DRAG_PREVIEW_ALPHA := 0.85
-## Mit dem Finger beginnt das Ziehen einer Karte erst nach so langem Drücken, vorher scrollt Wischen die Auswahl
+const TEXT_COLOR := IronPlate.TEXT_COLOR
+const GOLD := SkillCardPaper.GOLD
+
+## Bogen als quadratische Bézierkurve von Truhe zu Truhe (Bildpixel)
+const ARC_START := Vector2(222, 488)
+const ARC_CONTROL := Vector2(688, -290)
+const ARC_END := Vector2(1154, 488)
+## Anteil der Kurvenneigung, um den sich die Karten im Bogen drehen
+const ARC_TILT := 0.25
+## Kartengröße ohne Skalierung (Bildpixel), skaliert je nach Ort
+const CARD_SIZE := Vector2(180, 210)
+const ARC_SCALE := 0.85
+const TABLE_SCALE := 0.88
+## Karten auf dem Tisch liegen: in der Tiefe gestaucht, darunter ein Schatten
+const LYING_SQUASH := 1.0
+const SHADOW_OFFSET := Vector2(5, 7)
+const SHADOW_COLOR := Color(0, 0, 0, 0.45)
+## vergrößert und aufgerichtet zum Lesen (Maus darüber bzw. Finger gedrückt halten)
+const HOVER_SCALE := 1.25
+const DRAG_SCALE := 0.9
+## Plätze auf der Tischplatte (Mitte der Karte) und ihre leichte Schräglage
+const SLOT_CENTERS: Array[Vector2] = [Vector2(514, 552), Vector2(686, 552), Vector2(858, 552)]
+const SLOT_TILT: Array[float] = [-0.04, 0.015, 0.05]
+## auf der Tischplatte losgelassen landet die Karte auf dem nächsten Platz
+## (Tischplatte bei TABLE_ZOOM 1.2 um TABLE_PIVOT samt den Karten darauf)
+const TABLE_RECT := Rect2(395, 455, 586, 200)
+## Das Monster steht hinter dem Tisch auf dem Boden: die sichtbaren Füße (unterer Rand des nicht
+## durchsichtigen Bildteils) stehen auf MON_FEET, an der Wand hinter dem Tisch.
+## Der sichtbare Teil wird MON_HEIGHT hoch, breite Monster höchstens MON_MAX_WIDTH breit.
+const MON_FEET := Vector2(688, 648)
+const MON_HEIGHT := 420.0
+const MON_MAX_WIDTH := 660.0
+## Sprechblase rechts neben dem Kopf, Zipfel zeigt nach links zum Monster
+const BUBBLE_AT := Vector2(820, 225)
+const BUBBLE_WIDTH := 380.0
+## Mitte der Zeile mit Zähler und Aufbruch-Knopf unter dem Tisch
+const BOTTOM_ROW_Y := 736.0
+## Bereich des Bogens für die Tutorial-Hervorhebung
+const ARC_AREA := Rect2(120, 30, 1136, 460)
+
+## wie schnell Karten ihrem Ziel folgen (exponentiell, pro Sekunde)
+const FOLLOW_SPEED := 12.0
+const SCROLL_SPEED := 10.0
+## Wackeln einer gesperrten Karte, die man nehmen wollte
+const SHAKE_PIXELS := 6.0
+const SHAKE_DECAY := 3.0
+## Mit dem Finger beginnt das Ziehen einer Karte erst nach so langem Drücken, vorher scrollt Wischen den Bogen
 const LONG_PRESS_USEC := 300_000
 ## So weit darf sich der Finger bzw. die Maus bewegen, damit es noch als Antippen zählt
 const TAP_DISTANCE := DragScroll.DEADZONE
 
+## Eine Attacke samt Karte und deren aktueller Darstellung (Mitte in Bildschirmpixeln)
+class Entry:
+	var name: String
+	var card: EggSkillCard
+	## "" = wählbar, sonst Überschrift und Hinweis, wie man sie freischaltet
+	var locked_label := ""
+	var hint := ""
+	## Platz auf dem Tisch, -1 = schwebt im Bogen
+	var slot := -1
+	var center := Vector2.ZERO
+	var scale := 0.0
+	## Höhe im Verhältnis zur Breite: 1 = aufrecht, LYING_SQUASH = liegt auf dem Tisch
+	var squash := 1.0
+	var rotation := 0.0
+	var alpha := 0.0
+	var shake := 0.0
+
+	func locked() -> bool:
+		return locked_label != ""
+
 var _mon: Monster
-## Skill-Name pro Platz in der Box, "" = leer
-var _slot_skills: Array[String] = []
-var _slots: Array[Control] = []
-var _available: Array = []
-## Skill-Name -> Kachel, auch während sie fliegt
-var _cards := {}
-## Skill-Name -> Knoten im Grid (Kachel oder Platzhalter für eine zurückfliegende Kachel)
-var _grid_nodes := {}
-var _flying := {}
-## Skill-Name der gerade gezogenen Kachel, "" = keine
-var _dragging := ""
-var _grid: GridContainer
-var _scroll: ScrollContainer
-## oberste Ebene, auf der die Kacheln fliegen
-var _fly_layer: Control
+var _entries: Array[Entry] = []
+## Karte pro Tischplatz, null = leer
+var _slots: Array = []
+## Position im Bogen: Index der ersten sichtbaren schwebenden Karte (gleitet zu _scroll_target)
+var _scroll := 0.0
+var _scroll_target := 0.0
+
+var _background: TextureRect
+var _table: TextureRect
+var _monster: TextureRect
+## ganzes Monsterbild in Bildpixeln des Hintergrunds, so gelegt, dass die Füße auf MON_FEET stehen
+var _mon_rect: Rect2
+var _slot_marks: Control
+var _card_layer: Control
+var _bubble: SpeechBubble
+var _bottom_row: HBoxContainer
 var _counter_label: Label
 var _go_button: Button
-## Hinweis zum Ziehen, weicht der Vorschau einer gesperrten Attacke
-var _pick_hint: Label
-## Spielkarte der zuletzt angeklickten gesperrten Attacke: was man freischaltet
-var _detail_card: Control
-## darunter: wie man sie freischaltet
-var _detail_title: Label
-var _detail_hint: Label
+## unsichtbare Flächen für die Tutorial-Hervorhebung
+var _table_area: Control
+var _arc_area: Control
+var _mon_area: Control
+## sichtbarer Teil des Monsters in Bildpixeln des Hintergrunds
+var _mon_visible: Rect2
+
+## gedrückt: Karte (oder null = Hintergrund), wo und wann, mit dem Finger?
+var _pressing := false
+var _press_entry: Entry
+var _press_pos := Vector2.ZERO
+var _press_usec := 0
+var _press_touch := false
+## "" = noch unklar (Antippen), "drag" = Karte ziehen, "swipe" = Bogen scrollen, "blocked" = gesperrte Karte
+var _mode := ""
+var _swipe_start_scroll := 0.0
+## Tischplatz unter der gezogenen Karte, -1 = keiner
+var _drop_slot := -1
+var _hovered: Entry
 ## zuletzt angeklickte gesperrte Karte, leuchtet am Rahmen
-var _selected_locked: EggSkillCard
+var _selected_locked: Entry
 ## Zeitpunkt, seit dem ein Finger liegt (0 = kein Finger, z. B. Maus)
 var _touch_down_usec := 0
-## Wo die angetippte Karte gedrückt wurde
-var _tap_start := Vector2.ZERO
+var _time := 0.0
+## letzte Position von Maus bzw. Finger (lokal), aus den Eingabe-Events statt vom System-Cursor
+var _pointer := Vector2.ZERO
 
 func _ready() -> void:
 	_mon = State.mons[0]
-	_slot_skills.resize(SKILLS_TO_PICK)
-	_slot_skills.fill("")
-	# Im Tutorial bleiben die Plätze leer, der Spieler zieht die Attacken selbst hoch.
-	# Sonst die zuletzt für diese Art gewählten Attacken, Lücken füllen die beim Ei gewürfelten.
-	if not Tutorial.should_show("egg_configurator"):
-		var available := Skills.get_available_egg_skills(_mon._name)
-		var preselect: Array = SaveManager.get_egg_loadout(_mon._name).filter(func(skill_name): return available.has(skill_name))
-		# nur Attacken, für die unten auch eine Karte gebaut wird (sonst sähe der Platz leer aus, wäre aber belegt)
-		preselect.append_array(_mon._skills.map(func(skill): return skill.get("name", "")).filter(func(skill_name): return available.has(skill_name)))
-		var filled := 0
-		for skill_name in preselect:
-			if filled < SKILLS_TO_PICK and not _slot_skills.has(skill_name):
-				_slot_skills[filled] = skill_name
-				filled += 1
+	clip_contents = true
+	mouse_filter = Control.MOUSE_FILTER_STOP
+	_slots.resize(SKILLS_TO_PICK)
+	_slots.fill(null)
 	_build()
+	_place_preselected()
+	resized.connect(_layout)
+	_layout()
 	_refresh()
 	Tutorial.trigger("egg_configurator")
 
+# ─────────────────────────
+# Aufbau
+
 func _build() -> void:
-	var background := ColorRect.new()
-	var bg_material := ShaderMaterial.new()
-	bg_material.shader = MAP_BACKGROUND
-	bg_material.set_shader_parameter("bottom_color", Color.BLACK)
-	bg_material.set_shader_parameter("top_color", BG_TOP)
-	bg_material.set_shader_parameter("wave_amp", 0.115)
-	bg_material.set_shader_parameter("wave_size", 1.0)
-	bg_material.set_shader_parameter("wave_time_mul", 0.933)
-	bg_material.set_shader_parameter("total_phases", 8)
-	# Pixel-Look wie im Laden
-	bg_material.set_shader_parameter("living_pixels", true)
-	bg_material.set_shader_parameter("pixel_size", 4.0)
-	bg_material.set_shader_parameter("amplitude", 0.0)
-	bg_material.set_shader_parameter("loop_seconds", 19.365)
-	bg_material.set_shader_parameter("particle_min_size", 1.0)
-	bg_material.set_shader_parameter("particle_max_size", 1.2)
-	bg_material.set_shader_parameter("flicker", 0.15)
-	bg_material.set_shader_parameter("color_levels", 8.0)
-	bg_material.set_shader_parameter("dither_strength", 1.0)
-	bg_material.set_shader_parameter("dither_scale", 2.0)
-	bg_material.set_shader_parameter("dither_fps", 10.0)
-	background.material = bg_material
-	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(background)
+	_background = _image_layer(BACKGROUND, BACKGROUND_MATERIAL)
+	add_child(_background)
 
-	var margin := MarginContainer.new()
-	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	for side in ["left", "right", "top", "bottom"]:
-		margin.add_theme_constant_override("margin_" + side, 40)
-	add_child(margin)
+	_monster = TextureRect.new()
+	Monmap.show_on(_monster, _mon._name, Monmap.MEDIUM)
+	_monster.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_monster.stretch_mode = TextureRect.STRETCH_SCALE
+	_mon_rect = _monster_rect(_monster.texture)
+	_monster.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_monster)
 
-	var content := HBoxContainer.new()
-	content.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	content.add_theme_constant_override("separation", 40)
-	margin.add_child(content)
+	# Tisch vor dem Monster; transparente Stellen dürfen keine Partikel werfen
+	var table_material: ShaderMaterial = BACKGROUND_MATERIAL.duplicate()
+	table_material.set_shader_parameter("alpha_cutoff", 0.5)
+	_table = _image_layer(TABLE, table_material)
+	add_child(_table)
 
-	# links: im Rahmen das gewählte Monster mit Typ und Werten, darunter der Hinweis zum Ziehen
-	# bzw. nach Klick auf eine gesperrte Attacke ihre Spielkarte und wie man sie freischaltet
-	var left := VBoxContainer.new()
-	left.add_theme_constant_override("separation", GRID_SEPARATION)
-	content.add_child(left)
-	var mon_box := VBoxContainer.new()
-	mon_box.custom_minimum_size = Vector2(300, 0)
-	mon_box.add_theme_constant_override("separation", 4)
-	var mon_panel := PanelContainer.new()
-	IronPlate.frame(mon_panel, mon_box, 16, 16)
-	mon_panel.add_to_group("tut_cfg_mon")
-	left.add_child(mon_panel)
-	var texture := TextureRect.new()
-	Monmap.show_on(texture, _mon._name, Monmap.MEDIUM)
-	texture.custom_minimum_size = Vector2(120, 120)
-	texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	mon_box.add_child(texture)
-	mon_box.add_child(_label(Helper.mon_display_name(_mon._name), 26, SkillCardPaper.readable_color(Helper.color_by_mon(_mon))))
-	var chip_row := HBoxContainer.new()
-	chip_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	chip_row.custom_minimum_size.y = 32
-	RewardDialog.add_element_chip(chip_row, _mon._type)
-	mon_box.add_child(chip_row)
-	mon_box.add_child(StatsGrid.stacked_for(_mon))
+	_slot_marks = Control.new()
+	_slot_marks.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_slot_marks.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_slot_marks.draw.connect(_draw_slots)
+	add_child(_slot_marks)
 
-	_pick_hint = _label(tr("CONFIGURATOR_PICK_HINT"), 14, TEXT_COLOR)
-	_pick_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_pick_hint.custom_minimum_size = Vector2(300, 0)
-	left.add_child(_pick_hint)
+	# das Monsterbild hat durchsichtige Ränder: hervorgehoben wird nur der sichtbare Körper
+	_mon_area = _tutorial_area("tut_cfg_mon")
+	_table_area = _tutorial_area("tut_cfg_slots")
+	_arc_area = _tutorial_area("tut_cfg_grid")
 
-	_detail_card = BATTLE_CARD.instantiate()
-	_detail_card.custom_minimum_size = Vector2(220, 190)
-	_detail_card.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	_detail_card.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	_detail_card.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_detail_card.visible = false
-	left.add_child(_detail_card)
-	var detail_texts := VBoxContainer.new()
-	detail_texts.add_theme_constant_override("separation", 4)
-	left.add_child(detail_texts)
-	_detail_title = _label("", 16, GOLD)
-	_detail_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_detail_title.custom_minimum_size = Vector2(300, 0)
-	_detail_title.visible = false
-	detail_texts.add_child(_detail_title)
-	_detail_hint = _label("", 14, TEXT_COLOR)
-	_detail_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_detail_hint.custom_minimum_size = Vector2(300, 0)
-	_detail_hint.visible = false
-	detail_texts.add_child(_detail_hint)
-
-	# rechts: oben Zähler und Aufbruch, darunter die feste Box, darunter die scrollbare Auswahl
-	var right := VBoxContainer.new()
-	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	right.add_theme_constant_override("separation", GRID_SEPARATION)
-	content.add_child(right)
-	right.add_child(_build_top_row())
-	right.add_child(_build_slot_box())
-
-	_scroll = ScrollContainer.new()
-	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	_scroll.add_to_group("tut_cfg_grid")
-	right.add_child(_scroll)
-	_grid = GridContainer.new()
-	_grid.columns = SKILLS_TO_PICK
-	_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_grid.add_theme_constant_override("h_separation", GRID_SEPARATION)
-	_grid.add_theme_constant_override("v_separation", GRID_SEPARATION)
-	_scroll.add_child(_grid)
-	# die Karten fangen den Finger ab, ohne DragScroll käme Godots Touch-Scroll nie an
-	DragScroll.attach(_scroll)
-
-	_available = Skills.get_available_egg_skills(_mon._name)
-	# Sicherheitsnetz: Plätze mit Attacken ohne Karte (gibt es nicht mehr / nicht für diese Art) leeren
-	for i in _slot_skills.size():
-		if _slot_skills[i] != "" and not _available.has(_slot_skills[i]):
-			push_warning("Ei-Konfigurator: Attacke '%s' ist für '%s' nicht verfügbar, Platz bleibt leer" % [_slot_skills[i], _mon._name])
-			_slot_skills[i] = ""
-	for skill_name in _available:
-		var card := EggSkillCard.create(Skills.get_skill(skill_name), _mon)
+	_card_layer = Control.new()
+	_card_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_card_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(_card_layer)
+	for skill_name in Skills.get_available_egg_skills(_mon._name):
+		var entry := _add_entry(Skills.get_skill(skill_name), "", "")
 		# wie die Attacke freigeschaltet wurde
 		var source := Skills.get_egg_skill_source(_mon._name, skill_name)
 		if not source.is_empty():
-			card.tooltip_text = tr(source[0]) + "\n" + tr(source[1])
-		card.set_drag_forwarding(_get_card_drag_data.bind(skill_name), _can_drop_on_slot, _drop_on_slot)
-		card.gui_input.connect(_on_card_input.bind(skill_name))
-		_cards[skill_name] = card
-		var slot_index := _slot_skills.find(skill_name)
-		if slot_index >= 0:
-			_slots[slot_index].add_child(card)
-		else:
-			_grid.add_child(card)
-			_grid_nodes[skill_name] = card
+			entry.card.tooltip_text = tr(source[0]) + "\n" + tr(source[1])
 	for skill_name in Skills.get_locked_egg_skills(_mon._name):
-		_add_locked_card(Skills.get_skill(skill_name), "CONFIGURATOR_LOCKED", "EGG_SKILL_HINT")
+		_add_entry(Skills.get_skill(skill_name), "CONFIGURATOR_LOCKED", "EGG_SKILL_HINT")
 	for milestone in Skills.get_locked_milestones(_mon._name):
-		_add_locked_card(Skills.get_skill(milestone.skill), "CONFIGURATOR_LOCKED_MILESTONE", milestone.hint)
+		_add_entry(Skills.get_skill(milestone.skill), "CONFIGURATOR_LOCKED_MILESTONE", milestone.hint)
 	for bounty in Skills.get_locked_bounties(_mon._name):
-		_add_locked_card(Skills.get_skill(bounty.skill), "CONFIGURATOR_LOCKED_BOUNTY", bounty.hint)
+		_add_entry(Skills.get_skill(bounty.skill), "CONFIGURATOR_LOCKED_BOUNTY", bounty.hint)
 
-	_fly_layer = Control.new()
-	_fly_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_fly_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(_fly_layer)
-
-func _build_top_row() -> Control:
-	var row := HBoxContainer.new()
-	row.alignment = BoxContainer.ALIGNMENT_END
-	row.add_theme_constant_override("separation", GRID_SEPARATION)
+	_bottom_row = HBoxContainer.new()
+	_bottom_row.add_theme_constant_override("separation", 16)
 	_counter_label = _label("", 22, TEXT_COLOR)
 	var counter_panel := PanelContainer.new()
 	counter_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	IronPlate.frame(counter_panel, _counter_label, 16, 10)
-	row.add_child(counter_panel)
+	# das Tutorial stellt Trainer und Sprechblase nicht darüber
+	counter_panel.add_to_group("tut_keep_clear")
+	_bottom_row.add_child(counter_panel)
 	_go_button = RewardDialog.icon_button(GO_ICON)
 	_go_button.tooltip_text = tr("CONFIGURATOR_GO")
 	_go_button.focus_mode = Control.FOCUS_NONE
 	_go_button.pressed.connect(_on_go_pressed)
 	_go_button.add_to_group("tut_cfg_go")
-	row.add_child(_go_button)
-	return row
+	_bottom_row.add_child(_go_button)
+	add_child(_bottom_row)
 
-## Box mit den gewählten Attacken, bleibt beim Scrollen der Auswahl stehen
-func _build_slot_box() -> Control:
-	var panel := PanelContainer.new()
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", GRID_SEPARATION)
-	IronPlate.frame(panel, row, 12, 12)
-	panel.add_to_group("tut_cfg_slots")
-	var empty := StyleBoxFlat.new()
-	empty.bg_color = EMPTY_SLOT_COLOR
-	empty.border_color = EMPTY_SLOT_BORDER
-	empty.set_border_width_all(2)
-	for i in SKILLS_TO_PICK:
-		var slot := PanelContainer.new()
-		slot.custom_minimum_size.y = EggSkillCard.HEIGHT
-		slot.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		slot.add_theme_stylebox_override("panel", empty)
-		slot.set_drag_forwarding(Callable(), _can_drop_on_slot, _drop_on_slot)
-		row.add_child(slot)
-		_slots.append(slot)
-	return panel
+	_bubble = SpeechBubble.new(BUBBLE_WIDTH, false, true)
+	add_child(_bubble)
 
-func _add_locked_card(skill: Dictionary, locked_label: String, hint: String) -> void:
-	var card := EggSkillCard.create(skill, _mon, locked_label, hint)
-	card.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	card.gui_input.connect(func(event: InputEvent):
-		if _is_tap(event):
-			_show_locked_detail(card, skill, locked_label, hint))
-	_grid.add_child(card)
+## Bild so groß und so gelegt, dass sein sichtbarer Teil MON_HEIGHT hoch ist und unten mittig auf MON_FEET steht
+func _monster_rect(texture: Texture2D) -> Rect2:
+	var texture_size := texture.get_size() if texture else Vector2.ONE
+	var used := Rect2(Vector2.ZERO, texture_size)
+	var source := texture.get_image() if texture else null
+	if source and not source.is_empty():
+		if source.is_compressed():
+			source = source.duplicate()
+			source.decompress()
+		var used_px := source.get_used_rect()
+		if used_px.size != Vector2i.ZERO:
+			# Bild kann in anderer Auflösung vorliegen als die Textur
+			var k := texture_size / Vector2(source.get_size())
+			used = Rect2(Vector2(used_px.position) * k, Vector2(used_px.size) * k)
+	var fit := minf(MON_HEIGHT / used.size.y, MON_MAX_WIDTH / used.size.x)
+	var feet := used.position + Vector2(used.size.x / 2.0, used.size.y)
+	_mon_visible = Rect2(MON_FEET - Vector2(used.size.x / 2.0, used.size.y) * fit, used.size * fit)
+	return Rect2(MON_FEET - feet * fit, texture_size * fit)
 
-## Gesperrte Attacke angeklickt: links ihre Spielkarte (was man freischaltet) und wie man sie freischaltet
-func _show_locked_detail(card: EggSkillCard, skill: Dictionary, locked_label: String, hint: String) -> void:
-	if _selected_locked:
-		_selected_locked.set_selected(false)
-	_selected_locked = card
-	card.set_selected(true)
-	_pick_hint.visible = false
-	_detail_card.mon = _mon
-	_detail_card.skill = skill
-	_detail_card.visible = true
-	_detail_title.text = tr(locked_label)
-	_detail_title.visible = true
-	_detail_hint.text = tr(hint)
-	_detail_hint.visible = true
+func _image_layer(texture: Texture2D, material_: Material) -> TextureRect:
+	var rect := TextureRect.new()
+	rect.texture = texture
+	rect.material = material_
+	rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	rect.stretch_mode = TextureRect.STRETCH_SCALE
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return rect
+
+func _tutorial_area(group: String) -> Control:
+	var area := Control.new()
+	area.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	area.add_to_group(group)
+	add_child(area)
+	return area
+
+func _add_entry(skill: Dictionary, locked_label: String, hint: String) -> Entry:
+	var entry := Entry.new()
+	entry.name = skill.get("name", "")
+	entry.locked_label = locked_label
+	entry.hint = hint
+	entry.card = EggSkillCard.create(skill, _mon, locked_label, hint)
+	entry.card.set_title_size(15)
+	entry.card.custom_minimum_size = CARD_SIZE
+	entry.card.size = CARD_SIZE
+	entry.card.pivot_offset = CARD_SIZE / 2
+	entry.card.visible = false
+	entry.card.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	entry.card.gui_input.connect(_on_card_input.bind(entry))
+	entry.card.mouse_entered.connect(func(): _hovered = entry)
+	entry.card.mouse_exited.connect(func():
+		if _hovered == entry:
+			_hovered = null)
+	_card_layer.add_child(entry.card)
+	_entries.append(entry)
+	return entry
+
+## Im Tutorial bleibt der Tisch leer, der Spieler legt die Attacken selbst hin.
+## Sonst die zuletzt für diese Art gewählten Attacken, Lücken füllen die beim Ei gewürfelten.
+func _place_preselected() -> void:
+	if Tutorial.should_show("egg_configurator"):
+		return
+	var preselect: Array = SaveManager.get_egg_loadout(_mon._name).duplicate()
+	preselect.append_array(_mon._skills.map(func(skill): return skill.get("name", "")))
+	var filled := 0
+	for skill_name in preselect:
+		if filled >= SKILLS_TO_PICK:
+			break
+		var entry := _find(skill_name)
+		if entry == null or entry.locked() or entry.slot >= 0:
+			continue
+		entry.slot = filled
+		_slots[filled] = entry
+		filled += 1
+
+func _find(skill_name: String) -> Entry:
+	for entry in _entries:
+		if entry.name == skill_name and not entry.locked():
+			return entry
+	return null
 
 func _label(text: String, font_size: int, color: Color) -> Label:
 	var label := Label.new()
@@ -292,188 +316,341 @@ func _label(text: String, font_size: int, color: Color) -> Label:
 	return label
 
 # ─────────────────────────
-# Ziehen und Ablegen
+# Bildpixel -> Bildschirm
 
-## Beim Ziehen hängt eine Kopie der Kachel an der Maus, das Original bleibt blass an seinem Platz
-func _get_card_drag_data(_at_position: Vector2, skill_name: String) -> Variant:
-	if _flying.has(skill_name) or _dragging != "":
-		return null
-	# Finger kurz aufgelegt und gleich gewischt: das ist Scrollen (DragScroll), kein Ziehen
-	if _touch_down_usec > 0 and Time.get_ticks_usec() - _touch_down_usec < LONG_PRESS_USEC:
-		return null
-	var card: Control = _cards[skill_name]
-	var preview := Control.new()
-	preview.modulate.a = DRAG_PREVIEW_ALPHA
-	var tile := EggSkillCard.create(Skills.get_skill(skill_name), _mon)
-	tile.custom_minimum_size = card.size
-	tile.size = card.size
-	# dort festhalten, wo die Karte gepackt wurde (at_position kann vom Beschreibungstext kommen)
-	tile.position = -card.get_local_mouse_position()
-	preview.add_child(tile)
-	set_drag_preview(preview)
-	card.modulate.a = DRAG_ALPHA
-	_dragging = skill_name
-	return {"egg_skill": skill_name}
+func _image_scale() -> float:
+	return maxf(size.x / IMAGE_SIZE.x, size.y / IMAGE_SIZE.y)
 
-## Abgelegt wird nur auf einem Platz der Box (auf der leeren Fläche oder der Kachel darin)
-func _can_drop_on_slot(_at_position: Vector2, data: Variant) -> bool:
-	if not (data is Dictionary and data.has("egg_skill")):
-		return false
-	var slot_index := _slot_under_mouse()
-	if slot_index < 0:
-		return false
-	var target := _slot_skills[slot_index]
-	return target == "" or not _flying.has(target)
+func _to_screen(point: Vector2) -> Vector2:
+	var s := _image_scale()
+	return (size - IMAGE_SIZE * s) / 2.0 + point * s
 
-## Die gezogene Attacke kommt auf den Platz. Lag dort schon eine, fliegt sie zurück in die Auswahl
-## oder, kam die gezogene aus einem anderen Platz, auf diesen (Tausch).
-func _drop_on_slot(_at_position: Vector2, data: Variant) -> void:
-	var slot_index := _slot_under_mouse()
-	var skill_name: String = data.egg_skill
-	var from_slot := _slot_skills.find(skill_name)
-	if slot_index < 0 or from_slot == slot_index:
+func _rect_to_screen(rect: Rect2) -> Rect2:
+	return Rect2(_to_screen(rect.position), rect.size * _image_scale())
+
+func _layout() -> void:
+	var image_rect := _rect_to_screen(Rect2(Vector2.ZERO, IMAGE_SIZE))
+	_background.position = image_rect.position
+	_background.size = image_rect.size
+	var table_image := _rect_to_screen(Rect2(TABLE_PIVOT * (1.0 - TABLE_ZOOM), IMAGE_SIZE * TABLE_ZOOM))
+	_table.position = table_image.position
+	_table.size = table_image.size
+	var mon_rect := _rect_to_screen(_mon_rect)
+	_monster.position = mon_rect.position
+	_monster.size = mon_rect.size
+	var mon_area := _rect_to_screen(_mon_visible)
+	_mon_area.position = mon_area.position
+	_mon_area.size = mon_area.size
+	# Tutorial-Loch um die drei Tischplätze, folgt SLOT_CENTERS von selbst
+	var table_rect := _slot_rect(0)
+	for i in range(1, SKILLS_TO_PICK):
+		table_rect = table_rect.merge(_slot_rect(i))
+	table_rect = table_rect.grow(6.0)
+	_table_area.position = table_rect.position
+	_table_area.size = table_rect.size
+	var arc_rect := _rect_to_screen(ARC_AREA)
+	_arc_area.position = arc_rect.position
+	_arc_area.size = arc_rect.size
+	_bubble.position = _to_screen(BUBBLE_AT)
+	_bottom_row.reset_size()
+	var row_center := _to_screen(Vector2(IMAGE_SIZE.x / 2.0, BOTTOM_ROW_Y))
+	_bottom_row.position = Vector2(row_center.x - _bottom_row.size.x / 2.0, minf(row_center.y - _bottom_row.size.y / 2.0, size.y - _bottom_row.size.y - 8.0))
+
+func _slot_rect(index: int) -> Rect2:
+	var card_size := CARD_SIZE * Vector2(1.0, LYING_SQUASH) * TABLE_SCALE * _image_scale()
+	return Rect2(_to_screen(SLOT_CENTERS[index]) - card_size / 2.0, card_size)
+
+# ─────────────────────────
+# Bewegung
+
+func _floating() -> Array[Entry]:
+	var floating: Array[Entry] = []
+	for entry in _entries:
+		if entry.slot < 0:
+			floating.append(entry)
+	return floating
+
+func _max_scroll() -> float:
+	return maxf(_floating().size() - VISIBLE, 0)
+
+func _arc_point(t: float) -> Vector2:
+	var u := 1.0 - t
+	return u * u * ARC_START + 2.0 * u * t * ARC_CONTROL + t * t * ARC_END
+
+func _arc_angle(t: float) -> float:
+	var tangent := 2.0 * (1.0 - t) * (ARC_CONTROL - ARC_START) + 2.0 * t * (ARC_END - ARC_CONTROL)
+	return tangent.angle() * ARC_TILT
+
+func _process(delta: float) -> void:
+	_time += delta
+	if _mode != "swipe":
+		_scroll = lerpf(_scroll, _scroll_target, 1.0 - exp(-SCROLL_SPEED * delta))
+	var follow := 1.0 - exp(-FOLLOW_SPEED * delta)
+	var s := _image_scale()
+	var mouse := _pointer
+	var floating := _floating()
+	for entry in _entries:
+		var target_center: Vector2
+		var target_scale: float
+		var target_rotation := 0.0
+		var target_alpha := 1.0
+		var target_squash := 1.0
+		# zum Lesen groß: Maus darüber, oder Finger liegt still lange genug darauf
+		var hovered := entry == _hovered and _mode == "" and not _pressing
+		if _reading() and entry == _press_entry:
+			hovered = true
+		if _mode == "drag" and entry == _press_entry:
+			target_center = mouse
+			target_scale = DRAG_SCALE * s
+			# beim Ziehen folgt die Karte dem Finger ohne Verzögerung
+			entry.center = mouse
+		elif entry.slot >= 0:
+			target_center = _to_screen(SLOT_CENTERS[entry.slot])
+			target_scale = (HOVER_SCALE if hovered else TABLE_SCALE) * s
+			target_rotation = 0.0 if hovered else SLOT_TILT[entry.slot]
+			# liegt auf dem Tisch, zum Lesen richtet sie sich auf
+			target_squash = 1.0 if hovered else LYING_SQUASH
+		else:
+			# Platz im Bogen: 0 = in der linken Truhe, 1 = in der rechten
+			var u := (floating.find(entry) - _scroll + 0.5) / VISIBLE
+			var t := clampf(u, 0.0, 1.0)
+			# an den Rändern schrumpft die Karte in die Truhe
+			var edge := clampf(minf(u, 1.0 - u) * VISIBLE * 2.0, 0.0, 1.0)
+			target_center = _to_screen(_arc_point(t))
+			target_scale = (HOVER_SCALE if hovered and edge >= 1.0 else ARC_SCALE) * s * edge
+			target_rotation = 0.0 if hovered else _arc_angle(t)
+			target_alpha = edge
+			if entry.alpha < 0.01 and edge > 0.0:
+				# kommt aus der Truhe, auf deren Seite sie steht
+				entry.center = _to_screen(ARC_START if u < 0.5 else ARC_END)
+				entry.scale = 0.0
+		if hovered:
+			# vergrößert ganz im Bild bleiben
+			var half := CARD_SIZE * target_scale / 2.0
+			target_center = target_center.clamp(half, (size - half).max(half))
+		entry.center = entry.center.lerp(target_center, follow)
+		entry.scale = lerpf(entry.scale, target_scale, follow)
+		entry.squash = lerpf(entry.squash, target_squash, follow)
+		entry.rotation = lerp_angle(entry.rotation, target_rotation, follow)
+		entry.alpha = lerpf(entry.alpha, target_alpha, follow) if target_alpha > 0.0 else move_toward(entry.alpha, 0.0, delta * 6.0)
+		entry.shake = move_toward(entry.shake, 0.0, delta * SHAKE_DECAY)
+		_apply(entry)
+	_raise_on_top()
+	_slot_marks.queue_redraw()
+
+func _apply(entry: Entry) -> void:
+	var card := entry.card
+	var shake := Vector2(sin(_time * 50.0) * SHAKE_PIXELS * entry.shake, 0.0)
+	card.position = entry.center - CARD_SIZE / 2.0 + shake
+	card.scale = Vector2(1.0, entry.squash) * maxf(entry.scale, 0.001)
+	card.rotation = entry.rotation
+	card.modulate.a = clampf(entry.alpha, 0.0, 1.0)
+	card.visible = entry.alpha > 0.01 and entry.scale > 0.02
+	# halb in der Truhe lässt sich nichts greifen
+	card.mouse_filter = Control.MOUSE_FILTER_STOP if entry.alpha > 0.6 else Control.MOUSE_FILTER_IGNORE
+
+## Gezogene bzw. vergrößerte Karte liegt über den anderen
+func _raise_on_top() -> void:
+	var top: Entry = _press_entry if _mode == "drag" else _hovered
+	if top and top.card.get_index() != _card_layer.get_child_count() - 1:
+		_card_layer.move_child(top.card, -1)
+
+## Schatten der liegenden Karten auf der Tischplatte, darüber die Umrisse freier Plätze
+func _draw_slots() -> void:
+	for entry: Entry in _slots:
+		if entry == null or (_mode == "drag" and entry == _press_entry):
+			continue
+		var shadow_scale := Vector2(1.0, entry.squash) * entry.scale
+		_slot_marks.draw_set_transform(entry.center + SHADOW_OFFSET * _image_scale(), entry.rotation, shadow_scale)
+		_slot_marks.draw_rect(Rect2(-CARD_SIZE / 2.0, CARD_SIZE), Color(SHADOW_COLOR, SHADOW_COLOR.a * entry.alpha))
+	_slot_marks.draw_set_transform(Vector2.ZERO)
+	for i in SKILLS_TO_PICK:
+		var highlighted := _mode == "drag" and _drop_slot == i
+		if _slots[i] != null and not highlighted:
+			continue
+		var rect := _slot_rect(i)
+		var alpha := 0.9 if highlighted else 0.35
+		_slot_marks.draw_rect(rect, Color(GOLD, alpha * 0.25), true)
+		_slot_marks.draw_rect(rect, Color(GOLD, alpha), false, 2.0)
+
+# ─────────────────────────
+# Eingabe
+
+func _on_card_input(event: InputEvent, entry: Entry) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		_start_press(entry, event.global_position)
+		entry.card.accept_event()
+
+func _gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		_start_press(null, event.global_position)
+		accept_event()
+
+## Finger liegt still auf einer Karte, länger als für ein Antippen: Karte wird zum Lesen groß
+func _reading() -> bool:
+	return _pressing and _press_touch and _mode == "" and _press_entry != null \
+			and Time.get_ticks_usec() - _press_usec >= LONG_PRESS_USEC
+
+func _start_press(entry: Entry, at: Vector2) -> void:
+	if _pressing:
 		return
-	var old := _slot_skills[slot_index]
-	_slot_skills[slot_index] = skill_name
-	if from_slot >= 0:
-		_slot_skills[from_slot] = old if _cards.has(old) else ""
-		if old != "" and _cards.has(old):
-			_fly_to_slot(old, from_slot)
-	else:
-		_grid_nodes.erase(skill_name)
-		if old != "" and _cards.has(old):
-			_fly_to_grid(old)
-	var card: Control = _cards[skill_name]
-	card.get_parent().remove_child(card)
-	_slots[slot_index].add_child(card)
-	_refresh()
+	_bubble.dismiss()
+	_pressing = true
+	_press_entry = entry
+	_press_pos = at
+	_press_usec = Time.get_ticks_usec()
+	_press_touch = _touch_down_usec > 0
+	_mode = ""
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch and event.index == 0:
 		_touch_down_usec = Time.get_ticks_usec() if event.pressed else 0
-
-## Gedrückt und an fast derselben Stelle losgelassen. Nach einem Wischen meldet DragScroll das Loslassen weit weg.
-func _is_tap(event: InputEvent) -> bool:
-	if not (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT):
-		return false
-	if event.pressed:
-		_tap_start = event.global_position
-		return false
-	return event.global_position.distance_to(_tap_start) < TAP_DISTANCE
-
-## Antippen statt Ziehen: aus der Auswahl auf den ersten freien Platz, aus der Box zurück in die Auswahl
-func _on_card_input(event: InputEvent, skill_name: String) -> void:
-	if not _is_tap(event) or _flying.has(skill_name) or _dragging != "":
+	if event is InputEventMouse:
+		_pointer = get_global_transform().affine_inverse() * event.global_position
+	if event is InputEventMouseButton and event.pressed and not _pressing \
+			and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+		_bubble.dismiss()
+		_scroll_by(1.0 if event.button_index == MOUSE_BUTTON_WHEEL_DOWN else -1.0)
+		get_viewport().set_input_as_handled()
 		return
-	var slot_index := _slot_skills.find(skill_name)
-	if slot_index >= 0:
-		_slot_skills[slot_index] = ""
-		_fly_to_grid(skill_name)
+	if not _pressing:
+		return
+	if event is InputEventMouseMotion:
+		_on_press_motion(event.global_position)
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+		_on_release()
+
+func _on_press_motion(at: Vector2) -> void:
+	var moved := at - _press_pos
+	if _mode == "" and moved.length() > TAP_DISTANCE:
+		var long_press := Time.get_ticks_usec() - _press_usec >= LONG_PRESS_USEC
+		var entry := _press_entry
+		if entry and entry.slot < 0 and _press_touch and not long_press:
+			# Finger kurz aufgelegt und gleich gewischt: das scrollt den Bogen
+			_start_swipe()
+		elif entry and entry.locked():
+			_mode = "blocked"
+			_say_locked(entry)
+		elif entry:
+			_mode = "drag"
+			_hovered = null
+		else:
+			_start_swipe()
+	if _mode == "swipe":
+		var spacing := (ARC_END.x - ARC_START.x) / VISIBLE * _image_scale()
+		_scroll_target = clampf(_swipe_start_scroll - moved.x / spacing, 0.0, _max_scroll())
+		_scroll = _scroll_target
+	elif _mode == "drag":
+		_drop_slot = _slot_at(_pointer)
+
+func _start_swipe() -> void:
+	_mode = "swipe"
+	_swipe_start_scroll = _scroll_target
+
+func _on_release() -> void:
+	match _mode:
+		"drag":
+			_drop(_press_entry)
+		"swipe":
+			_scroll_target = clampf(roundf(_scroll_target), 0.0, _max_scroll())
+		"":
+			# nach langem Draufhalten (Lesen) zählt Loslassen nicht als Antippen
+			if _press_entry and not _reading():
+				_tap(_press_entry)
+	_pressing = false
+	_press_entry = null
+	_mode = ""
+	_drop_slot = -1
+
+func _scroll_by(steps: float) -> void:
+	_scroll_target = clampf(roundf(_scroll_target + steps), 0.0, _max_scroll())
+
+## Tischplatz unter dem Punkt; irgendwo auf der Tischplatte zählt der nächstgelegene
+func _slot_at(point: Vector2) -> int:
+	for i in SKILLS_TO_PICK:
+		if _slot_rect(i).grow(8.0).has_point(point):
+			return i
+	if not _rect_to_screen(TABLE_RECT).has_point(point):
+		return -1
+	var best := 0
+	for i in SKILLS_TO_PICK:
+		if absf(_to_screen(SLOT_CENTERS[i]).x - point.x) < absf(_to_screen(SLOT_CENTERS[best]).x - point.x):
+			best = i
+	return best
+
+## Antippen: aus dem Bogen auf den ersten freien Platz, vom Tisch zurück in den Bogen
+func _tap(entry: Entry) -> void:
+	if entry.locked():
+		_say_locked(entry)
+		return
+	if entry.slot >= 0:
+		_take_off_table(entry)
 	else:
-		var free := _slot_skills.find("")
+		var free := _slots.find(null)
 		if free < 0:
 			return
-		_slot_skills[free] = skill_name
-		_fly_to_slot(skill_name, free)
+		_put_on_table(entry, free)
 	_refresh()
 
-func _slot_under_mouse() -> int:
-	var mouse := get_global_mouse_position()
-	for i in _slots.size():
-		if _slots[i].get_global_rect().has_point(mouse):
-			return i
-	return -1
-
-## Aus der Box gezogen und nicht auf einem Platz losgelassen: zurück in die Auswahl
-func _notification(what: int) -> void:
-	if what != NOTIFICATION_DRAG_END or _dragging == "":
-		return
-	var skill_name := _dragging
-	_dragging = ""
-	_cards[skill_name].modulate.a = 1.0
-	if get_viewport().gui_is_drag_successful():
-		return
-	var slot_index := _slot_skills.find(skill_name)
-	if slot_index < 0:
-		return
-	_slot_skills[slot_index] = ""
-	var card: Control = _cards[skill_name]
-	var index := _grid_index(skill_name)
-	card.get_parent().remove_child(card)
-	_grid.add_child(card)
-	_grid.move_child(card, index)
-	_grid_nodes[skill_name] = card
+## Abgelegt auf einem Platz: die Karte kommt dorthin. Lag dort schon eine, fliegt sie zurück in den Bogen
+## oder, kam die gezogene von einem anderen Platz, auf diesen (Tausch). Daneben losgelassen: vom Tisch
+## gezogene fliegt zurück in den Bogen, aus dem Bogen gezogene an ihren Platz dort.
+func _drop(entry: Entry) -> void:
+	if _drop_slot < 0:
+		if entry.slot >= 0:
+			_take_off_table(entry)
+	elif entry.slot != _drop_slot:
+		var old: Entry = _slots[_drop_slot]
+		var from := entry.slot
+		if from >= 0:
+			_slots[from] = null
+		_put_on_table(entry, _drop_slot)
+		if old:
+			if from >= 0:
+				_put_on_table(old, from)
+			else:
+				_take_off_table(old)
 	_refresh()
 
-## Aus der Auswahl nach oben auf den grauen Platz. Die Auswahl rückt sofort zusammen.
-func _fly_to_slot(skill_name: String, slot_index: int) -> void:
-	_grid_nodes.erase(skill_name)
-	var slot := _slots[slot_index]
-	_fly(skill_name, slot.get_global_rect(), func(card: Control): slot.add_child(card))
+func _put_on_table(entry: Entry, slot: int) -> void:
+	var index := _floating().find(entry)
+	entry.slot = slot
+	_slots[slot] = entry
+	# der Bogen rückt nach, ohne dass die Karten dahinter springen
+	if index >= 0 and index < _scroll_target:
+		_scroll_target -= 1.0
+		_scroll -= 1.0
+	_scroll_target = clampf(_scroll_target, 0.0, _max_scroll())
 
-## Aus der Box zurück an den Platz in der Auswahl, den die Reihenfolge vorgibt.
-## Erst hält ein Platzhalter die Stelle frei, seine Position steht nach dem nächsten Layout fest.
-func _fly_to_grid(skill_name: String) -> void:
-	var placeholder := Control.new()
-	placeholder.custom_minimum_size.y = EggSkillCard.HEIGHT
-	placeholder.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	placeholder.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var index := _grid_index(skill_name)
-	_grid.add_child(placeholder)
-	_grid.move_child(placeholder, index)
-	_grid_nodes[skill_name] = placeholder
-	_flying[skill_name] = true
-	# sofort aus dem Platz lösen, dort liegt evtl. schon die neue Kachel
-	_lift(_cards[skill_name])
-	await get_tree().process_frame
-	await get_tree().process_frame
-	var target := placeholder.get_global_rect()
-	# liegt der Platz außerhalb der Scroll-Ansicht, fliegt die Kachel bis an deren Rand
-	var view := _scroll.get_global_rect()
-	target.position.y = clampf(target.position.y, view.position.y, maxf(view.end.y - target.size.y, view.position.y))
-	_fly(skill_name, target, func(card: Control):
-		_grid.add_child(card)
-		_grid.move_child(card, placeholder.get_index())
-		_grid_nodes[skill_name] = card
-		_grid.remove_child(placeholder)
-		placeholder.queue_free())
+## Zurück in den Bogen, der dorthin scrollt, wo sie in der Reihenfolge hingehört
+func _take_off_table(entry: Entry) -> void:
+	_slots[entry.slot] = null
+	entry.slot = -1
+	var index := _floating().find(entry)
+	if index < _scroll_target:
+		_scroll_target = index
+	elif index > _scroll_target + VISIBLE - 1:
+		_scroll_target = index - VISIBLE + 1
+	_scroll_target = clampf(_scroll_target, 0.0, _max_scroll())
 
-## Stelle in der Auswahl: hinter den noch dort liegenden Attacken, die in der Reihenfolge davor stehen
-func _grid_index(skill_name: String) -> int:
-	var index := 0
-	for other in _available:
-		if other == skill_name:
-			break
-		if _grid_nodes.has(other):
-			index += 1
-	return index
+## Gesperrte Attacke angeklickt oder gezogen: das Monster sagt, wie man sie freischaltet
+func _say_locked(entry: Entry) -> void:
+	if _selected_locked:
+		_selected_locked.card.set_selected(false)
+	_selected_locked = entry
+	entry.card.set_selected(true)
+	entry.shake = 1.0
+	_bubble.say(tr(entry.locked_label) + "\n" + tr(entry.hint))
 
-## Die Kachel löst sich aus ihrem Container und fliegt auf der obersten Ebene zum Ziel
-func _fly(skill_name: String, target: Rect2, on_arrived: Callable) -> void:
-	var card: Control = _cards[skill_name]
-	_flying[skill_name] = true
-	if card.get_parent() != _fly_layer:
-		_lift(card)
-	var tween := create_tween().set_parallel().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(card, "global_position", target.position, FLY_SECONDS)
-	tween.tween_property(card, "size", target.size, FLY_SECONDS)
-	tween.chain().tween_callback(func():
-		_fly_layer.remove_child(card)
-		on_arrived.call(card)
-		card.mouse_filter = Control.MOUSE_FILTER_STOP
-		_flying.erase(skill_name))
-
-## Kachel an ihrer aktuellen Stelle auf die oberste Ebene heben
-func _lift(card: Control) -> void:
-	var from := card.get_global_rect()
-	card.get_parent().remove_child(card)
-	_fly_layer.add_child(card)
-	card.global_position = from.position
-	card.size = from.size
-	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+# ─────────────────────────
+# Aufbruch
 
 func _selected() -> Array[String]:
-	return _slot_skills.filter(func(skill_name): return skill_name != "")
+	var names: Array[String] = []
+	for entry in _slots:
+		if entry != null:
+			names.append(entry.name)
+	return names
 
 func _refresh() -> void:
 	var selected := _selected()
@@ -483,6 +660,8 @@ func _refresh() -> void:
 	if selected.size() == SKILLS_TO_PICK and not has_usable:
 		_counter_label.text = tr("CONFIGURATOR_NEED_USABLE")
 	_go_button.disabled = selected.size() != SKILLS_TO_PICK or not has_usable
+	if is_node_ready():
+		_layout.call_deferred()
 	if selected.size() == SKILLS_TO_PICK:
 		Events.egg_loadout_complete.emit()
 

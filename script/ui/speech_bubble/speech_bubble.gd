@@ -64,6 +64,16 @@ func _follow_bottom() -> void:
 	_tail_holder.position = Vector2(size.x / 2, size.y)
 	pivot_offset = _tail_holder.position
 
+## Vorzeitig ausblenden, z. B. sobald der Spieler weitermacht
+func dismiss() -> void:
+	if not visible:
+		return
+	if _tween:
+		_tween.kill()
+	_tween = create_tween()
+	_tween.tween_property(self, "modulate:a", 0.0, FADE_SECONDS)
+	_tween.tween_callback(hide)
+
 func say(text: String) -> void:
 	_label.text = text
 	reset_size()

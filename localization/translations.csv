@@ -15,7 +15,6 @@ CONFIGURATOR_SKILL_STATS,Cost {cost} · CD {cooldown} ·,Kosten {cost} · CD {co
 CONFIGURATOR_TIER,Tier {tier},Stufe {tier}
 CONFIGURATOR_LOCKED,Locked (catch & sacrifice),Gesperrt (fangen & opfern)
 CONFIGURATOR_LOCKED_MILESTONE,Locked (milestone),Gesperrt (Meilenstein)
-CONFIGURATOR_PICK_HINT,"Tap a move or drag it into a slot above to take it along","Tippe eine Attacke an oder zieh sie oben in einen Platz, um sie mitzunehmen"
 EGG_SKILL_TAG,{skill} (Egg),{skill} (Ei)
 EGG_SKILL_HINT,Egg move: catch this monster and put this move into the bag in the judgement to unlock it permanently,"Ei-Attacke: Fange dieses Monster und leg die Attacke im Gericht in die Tasche, um sie dauerhaft freizuschalten"
 EGG_SKILL_UNLOCKED,{skill} unlocked for {mon}!,{skill} für {mon} freigeschaltet!
@@ -782,8 +781,9 @@ TUT_SEL_PICK,"The color of the egg shows the rarity: rarer monsters are stronger
 TUT_SEL_INFO,"Here you see species, element, rarity, growth and stats of the monster in front. Its unlocked egg moves lie below it.","Hier siehst du Art, Element, Seltenheit, Wachstum und Werte des Monsters vorne. Darunter liegen seine freigeschalteten Ei-Attacken."
 TUT_SEL_GO,"Don't like it? Bring another one to the front. Ready? Then set off!","Gefällt es dir nicht? Hol ein anderes nach vorne. Bereit? Dann brich auf!"
 TUT_CFG_MON,"Your starter. Its element decides which skills it can use.","Dein Start-Monster. Sein Element entscheidet, welche Skills es einsetzen kann."
-TUT_CFG_SLOTS,"It takes three egg moves into the run. These three slots are still empty.","Es nimmt drei Ei-Attacken mit in den Run. Diese drei Plätze sind noch leer."
-TUT_CFG_GRID,"Below are all egg moves of the species. Drag three of them up into the slots (or tap them). Locked ones show how to unlock them in future runs.","Darunter stehen alle Ei-Attacken der Art. Zieh drei davon hoch in die Plätze (oder tippe sie an). Gesperrte zeigen, wie du sie in künftigen Runs freischaltest."
+TUT_CFG_SLOTS,"It takes three egg moves into the run: whatever lies on the table. The three spots are still empty.","Es nimmt drei Ei-Attacken mit in den Run: alles, was auf dem Tisch liegt. Die drei Plätze sind noch leer."
+TUT_CFG_ARC,"Above float all egg moves of the species. Scroll for more from the chests.","Oben schweben alle Ei-Attacken der Art. Scrollen holt weitere aus den Truhen."
+TUT_CFG_GRID,"Drag three onto the table (or tap them).","Zieh drei auf den Tisch (oder tippe sie an)."
 TUT_CFG_GO,"Happy with your choice? Then off to the map!","Zufrieden mit deiner Wahl? Dann auf zur Karte!"
 TUT_MAP_INTRO,"This is the map of your first biome. The biome boss waits at the very top. Defeat it and you move on to the next biome.","Das ist die Karte deines ersten Bioms. Ganz oben wartet der Biom-Boss. Besiegst du ihn, geht es ins nächste Biom."
 TUT_MAP_TEAM,"Up here is your team. Lost HP does not come back on its own, only at a camp fire.","Hier oben steht dein Team. Verlorenes Leben kommt nicht von selbst zurück, nur am Lagerfeuer."

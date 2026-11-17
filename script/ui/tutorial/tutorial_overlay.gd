@@ -25,6 +25,13 @@ const BUBBLE_GAP := 8.0
 const BUBBLE_DROP := 40.0
 ## Aufschlag pro Ausweichstelle der Blase, in verdeckter Fläche (Pixel²): etwa ein 40 Pixel hoher Streifen
 const CANDIDATE_PENALTY := BUBBLE_WIDTH * 40.0
+## Aufschlag pro Ausweichstelle des Porträts (unten, Mitte, oben; bevorzugte Seite zuerst)
+const SPEAKER_PENALTY := SPEAKER_SIZE.x * 20.0
+## Gewicht verdeckter Fläche: Ziele und übrige Knöpfe der Szene (der Hintergrund zählt 0)
+const HOLE_WEIGHT := 4.0
+const BUTTON_WEIGHT := 4.0
+## so oft wird nachgesehen, ob Knöpfe der Szene erschienen oder verschwunden sind
+const BUTTONS_REFRESH_SECONDS := 0.25
 ## so viel größer als das Ziel ist das Loch
 const HOLE_PADDING := 8.0
 const FADE_SECONDS := 0.25
@@ -68,6 +75,9 @@ var _bounds := Rect2()
 ## Verbindungen, auf die der aktuelle Schritt wartet: [[Signal, Callable], ...]
 var _waiting: Array = []
 var _presses_left := 0
+## sichtbare Knöpfe der Szene beim Beginn des Schritts: Porträt und Blase sollen sie nicht verdecken
+var _scene_buttons: Array = []
+var _buttons_timer := 0.0
 
 func _init() -> void:
 	layer = LAYER
@@ -163,7 +173,11 @@ func _show_step(index: int) -> void:
 	elif wait.begins_with("signal:"):
 		_wait_for_signal(wait.trim_prefix("signal:"))
 	_update_holes()
-	_speaker_right = _choose_speaker_side()
+	_scene_buttons = _visible_buttons()
+	if _npc_speaks:
+		_speaker_right = _choose_speaker_side()
+	else:
+		_place_speaker(false)
 	# die Blase wird pro Schritt neu gebaut, ihr Zipfel zeigt immer zum Sprecher
 	if _bubble:
 		_bubble.queue_free()
@@ -179,12 +193,39 @@ func _show_step(index: int) -> void:
 	_bubble.say(tr(step.text))
 	_layout()
 
-## Das Porträt stellt sich auf die Seite ohne Ziel, der NPC der Szene steht, wo er steht
+## Der NPC der Szene steht, wo er steht: die Blase kommt auf die Seite zur Bildmitte
 func _choose_speaker_side() -> bool:
-	if _npc_speaks:
-		var npc := _npc()
-		return npc == null or _rect_of(npc).get_center().x >= _blocker.size.x / 2
-	return _bounds.size.x <= 0.0 or _bounds.get_center().x < _blocker.size.x / 2
+	var npc := _npc()
+	return npc == null or _rect_of(npc).get_center().x >= _blocker.size.x / 2
+
+## Porträt an den Rand stellen, wo es am wenigsten Ziele und Knöpfe verdeckt: bevorzugt unten auf der Seite
+## ohne Ziel, sonst auf der anderen Seite, sonst in der Mitte oder oben am Rand.
+## keep_side: Seite bleibt (z. B. bei Größenänderung, der Zipfel der Blase zeigt schon dorthin)
+func _place_speaker(keep_side: bool) -> void:
+	var screen := _blocker.size
+	var preferred := _speaker_right if keep_side else (_bounds.size.x <= 0.0 or _bounds.get_center().x < screen.x / 2)
+	var sides: Array[bool] = [preferred]
+	if not keep_side:
+		sides.append(not preferred)
+	var best_cost := INF
+	var index := 0
+	for y in [screen.y - SPEAKER_SIZE.y, (screen.y - SPEAKER_SIZE.y) / 2.0, 0.0]:
+		for right in sides:
+			var position := Vector2(screen.x - SPEAKER_SIZE.x if right else 0.0, y)
+			var cost := _covered_area(Rect2(position, SPEAKER_SIZE), false) + index * SPEAKER_PENALTY
+			index += 1
+			if cost < best_cost:
+				best_cost = cost
+				_speaker.position = position
+				_speaker_right = right
+
+## Knöpfe der Szene und alles, was sie in die Gruppe "tut_keep_clear" legt (z. B. Anzeigen neben Knöpfen)
+func _visible_buttons() -> Array:
+	if _scene == null:
+		return []
+	var nodes := _scene.find_children("*", "BaseButton", true, false)
+	nodes.append_array(get_tree().get_nodes_in_group("tut_keep_clear"))
+	return nodes.filter(func(node): return node is Control and node.is_visible_in_tree())
 
 ## Wartet auf alle sichtbaren Knöpfe der Gruppe (z. B. jedes Startfeld der Karte).
 ## Entstehen sie erst später (Szene baut sich noch auf), wird beim nächsten Frame erneut gesucht.
@@ -240,7 +281,7 @@ func _close() -> void:
 func is_stale() -> bool:
 	return get_tree().current_scene != _scene and get_tree().current_scene != null
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	# Szene wurde verlassen, bevor die Sequenz fertig war: abbrechen, sie kommt beim nächsten Mal wieder
 	if is_stale():
 		_close()
@@ -248,6 +289,13 @@ func _process(_delta: float) -> void:
 	# Ziele können sich bewegen (fallende Eier, Scrollen), daher jedes Frame neu
 	_update_holes()
 	if _npc_speaks:
+		_layout()
+		return
+	# Knöpfe können während des Schritts erscheinen (z. B. "Reise beginnen" nach dem Ausbrüten): Porträt weicht aus
+	_buttons_timer -= delta
+	if _buttons_timer <= 0.0:
+		_buttons_timer = BUTTONS_REFRESH_SECONDS
+		_scene_buttons = _visible_buttons()
 		_layout()
 
 func _update_holes() -> void:
@@ -296,7 +344,7 @@ func _layout() -> void:
 		anchor = _rect_of(npc) if npc else Rect2(screen.x, screen.y / 2, 0, 0)
 		top = anchor.position.y + anchor.size.y * NPC_MOUTH
 	else:
-		_speaker.position = Vector2(screen.x - SPEAKER_SIZE.x if _speaker_right else 0.0, screen.y - SPEAKER_SIZE.y)
+		_place_speaker(true)
 		anchor = _speaker.get_rect()
 		top = anchor.position.y + BUBBLE_DROP
 	var x := anchor.position.x - BUBBLE_WIDTH - BUBBLE_GAP if _speaker_right else anchor.end.x + BUBBLE_GAP
@@ -307,9 +355,11 @@ func _layout() -> void:
 		_box.position = Vector2(clampf(_bounds.end.x - BUBBLE_WIDTH, BUBBLE_GAP, max_x),
 			clampf(_bounds.position.y - _box.size.y - BUBBLE_GAP, BUBBLE_GAP, max_y))
 		return
-	# neben dem Sprecher auf Mundhöhe, sonst ganz oben, ganz unten oder über ihm: die Stelle, die am wenigsten von den Zielen verdeckt
+	# neben dem Sprecher auf Mundhöhe, knapp über den Knöpfen darunter, ganz oben, ganz unten oder über ihm:
+	# die Stelle, die am wenigsten Ziele und Knöpfe verdeckt
 	var candidates: Array[Vector2] = [
 		Vector2(x, top),
+		Vector2(x, _above_buttons(x, top) - _box.size.y - BUBBLE_GAP),
 		Vector2(x, BUBBLE_GAP),
 		Vector2(x, max_y),
 		Vector2(above_x, anchor.position.y - _box.size.y),
@@ -321,16 +371,34 @@ func _layout() -> void:
 	for i in candidates.size():
 		var candidate := candidates[i]
 		# frühere Stellen sind näher am Sprecher und gewinnen, solange sie nicht deutlich mehr verdecken
-		var cover := _covered_area(Rect2(candidate, _box.size)) + i * CANDIDATE_PENALTY
+		var cover := _covered_area(Rect2(candidate, _box.size), true) + i * CANDIDATE_PENALTY
 		if cover < best_cover:
 			best = candidate
 			best_cover = cover
 	_box.position = best
 
-func _covered_area(rect: Rect2) -> float:
+## Oberkante des obersten Knopfs unterhalb von from_y, der in der Spalte der Blase (ab x) liegt; sonst der Bildschirmrand
+func _above_buttons(x: float, from_y: float) -> float:
+	var limit := _blocker.size.y
+	for button: Control in _scene_buttons:
+		if not is_instance_valid(button):
+			continue
+		var rect := _rect_of(button)
+		if rect.position.y > from_y and rect.end.x > x and rect.position.x < x + BUBBLE_WIDTH:
+			limit = minf(limit, rect.position.y)
+	return limit
+
+## Wie viel das Rechteck verdeckt: Ziele zählen HOLE_WEIGHT-fach, übrige Knöpfe der Szene BUTTON_WEIGHT-fach.
+## with_speaker: das Porträt zählt wie ein Ziel (für die Blase)
+func _covered_area(rect: Rect2, with_speaker: bool) -> float:
 	var area := 0.0
 	for hole in _blocker.holes:
-		area += rect.intersection(hole).get_area()
+		area += rect.intersection(hole).get_area() * HOLE_WEIGHT
+	for button: Control in _scene_buttons:
+		if is_instance_valid(button):
+			area += rect.intersection(_rect_of(button)).get_area() * BUTTON_WEIGHT
+	if with_speaker and _speaker.visible:
+		area += rect.intersection(_speaker.get_rect()).get_area() * HOLE_WEIGHT
 	return area
 
 func _first_target(step: Dictionary) -> String:

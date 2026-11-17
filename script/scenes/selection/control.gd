@@ -262,6 +262,8 @@ func _add_failures() -> void:
 	_failures.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
 	_failures.add_theme_constant_override("outline_size", 6)
 	_failures.mouse_filter = MOUSE_FILTER_IGNORE
+	# das Tutorial stellt Trainer und Sprechblase nicht darüber
+	_failures.add_to_group("tut_keep_clear")
 	stage.add_child(_failures)
 	_failures.set_anchors_and_offsets_preset(PRESET_CENTER_BOTTOM, PRESET_MODE_MINSIZE, FAILURES_BOTTOM)
 	_failures.grow_horizontal = GROW_DIRECTION_BOTH

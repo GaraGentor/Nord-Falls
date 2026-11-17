@@ -28,16 +28,16 @@ float rect_distance(vec2 p, vec4 rect) {
 
 void fragment() {
 	vec2 p = UV * rect_size;
-	float ring = 0.0;
-	float d = rect_distance(p, npc_hole);
+	// Abstand zur Vereinigung aller Ziele: überlappende Ziele bekommen einen gemeinsamen Rahmen ohne Linien im Inneren
+	float holes_d = 1e6;
 	for (int i = 0; i < MAX_HOLES; i++) {
 		if (i >= hole_count) {
 			break;
 		}
-		float hole_d = rect_distance(p, holes[i]);
-		d = min(d, hole_d);
-		ring = max(ring, 1.0 - smoothstep(0.0, 1.5, abs(hole_d - border * 0.5) - border * 0.5));
+		holes_d = min(holes_d, rect_distance(p, holes[i]));
 	}
+	float ring = 1.0 - smoothstep(0.0, 1.5, abs(holes_d - border * 0.5) - border * 0.5);
+	float d = min(rect_distance(p, npc_hole), holes_d);
 	vec4 color = dim_color;
 	color.a *= smoothstep(0.0, softness, d);
 	float pulse = 0.65 + 0.35 * sin(TIME * 3.0);

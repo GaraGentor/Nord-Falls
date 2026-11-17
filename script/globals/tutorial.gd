@@ -44,6 +44,7 @@ const SEQUENCES := {
 	"egg_configurator": {"speaker": "trainer", "steps": [
 		{"text": "TUT_CFG_MON", "target": "cfg_mon"},
 		{"text": "TUT_CFG_SLOTS", "target": "cfg_slots"},
+		{"text": "TUT_CFG_ARC", "target": "cfg_grid"},
 		{"text": "TUT_CFG_GRID", "target": ["cfg_grid", "cfg_slots"], "wait": "signal:egg_loadout_complete"},
 		{"text": "TUT_CFG_GO", "target": ["cfg_go", "cfg_slots", "cfg_grid"], "wait": "pressed:cfg_go"},
 	]},

@@ -27,6 +27,8 @@ const BACK_FLOOR := 0.56
 const SIDE_OFFSET := 0.31
 const SPIN_SECONDS := 0.55
 const HOVER_MODULATE := Color(1.2, 1.2, 1.2)
+## Zeichenreihenfolge der Monster: 1 (ganz hinten) bis 14 (vorne), unter fliegenden Eiern (15) und Karten (20)
+const Z_BASE := 4
 
 const EGG_SIZE := Vector2(70, 88)
 const THROW_SECONDS := 0.95
@@ -274,7 +276,9 @@ func _slot(angle: float) -> Dictionary:
 		"floor_y": size.y * lerpf(BACK_FLOOR, FRONT_FLOOR, depth),
 		"scale": lerpf(BACK_SCALE, 1.0, depth),
 		"modulate": BACK_MODULATE.lerp(Color.WHITE, clampf(depth, 0.0, 1.0)),
-		"z": roundi(depth * 10),
+		# hinter der Mitte wird depth negativ (bis -1/3): Z_BASE hält z über 0, sonst rutscht die Figur beim
+		# Durchdrehen hinter das Hintergrundbild und ist kurz unsichtbar
+		"z": Z_BASE + roundi(depth * 10),
 	}
 
 # ─────────────────────────

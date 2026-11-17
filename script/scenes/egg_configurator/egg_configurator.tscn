@@ -1,9 +1,9 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://dgo7ox0qj184"]
 
-[ext_resource type="Script" path="res://script/scenes/egg_configurator/egg_configurator.gd" id="1_cfg"]
-[ext_resource type="Theme" path="res://script/ui/materials/pixel_font_theme.tres" id="2_font"]
+[ext_resource type="Script" uid="uid://be0g4ac347p46" path="res://script/scenes/egg_configurator/egg_configurator.gd" id="1_cfg"]
+[ext_resource type="Theme" uid="uid://s3xpo0m4ka8" path="res://script/ui/materials/pixel_font_theme.tres" id="2_font"]
 
-[node name="EggConfigurator" type="Control"]
+[node name="EggConfigurator" type="Control" unique_id=1064233168]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
