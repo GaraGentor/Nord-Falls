@@ -1,30 +1,27 @@
 class_name JudgementDropZone
 extends PanelContainer
 
-## Ablagefläche im Judgement-Screen: nimmt gezogene Monster an oder per Klick das gerade ausgewählte.
-## check(data) liefert "" wenn das Monster hier abgelegt werden darf, sonst den Grund dagegen.
+## Ablagefläche im Judgement-Screen: Team-Plätze, die Fang-Seite links und die Tasche.
+## Nimmt gezogene Monster ({"judgement_mon"}) oder Fähigkeiten ({"judgement_skill", "owner"}) an.
+## check(data) liefert "" wenn die Ablage erlaubt ist, sonst den Grund dagegen ("-" = ergibt hier keinen Sinn).
 
 signal dropped(data: Dictionary)
-signal clicked
 
 var check: Callable
-# Frame, in dem zuletzt ein Monster über die Fläche gezogen wurde
+# Frame, in dem zuletzt etwas über die Fläche gezogen wurde
 var _hover_frame := -10
 
 func _ready() -> void:
-	mouse_filter = MOUSE_FILTER_STOP
-
-func _gui_input(event: InputEvent) -> void:
-	var button := event as InputEventMouseButton
-	if button and button.pressed and button.button_index == MOUSE_BUTTON_LEFT:
-		clicked.emit()
-		accept_event()
+	mouse_filter = MOUSE_FILTER_PASS
 
 func is_drag_hovered() -> bool:
 	return Engine.get_process_frames() - _hover_frame < 3
 
+static func is_judgement_data(data: Variant) -> bool:
+	return data is Dictionary and (data.has("judgement_mon") or data.has("judgement_skill"))
+
 func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
-	if not data is Dictionary or not data.has("judgement_mon"):
+	if not is_judgement_data(data):
 		return false
 	_hover_frame = Engine.get_process_frames()
 	return check.is_valid() and check.call(data) == ""

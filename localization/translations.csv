@@ -17,7 +17,7 @@ CONFIGURATOR_LOCKED,Locked (catch & sacrifice),Gesperrt (fangen & opfern)
 CONFIGURATOR_LOCKED_MILESTONE,Locked (milestone),Gesperrt (Meilenstein)
 CONFIGURATOR_PICK_HINT,"Tap a move or drag it into a slot above to take it along","Tippe eine Attacke an oder zieh sie oben in einen Platz, um sie mitzunehmen"
 EGG_SKILL_TAG,{skill} (Egg),{skill} (Ei)
-EGG_SKILL_HINT,"Egg move: catch this monster and sacrifice it to unlock this move permanently","Ei-Attacke: Fange dieses Monster und opfere es, um die Attacke dauerhaft freizuschalten"
+EGG_SKILL_HINT,Egg move: catch this monster and put this move into the bag in the judgement to unlock it permanently,"Ei-Attacke: Fange dieses Monster und leg die Attacke im Gericht in die Tasche, um sie dauerhaft freizuschalten"
 EGG_SKILL_UNLOCKED,{skill} unlocked for {mon}!,{skill} für {mon} freigeschaltet!
 RARITY_COMMON,Common,Gewöhnlich
 RARITY_UNCOMMON,Uncommon,Ungewöhnlich
@@ -65,47 +65,25 @@ JAILER_MOVES_UPGRADE,Moves 1 -> 2,Attacken 1 -> 2
 JAILER_CURRENT_UPGRADE_LEVEL,Current Upgrade Level: {level},Aktuelle Stufe: {level}
 JAILER_MAX_UPGRADE_LEVEL,Maximum Upgrade Level: {level},Maximale Stufe: {level}
 JUDGEMENT_LEARN_KNOWN,Already knows it,Kennt es schon
-JUDGEMENT_NEW_CATCHES,New catches {i}/{n},Neue Fänge {i}/{n}
 JUDGEMENT_NO_CATCHES_LEFT,No open catches left,Keine offenen Fänge mehr
-JUDGEMENT_CURRENT_TEAM,Current team,Aktuelles Team
-JUDGEMENT_FREE_SLOT,"Free slot
-Drag a monster here","Freier Platz
-Ziehe ein Monster hierher"
-JUDGEMENT_HINT_IDLE,Drag monsters onto a team slot or a box below. Or click a monster and then its target.,"Ziehe Monster auf einen Team-Platz oder eine Ablage unten. Oder klicke ein Monster an und dann das Ziel."
-JUDGEMENT_HINT_HELD,{mon} selected: click a target. (Esc: cancel),{mon} ausgewählt: Klicke auf ein Ziel. (Esc: abbrechen)
+JUDGEMENT_PAGE,{i}/{n},{i}/{n}
+JUDGEMENT_TEAM,Team,Team
+JUDGEMENT_MISSING_MEMBER,Team member missing,Teammitglied fehlt
+JUDGEMENT_GROWTH,Growth per level,Wachstum pro Stufe
+JUDGEMENT_CONTINUE,Continue,Weiter
+JUDGEMENT_ABSORBED,{target} absorbed {mon} and learned {skill}!,{target} hat sich {mon} einverleibt und {skill} gelernt!
+JUDGEMENT_EGG_CARD_HINT,Egg move: drag it into the bag to unlock it for good. Only possible now!,"Ei-Attacke: Zieh sie in die Tasche, um sie dauerhaft freizuschalten. Nur jetzt möglich!"
+JUDGEMENT_LOSE_STARTER_TITLE,Give up your starter?,Start-Monster aufgeben?
+JUDGEMENT_LOSE_STARTER_CONFIRM,Do it anyway,Trotzdem
 JUDGEMENT_BADGE_NEW,NEW,NEU
+JUDGEMENT_BADGE_EGG,Egg move,Ei-Attacke
 JUDGEMENT_BADGE_STARTER,Starter,Start-Monster
 JUDGEMENT_BADGE_BENCHED,From your team,Aus deinem Team
-JUDGEMENT_BADGE_SLOT,Slot {slot},Platz {slot}
-JUDGEMENT_ZONE_TEACH,Teach a move,Attacke lehren
-JUDGEMENT_ZONE_SACRIFICE,Sacrifice,Opfern
-JUDGEMENT_ZONE_RELEASE,Release,Freilassen
-JUDGEMENT_ZONE_TEACH_IDLE,A monster passes one move on to your team and leaves afterwards.,Ein Monster gibt eine Attacke an dein Team weiter und geht danach.
-JUDGEMENT_ZONE_SACRIFICE_IDLE,Sacrifice new catches with an egg move to unlock it permanently.,"Neue Fänge mit Ei-Attacke opfern, um sie dauerhaft freizuschalten."
-JUDGEMENT_ZONE_RELEASE_IDLE,Let a monster go without a reward.,Ein Monster ohne Belohnung gehen lassen.
-JUDGEMENT_ZONE_TEACH_EFFECT,{mon} passes one move on and leaves afterwards.,{mon} gibt eine Attacke weiter und geht danach.
-JUDGEMENT_ZONE_SACRIFICE_EFFECT,Permanently unlocks {skill}. {mon} leaves afterwards.,Schaltet {skill} dauerhaft frei. {mon} geht danach.
-JUDGEMENT_ZONE_RELEASE_EFFECT,{mon} leaves without a reward.,{mon} geht ohne Belohnung.
 JUDGEMENT_REASON_LAST,Your team needs at least one monster.,Dein Team braucht mindestens ein Monster.
-JUDGEMENT_REASON_OWN,Your own monsters can't be sacrificed.,Eigene Monster können nicht geopfert werden.
-JUDGEMENT_REASON_NO_EGG,{mon} carries no egg move that can be unlocked.,"{mon} trägt keine Ei-Attacke, die sich freischalten lässt."
-JUDGEMENT_REASON_NOTHING_TO_TEACH,Your team already knows all of {mon}'s moves.,Dein Team kennt schon alle Attacken von {mon}.
-JUDGEMENT_DROP_SWAP,"{mon} joins the team
-{old} goes to the catches","{mon} kommt ins Team
-{old} geht zu den Fängen"
-JUDGEMENT_DROP_FILL,{mon} joins the team,{mon} kommt ins Team
-JUDGEMENT_DROP_REORDER,Swap places,Plätze tauschen
-JUDGEMENT_CONFIRM_KEEP,Keep current team,Jetzige Teamaufstellung behalten
-JUDGEMENT_CONFIRM_CHANGED,Take new team,Neue Teamaufstellung übernehmen
-JUDGEMENT_CONFIRM_RELEASES,Will be released: {mons},Werden freigelassen: {mons}
-JUDGEMENT_CONFIRM_NOTHING_LEFT,All catches are taken care of.,Alle Fänge sind versorgt.
 JUDGEMENT_RELEASE_STARTER_TITLE,Release your starter?,Start-Monster freilassen?
-JUDGEMENT_TEACH_PICK_SKILL,Which move should {mon} pass on?,Welche Attacke soll {mon} weitergeben?
-JUDGEMENT_TEACH_PICK_TARGET,Who should learn {skill}?,Wer soll {skill} lernen?
 JUDGEMENT_TEACH_PICK_REPLACE,{mon} already knows {max} moves. Which one should {skill} replace?,{mon} kennt schon {max} Attacken. Welche soll {skill} ersetzen?
 JUDGEMENT_TEACH_KNOWN_ALL,Your team already knows it,Dein Team kennt sie schon
 JUDGEMENT_TEACH_SKILL_COUNT,{count}/{max} moves,{count}/{max} Attacken
-JUDGEMENT_LEARNED,{mon} learned {skill}!,{mon} hat {skill} gelernt!
 JUDGEMENT_BACK,Back,Zurück
 REVIVE_TITLE,Who gives their life for {mon}?,Wer gibt sein Leben für {mon}?
 REVIVE_INTRO,"{mon} has fallen. A new catch can give its life: {mon} returns with {hp}% HP. Each monster can only be revived once per run.","{mon} ist gefallen. Ein neuer Fang kann sein Leben geben: {mon} kehrt mit {hp} % KP zurück. Jedes Monster kann pro Run nur einmal wiederbelebt werden."
@@ -816,10 +794,11 @@ TUT_BAT_CARD,"On your monster's turn you play its skill cards. Drag a card onto 
 TUT_BAT_END,"Every skill costs moves and has a cooldown afterwards. Out of moves? End your turn.","Jeder Skill kostet Züge und hat danach eine Abklingzeit. Keine Züge mehr? Beende deinen Zug."
 TUT_BAT_CATCH,"Now the important part: catching! The spiral above the enemy shows your chance, the less HP it has, the better. Use Hypnosis before playing a card this turn. In practice it always works, then we head to the map!","Jetzt das Wichtigste: Fangen! Die Spirale über dem Gegner zeigt deine Chance, je weniger Leben er hat, desto besser. Setz Hypnose ein, bevor du in diesem Zug eine Karte spielst. In der Übung klappt es immer, danach geht es zur Karte!"
 TUT_BAT_ELEMENTS,"Elements matter: water beats fire, fire beats air, air beats earth and earth beats water. A good match deals 50% more damage, a bad one 50% less.","Elemente zählen: Wasser schlägt Feuer, Feuer schlägt Luft, Luft schlägt Erde und Erde schlägt Wasser. Passt das Element, gibt es 50 % mehr Schaden, sonst 50 % weniger."
-TUT_JUD_CATCHES,"Welcome to the judgement. Here are the monsters you caught in the fight.","Willkommen im Gericht. Hier liegen die Monster, die du im Kampf gefangen hast."
-TUT_JUD_TEAM,"This is your team, two monsters at most. Drag a catch onto a slot to add it to your team.","Das ist dein Team, höchstens zwei Monster. Zieh einen Fang auf einen Platz, um ihn aufzunehmen."
-TUT_JUD_ZONES,"Or use the trays: Teach passes one of its moves on to your team, Sacrifice unlocks its egg move for good, Release lets it go.","Oder: Lehren gibt eine seiner Attacken an dein Team weiter, Opfern schaltet seine Ei-Attacke dauerhaft frei, Freilassen lässt ihn gehen."
-TUT_JUD_CONFIRM,"Your turn: drag your catch onto a slot or a tray, then confirm. Whatever is left over will be released.","Jetzt du: Zieh deinen Fang auf einen Platz oder eine Ablage und bestätige dann. Was übrig bleibt, wird freigelassen."
+TUT_JUD_CATCHES,Welcome to the judgement. On the left are the monsters you caught. The chart below compares how fast they grow with your team.,"Willkommen im Gericht. Links liegen die Monster, die du gefangen hast. Das Netz darunter vergleicht, wie schnell sie im Vergleich zu deinem Team wachsen."
+TUT_JUD_TEAM,"This is your team, two monsters at most. Drag a catch onto a team member to swap them, or onto a free slot. Drag your own monsters to the left to put them down.","Das ist dein Team, höchstens zwei Monster. Zieh einen Fang auf ein Teammitglied, um zu tauschen, oder auf einen freien Platz. Eigene Monster legst du ab, indem du sie nach links ziehst."
+TUT_JUD_SKILLS,In the middle are the moves of the monster with the yellow arrow. Click a monster to see its moves. Drag a move onto a team member: it absorbs that monster and learns the move.,"In der Mitte stehen die Fähigkeiten des Monsters mit dem gelben Pfeil. Klick ein Monster an, um seine zu sehen. Zieh eine Fähigkeit auf ein Teammitglied: Es verleibt sich das Monster ein und lernt sie."
+TUT_JUD_BAG,An egg behind a move marks an egg move. Drag it into the bag to unlock it for good. That only works right after the catch!,"Ein Ei hinter einer Fähigkeit zeigt eine Ei-Attacke. Zieh sie in die Tasche, um sie dauerhaft freizuschalten. Das geht nur direkt nach dem Fang!"
+TUT_JUD_CONFIRM,"Your turn: put your team together, then press Continue. Whatever is left on the left will be released.","Jetzt du: Stell dein Team zusammen und drück auf Weiter. Was links übrig bleibt, wird freigelassen."
 TUT_LOOT_XP,"Defeated enemies give experience, that's how your monsters level up. Catches don't count, so if you only catch, you'll fall behind.","Besiegte Gegner bringen Erfahrung, so steigen deine Monster auf. Fänge zählen nicht: Wer nur fängt, fällt zurück."
 TUT_LOOT_DRAG,"The loot lies on the battlefield. Drag it into the bag, whatever stays behind is lost when you move on.","Die Beute liegt auf dem Schlachtfeld. Zieh sie in die Tasche, was liegen bleibt, ist beim Weitergehen verloren."
 TUT_TRN_CARDS,"Ah, it's you! Here your monsters learn new skills. On the left are my offers.","Ah, du bist es! Hier lernen deine Monster neue Skills. Links liegen meine Angebote."

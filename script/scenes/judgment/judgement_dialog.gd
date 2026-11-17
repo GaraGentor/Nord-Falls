@@ -1,7 +1,7 @@
 class_name JudgementDialog
 extends Control
 
-## Modaler Dialog im Judgement-Screen: Attacke lehren (Attacke -> Ziel-Monster -> ggf. zu vergessende Attacke),
+## Modaler Dialog im Judgement-Screen: zu vergessende Attacke wählen (Einverleiben, Skill-Belohnungen),
 ## Wiederbelebung (welcher Fang opfert sich), Letzter Wille (Erbstück -> Erbe -> ggf. zu vergessende Attacke) und einfache Rückfragen.
 ## Alle Abläufe laufen per await und liefern das Ergebnis zurück.
 
@@ -86,59 +86,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_choice.emit({"cancel": true})
 		get_viewport().set_input_as_handled()
 
-# Liefert {skill, target, replace} (replace = Index der vergessenen Attacke oder -1) oder {} bei Abbruch.
-func teach(teacher: Monster, targets: Array, warning: String) -> Dictionary:
-	var step := 0
-	var skill := {}
-	var target: Monster = null
-	visible = true
-	while true:
-		_reset(warning)
-		_back.visible = step > 0
-		match step:
-			0:
-				_title.text = tr("JUDGEMENT_TEACH_PICK_SKILL").format({"mon": Helper.mon_battle_name(teacher)})
-				for teacher_skill in teacher._skills:
-					var learnable = targets.any(func(member): return not Skills.knows_skill(member, teacher_skill.name))
-					var card = _skill_card(teacher_skill, "" if learnable else tr("JUDGEMENT_TEACH_KNOWN_ALL"), teacher)
-					if not learnable:
-						_disable(card)
-					card.pressed.connect(_choice.emit.bind({"value": teacher_skill}))
-			1:
-				_title.text = tr("JUDGEMENT_TEACH_PICK_TARGET").format({"skill": _skill_name(skill)})
-				for member in targets:
-					var card = _mon_card(member, _learn_note(member, skill), Skills.knows_skill(member, skill.name))
-					card.pressed.connect(_choice.emit.bind({"value": member}))
-			2:
-				_title.text = tr("JUDGEMENT_TEACH_PICK_REPLACE").format({
-					"mon": Helper.mon_battle_name(target), "max": Skills.MAX_SKILLS, "skill": _skill_name(skill)})
-				for i in target._skills.size():
-					var card = _skill_card(target._skills[i], "", target)
-					card.pressed.connect(_choice.emit.bind({"value": i}))
-		var result: Dictionary = await _choice
-		if result.has("cancel"):
-			break
-		if result.has("back"):
-			step -= 1
-			continue
-		match step:
-			0:
-				skill = result.value
-				step = 1
-			1:
-				target = result.value
-				if target._skills.size() < Skills.MAX_SKILLS:
-					visible = false
-					return {"skill": skill, "target": target, "replace": -1}
-				step = 2
-			2:
-				visible = false
-				return {"skill": skill, "target": target, "replace": result.value}
-	visible = false
-	return {}
-
 ## Nur die Wahl, welcher Skill für skill weicht (Skill-Belohnung, Trainer, neues Element über SkillReplacePicker):
-## dieselben Karten wie beim Lehren. Liefert den Index oder -1 bei Abbruch.
+## dieselben Karten wie beim Letzten Willen. Liefert den Index oder -1 bei Abbruch.
 func pick_replace(mon: Monster, skill: Dictionary) -> int:
 	_reset("")
 	_back.visible = false

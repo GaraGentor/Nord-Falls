@@ -69,7 +69,8 @@ const SEQUENCES := {
 	"judgement": {"speaker": "trainer", "steps": [
 		{"text": "TUT_JUD_CATCHES", "target": "jud_catches"},
 		{"text": "TUT_JUD_TEAM", "target": "jud_team"},
-		{"text": "TUT_JUD_ZONES", "target": "jud_zones"},
+		{"text": "TUT_JUD_SKILLS", "target": "jud_skills"},
+		{"text": "TUT_JUD_BAG", "target": "jud_bag", "if_present": true},
 		{"text": "TUT_JUD_CONFIRM", "target": "jud_confirm", "wait": "pressed:jud_confirm", "open": true},
 	]},
 	"loot": {"speaker": "trainer", "steps": [
