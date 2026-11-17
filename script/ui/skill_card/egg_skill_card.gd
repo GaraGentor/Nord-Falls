@@ -16,6 +16,7 @@ const GOLD := SkillCardPaper.GOLD
 
 var _scroll: AutoScrollContainer
 var _paper: SkillCardPaper
+var _name_label: Label
 
 ## locked_label/locked_hint: gesperrte Attacke, Texte mittig auf den Ketten (leer = nicht gesperrt)
 static func create(skill: Dictionary, mon: Monster, locked_label := "", locked_hint := "") -> EggSkillCard:
@@ -56,6 +57,7 @@ func _build(skill: Dictionary, mon: Monster, locked_label: String, locked_hint: 
 	lines.add_child(name_label)
 	# höchstens zwei Zeilen, lange Namen werden kleiner
 	SkillCardFace.fit_title(name_label, 18)
+	_name_label = name_label
 
 	# Mitte: nur die Beschreibung scrollt
 	_scroll = AutoScrollContainer.new()
@@ -134,6 +136,10 @@ func _build_lock(locked_label: String, locked_hint: String) -> Control:
 	hint.custom_minimum_size.x = 1
 	texts.add_child(hint)
 	return chains
+
+## Kleinerer Name für schmale Karten (z. B. Ei-Auswahl), lange Namen werden weiterhin noch kleiner
+func set_title_size(font_size: int) -> void:
+	SkillCardFace.fit_title(_name_label, font_size)
 
 ## Angeklickte Karte leuchtet am Rahmen
 func set_selected(selected: bool) -> void:

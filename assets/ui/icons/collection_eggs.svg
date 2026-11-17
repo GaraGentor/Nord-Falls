@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <!-- Drei Eier in einem Nest für die Sammlung: harte Kanten, Licht von oben links, wie das Zahnrad -->
+  <!-- hinteres Ei links -->
+  <path d="M34 34 L46 28 L58 34 L64 52 L64 78 L28 78 L28 52 Z" fill="#7d8a93" stroke="#06080c" stroke-width="6" stroke-linejoin="bevel"/>
+  <path d="M36 38 L44 34 V52 H34 Z" fill="#a9b6bd"/>
+  <!-- hinteres Ei rechts -->
+  <path d="M70 34 L82 28 L94 34 L100 52 L100 78 L64 78 L64 52 Z" fill="#5f7fb0" stroke="#06080c" stroke-width="6" stroke-linejoin="bevel"/>
+  <path d="M72 38 L80 34 V52 H70 Z" fill="#8fadd6"/>
+  <!-- vorderes Ei in Gold -->
+  <path d="M52 38 L64 32 L76 38 L84 58 L84 90 L44 90 L44 58 Z" fill="#9a7d48" stroke="#06080c" stroke-width="6" stroke-linejoin="bevel"/>
+  <path d="M54 42 L62 38 V62 H50 V58 Z" fill="#c9ab6c"/>
+  <path d="M78 60 V86 H64 V82 H74 V60 Z" fill="#6f5630"/>
+  <!-- Nest -->
+  <path d="M14 76 H114 L106 104 L92 114 H36 L22 104 Z" fill="#5a3d22" stroke="#06080c" stroke-width="6" stroke-linejoin="bevel"/>
+  <path d="M20 82 H108 M26 92 H102 M34 102 H94" stroke="#7d5a32" stroke-width="4"/>
+  <path d="M30 86 L44 80 M58 96 L74 90 M84 86 L98 80" stroke="#3a2614" stroke-width="3"/>
+</svg>

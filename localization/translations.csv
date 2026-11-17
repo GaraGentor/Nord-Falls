@@ -2,7 +2,7 @@ keys,en,de
 COMMON_OK,OK...,OK...
 COMMON_CANCEL,Cancel,Abbrechen
 SELECTION_TITLE_START,A new adventure begins...,Ein neues Abenteuer beginnt...
-SELECTION_DRAW_EGG,Draw Egg...,Ei ziehen...
+SELECTION_DRAW_EGG,Throw egg...,Ei werfen...
 SELECTION_BEGIN_JOURNEY,Begin journey...,Reise beginnen...
 SELECTION_PICK_WARRIOR,Now select your preferred warrior...,Wähle jetzt deinen Krieger...
 SELECTION_TIME_TO_GO,... it's time to go ...,... es ist Zeit aufzubrechen ...
@@ -706,6 +706,8 @@ MAP_HEADER_ROUTE,Route:,Route:
 EGG_OVERVIEW_TITLE,Egg moves unlocked,Ei-Attacken freigeschaltet
 EGG_OVERVIEW_UNLOCKED,Unlocked,Freigeschaltet
 EGG_OVERVIEW_LOCKED,Locked,Gesperrt
+SELECTION_EGG_MOVES,Egg moves {unlocked}/{total},Ei-Attacken {unlocked}/{total}
+SELECTION_EGG_MOVES_HINT,"{unlocked} egg moves unlocked, {missing} still missing","{unlocked} Ei-Attacken freigeschaltet, {missing} fehlen noch"
 EGG_DETAIL_ELEMENT,Element: {element},Element: {element}
 EGG_CATEGORY_PHYSICAL,Physical,Physisch
 EGG_CATEGORY_MAGIC,Magical,Magisch
@@ -775,10 +777,10 @@ TUTORIAL_NEXT,Next,Weiter
 TUTORIAL_SKIP,Skip tutorial,Tutorial überspringen
 TUT_SEL_WELCOME,"A new face! I'm the trainer. Let me show you how to survive up north.","Na, ein neues Gesicht! Ich bin der Trainer. Ich zeige dir, wie man im Norden überlebt."
 TUT_SEL_PATH,"This is your journey: five biomes, each with its own elements. At the very end the final boss is waiting.","Das ist deine Reise: fünf Biome, jedes mit eigenen Elementen. Ganz am Ende wartet der Endboss."
-TUT_SEL_DRAW,"First you need a partner. Draw three eggs!","Zuerst brauchst du einen Partner. Zieh drei Eier!"
-TUT_SEL_PICK,"The color shows the rarity: rarer monsters are stronger. Tap an egg.","Die Farbe zeigt die Seltenheit: Seltenere Monster sind stärker. Tipp ein Ei an."
-TUT_SEL_INFO,"Here you see species, element, rarity and stats of your monster, and how many of its egg moves you have unlocked.","Hier siehst du Art, Element, Seltenheit und Werte deines Monsters und wie viele seiner Ei-Attacken du schon freigeschaltet hast."
-TUT_SEL_GO,"Don't like it? Tap another egg. Ready? Then set off!","Gefällt es dir nicht? Tipp ein anderes Ei an. Bereit? Dann brich auf!"
+TUT_SEL_DRAW,"First you need a partner. Throw three eggs!","Zuerst brauchst du einen Partner. Wirf drei Eier!"
+TUT_SEL_PICK,"The color of the egg shows the rarity: rarer monsters are stronger. Tap a monster to bring it to the front.","Die Farbe des Eis zeigt die Seltenheit: Seltenere Monster sind stärker. Tipp ein Monster an, um es nach vorne zu holen."
+TUT_SEL_INFO,"Here you see species, element, rarity, growth and stats of the monster in front. Its unlocked egg moves lie below it.","Hier siehst du Art, Element, Seltenheit, Wachstum und Werte des Monsters vorne. Darunter liegen seine freigeschalteten Ei-Attacken."
+TUT_SEL_GO,"Don't like it? Bring another one to the front. Ready? Then set off!","Gefällt es dir nicht? Hol ein anderes nach vorne. Bereit? Dann brich auf!"
 TUT_CFG_MON,"Your starter. Its element decides which skills it can use.","Dein Start-Monster. Sein Element entscheidet, welche Skills es einsetzen kann."
 TUT_CFG_SLOTS,"It takes three egg moves into the run. These three slots are still empty.","Es nimmt drei Ei-Attacken mit in den Run. Diese drei Plätze sind noch leer."
 TUT_CFG_GRID,"Below are all egg moves of the species. Drag three of them up into the slots (or tap them). Locked ones show how to unlock them in future runs.","Darunter stehen alle Ei-Attacken der Art. Zieh drei davon hoch in die Plätze (oder tippe sie an). Gesperrte zeigen, wie du sie in künftigen Runs freischaltest."

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <!-- Abgegriffenes Lederbuch mit Messingbeschlägen für die Anleitung: harte Kanten, Licht von oben links, wie das Zahnrad -->
+  <!-- Seiten unten (Schnitt) -->
+  <path d="M26 96 H104 V112 H26 Z" fill="#c4ad7c" stroke="#06080c" stroke-width="6" stroke-linejoin="bevel"/>
+  <path d="M30 101 H100 M30 107 H100" stroke="#9c8759" stroke-width="3"/>
+  <!-- Einband -->
+  <path d="M20 14 H100 L108 22 V98 H28 L20 90 Z" fill="#6b3a26" stroke="#06080c" stroke-width="6" stroke-linejoin="bevel"/>
+  <!-- Licht oben links, Schatten unten rechts -->
+  <path d="M24 18 H98 V26 H32 V88 L24 86 Z" fill="#8f5536"/>
+  <path d="M96 30 H104 V94 H40 V88 H96 Z" fill="#4a2618"/>
+  <!-- Rücken -->
+  <rect x="20" y="18" width="10" height="76" fill="#3d2014"/>
+  <!-- Messing-Ecken -->
+  <path d="M92 14 H108 V30 L100 30 V22 H92 Z" fill="#9a7d48" stroke="#06080c" stroke-width="4" stroke-linejoin="bevel"/>
+  <path d="M92 98 H108 V82 L100 82 V90 H92 Z" fill="#9a7d48" stroke="#06080c" stroke-width="4" stroke-linejoin="bevel"/>
+  <!-- Fragezeichen in Messing -->
+  <path d="M54 42 V36 H78 V54 H68 V66 H58 V50 H68 V44 H62 V42 Z" fill="#9a7d48" stroke="#06080c" stroke-width="4" stroke-linejoin="bevel"/>
+  <rect x="58" y="72" width="10" height="10" fill="#9a7d48" stroke="#06080c" stroke-width="4"/>
+  <rect x="56" y="38" width="20" height="4" fill="#c9ab6c"/>
+</svg>
