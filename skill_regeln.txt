@@ -132,9 +132,9 @@ Den Inhalt der Listen sortiert das Werkzeug bei jedem Lauf (neue Skills einfach 
 					 der Arten. Daraus würfeln wilde Monster (Biom-Pool) und der Trainer ab Stufe 2
 					 ("trainer": false = nie beim Trainer: Stufe 4, Kombi-Top). Ab Stufe 2 auch im Couvert.
   Kopfgeld           bounty_skills: Skills, die eine Art NUR über ihr Kopfgeld hat (nie wild, Trainer, Couvert).
-                     Das Werkzeug würfelt pro Art ein Kopfgeld (Skills.BOUNTIES, Ziel = zufälliges Alpha-Monster höchstens
-                     so selten wie die Art). Biom nach Seltenheit der belohnten Art: Gewöhnlich 1, Ungewöhnlich 2,
-                     Selten 3, Episch 4, Legendär/Mythisch 5 (BOUNTY_DEPTH). Freigeschaltet für die Art mit dem letzten Treffer.
+					 Das Werkzeug würfelt pro Art ein Kopfgeld (Skills.BOUNTIES, Ziel = zufälliges Alpha-Monster höchstens
+					 so selten wie die Art). Biom nach Seltenheit der belohnten Art: Gewöhnlich 1, Ungewöhnlich 2,
+					 Selten 3, Episch 4, Legendär/Mythisch 5 (BOUNTY_DEPTH). Freigeschaltet für die Art mit dem letzten Treffer.
   Meilensteine       milestone_skills: Skills, die eine Art NUR als Meilenstein hat. Nie wild, nie beim Trainer, nie im Couvert.
   Couvert            reward_skills: Skills ab Stufe 2, die keine Art benutzt - nur im Couvert zu bekommen.
   Entwürfe           draft_skills: unbenutzte Skills der Stufe 1 und neue Skills bis zum nächsten Lauf.

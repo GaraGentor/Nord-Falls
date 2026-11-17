@@ -12,6 +12,8 @@ const CARD_WIDTH := 160.0
 const ROW_SPOTS: Array[Vector2] = [Vector2(0.18, 0.47), Vector2(0.5, 0.53), Vector2(0.82, 0.47)]
 ## Platz für die Elemente, die einem Monster fehlen, damit die Ziele beim Ziehen nicht springen
 const MISSING_ROW_HEIGHT := 36.0
+## Höhe der Beschreibung auf der Karte, längere Texte scrollen von selbst (RewardDialog.scroll_description)
+const DESCRIPTION_HEIGHT := 96.0
 
 ## Monster-Ziel -> Zeile mit den Elementen, die ihm für den gezogenen Skill fehlen
 var _missing_rows := {}
@@ -36,7 +38,7 @@ func _ready() -> void:
 	# die Ziele haben jetzt Werte und bleiben dadurch schon vor dem ersten Ziehen hell
 	_lock_targets()
 	for skill in Skills.reward_offers():
-		add_skill_card(skill, _learn.bind(skill))
+		scroll_description(add_skill_card(skill, _learn.bind(skill)), DESCRIPTION_HEIGHT)
 	_build_skip_button()
 	play_chest_intro()
 	Tutorial.trigger("skill_reward")

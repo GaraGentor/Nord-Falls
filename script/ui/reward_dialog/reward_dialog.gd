@@ -522,6 +522,21 @@ func add_skill_card(skill: Dictionary, on_given: Callable) -> RewardCard:
 	card.tooltip_text = _skill_fits_text(skill)
 	return card
 
+## Lange Beschreibungen sprengen sonst die Karte (Couvert, Trainer): der Text bekommt eine feste Höhe und scrollt
+## von selbst (wie auf der Kampfkarte), gedrückt halten auf der Karte hält ihn an. Ziehen bleibt bei der Karte.
+func scroll_description(card: RewardCard, height: float) -> void:
+	var description: Label = card.info.get_child(1)
+	card.info.remove_child(description)
+	var scroll := AutoScrollContainer.new()
+	scroll.custom_minimum_size.y = height
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
+	scroll.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	scroll.hold_area = card
+	description.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	description.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	scroll.add_child(description)
+	card.info.add_child(scroll)
+
 ## Bilder der eigenen Monster: hell = kann den Skill einsetzen, dunkel = Elemente fehlen,
 ## durchscheinend = kennt ihn schon
 func _skill_portraits(skill: Dictionary) -> Control:

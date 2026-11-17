@@ -54,6 +54,8 @@ const BAG_FONT_SIZE := 18
 ## so viel Essenz steht für ein sichtbares Stück in der Tasche
 const ESSENCE_PER_ITEM := 25
 const TRAINER_CARD_SIZE := Vector2(210, 0)
+## Höhe der Beschreibung auf der Karte, längere Texte scrollen von selbst (RewardDialog.scroll_description)
+const DESCRIPTION_HEIGHT := 90.0
 const TRAINER_TEXT_FONT_SIZE := 14
 ## Chips unter den Monstern: Abstand zum Monster, Zeilenhöhe
 const CHIPS_GAP := 8.0
@@ -423,6 +425,8 @@ func _add_skill_card(skill: Dictionary) -> void:
 	card.on_click = _toggle_focus.bind(card)
 	# in der Pixel-Schrift passt die Beschreibung sonst nicht in die Kartenbreite
 	card.info.get_child(1).add_theme_font_size_override("font_size", TRAINER_TEXT_FONT_SIZE)
+	# lange Beschreibungen scrollen von selbst, alle Karten bleiben gleich hoch
+	scroll_description(card, DESCRIPTION_HEIGHT)
 	# Text nicht auf den Papierrahmen setzen (card.row liegt in der VBox mit Kopf- und Fußzeile, darüber der Rand)
 	card.row.get_parent().get_parent().add_theme_constant_override("margin_bottom", 14)
 	set_price(card, randi_range(skill.shop_cost.min, skill.shop_cost.max))
