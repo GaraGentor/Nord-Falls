@@ -1,0 +1,106 @@
+Einweg-Items: weitere Ideen für "To the North"
+(Ergänzung zu item_system_idee.txt, noch nicht umgesetzt)
+
+
+# Kampfzug und Aktionen
+
+Kraftknoten
+- Effekt: Der nächste Skill kostet 1 Aktion weniger (mindestens 1).
+- Warum: Ein Monster mit 1 Aktion kann einmal einen Skill mit Wert über 50 einsetzen.
+
+Sanduhr
+- Effekt: Das Monster rückt auf dem Initiative-Rad sofort an die erste Stelle.
+- Warum: Man kommt einer angekündigten tödlichen Aktion zuvor.
+
+Weckstein
+- Effekt: Ein schlummernder Skill wirkt einmal mit vollem Wert und Element-Effekt.
+- Warum: Man probiert einen Skill aus, bevor man den Trank für das Element ausgibt.
+
+
+# Überleben
+
+Phönixfeder (wird von selbst ausgelöst)
+- Effekt: Beim ersten K.O. überlebt das Monster mit 1 KP.
+
+Schildrune (wird von selbst ausgelöst)
+- Effekt: Das Monster startet den Kampf mit Rüstung und Magie-Schild in Höhe von je 30 %
+  seiner Vert. bzw. SpV.
+
+Klarwasser
+- Effekt: Entfernt Gift, Verbrennung, Paralyse und alle Schwächungen.
+- Warum: Wertvoll ab Biom 3, weil die Dreier-Kombis bis Kampfende wirken.
+
+Tarnmantel
+- Effekt: Das Monster kann 1 Runde lang nicht anvisiert werden, die KI wählt ihr Ziel neu.
+- Warum: Stärker als die Lockpfeife, kann das Partner-Monster aber teuer zu stehen kommen.
+
+
+# Gegen Bosse
+
+Bannsiegel
+- Effekt: Schaltet das Boss-Relikt für 2 Runden ab.
+
+Zielkompass
+- Effekt: Die nächsten 2 Angriffe verfehlen nicht und ignorieren 50 % der Schilde.
+- Warum: Hilft gegen Nebelmaschine, Bongos und Fate-Spiegel.
+
+Spiegelscherbe
+- Effekt: Der nächste Treffer auf dieses Monster wirft 50 % des Schadens zurück.
+- Warum: Eine Antwort auf Gegner mit 3 Aktionen.
+
+
+# Elemente
+
+Elementtinktur (z. B. Wasser)
+- Effekt: Das gegnerische Ziel bekommt für 2 Züge zusätzlich ein Element.
+- Warum: Man schafft sich selbst eine Schwäche im Elementkreis, die man ausnutzen kann.
+
+Spähglas
+- Effekt: Deckt alle Werte und Skills eines Gegners auf.
+- Warum: Billig, passt zu den verdeckten Werten, kleine Version des Teleskop-Relikts.
+
+
+# Fangen und Wirtschaft
+
+Köderfleisch
+- Effekt: Beim nächsten Fangversuch fällt der Malus von -8 % pro Stufe weg.
+- Warum: Ein Monster mit höherer Stufe wird fangbar, ohne dass das Fangen insgesamt
+  leichter wird.
+
+Sammlerbeutel
+- Effekt: Der nächste K.O. gibt doppelte EP und Essenz.
+- Warum: Stärkt die Seite "Töten" im Konflikt mit dem Fangen.
+
+Blutstein
+- Effekt: Der nächste Angriff macht +50 % Schaden, kostet das Monster aber sofort 15 %
+  seiner max. KP.
+- Warum: Bewusst riskant, weil die KP zwischen den Kämpfen erhalten bleiben.
+
+
+# Was dafür spricht
+
+- Eigene Monster haben nur 1 Aktion pro Zug. Ein Item, das keine Aktion kostet, bringt eine
+  zweite Entscheidung, ohne das Aktionssystem zu verändern.
+- Die Gegner kündigen ihre Züge an, aber der Spieler hat kaum Antworten darauf.
+- Gegen Boss-Relikte kann man sich bisher nicht vorbereiten.
+- EP brauchen mehr Verwendung, zurzeit gibt es dafür vor allem Schlüssel.
+- Ausrüsten statt Inventar: Bei nur 2 Monstern sind 2 Slots eine echte Entscheidung.
+
+
+# Was dagegen spricht
+
+- Überschneidung mit Relikten (Kraftknoten und +1 Aktion, Spähglas und Teleskop). Items
+  sollten klar schwächer sein und nur einmal wirken.
+- Spieler horten Items und benutzen sie nie. Ein festes Slot-Limit hilft dagegen, und die
+  Items sollten auch in normalen Kämpfen nützlich sein.
+- Aufwand an der Oberfläche: Item-Leiste, Tooltips und Zielauswahl im Kampf. Die Effekte
+  selbst lassen sich meist auf bestehende Systeme setzen.
+
+
+# Empfehlung
+
+Kein ganzes Inventar, sondern 1 Item-Slot pro Monster, dazu eventuell eine Tasche mit
+2 Plätzen für Ersatz.
+Für einen ersten Test vier Items: Kraftknoten, Phönixfeder, Sanduhr und Köderfleisch.
+Sie decken Aktionen, Überleben, Tempo und Fangen ab und brauchen fast keine neuen
+Mechaniken.
