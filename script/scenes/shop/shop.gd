@@ -66,6 +66,9 @@ const COUPON_BOTTOM := 12.0
 const STAGE_MARGIN := 24.0
 const FIELD_SCREEN_GAP := 8.0
 const FIELD_SPACING := 4.0
+## Attacken-Übersicht eines Monsters (MonSkillsModal): Abstand zum Rand und Abdunklung dahinter
+const MODAL_MARGIN := Vector2i(170, 50)
+const MODAL_DIM := Color(0, 0, 0, 0.55)
 
 ## Sprechblase: Anzeigedauer pro Satz, danach der Dank
 const LINE_BASE_SECONDS := 2.5
@@ -238,6 +241,17 @@ class MonField extends RewardDialog.DropTarget:
 	## Wert -> Labels für Bezeichnung und Zahl, untereinander
 	var _stat_labels := {}
 	var _pop: Tween
+	## Klick ohne Ziehen: Übersicht der Attacken (MonSkillsModal wie beim Trainer)
+	var on_click: Callable
+	var _press_pos := Vector2.ZERO
+
+	func _gui_input(event: InputEvent) -> void:
+		if not on_click.is_valid() or not event is InputEventMouseButton or event.button_index != MOUSE_BUTTON_LEFT:
+			return
+		if event.pressed:
+			_press_pos = event.position
+		elif event.position.distance_to(_press_pos) < RewardDialog.CLICK_MAX_MOVE:
+			on_click.call()
 
 	func _init(owner_dialog: RewardDialog, monster: Monster) -> void:
 		dialog = owner_dialog
@@ -462,6 +476,8 @@ var _lines: Array = []
 var _explaining := false
 ## Bonus der Trophäen im Regal, hängt von der Biom-Tiefe ab
 var _trophy_bonus := 0
+## Abdunklung samt offener Attacken-Übersicht (_open_mon)
+var _modal_layer: ColorRect
 
 func _ready() -> void:
 	use_scene_layout(background)
@@ -517,6 +533,7 @@ func _build_stage() -> void:
 		_shelves.append({"layout": layout, "image": shelf, "items": []})
 	for i in mini(State.mons.size(), 2):
 		var field := MonField.new(self, State.mons[i])
+		field.on_click = _open_mon.bind(field)
 		_stage.add_child(field)
 		_mon_fields.append(field)
 	_item_layer = Control.new()
@@ -657,6 +674,35 @@ func _set_selected(item: ShelfItem) -> void:
 func _on_floor_input(event: InputEvent) -> void:
 	if _selected and event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		_set_selected(null)
+
+## Klick auf ein Monster: Übersicht seiner Attacken (dasselbe MonSkillsModal wie beim Trainer) als Dialog
+## über dem ganzen Laden. Ein Klick daneben schließt ihn wieder.
+func _open_mon(field: MonField) -> void:
+	if is_instance_valid(_modal_layer):
+		return
+	_set_selected(null)
+	_modal_layer = ColorRect.new()
+	_modal_layer.color = MODAL_DIM
+	_modal_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_modal_layer.mouse_filter = Control.MOUSE_FILTER_STOP
+	_modal_layer.gui_input.connect(func(event: InputEvent):
+		if event is InputEventMouseButton and event.pressed:
+			_close_mon())
+	add_child(_modal_layer)
+	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for side in ["left", "right"]:
+		margin.add_theme_constant_override("margin_" + side, MODAL_MARGIN.x)
+	for side in ["top", "bottom"]:
+		margin.add_theme_constant_override("margin_" + side, MODAL_MARGIN.y)
+	_modal_layer.add_child(margin)
+	margin.add_child(MonSkillsModal.new(field.mon))
+
+func _close_mon() -> void:
+	if is_instance_valid(_modal_layer):
+		_modal_layer.queue_free()
+	_modal_layer = null
 
 func _update_previews() -> void:
 	var drag: Dictionary = {}

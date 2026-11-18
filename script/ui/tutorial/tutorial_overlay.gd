@@ -163,7 +163,8 @@ func _show_step(index: int) -> void:
 		_next()
 		return
 	var wait: String = step.get("wait", "next")
-	_next_button.visible = wait == "next"
+	# "dismiss": der Schritt wartet auf eine Aktion, Weiter beendet die Sequenz aber auch und blendet den Trainer aus
+	_next_button.visible = wait == "next" or step.get("dismiss", false)
 	_blocker.hole_clickable = wait != "next" or step.get("free", false)
 	_blocker.open = step.get("open", false)
 	_spotlight.set_shader_parameter("dim_color", OPEN_DIM if _blocker.open else DIM)
@@ -380,7 +381,9 @@ func _layout() -> void:
 ## Oberkante des obersten Knopfs unterhalb von from_y, der in der Spalte der Blase (ab x) liegt; sonst der Bildschirmrand
 func _above_buttons(x: float, from_y: float) -> float:
 	var limit := _blocker.size.y
-	for button: Control in _scene_buttons:
+	# ohne festen Typ: ein inzwischen gelöschter Knopf (z. B. aus dem geschlossenen Debug-Menü) würde sonst schon
+	# bei der Zuweisung abstürzen, bevor is_instance_valid greift
+	for button in _scene_buttons:
 		if not is_instance_valid(button):
 			continue
 		var rect := _rect_of(button)
@@ -394,7 +397,7 @@ func _covered_area(rect: Rect2, with_speaker: bool) -> float:
 	var area := 0.0
 	for hole in _blocker.holes:
 		area += rect.intersection(hole).get_area() * HOLE_WEIGHT
-	for button: Control in _scene_buttons:
+	for button in _scene_buttons:
 		if is_instance_valid(button):
 			area += rect.intersection(_rect_of(button)).get_area() * BUTTON_WEIGHT
 	if with_speaker and _speaker.visible:

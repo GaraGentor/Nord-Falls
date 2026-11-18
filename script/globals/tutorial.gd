@@ -17,6 +17,7 @@ extends Node
 ##  free   bei "next": das Ziel bleibt trotzdem bedienbar (z. B. Beute einsammeln)
 ##  open   alles bleibt bedienbar und nur leicht abgedunkelt, das Ziel zeigt nur den nächsten Schritt
 ##  if_present  der Schritt entfällt, wenn sein (erstes) Ziel gerade nicht zu sehen ist
+##  dismiss  der Schritt wartet auf eine Aktion, zeigt aber auch Weiter: das beendet die Sequenz (Trainer verschwindet)
 
 ## Ein- oder ausgeschaltet (Einstellungen), true = eingeschaltet
 signal enabled_changed(on: bool)
@@ -39,14 +40,14 @@ const SEQUENCES := {
 		{"text": "TUT_SEL_DRAW", "target": "draw_egg", "wait": "pressed:draw_egg", "count": 3},
 		{"text": "TUT_SEL_PICK", "target": "eggs", "wait": "signal:select_initial_mon"},
 		{"text": "TUT_SEL_INFO", "target": "starter_info"},
-		{"text": "TUT_SEL_GO", "target": ["eggs", "begin_journey"], "wait": "pressed:begin_journey"},
+		{"text": "TUT_SEL_GO", "target": ["eggs", "begin_journey"], "wait": "pressed:begin_journey", "dismiss": true},
 	]},
 	"egg_configurator": {"speaker": "trainer", "steps": [
 		{"text": "TUT_CFG_MON", "target": "cfg_mon"},
 		{"text": "TUT_CFG_SLOTS", "target": "cfg_slots"},
 		{"text": "TUT_CFG_ARC", "target": "cfg_grid"},
 		{"text": "TUT_CFG_GRID", "target": ["cfg_grid", "cfg_slots"], "wait": "signal:egg_loadout_complete"},
-		{"text": "TUT_CFG_GO", "target": ["cfg_go", "cfg_slots", "cfg_grid"], "wait": "pressed:cfg_go"},
+		{"text": "TUT_CFG_GO", "target": ["cfg_go", "cfg_slots", "cfg_grid"], "wait": "pressed:cfg_go", "dismiss": true},
 	]},
 	# Übungskampf (start_practice): alles rund um den Kampf an einem Gegner, der nicht K.O. gehen kann
 	"battle": {"speaker": "trainer", "steps": [
@@ -54,6 +55,9 @@ const SEQUENCES := {
 		{"text": "TUT_BAT_WHEEL", "target": "bat_wheel"},
 		{"text": "TUT_BAT_INTENT", "target": "bat_intent"},
 		{"text": "TUT_BAT_CARD", "target": ["bat_hand", "bat_enemies"], "wait": "signal:call_skill_card"},
+		# Faust = physisch, Funkeln (Diamant) = magisch, je eigener Schild; dazu Buffs und Passive
+		{"text": "TUT_BAT_KINDS", "target": "bat_hand"},
+		{"text": "TUT_BAT_BUFFS", "target": "bat_hand"},
 		{"text": "TUT_BAT_ELEMENTS"},
 		{"text": "TUT_BAT_END", "target": "bat_end_turn", "wait": "pressed:bat_end_turn"},
 		{"text": "TUT_BAT_FAINTED"},
@@ -65,14 +69,14 @@ const SEQUENCES := {
 		{"text": "TUT_MAP_TEAM", "target": "map_team"},
 		{"text": "TUT_MAP_LEGEND", "target": "map_legend"},
 		# nur zu Beginn eines Runs, wenn die erste Reihe noch frei wählbar ist
-		{"text": "TUT_MAP_START", "target": "map_start", "wait": "pressed:map_start", "if_present": true},
+		{"text": "TUT_MAP_START", "target": "map_start", "wait": "pressed:map_start", "if_present": true, "dismiss": true},
 	]},
 	"judgement": {"speaker": "trainer", "steps": [
 		{"text": "TUT_JUD_CATCHES", "target": "jud_catches"},
 		{"text": "TUT_JUD_TEAM", "target": "jud_team"},
 		{"text": "TUT_JUD_SKILLS", "target": "jud_skills"},
 		{"text": "TUT_JUD_BAG", "target": "jud_bag", "if_present": true},
-		{"text": "TUT_JUD_CONFIRM", "target": "jud_confirm", "wait": "pressed:jud_confirm", "open": true},
+		{"text": "TUT_JUD_CONFIRM", "target": "jud_confirm", "wait": "pressed:jud_confirm", "open": true, "dismiss": true},
 	]},
 	"loot": {"speaker": "trainer", "steps": [
 		{"text": "TUT_LOOT_XP", "target": "loot_team"},

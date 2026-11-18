@@ -476,7 +476,10 @@ func _generate_practice() -> void:
 		"caught_mon_names": State.caught_mon_names.duplicate(),
 		"defeated_mon_names": State.defeated_mon_names.duplicate(),
 		"revealed_mon_stats": State.revealed_mon_stats.duplicate(true),
+		"skills": State.mons.map(func(mon: Monster): return mon._skills.duplicate()),
 	}
+	for mon: Monster in State.mons:
+		_add_practice_attacks(mon)
 	var enemy: Monster = Helper.generate_mons({"count": 1, "species": [_practice_species()]})[0]
 	enemy._level = State.INITIAL_LEVEL
 	enemy._initial_moves = Monster.BASE_MOVES
@@ -492,9 +495,33 @@ func _practice_species() -> String:
 	var lowest: int = names.map(Monmap.rarity_of).min()
 	return names.filter(func(mon_name): return Monmap.rarity_of(mon_name) == lowest).pick_random()
 
+## Grundelement -> Namensteil der Starter-Skills (Skills.starter_skills)
+const PRACTICE_ELEMENTS := {
+	Enums.MON_TYPES.EARTH: "EARTH",
+	Enums.MON_TYPES.FIRE: "FIRE",
+	Enums.MON_TYPES.WATER: "WATER",
+	Enums.MON_TYPES.AIR: "AIR",
+}
+
+## Das Tutorial verlangt Angriffe auf den Gegner, die gewählten Ei-Attacken können aber nur Schilde oder Buffs sein:
+## für den Übungskampf vorn eine physische und eine magische Attacke des eigenen Elements (danach wieder weg)
+func _add_practice_attacks(mon: Monster) -> void:
+	for element: int in PRACTICE_ELEMENTS:
+		if not Skills.shares_element(mon._type, element):
+			continue
+		var attacks := []
+		for kind in ["PHYS", "MAG"]:
+			var skill := Skills.get_skill("SKILL_%s_%s_LIGHT_THRUST" % [PRACTICE_ELEMENTS[element], kind])
+			if not skill.is_empty() and not mon._skills.any(func(own): return own.name == skill.name):
+				skill.scouted = true
+				attacks.append(skill)
+		mon._skills = attacks + mon._skills
+		return
+
 func _restore_practice_snapshot() -> void:
 	for i in mini(State.mons.size(), _practice_snapshot.lost_hp.size()):
 		State.mons[i]._lost_hp = _practice_snapshot.lost_hp[i]
+		State.mons[i]._skills = _practice_snapshot.skills[i]
 	State.run_catches = _practice_snapshot.run_catches
 	State.caught_mon_names = _practice_snapshot.caught_mon_names
 	State.defeated_mon_names = _practice_snapshot.defeated_mon_names

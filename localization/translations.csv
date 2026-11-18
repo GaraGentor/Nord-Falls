@@ -143,7 +143,6 @@ Welches Monster soll die Fähigkeit lernen?"
 TRAINER_WHICH_MONSTER,"Which monster
 should learn the skill?","Welches Monster soll
 die Fähigkeit lernen?"
-TRAINER_RECOMMENDED,<Recommended>,<Empfohlen>
 TRAINER_MONSTER_1,Monster 1,Monster 1
 TRAINER_MONSTER_2,Monster 2,Monster 2
 TREASURE_CHOOSE,The chest is open!,Die Kiste ist offen!
@@ -1255,3 +1254,7 @@ SKILL_PASSIVE_DUST_T4,Eye of the Sandstorm,Auge des Sandsturms
 SKILL_PASSIVE_MUD_T4,Heart of the Mire,Herz des Moores
 SKILL_STEAM_BUFF_T4,Thermal Veil,Thermalschleier
 SKILL_PASSIVE_STEAM_T4,Pressure Core,Druckkern
+TUT_BAT_KINDS,"Look at the symbol on a card: the fist is a physical attack, the sparkling diamond a magical one. Physical attacks are only blocked by armor (shield), magical attacks only by magic shields. So check the enemy's plan and pick the right shield!","Schau auf das Symbol einer Karte: Die Faust ist eine physische Attacke, der funkelnde Diamant eine magische. Physische Attacken blockt nur Rüstung (Schild), magische nur ein Magie-Schild. Schau also, was der Gegner vorhat, und nimm den passenden Schild!"
+TUT_BAT_BUFFS,"Besides attacks and shields there are buffs: they raise a stat of your monster for a few turns. Passives can't be played, they work all by themselves as long as the monster knows them.","Neben Attacken und Schilden gibt es Buffs: Sie erhöhen für ein paar Züge einen Wert deines Monsters. Passive spielst du nicht aus, sie wirken ganz von selbst, solange das Monster sie kennt."
+TRAINER_RECOMMENDED,Recommended by the trainer,Empfohlen vom Trainer
+TRAINER_RECOMMENDED_HINT,Very effective against the monsters of the next biome ({biome}).,Sehr effektiv gegen die Monster des nächsten Bioms ({biome}).

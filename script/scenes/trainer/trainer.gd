@@ -60,12 +60,21 @@ const TRAINER_TEXT_FONT_SIZE := 14
 ## Chips unter den Monstern: Abstand zum Monster, Zeilenhöhe
 const CHIPS_GAP := 8.0
 const CHIPS_HEIGHT := 36.0
-const CARD_COLUMNS := 4
+## fünf pro Reihe: mit den Empfehlungen bleiben es zwei Reihen
+const CARD_COLUMNS := 5
 const MIN_TIER := 2
 const SINGLE_ELEMENT_OFFERS := 2
 const MULTI_ELEMENT_OFFERS := 2
 ## zusätzliche Skills in der zweiten Reihe, müssen zu keinem Monster passen
 const EXTRA_OFFERS := 4
+## Angriffe, die gegen das nächste Biom sehr effektiv sind, mit Abzeichen "Empfohlen vom Trainer" (stehen vorn)
+const RECOMMENDED_OFFERS := 2
+const BADGE_FONT_SIZE := 22
+## Abstand des Abzeichens zum linken und rechten Kartenrand
+const BADGE_INSET := 10.0
+const BADGE_PADDING := 8
+## so weit ragt das Abzeichen über die Oberkante der Karte
+const BADGE_RISE := 22.0
 
 const CARD_TILT := deg_to_rad(-4.0)
 ## Anteil der Kartenbreite bzw. -höhe, der von der Nachbarkarte verdeckt wird
@@ -107,6 +116,8 @@ var _bubble: SpeechBubble
 var _open_plate: PlateMon
 var _modal: MonSkillsModal
 var _bag: OpenBag
+## Namen der empfohlenen Skills (_pick_recommended)
+var _recommended: Array = []
 
 func _ready() -> void:
 	use_scene_layout(background)
@@ -418,7 +429,60 @@ func _pick_offers() -> Array:
 	for pool in [rare, Skills.trainer_skills(1)]:
 		var learnable = pool.filter(func(skill): return not names.has(skill.name) and State.mons.any(func(mon): return not Skills.knows_skill(mon, skill.name)))
 		names.append_array(Skills.pick_weighted_unique(learnable.map(func(skill): return skill.name), SINGLE_ELEMENT_OFFERS + MULTI_ELEMENT_OFFERS + EXTRA_OFFERS - names.size(), State.map_level))
-	return names.map(func(skill_name): return Skills.get_skill(skill_name))
+	_recommended = _pick_recommended(names)
+	return (_recommended + names).map(func(skill_name): return Skills.get_skill(skill_name))
+
+## Biom, auf das sich der Trainer vorbereitet: das nächste, im letzten Biom das aktuelle (Endboss)
+static func next_biome() -> int:
+	if State.biome_path.is_empty():
+		return 0
+	return State.biome_path[mini(State.map_level + 1, State.biome_path.size() - 1)]
+
+## Ist der Skill gegen die Elemente des Bioms sehr effektiv? Nur Schaden zählt.
+static func is_recommended(skill: Dictionary, biome: int) -> bool:
+	return biome != 0 and Skills.is_damage_skill(skill) and Skills.element_score(skill.nature, biome) > 0
+
+## RECOMMENDED_OFFERS Angriffe gegen das nächste Biom, die noch nicht angeboten werden und die ein Monster lernen kann;
+## bevorzugt welche, die es auch gleich einsetzen kann
+func _pick_recommended(taken: Array) -> Array:
+	var biome := next_biome()
+	var candidates := Skills.trainer_skills(1).filter(func(skill): return is_recommended(skill, biome) and not taken.has(skill.name) and _learnable(skill))
+	var usable := candidates.filter(func(skill): return State.mons.any(func(mon): return Skills.can_use(mon, skill)))
+	var picked := Skills.pick_weighted_unique(usable.map(func(skill): return skill.name), RECOMMENDED_OFFERS, State.map_level)
+	var rest := candidates.map(func(skill): return skill.name).filter(func(skill_name): return not picked.has(skill_name))
+	picked.append_array(Skills.pick_weighted_unique(rest, RECOMMENDED_OFFERS - picked.size(), State.map_level))
+	return picked
+
+## Kennt mindestens ein Monster im Team den Skill noch nicht?
+static func _learnable(skill: Dictionary) -> bool:
+	return State.mons.any(func(mon): return not Skills.knows_skill(mon, skill.name))
+
+## Goldenes Abzeichen oben auf der Karte, ragt etwas über den Rand
+func _add_recommended_badge(card: RewardCard) -> void:
+	var holder := Control.new()
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(holder)
+	var badge := PanelContainer.new()
+	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var label := Label.new()
+	label.text = tr("TRAINER_RECOMMENDED")
+	label.add_theme_font_size_override("font_size", BADGE_FONT_SIZE)
+	label.add_theme_color_override("font_color", SkillDetailPopup.GOLD)
+	# die Karten stehen verkleinert auf dem Tisch: große Schrift, bei Bedarf zweizeilig über die Kartenbreite
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	# feste Umbruchbreite, sonst rechnet der Umbruch ohne Breite und das Abzeichen wird riesig hoch
+	label.custom_minimum_size.x = TRAINER_CARD_SIZE.x - 2 * (BADGE_INSET + BADGE_PADDING)
+	IronPlate.frame(badge, label, BADGE_PADDING, 2)
+	holder.add_child(badge)
+	badge.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	badge.offset_left = BADGE_INSET
+	badge.offset_right = -BADGE_INSET
+	# Höhe 0: die Mindestgröße (Text samt Platte) bestimmt sie, nach unten wachsend
+	badge.offset_top = -BADGE_RISE
+	badge.offset_bottom = -BADGE_RISE
+	badge.grow_vertical = Control.GROW_DIRECTION_END
+	card.tooltip_text += "\n" + tr("TRAINER_RECOMMENDED_HINT").format({"biome": tr(ColorMap.get_combo(next_biome()).label)})
 
 func _add_skill_card(skill: Dictionary) -> void:
 	var card := add_skill_card(skill, func(mon: Monster): _learn(_dragged, mon))
@@ -430,6 +494,8 @@ func _add_skill_card(skill: Dictionary) -> void:
 	# Text nicht auf den Papierrahmen setzen (card.row liegt in der VBox mit Kopf- und Fußzeile, darüber der Rand)
 	card.row.get_parent().get_parent().add_theme_constant_override("margin_bottom", 14)
 	set_price(card, randi_range(skill.shop_cost.min, skill.shop_cost.max))
+	if _recommended.has(skill.name):
+		_add_recommended_badge(card)
 	ignore_mouse_below(card)
 
 func _learn(card: RewardCard, mon: Monster) -> void:
