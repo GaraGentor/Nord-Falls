@@ -83,13 +83,13 @@ const SEQUENCES := {
 		{"text": "TUT_LOOT_DRAG", "target": "loot_field", "free": true},
 	]},
 	# Erst-Begegnungen mit NPC: der NPC der Szene spricht selbst (Gruppe "tut_npc")
-	# Die Kasse spricht ihre eigenen Sätze (shop.gd HOWTO_LINES), jetzt mit Blick auf die Regale
+	# Die Kasse (rechts) spricht ihre eigenen Sätze (shop.gd HOWTO_LINES), jetzt mit Blick auf Regale, Monster und Tasche
 	"shop": {"speaker": "npc", "steps": [
 		{"text": "SHOP_SAY_WELCOME"},
 		{"text": "SHOP_SAY_POTIONS", "target": ["shop_shelf_0", "shop_shelf_1", "shop_mon_0", "shop_mon_1"]},
 		{"text": "SHOP_SAY_GEMS", "target": ["shop_shelf_2", "shop_mon_0", "shop_mon_1"]},
 		{"text": "SHOP_SAY_RELICS", "target": ["shop_shelf_3", "shop_bag"]},
-		{"text": "SHOP_SAY_CLICK", "target": ["shop_shelf_0", "shop_shelf_1", "shop_shelf_2", "shop_shelf_3"]},
+		{"text": "SHOP_SAY_CLICK", "target": ["shop_shelf_0", "shop_shelf_1", "shop_shelf_2", "shop_shelf_3", "shop_mon_0", "shop_mon_1"]},
 	]},
 	"trainer": {"speaker": "npc", "steps": [
 		{"text": "TUT_TRN_CARDS", "target": "trn_cards"},

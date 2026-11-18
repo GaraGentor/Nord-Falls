@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://vi4wumw0qm6v" path="res://script/scenes/shop/shop.gd" id="1_tmap4"]
 [ext_resource type="Shader" uid="uid://be467lblpkpfs" path="res://script/ui/shader/living_pixels.gdshader" id="3_living"]
 [ext_resource type="Texture2D" uid="uid://cep54afa0kf6h" path="res://assets/npcs/self_checkout_cutout.png" id="4_checkout"]
-[ext_resource type="Texture2D" uid="uid://vaa86runw3km" path="res://assets/sczene_backgrounds/shop.jpg" id="bg_image"]
+[ext_resource type="Texture2D" path="res://assets/sczene_backgrounds/shop_v4.jpg" id="bg_image"]
 [ext_resource type="Material" path="res://script/ui/shader/background_living_material.tres" id="bg_living_mat"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_checkout"]

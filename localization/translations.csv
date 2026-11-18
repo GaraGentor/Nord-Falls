@@ -555,8 +555,8 @@ SHOP_BOUGHT,{item} bought!,{item} gekauft!
 SHOP_SAY_WELCOME,Welcome to self-checkout! There are no staff here. You serve yourself.,Willkommen an der Selbstzahler-Kasse! Personal gibt es hier nicht. Sie bedienen sich selbst.
 SHOP_SAY_POTIONS,"Potions are on the top shelves. Drag one onto a monster: it gains the element and can use more skills.","Tränke stehen oben im Regal. Auf ein Monster gezogen, bekommt es das Element dazu und kann mehr Skills einsetzen."
 SHOP_SAY_GEMS,"Trophies are on the lower left. Pick a stat with the arrows, then drag it onto a monster.","Trophäen liegen links unten. Mit den Pfeilen wählen Sie den Wert, dann ziehen Sie sie auf ein Monster."
-SHOP_SAY_RELICS,"Relics are on the lower right, please place them in the bag below.","Relikte finden Sie rechts unten, legen Sie diese bitte in die Tasche unter mir."
-SHOP_SAY_CLICK,Click an item for details. Payment is automatic once you put it down.,"Klicken Sie eine Ware für Details an. Bezahlt wird automatisch, sobald Sie sie ablegen."
+SHOP_SAY_RELICS,"Relics are on the lower right, please place them in the bag next to your monsters.","Relikte finden Sie rechts unten, legen Sie diese bitte in die Tasche neben Ihren Monstern."
+SHOP_SAY_CLICK,"Click an item for details, or a monster for its info. Payment is automatic once you put an item down.","Klicken Sie eine Ware für Details an oder ein Monster für seine Infos. Bezahlt wird automatisch, sobald Sie eine Ware ablegen."
 SHOP_SAY_THANKS_0,Thank you for your purchase! Enjoy your {item}.,Vielen Dank für Ihren Einkauf! Viel Freude mit: {item}.
 SHOP_SAY_THANKS_1,Beep! {item} scanned successfully. Thank you!,Piep! {item} erfolgreich gescannt. Danke!
 SHOP_SAY_THANKS_2,"Thanks! {item} is yours. Unexpected item in bagging area? Not my problem.","Danke! {item} gehört jetzt Ihnen. Unerwarteter Artikel im Einpackbereich? Nicht mein Problem."
@@ -1256,5 +1256,5 @@ SKILL_STEAM_BUFF_T4,Thermal Veil,Thermalschleier
 SKILL_PASSIVE_STEAM_T4,Pressure Core,Druckkern
 TUT_BAT_KINDS,"Look at the symbol on a card: the fist is a physical attack, the sparkling diamond a magical one. Physical attacks are only blocked by armor (shield), magical attacks only by magic shields. So check the enemy's plan and pick the right shield!","Schau auf das Symbol einer Karte: Die Faust ist eine physische Attacke, der funkelnde Diamant eine magische. Physische Attacken blockt nur Rüstung (Schild), magische nur ein Magie-Schild. Schau also, was der Gegner vorhat, und nimm den passenden Schild!"
 TUT_BAT_BUFFS,"Besides attacks and shields there are buffs: they raise a stat of your monster for a few turns. Passives can't be played, they work all by themselves as long as the monster knows them.","Neben Attacken und Schilden gibt es Buffs: Sie erhöhen für ein paar Züge einen Wert deines Monsters. Passive spielst du nicht aus, sie wirken ganz von selbst, solange das Monster sie kennt."
-TRAINER_RECOMMENDED,Recommended by the trainer,Empfohlen vom Trainer
+TRAINER_CHOICE_STAMP,Trainer's Choice,Trainers Choice
 TRAINER_RECOMMENDED_HINT,Very effective against the monsters of the next biome ({biome}).,Sehr effektiv gegen die Monster des nächsten Bioms ({biome}).

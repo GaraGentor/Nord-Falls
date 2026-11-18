@@ -133,6 +133,8 @@ func _portrait(mon: Monster) -> Control:
 	box.add_child(label)
 	var chip := ELEMENT_CHIP.instantiate()
 	chip.custom_minimum_size.y = CHIP_HEIGHT
+	# der Chip würde sonst den restlichen Platz einnehmen, alles bleibt oben bündig untereinander
+	chip.size_flags_vertical = Control.SIZE_FILL
 	chip._init_color(mon)
 	box.add_child(chip)
 	box.add_child(_stats(mon))

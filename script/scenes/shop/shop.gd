@@ -1,8 +1,10 @@
 extends ShopDialog
 
-## Laden als freie Bühne im Stil des Kerkermeisters: in der Mitte die Selbstzahler-Kasse mit Sprechblase,
-## links und rechts Regale mit der Ware und Schildern, unten links die eigenen Monster von hinten
-## samt Typ und Werten in gleich großen Feldern, unter der Kasse die Tasche mit dem Geld, rechts daneben die Gutscheine.
+## Laden als freie Bühne im Stil des Kerkermeisters: rechts die Selbstzahler-Kasse mit der Sprechblase darüber,
+## links vier Regale (2x2) mit je zwei Waren und Schildern, darunter die eigenen Monster von hinten (nur mit Typ),
+## daneben die Tasche mit dem Geld und die Gutscheine.
+## Ein Klick auf ein Monster fährt den ganzen Laden nach rechts, links erscheint die Übersicht seiner Attacken;
+## nochmal angeklickt fährt der Laden zurück. Der Hintergrund bewegt sich dabei (und mit der Maus) leicht mit.
 ## Tränke und Edelsteine zieht man auf ein Monster, Relikte und Schlüssel in die Tasche; abgelegt ist die Ware gekauft.
 ## Tränke gibt es beliebig oft, alles andere nur einmal. Beim Ziehen und bei angeklickter Ware
 ## zeigen die Monster, was sich ändern würde. Ein Klick auf eine Ware öffnet ihre Beschreibung,
@@ -30,45 +32,66 @@ const RELIC_PRICE := 35
 const GEM_OFFERS := 2
 const RELIC_OFFERS := 2
 
-## Regale, alle Maße in Bühnen-Pixeln: innere Kante neben der Kasse, von dort gehen sie nach außen
-const SHELF_INNER_GAP := 128.0
+## Regale, alle Maße in Bühnen-Pixeln: zwei Reihen mit je zwei Brettern links der Kasse, je zwei Waren pro Brett.
+## Index = Gruppe im Tutorial (tut_shop_shelf_<i>): oben die Tränke, unten links Trophäen, unten rechts Relikte.
 const SHELF_HEIGHT := 46.0
+const SHELF_ROWS_Y := [96.0, 266.0]
 const SHELF_LAYOUT := [
-	{"side": -1, "y": 90.0, "width": 370.0},
-	{"side": 1, "y": 90.0, "width": 370.0},
-	{"side": -1, "y": 296.0, "width": 345.0},
-	{"side": 1, "y": 296.0, "width": 370.0},
+	{"column": 0, "row": 0},
+	{"column": 1, "row": 0},
+	{"column": 0, "row": 1},
+	{"column": 1, "row": 1},
 ]
 const SHELF_POTIONS_LEFT := 0
 const SHELF_POTIONS_RIGHT := 1
 const SHELF_GEMS := 2
 const SHELF_RELICS := 3
-const MAX_TAG_WIDTH := 240.0
+## Abstand der beiden Bretter einer Reihe und der Regale zur Kassen-Spalte
+const SHELF_COLUMN_GAP := 56.0
+const SHELF_RIGHT_GAP := 24.0
+## Die Regale hängen nur vor der Holzwand des Hintergrunds: ihr rechter Rand (der Pfosten) als Anteil der Bildbreite,
+## der Abstand dazu deckt auch den Ausschlag mit der Maus ab
+const WALL_RIGHT := 820.0 / 1376.0
+const WALL_GAP := 16.0
+const MAX_TAG_WIDTH := 220.0
 
+## Kassen-Spalte rechts: Breite, darin steht die Kasse, die Sprechblase darüber
+const RIGHT_COLUMN_WIDTH := 340.0
 ## Kasse: Bildausschnitt als Anteil der Bildhöhe (darüber und darunter ist das Bild leer)
 const CHECKOUT_TOP := 0.117
 const CHECKOUT_BOTTOM := 0.88
-const CHECKOUT_FIRST_Y := 104.0
-const CHECKOUT_LAST_Y := 560.0
-const JUMP_HEIGHT := 46.0
+## Oberkante des sichtbaren Körpers, unten steht die Kasse auf dem Bildschirmrand
+const CHECKOUT_FIRST_Y := 300.0
+const JUMP_HEIGHT := 40.0
 const JUMP_SECONDS := 0.16
 
-const BUBBLE_WIDTH := 350.0
-const BUBBLE_LEFT := 142.0
-const BUBBLE_TOP := 416.0
-const POPUP_TOP := 8.0
-const BAG_OVERHANG := 26.0
+const BUBBLE_WIDTH := 300.0
+## Zipfel der Blase berührt den Kopf der Kasse
+const BUBBLE_OVERLAP := 6.0
+const POPUP_GAP := 8.0
+const BAG_OVERHANG := 2.0
 ## Gutscheine rechts neben der Tasche: Abstand zur Tasche und zum unteren Bildschirmrand
 const COUPON_GAP := 4.0
 const COUPON_BOTTOM := 12.0
 
-## Monster-Felder unten links: so weit endet die Bühne vor dem Bildschirmrand, so weit bleiben die Felder davon weg
-const STAGE_MARGIN := 24.0
+## Monster unten links: Abstand zum Bildschirmrand und untereinander, die Tasche folgt nach dem zweiten Platz
 const FIELD_SCREEN_GAP := 8.0
 const FIELD_SPACING := 4.0
-## Attacken-Übersicht eines Monsters (MonSkillsModal): Abstand zum Rand und Abdunklung dahinter
-const MODAL_MARGIN := Vector2i(170, 50)
-const MODAL_DIM := Color(0, 0, 0, 0.55)
+const BAG_GAP := 8.0
+
+## Klick auf ein Monster: der Laden fährt so weit nach rechts, dass links davon nur noch so viel Laden zu sehen ist
+## (beide Monster und das linke Regal), daneben steht die Attacken-Übersicht (MonSkillsModal)
+const MON_VIEW_WIDTH := 520.0
+const MODAL_GAP := 12.0
+## Höhe der Übersicht wie beim Trainer: oben beginnt sie dort unter dessen Leiste (Tasche, Verlassen-Button),
+## unten endet sie über dem Rand; beides in Bildschirm-Pixeln
+const MODAL_TOP := 142.0
+const MODAL_BOTTOM := 36.0
+const PAN_SECONDS := 0.45
+## Parallax des Hintergrunds: Anteil der Fahrt, um den er mitfährt, Ausschlag mit der Maus, Nachziehen pro Sekunde
+const PARALLAX_PAN := 0.1
+const PARALLAX_MOUSE := 12.0
+const PARALLAX_FOLLOW := 6.0
 
 ## Sprechblase: Anzeigedauer pro Satz, danach der Dank
 const LINE_BASE_SECONDS := 2.5
@@ -79,15 +102,15 @@ const HOWTO_LINES := ["SHOP_SAY_WELCOME", "SHOP_SAY_POTIONS", "SHOP_SAY_GEMS", "
 ## Ware im Regal: oben steht das Bild auf dem Brett, darunter hängt das Schild mit dem Namen.
 ## Die Beschreibung steht nur im Popup, das ein Klick öffnet.
 class ShelfItem extends RewardDialog.RewardCard:
-	const ART_SIZE := Vector2(84, 84)
+	const ART_SIZE := Vector2(68, 68)
 	## das Bild hat etwas Rand, so steht die Ware sichtbar auf dem Brett
-	const ART_SINK := 7.0
+	const ART_SINK := 6.0
 	const TITLE_FONT_SIZE := 16
 	const PRICE_FONT_SIZE := 17
 	const TAG_MARGIN := 7
 	const SWITCH_SIZE := Vector2(30, 34)
 	const SWITCH_FONT_SIZE := 26
-	const SWITCH_Y := 16.0
+	const SWITCH_Y := 10.0
 
 	var art: Control
 	var title: String
@@ -226,21 +249,26 @@ class ShelfItem extends RewardDialog.RewardCard:
 		_tag.position = Vector2(0, ART_SIZE.y + SHELF_HEIGHT / 2)
 		size = Vector2(width, _tag.position.y + _tag.size.y)
 
-## Eigenes Monster unten links, immer gleich groß und in einem Rahmen: oben links das Bild von hinten,
-## daneben Name und Typ, unten die Reihe mit allen Werten. Das ganze Feld ist Ablegeziel.
+## Eigenes Monster unten links, ohne Rahmen und ohne Werte: groß von hinten, darunter sein Typ.
+## Golden umrandet, solange seine Übersicht offen ist oder Ware darüber schwebt. Das ganze Feld ist Ablegeziel.
+## Trophäen zeigen über dem Monster kurz, wie sich der Wert ändern würde.
 class MonField extends RewardDialog.DropTarget:
-	## die Höhe nutzt den Platz unter den Schildern der Regale
-	const FIELD_SIZE := Vector2(504, 136)
-	const IMAGE_SIZE := 84.0
-	const NAME_FONT_SIZE := 20
-	const STAT_FONT_SIZE := 16
+	const IMAGE_SIZE := 250.0
+	const CHIPS_HEIGHT := 32.0
+	const FIELD_SIZE := Vector2(250, IMAGE_SIZE + CHIPS_HEIGHT)
+	const BOOST_FONT_SIZE := 18
 	const STAT_GETTERS := {"hp": "hp", "atk": "attack", "def": "defense", "s_atk": "s_attack", "s_def": "s_defense", "speed": "speed"}
+	const SELECTED_SCALE := Vector2(1.08, 1.08)
+	const SELECT_SECONDS := 0.2
 
 	var _image: TextureRect
 	var _chips: HBoxContainer
-	## Wert -> Labels für Bezeichnung und Zahl, untereinander
-	var _stat_labels := {}
+	## goldene Zeile über dem Monster: Wert vorher -> nachher, nur bei Trophäen
+	var _boost: Label
 	var _pop: Tween
+	## Attacken-Übersicht dieses Monsters ist offen: goldener Umriss, Bild etwas größer
+	var _selected := false
+	var _highlighted := false
 	## Klick ohne Ziehen: Übersicht der Attacken (MonSkillsModal wie beim Trainer)
 	var on_click: Callable
 	var _press_pos := Vector2.ZERO
@@ -258,76 +286,69 @@ class MonField extends RewardDialog.DropTarget:
 		mon = monster
 		# Klicks gehen durch bis zum Boden (_on_floor_input), Ablegen klappt trotzdem
 		mouse_filter = Control.MOUSE_FILTER_PASS
+		mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		tooltip_text = Helper.mon_display_name(monster._name)
 		custom_minimum_size = FIELD_SIZE
 		size = FIELD_SIZE
-		var box := VBoxContainer.new()
-		box.add_theme_constant_override("separation", 2)
-		plate = IronPlate.frame(self, box, 10, 5)
-
-		var top := HBoxContainer.new()
-		top.add_theme_constant_override("separation", 10)
-		box.add_child(top)
+		add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+		var holder := Control.new()
+		add_child(holder)
 		_image = RewardDialog.texture_icon(Monmap.texture(monster._name, IMAGE_SIZE, true)) as TextureRect
 		_image.material = Monmap.MONSTER_MATERIAL
-		_image.custom_minimum_size = Vector2(IMAGE_SIZE, IMAGE_SIZE)
+		_image.size = Vector2(IMAGE_SIZE, IMAGE_SIZE)
+		_image.position = Vector2((FIELD_SIZE.x - IMAGE_SIZE) / 2, 0)
 		_image.pivot_offset = Vector2(IMAGE_SIZE / 2, IMAGE_SIZE)
-		top.add_child(_image)
-		var mon_text := VBoxContainer.new()
-		mon_text.alignment = BoxContainer.ALIGNMENT_CENTER
-		mon_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		mon_text.add_theme_constant_override("separation", 6)
-		top.add_child(mon_text)
-		var name_label := Label.new()
-		name_label.text = Helper.mon_display_name(monster._name)
-		name_label.add_theme_font_override("font", PIXEL_FONT)
-		name_label.add_theme_font_size_override("font_size", NAME_FONT_SIZE)
-		name_label.add_theme_color_override("font_color", IronPlate.TEXT_COLOR)
-		mon_text.add_child(name_label)
+		holder.add_child(_image)
 		_chips = HBoxContainer.new()
+		_chips.alignment = BoxContainer.ALIGNMENT_CENTER
 		_chips.add_theme_constant_override("separation", 4)
-		mon_text.add_child(_chips)
-
-		var stats := HBoxContainer.new()
-		stats.add_theme_constant_override("separation", 0)
-		box.add_child(stats)
-		for stat in GemField.STATS:
-			var column := VBoxContainer.new()
-			column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			column.add_theme_constant_override("separation", -4)
-			stats.add_child(column)
-			# Symbol über der Beschriftung wie in den Werte-Tabellen (StatsGrid)
-			column.add_child(StatsGrid.stat_icon(stat, roundf(STAT_FONT_SIZE * StatsGrid.ICON_SCALE)))
-			var stat_name := _stat_label(column)
-			stat_name.text = tr(GemField.STATS[stat].stat).trim_suffix(":")
-			_stat_labels[stat] = {"name": stat_name, "value": _stat_label(column)}
-
+		_chips.position = Vector2(0, IMAGE_SIZE)
+		_chips.size = Vector2(FIELD_SIZE.x, CHIPS_HEIGHT)
+		holder.add_child(_chips)
+		_boost = Label.new()
+		_boost.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_boost.position = Vector2(0, 0)
+		_boost.size = Vector2(FIELD_SIZE.x, BOOST_FONT_SIZE + 8)
+		_boost.add_theme_font_override("font", PIXEL_FONT)
+		_boost.add_theme_font_size_override("font_size", BOOST_FONT_SIZE)
+		_boost.add_theme_color_override("font_color", GOLD)
+		_boost.add_theme_color_override("font_outline_color", Color.BLACK)
+		_boost.add_theme_constant_override("outline_size", 6)
+		holder.add_child(_boost)
 		RewardDialog.ignore_mouse_below(self)
 		show_preview({})
-
-	func _stat_label(parent: Control) -> Label:
-		var label := Label.new()
-		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		label.add_theme_font_override("font", PIXEL_FONT)
-		label.add_theme_font_size_override("font_size", STAT_FONT_SIZE)
-		parent.add_child(label)
-		return label
 
 	func covers(global_point: Vector2) -> bool:
 		return get_global_rect().has_point(global_point)
 
-	## Aktueller Stand; drag (Ware in der Hand oder angeklickt) zeigt dazu, was sich ändern würde
+	## Aktueller Typ; drag (Ware in der Hand oder angeklickt) zeigt dazu, was sich ändern würde
 	func show_preview(drag: Dictionary) -> void:
 		RewardDialog.show_element_preview(_chips, mon, drag)
-		for stat in _stat_labels:
-			var labels: Dictionary = _stat_labels[stat]
+		var stat: String = drag.get("stat", "")
+		_boost.visible = stat != ""
+		if _boost.visible:
 			var value: int = roundi(mon.call(STAT_GETTERS[stat]))
-			var boosted: bool = drag.get("stat", "") == stat
-			labels.value.text = str(value)
-			if boosted:
-				labels.value.text += " %s %d" % [RewardDialog.PREVIEW_ARROW, value + drag.bonus]
-			var color: Color = GOLD if boosted else IronPlate.TEXT_COLOR
-			labels.name.add_theme_color_override("font_color", color)
-			labels.value.add_theme_color_override("font_color", color)
+			_boost.text = "%s %d %s %d" % [tr(GemField.STATS[stat].stat).trim_suffix(":"), value, RewardDialog.PREVIEW_ARROW, value + drag.bonus]
+
+	## Wie beim Trainer: das angeklickte Monster bekommt den goldenen Umriss und wächst etwas
+	func set_selected(selected: bool) -> void:
+		_selected = selected
+		_show_gold()
+		if _pop:
+			_pop.kill()
+		_pop = create_tween()
+		_pop.tween_property(_image, "scale", _rest_scale(), SELECT_SECONDS).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+	## Beim Ziehen leuchtet der Umriss nur, solange die Ware darüber schwebt, die Auswahl bleibt golden
+	func set_highlight(on: bool) -> void:
+		_highlighted = on
+		_show_gold()
+
+	func _show_gold() -> void:
+		_image.material = Monmap.monster_selected_material if _selected or _highlighted else Monmap.MONSTER_MATERIAL
+
+	func _rest_scale() -> Vector2:
+		return SELECTED_SCALE if _selected else Vector2.ONE
 
 	## Hat gerade etwas bekommen: kurz golden aufleuchten und wachsen
 	func celebrate() -> void:
@@ -335,12 +356,12 @@ class MonField extends RewardDialog.DropTarget:
 		if _pop:
 			_pop.kill()
 		_pop = create_tween()
-		_pop.tween_property(_image, "scale", Vector2(1.08, 1.08), 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		_pop.tween_property(_image, "scale", Vector2.ONE, 0.2)
+		_pop.tween_property(_image, "scale", _rest_scale() * 1.08, 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		_pop.tween_property(_image, "scale", _rest_scale(), 0.2)
 		_pop.tween_interval(0.5)
-		_pop.tween_callback(func(): _image.material = Monmap.MONSTER_MATERIAL)
+		_pop.tween_callback(_show_gold)
 
-## Offene Tasche in der Mitte, auf der Plakette steht das Geld. Ablegeziel für Relikte und Schlüssel.
+## Offene Tasche neben den Monstern, auf der Plakette steht das Geld. Ablegeziel für Relikte und Schlüssel.
 class ShopBag extends RewardDialog.DropTarget:
 	const BAG_SIZE := Vector2(208, 196)
 	const FONT_SIZE := 19
@@ -387,7 +408,7 @@ class ShopBag extends RewardDialog.DropTarget:
 		_pop = create_tween()
 		_pop.tween_property(self, "scale", Vector2.ONE, 0.35).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 
-## Beschreibung der angeklickten Ware, fliegt von ihrer Seite her oben in der Mitte ein
+## Beschreibung der angeklickten Ware, fliegt von ihrer Seite her über der Kasse ein
 class ItemPopup extends PanelContainer:
 	const WIDTH := 300.0
 	const ART_SIZE := Vector2(80, 80)
@@ -457,6 +478,8 @@ class ItemPopup extends PanelContainer:
 @export var checkout_image: TextureRect
 
 var _stage: Control
+## der ganze Laden ohne Verlassen-Button und Attacken-Übersicht: fährt beim Klick auf ein Monster nach rechts
+var _world: Control
 var _item_layer: Control
 var _shelves: Array[Dictionary] = []
 ## Regal, auf dem die nächste Ware landet
@@ -464,6 +487,7 @@ var _filling_shelf := 0
 var _mon_fields: Array[MonField] = []
 var _bag: ShopBag
 var _bubble: SpeechBubble
+var _bubble_holder: Control
 var _popup: ItemPopup
 var _exit_button: Button
 ## angeklickte Ware, deren Beschreibung offen ist
@@ -476,8 +500,18 @@ var _lines: Array = []
 var _explaining := false
 ## Bonus der Trophäen im Regal, hängt von der Biom-Tiefe ab
 var _trophy_bonus := 0
-## Abdunklung samt offener Attacken-Übersicht (_open_mon)
-var _modal_layer: ColorRect
+## Fläche links neben dem Laden für die Attacken-Übersicht (_toggle_mon) und das Monster, dessen Übersicht offen ist
+var _modal_holder: Control
+var _open_field: MonField
+## Bildschirm in Bühnen-Koordinaten, die Bühne selbst endet etwas vor dem Rand
+var _screen := Rect2()
+## wie weit der Laden gerade nach rechts gefahren ist und wie weit er für die Übersicht fährt
+var _pan := 0.0
+var _pan_width := 0.0
+var _pan_tween: Tween
+var _modal_left := 0.0
+## Ausschlag des Hintergrunds mit der Maus, zieht weich nach
+var _mouse_parallax := Vector2.ZERO
 
 func _ready() -> void:
 	use_scene_layout(background)
@@ -489,7 +523,7 @@ func _ready() -> void:
 	# aufs Beutelschild passt nur die Zahl, die Preise daneben nennen die Währung
 	_money_suffix = ""
 	_watch_money()
-	add_coupons(_stage, checkout_image)
+	add_coupons(_world, checkout_image)
 	_add_tutorial_targets()
 	# beim ersten Besuch erklärt die Kasse im Tutorial, mit Blick auf die Regale; danach bleibt der letzte Satz stehen
 	if not Tutorial.trigger("shop", _after_tutorial):
@@ -520,8 +554,11 @@ func _build_stage() -> void:
 	_stage.resized.connect(_layout_stage)
 	_content.add_child(_stage)
 	_panel.gui_input.connect(_on_floor_input)
+	_world = Control.new()
+	_world.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_stage.add_child(_world)
 
-	checkout_image.reparent(_stage, false)
+	checkout_image.reparent(_world, false)
 	for layout: Dictionary in SHELF_LAYOUT:
 		var shelf := TextureRect.new()
 		shelf.texture = SHELF_TEXTURE
@@ -529,22 +566,31 @@ func _build_stage() -> void:
 		shelf.stretch_mode = TextureRect.STRETCH_SCALE
 		shelf.material = PROPS_MATERIAL
 		shelf.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_stage.add_child(shelf)
+		_world.add_child(shelf)
 		_shelves.append({"layout": layout, "image": shelf, "items": []})
 	for i in mini(State.mons.size(), 2):
 		var field := MonField.new(self, State.mons[i])
-		field.on_click = _open_mon.bind(field)
-		_stage.add_child(field)
+		field.on_click = _toggle_mon.bind(field)
+		_world.add_child(field)
 		_mon_fields.append(field)
 	_item_layer = Control.new()
 	_item_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_stage.add_child(_item_layer)
+	_world.add_child(_item_layer)
 	_bag = ShopBag.new(self)
-	_stage.add_child(_bag)
-	_bubble = SpeechBubble.new(BUBBLE_WIDTH, true, true)
-	_stage.add_child(_bubble)
+	_world.add_child(_bag)
+	# Zipfel nach unten zur Kasse, die Blase wächst nach oben
+	_bubble = SpeechBubble.new(BUBBLE_WIDTH, true, false, true)
+	_bubble.resized.connect(_place_bubble)
+	# die Blase steht, wo die Beschreibung der Ware erscheint: solange die offen ist, schweigt die Kasse
+	_bubble_holder = Control.new()
+	_bubble_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_world.add_child(_bubble_holder)
+	_bubble_holder.add_child(_bubble)
 	_popup = ItemPopup.new(_set_selected.bind(null))
-	_stage.add_child(_popup)
+	_world.add_child(_popup)
+	_modal_holder = Control.new()
+	_modal_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_stage.add_child(_modal_holder)
 	_exit_button = icon_button(EXIT_ICON)
 	_exit_button.tooltip_text = tr("SHOP_FINISH")
 	_exit_button.pressed.connect(close)
@@ -552,43 +598,87 @@ func _build_stage() -> void:
 
 func _layout_stage() -> void:
 	var area := _stage.size
-	var center_x := area.x / 2
-	var checkout_height := (CHECKOUT_LAST_Y - CHECKOUT_FIRST_Y) / (CHECKOUT_BOTTOM - CHECKOUT_TOP)
+	_world.size = area
+	# die Bühne endet etwas vor dem Bildschirmrand, Monster, Tasche und Kasse sollen aber bis an den Rand reichen
+	var own := get_global_rect()
+	_screen = Rect2(own.position - _stage.get_global_rect().position, own.size)
+	var column_left := _screen.end.x - RIGHT_COLUMN_WIDTH
+	var column_center := column_left + RIGHT_COLUMN_WIDTH / 2
+	_pan_width = maxf(_screen.size.x - MON_VIEW_WIDTH, 0.0)
+
+	# Kasse: der sichtbare Körper reicht von CHECKOUT_FIRST_Y bis an den unteren Bildschirmrand
+	var checkout_height := (_screen.end.y - CHECKOUT_FIRST_Y) / (CHECKOUT_BOTTOM - CHECKOUT_TOP)
 	var texture_size := checkout_image.texture.get_size()
 	checkout_image.size = texture_size * checkout_height / texture_size.y
 	_checkout_y = CHECKOUT_FIRST_Y - CHECKOUT_TOP * checkout_height
-	checkout_image.position = Vector2(center_x - checkout_image.size.x / 2, _checkout_y)
+	checkout_image.position = Vector2(column_center - checkout_image.size.x / 2, _checkout_y)
 	checkout_image.pivot_offset = Vector2(checkout_image.size.x / 2, CHECKOUT_BOTTOM * checkout_image.size.y)
-	for shelf in _shelves:
-		_layout_shelf(shelf, center_x)
-	# von unten gestapelt: ein einzelnes Monster bleibt gleich groß und steht ganz unten
-	var field_bottom := area.y + STAGE_MARGIN - FIELD_SCREEN_GAP
-	for i in _mon_fields.size():
-		var row := _mon_fields.size() - i
-		_mon_fields[i].position = Vector2(FIELD_SCREEN_GAP - STAGE_MARGIN, field_bottom - row * MonField.FIELD_SIZE.y - (row - 1) * FIELD_SPACING)
-	_bag.position = Vector2(center_x - ShopBag.BAG_SIZE.x / 2, area.y + BAG_OVERHANG - ShopBag.BAG_SIZE.y)
-	_bubble.position = Vector2(center_x + BUBBLE_LEFT + SpeechBubble.TAIL_SIZE.x, BUBBLE_TOP)
-	_exit_button.position = Vector2(area.x - ICON_BUTTON_SIZE.x, 0)
-	_coupon_stack.reset_size()
-	_coupon_stack.position = Vector2(_bag.position.x + ShopBag.BAG_SIZE.x + COUPON_GAP, area.y + STAGE_MARGIN - COUPON_BOTTOM - _coupon_stack.size.y)
-	# nur der Körper der Kasse zwischen den Regalen, die Tasche und der Stapel selbst bleiben frei
-	_coupon_target.position = Vector2(center_x - SHELF_INNER_GAP, CHECKOUT_FIRST_Y)
-	_coupon_target.size = Vector2(2 * SHELF_INNER_GAP, _bag.position.y - CHECKOUT_FIRST_Y)
+	_place_bubble()
 
-## Brett neben die Kasse setzen, die Ware gleichmäßig darauf verteilen
-func _layout_shelf(shelf: Dictionary, center_x: float) -> void:
+	var shelves_left := _screen.position.x + FIELD_SCREEN_GAP
+	var shelves_right := minf(column_left - SHELF_RIGHT_GAP, _wall_right() - WALL_GAP)
+	var shelf_width := (shelves_right - shelves_left - SHELF_COLUMN_GAP) / 2
+	for shelf in _shelves:
+		_layout_shelf(shelf, shelves_left, shelf_width)
+
+	# Monster nebeneinander am unteren Rand, die Tasche folgt immer nach dem zweiten Platz
+	var slot_width := MonField.FIELD_SIZE.x + FIELD_SPACING
+	var field_top := _screen.end.y - FIELD_SCREEN_GAP - MonField.FIELD_SIZE.y
+	for i in _mon_fields.size():
+		_mon_fields[i].position = Vector2(_screen.position.x + FIELD_SCREEN_GAP + i * slot_width, field_top)
+	_bag.position = Vector2(_screen.position.x + FIELD_SCREEN_GAP + 2 * slot_width + BAG_GAP, _screen.end.y + BAG_OVERHANG - ShopBag.BAG_SIZE.y)
+	_coupon_stack.reset_size()
+	_coupon_stack.position = Vector2(_bag.position.x + ShopBag.BAG_SIZE.x + COUPON_GAP, _screen.end.y - COUPON_BOTTOM - _coupon_stack.size.y)
+	# nur der Körper der Kasse, die Sprechblase darüber bleibt frei
+	_coupon_target.position = Vector2(checkout_image.position.x, CHECKOUT_FIRST_Y)
+	_coupon_target.size = Vector2(checkout_image.size.x, _screen.end.y - CHECKOUT_FIRST_Y)
+
+	_exit_button.position = Vector2(area.x - ICON_BUTTON_SIZE.x, 0)
+	# Attacken-Übersicht: füllt links alles, was die Fahrt freigibt
+	_modal_left = _screen.position.x + MODAL_GAP
+	_modal_holder.size = Vector2(_pan_width - 2 * MODAL_GAP, _screen.size.y - MODAL_TOP - MODAL_BOTTOM)
+	_modal_holder.position.y = _screen.position.y + MODAL_TOP
+	if not (_pan_tween and _pan_tween.is_running()):
+		_set_pan(_pan_width if _open_field else 0.0)
+
+## Rechter Rand der Holzwand auf der Bühne, gemessen am Hintergrund in Ruhelage (keine Fahrt, Maus in der Mitte,
+## siehe _process); das Bild füllt den Hintergrund und wird dafür mittig beschnitten
+func _wall_right() -> float:
+	var extra := _pan_width * PARALLAX_PAN
+	var rect := Rect2(-extra - PARALLAX_MOUSE, -PARALLAX_MOUSE, size.x + extra + 2 * PARALLAX_MOUSE, size.y + 2 * PARALLAX_MOUSE)
+	var texture_size := (background as TextureRect).texture.get_size()
+	var image_scale := maxf(rect.size.x / texture_size.x, rect.size.y / texture_size.y)
+	var image_left := rect.position.x + (rect.size.x - texture_size.x * image_scale) / 2
+	return _screen.position.x + image_left + WALL_RIGHT * texture_size.x * image_scale
+
+## Blase über der Kasse, ihr Zipfel zeigt nach unten auf den Kopf; lange Texte wachsen nach oben,
+## höchstens bis unter den Verlassen-Button
+func _place_bubble() -> void:
+	if _world == null or checkout_image.size == Vector2.ZERO:
+		return
+	var tail := SpeechBubble.TAIL_SIZE.x + SpeechBubble.TAIL_POSITION.x
+	var x := checkout_image.position.x + (checkout_image.size.x - _bubble.size.x) / 2
+	x = minf(x, _screen.end.x - FIELD_SCREEN_GAP - _bubble.size.x)
+	var y := CHECKOUT_FIRST_Y + BUBBLE_OVERLAP - tail - _bubble.size.y
+	_bubble.position = Vector2(x, maxf(y, ICON_BUTTON_SIZE.y + POPUP_GAP))
+
+## Brett an seinen Platz im 2x2-Raster setzen, die Ware gleichmäßig darauf verteilen
+func _layout_shelf(shelf: Dictionary, shelves_left: float, width: float) -> void:
 	var layout: Dictionary = shelf.layout
-	var side: float = layout.side
-	var width: float = layout.width
-	var left: float = center_x + SHELF_INNER_GAP if side > 0 else center_x - SHELF_INNER_GAP - width
+	var left: float = shelves_left + layout.column * (width + SHELF_COLUMN_GAP)
+	var y: float = SHELF_ROWS_Y[layout.row]
 	var image: TextureRect = shelf.image
 	image.size = Vector2(width, SHELF_HEIGHT)
-	image.position = Vector2(left, layout.y)
+	image.position = Vector2(left, y)
 	var count: int = shelf.items.size()
 	var tag_width := minf(width / maxi(count, 1) - 10.0, MAX_TAG_WIDTH)
 	for i in count:
-		var center := Vector2(left + width * (i + 0.5) / count, layout.y)
+		var center := Vector2(left + width * (i + 0.5) / count, y)
 		shelf.items[i].place_on_shelf(center, tag_width)
+
+## Beschreibung der Ware über der Kasse, unter dem Verlassen-Button
+func _show_popup(item: ShelfItem) -> void:
+	_popup.show_item(item, checkout_image.position.x + checkout_image.size.x / 2, ICON_BUTTON_SIZE.y + POPUP_GAP)
 
 func _fill_shelves() -> void:
 	var elements: Array = Treasure.ELEMENTS
@@ -630,7 +720,7 @@ func _switch_trophy(step: int, item: ShelfItem) -> void:
 	_layout_stage()
 	item.set_gold(item == _selected or item.get_global_rect().has_point(get_global_mouse_position()))
 	if item == _selected:
-		_popup.show_item(item, _stage.size.x / 2, POPUP_TOP)
+		_show_popup(item)
 	_update_previews()
 
 ## Mehrere Relikte, jedes einzeln kaufbar: wer eins kauft, behält die anderen im Regal
@@ -655,8 +745,10 @@ func _hover_item(item: ShelfItem, over: bool) -> void:
 	if not item.sold and _dragged == null:
 		item.set_gold(over or item == _selected)
 
+## Die Beschreibung der Ware und die Attacken-Übersicht sind nie zugleich offen
 func _toggle_item(item: ShelfItem) -> void:
 	if not item.sold:
+		_close_mon()
 		_set_selected(null if item == _selected else item)
 
 func _set_selected(item: ShelfItem) -> void:
@@ -665,9 +757,10 @@ func _set_selected(item: ShelfItem) -> void:
 	_selected = item
 	if item:
 		item.set_gold(true)
-		_popup.show_item(item, _stage.size.x / 2, POPUP_TOP)
+		_show_popup(item)
 	else:
 		_popup.visible = false
+	_bubble_holder.visible = item == null
 	_update_previews()
 
 ## Klick ins Leere legt die angeklickte Ware zurück
@@ -675,34 +768,67 @@ func _on_floor_input(event: InputEvent) -> void:
 	if _selected and event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		_set_selected(null)
 
-## Klick auf ein Monster: Übersicht seiner Attacken (dasselbe MonSkillsModal wie beim Trainer) als Dialog
-## über dem ganzen Laden. Ein Klick daneben schließt ihn wieder.
-func _open_mon(field: MonField) -> void:
-	if is_instance_valid(_modal_layer):
+## Klick auf ein Monster: der Laden fährt nach rechts, links daneben erscheint die Übersicht seiner Attacken
+## (dasselbe MonSkillsModal wie beim Trainer), das Monster bleibt markiert. Ein anderes Monster wechselt nur
+## die Übersicht, dasselbe nochmal fährt den Laden zurück.
+func _toggle_mon(field: MonField) -> void:
+	if field == _open_field:
+		_close_mon()
 		return
 	_set_selected(null)
-	_modal_layer = ColorRect.new()
-	_modal_layer.color = MODAL_DIM
-	_modal_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_modal_layer.mouse_filter = Control.MOUSE_FILTER_STOP
-	_modal_layer.gui_input.connect(func(event: InputEvent):
-		if event is InputEventMouseButton and event.pressed:
-			_close_mon())
-	add_child(_modal_layer)
-	var margin := MarginContainer.new()
-	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for side in ["left", "right"]:
-		margin.add_theme_constant_override("margin_" + side, MODAL_MARGIN.x)
-	for side in ["top", "bottom"]:
-		margin.add_theme_constant_override("margin_" + side, MODAL_MARGIN.y)
-	_modal_layer.add_child(margin)
-	margin.add_child(MonSkillsModal.new(field.mon))
+	if _open_field:
+		_open_field.set_selected(false)
+	_clear_modal()
+	_open_field = field
+	field.set_selected(true)
+	_modal_holder.add_child(MonSkillsModal.new(field.mon))
+	# solange die Übersicht offen ist, verlässt kein versehentlicher Klick oben rechts den Laden
+	_exit_button.visible = false
+	_pan_to(_pan_width)
 
+## Laden zurückfahren, die Übersicht fährt links mit hinaus und verschwindet danach
 func _close_mon() -> void:
-	if is_instance_valid(_modal_layer):
-		_modal_layer.queue_free()
-	_modal_layer = null
+	if _open_field == null:
+		return
+	_open_field.set_selected(false)
+	_open_field = null
+	_exit_button.visible = true
+	_pan_to(0.0)
+
+func _clear_modal() -> void:
+	for modal in _modal_holder.get_children():
+		_modal_holder.remove_child(modal)
+		modal.queue_free()
+
+func _pan_to(target: float) -> void:
+	if _pan_tween:
+		_pan_tween.kill()
+	_pan_tween = create_tween()
+	_pan_tween.tween_method(_set_pan, _pan, target, PAN_SECONDS).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	if target <= 0.0:
+		_pan_tween.tween_callback(_clear_modal)
+
+## Laden und Übersicht hängen aneinander: die Übersicht steht immer direkt links vom Laden
+func _set_pan(value: float) -> void:
+	_pan = value
+	_world.position.x = value
+	_modal_holder.position.x = _modal_left + value - _pan_width
+	_modal_holder.visible = value > 0.0
+
+## Parallax: der Hintergrund fährt mit einem Bruchteil der Fahrt mit und weicht der Maus leicht aus.
+## Er ist dafür um genau den größten Ausschlag größer als der Bildschirm, so bleibt nie ein Rand frei.
+func _process(delta: float) -> void:
+	super(delta)
+	if _world == null:
+		return
+	var view := get_viewport_rect().size
+	var mouse := get_viewport().get_mouse_position() / view - Vector2(0.5, 0.5)
+	_mouse_parallax = _mouse_parallax.lerp(-2.0 * PARALLAX_MOUSE * mouse.clamp(Vector2(-0.5, -0.5), Vector2(0.5, 0.5)), minf(1.0, delta * PARALLAX_FOLLOW))
+	var shift := Vector2(_pan * PARALLAX_PAN, 0.0) + _mouse_parallax
+	background.offset_left = shift.x - _pan_width * PARALLAX_PAN - PARALLAX_MOUSE
+	background.offset_right = shift.x + PARALLAX_MOUSE
+	background.offset_top = shift.y - PARALLAX_MOUSE
+	background.offset_bottom = shift.y + PARALLAX_MOUSE
 
 func _update_previews() -> void:
 	var drag: Dictionary = {}

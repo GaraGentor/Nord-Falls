@@ -5,9 +5,9 @@ extends ShopDialog
 ## wählt man, welcher Skill dafür vergessen wird. Bezahlt wird erst, wenn wirklich gelernt wurde.
 ## Auf jeder Karte zeigen kleine Bilder, welche Monster den Skill einsetzen können.
 ##
-## Links liegen die Karten geneigt und überlappend in zwei Reihen. Ein Klick richtet eine Karte auf
-## und schiebt die anderen ihrer Reihe zur Seite. Rechts hält der Trainer die eigenen Monster auf
-## seinen Platten; ein Klick auf ein Monster öffnet dessen Skills über den Karten.
+## Links liegen die Karten mit etwas Abstand in zwei Reihen, über jeder ihr Preis mit dem ME-Icon. Ein Klick
+## vergrößert eine Karte und schiebt die anderen ihrer Reihe zur Seite. Empfohlene Skills tragen einen Stempel. Rechts hält der Trainer die eigenen Monster auf
+## seinen Platten; ein Klick auf ein Monster fährt die Kamera nach rechts, rechts neben dem Trainer erscheinen dessen Skills.
 
 ## Monster auf der Platte: Ablegeziel für Karten, per Klick auswählbar
 class PlateMon extends RewardDialog.DropTarget:
@@ -47,6 +47,71 @@ class PlateMon extends RewardDialog.DropTarget:
 		_tween = create_tween()
 		_tween.tween_property(self, "scale", SELECTED_SCALE if selected else Vector2.ONE, SELECT_SECONDS).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
+## Runder Stempel als Wasserzeichen: doppelter Ring, oben und unten der Text im Bogen, mittig ein Stern.
+## Leicht gedreht und durchscheinend, damit Schrift und Symbole der Karte lesbar bleiben.
+class TrainerStamp extends Control:
+	const COLOR := Color(0.858824, 0.717647, 0.45098, 0.26)
+	const TILT := -0.26
+	## Außenradius als Anteil der Kartenbreite
+	const RADIUS_SHARE := 0.42
+	const FONT_SIZE := 17
+	const RING_GAP := 5.0
+	const TEXT_BAND := 22.0
+
+	var text := ""
+	var font: Font
+
+	func _ready() -> void:
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+		resized.connect(queue_redraw)
+
+	func _draw() -> void:
+		var radius := minf(size.x, size.y) * RADIUS_SHARE
+		var frame := Transform2D(TILT, size / 2)
+		draw_set_transform_matrix(frame)
+		draw_arc(Vector2.ZERO, radius, 0.0, TAU, 72, COLOR, 3.0, true)
+		draw_arc(Vector2.ZERO, radius - RING_GAP, 0.0, TAU, 72, COLOR, 1.5, true)
+		var inner := radius - RING_GAP - TEXT_BAND
+		draw_arc(Vector2.ZERO, inner, 0.0, TAU, 60, COLOR, 1.5, true)
+		_draw_star(inner * 0.55)
+		var words := text.to_upper().split(" ", false, 1)
+		var text_radius := radius - RING_GAP - TEXT_BAND / 2
+		if words.size() > 0:
+			_draw_arc_text(frame, words[0], text_radius, true)
+		if words.size() > 1:
+			_draw_arc_text(frame, words[1], text_radius, false)
+		draw_set_transform_matrix(Transform2D.IDENTITY)
+
+	## Buchstaben entlang des Kreises, oben im Uhrzeigersinn, unten gegen ihn: beide Hälften stehen aufrecht
+	func _draw_arc_text(frame: Transform2D, word: String, radius: float, top: bool) -> void:
+		if font == null or word.is_empty():
+			return
+		var widths: Array[float] = []
+		var total := 0.0
+		for i in word.length():
+			var width := font.get_char_size(word.unicode_at(i), FONT_SIZE).x + 1.0
+			widths.append(width)
+			total += width
+		var direction := 1.0 if top else -1.0
+		var angle := (-PI / 2 if top else PI / 2) - direction * total / radius / 2
+		# Grundlinie so, dass die Großbuchstaben mittig auf dem Kreis stehen
+		var baseline := font.get_ascent(FONT_SIZE) * 0.35
+		for i in word.length():
+			var mid := angle + direction * widths[i] / 2 / radius
+			var glyph := Transform2D(mid + direction * PI / 2, Vector2(cos(mid), sin(mid)) * radius)
+			draw_set_transform_matrix(frame * glyph)
+			draw_char(font, Vector2(-widths[i] / 2, baseline), word[i], FONT_SIZE, COLOR)
+			angle += direction * widths[i] / radius
+		draw_set_transform_matrix(frame)
+
+	func _draw_star(radius: float) -> void:
+		var points := PackedVector2Array()
+		for i in 10:
+			var r := radius if i % 2 == 0 else radius * 0.45
+			var a := -PI / 2 + i * PI / 5
+			points.append(Vector2(cos(a), sin(a)) * r)
+		draw_colored_polygon(points, COLOR)
+
 ## Tasche oben links, zeigt die Essenz (wie die Boss Tränen beim Kerkermeister), nur zur Anzeige
 const BAG_SIZE := Vector2(104, 98)
 const ESSENCE_SIZE := Vector2(34, 34)
@@ -55,50 +120,65 @@ const BAG_FONT_SIZE := 18
 const ESSENCE_PER_ITEM := 25
 const TRAINER_CARD_SIZE := Vector2(210, 0)
 ## Höhe der Beschreibung auf der Karte, längere Texte scrollen von selbst (RewardDialog.scroll_description)
-const DESCRIPTION_HEIGHT := 90.0
-const TRAINER_TEXT_FONT_SIZE := 14
+const DESCRIPTION_HEIGHT := 104.0
+const TRAINER_TEXT_FONT_SIZE := 16
+## obere und untere Kartenzeile (Kosten, Sterne, Abklingzeit, Wert, Element) vergrößert
+const FACE_ROW_ZOOM := 1.3
 ## Chips unter den Monstern: Abstand zum Monster, Zeilenhöhe
 const CHIPS_GAP := 8.0
 const CHIPS_HEIGHT := 36.0
-## fünf pro Reihe: mit den Empfehlungen bleiben es zwei Reihen
-const CARD_COLUMNS := 5
+## vier pro Reihe: mit den Empfehlungen bleiben es zwei Reihen
+const CARD_COLUMNS := 4
 const MIN_TIER := 2
 const SINGLE_ELEMENT_OFFERS := 2
 const MULTI_ELEMENT_OFFERS := 2
 ## zusätzliche Skills in der zweiten Reihe, müssen zu keinem Monster passen
-const EXTRA_OFFERS := 4
-## Angriffe, die gegen das nächste Biom sehr effektiv sind, mit Abzeichen "Empfohlen vom Trainer" (stehen vorn)
+const EXTRA_OFFERS := 2
+## Angriffe, die gegen das nächste Biom sehr effektiv sind, mit Stempel "Trainers Choice" (stehen vorn)
 const RECOMMENDED_OFFERS := 2
-const BADGE_FONT_SIZE := 22
-## Abstand des Abzeichens zum linken und rechten Kartenrand
-const BADGE_INSET := 10.0
-const BADGE_PADDING := 8
-## so weit ragt das Abzeichen über die Oberkante der Karte
-const BADGE_RISE := 22.0
 
-const CARD_TILT := deg_to_rad(-4.0)
-## Anteil der Kartenbreite bzw. -höhe, der von der Nachbarkarte verdeckt wird
-const CARD_OVERLAP := 0.09
-const ROW_OVERLAP := 0.06
-## Platz für die Ecken der geneigten Karten
-const TILT_MARGIN := 20.0
+## Preis über jeder Karte: Höhe der Zeile (Kartenpixel), Schrift und ME-Icon
+const PRICE_HEIGHT := 46.0
+const PRICE_FONT_SIZE := 32
+const PRICE_ICON_SIZE := Vector2(36, 36)
+
+## Karten so groß wie die Ei-Attacken auf dem Tisch im Ei-Konfigurator (dort CARD_SIZE.x * TABLE_SCALE,
+## das Bild IMAGE_SIZE deckt den Bildschirm ab)
+const EGG_TABLE_CARD_WIDTH := 180.0 * 0.88
+const EGG_IMAGE_SIZE := Vector2(1376, 768)
+
+## Abstand zwischen den Karten als Anteil der Kartenbreite bzw. der Höhe einer Reihe
+const CARD_GAP := 0.04
+const ROW_GAP := 0.05
+## Rand um den Kartentisch
+const TABLE_MARGIN := 20.0
+## Breite des Kartentischs im Verhältnis zur Trainerseite
+const TABLE_WIDTH_RATIO := 1.15
 ## aufgerichtete Karte: Vergrößerung und Abstand zu den weggedrückten Nachbarn
 const FOCUS_ZOOM := 1.2
 const PUSH_GAP := 8.0
 const CARD_MOVE_SECONDS := 0.25
 
 ## Bildausschnitt des Trainers, Anteile der Bildgröße: so viel muss über die Höhe der Karten passen
-## (der Rest verschwindet nach unten), Mitte der Platten, Plattenbreite, linker Rand des Gesichts
+## (der Rest verschwindet nach unten), Mitte der Platten, Plattenbreite
 const TRAINER_VISIBLE_HEIGHT := 0.72
 const PLATE_CENTERS: Array[Vector2] = [Vector2(0.244, 0.615), Vector2(0.756, 0.615)]
 const PLATE_WIDTH := 0.40
-const FACE_LEFT := 0.37
 ## Monster auf der Platte, bezogen auf die Plattenbreite
 const MON_SIZE_ON_PLATE := 1.1
 const BUBBLE_WIDTH := 320.0
-## ragt nach oben aus der Bühne, damit die Blase nicht auf den Karten liegt
-const BUBBLE_TOP := -30.0
-const BUBBLE_TAIL := 18.0
+## Sprechblase über dem Kopf, Zipfel nach unten: Spitze zeigt auf diesen Punkt (Anteile der Bildgröße)
+const BUBBLE_TARGET := Vector2(0.5, 0.09)
+const BUBBLE_TAIL := 22.0
+
+## Klick auf ein Monster: die Kamera fährt nach rechts, die ganze Bühne (Tisch und Trainer) also nach links,
+## bis der Trainer mit den Monstern am linken Rand steht; rechts daneben erscheint die Attacken-Übersicht.
+const MODAL_GAP := 12.0
+const PAN_SECONDS := 0.45
+## Parallax des Hintergrunds: Anteil der Fahrt, um den er mitfährt, Ausschlag mit der Maus, Nachziehen pro Sekunde
+const PARALLAX_PAN := 0.1
+const PARALLAX_MOUSE := 12.0
+const PARALLAX_FOLLOW := 6.0
 
 ## Wellen-Hintergrund aus der Szene
 @export var background: Control
@@ -113,8 +193,15 @@ var _card_tween: Tween
 var _stage: Control
 var _plates: Array[PlateMon] = []
 var _bubble: SpeechBubble
+var _bubble_target := Vector2.ZERO
 var _open_plate: PlateMon
-var _modal: MonSkillsModal
+## hängt rechts neben dem Trainer und fährt mit der Bühne herein
+var _modal_holder: Control
+var _exit_button: Button
+var _pan := 0.0
+var _pan_width := 0.0
+var _pan_tween: Tween
+var _mouse_parallax := Vector2.ZERO
 var _bag: OpenBag
 ## Namen der empfohlenen Skills (_pick_recommended)
 var _recommended: Array = []
@@ -151,11 +238,11 @@ func _build_top_bar() -> void:
 	gap.size_flags_horizontal = SIZE_EXPAND_FILL
 	gap.mouse_filter = MOUSE_FILTER_IGNORE
 	bar.add_child(gap)
-	var exit_button := icon_button(EXIT_ICON)
-	exit_button.tooltip_text = tr("SHOP_FINISH")
-	exit_button.size_flags_vertical = SIZE_SHRINK_BEGIN
-	exit_button.pressed.connect(close)
-	bar.add_child(exit_button)
+	_exit_button = icon_button(EXIT_ICON)
+	_exit_button.tooltip_text = tr("SHOP_FINISH")
+	_exit_button.size_flags_vertical = SIZE_SHRINK_BEGIN
+	_exit_button.pressed.connect(close)
+	bar.add_child(_exit_button)
 	_money_label = _bag.label
 	_money_suffix = ""
 	_watch_money()
@@ -176,6 +263,8 @@ func _build_sides() -> void:
 
 	_left_side = Control.new()
 	_left_side.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# etwas breiter als die Trainerseite, damit vier Karten in Ei-Attacken-Größe nebeneinander passen
+	_left_side.size_flags_stretch_ratio = TABLE_WIDTH_RATIO
 	_columns.add_child(_left_side)
 	_card_layer = Control.new()
 	_card_layer.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
@@ -191,8 +280,15 @@ func _build_sides() -> void:
 	trainer_image.reparent(_stage, false)
 	for i in mini(State.mons.size(), PLATE_CENTERS.size()):
 		_plates.append(_add_plate_mon(State.mons[i]))
-	_bubble = SpeechBubble.new(BUBBLE_WIDTH, true)
+	_bubble = SpeechBubble.new(BUBBLE_WIDTH, true, false, true)
+	_bubble.resized.connect(_place_bubble)
 	_stage.add_child(_bubble)
+	_modal_holder = Control.new()
+	_modal_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_modal_holder.visible = false
+	_stage.add_child(_modal_holder)
+	# Position und Größe der Trainerseite stehen erst nach dem Ordnen der Spalten fest
+	_stage.item_rect_changed.connect(_layout_pan)
 
 func _add_plate_mon(mon: Monster) -> PlateMon:
 	var plate := PlateMon.new()
@@ -237,10 +333,15 @@ func _layout_stage() -> void:
 		plate.position = origin + PLATE_CENTERS[i] * image_size - plate.pivot_offset
 		plate.chips.size = Vector2(mon_size, CHIPS_HEIGHT)
 		plate.chips.position = plate.position + Vector2(0, mon_size + CHIPS_GAP)
-	_bubble.position = origin + Vector2(FACE_LEFT * image_size.x - BUBBLE_WIDTH - BUBBLE_TAIL, BUBBLE_TOP)
+	_bubble_target = origin + BUBBLE_TARGET * image_size
+	_place_bubble()
 	if _coupon_target:
 		_coupon_target.position = origin
 		_coupon_target.size = image_size
+
+## Über dem Kopf des Trainers, mittig: die Höhe hängt vom Text ab, wächst also nach oben
+func _place_bubble() -> void:
+	_bubble.position = _bubble_target - Vector2(_bubble.size.x / 2, _bubble.size.y + BUBBLE_TAIL)
 
 func _place_card(card: RewardCard) -> void:
 	_card_layer.add_child(card)
@@ -254,13 +355,17 @@ func _layout_cards(animate := false) -> void:
 	var card_size := TRAINER_CARD_SIZE
 	for card in _cards:
 		card_size.y = maxf(card_size.y, card.get_combined_minimum_size().y)
+	# Platz einer Karte: darüber steht noch ihr Preis
+	var slot := card_size + Vector2(0, PRICE_HEIGHT)
 	var rows := ceili(_cards.size() / float(_card_columns))
-	var fit_x := (area.x - TILT_MARGIN) / (card_size.x * (_card_columns - (_card_columns - 1) * CARD_OVERLAP))
-	var fit_y := (area.y - TILT_MARGIN) / (card_size.y * (rows - (rows - 1) * ROW_OVERLAP))
-	var base_scale := minf(fit_x, fit_y)
-	var focus_scale := minf(base_scale * FOCUS_ZOOM, area.y / card_size.y)
-	var scaled := card_size * base_scale
-	var row_step := scaled.y * (1.0 - ROW_OVERLAP)
+	var fit_x := (area.x - TABLE_MARGIN) / (slot.x * (_card_columns + (_card_columns - 1) * CARD_GAP))
+	var fit_y := (area.y - TABLE_MARGIN) / (slot.y * (rows + (rows - 1) * ROW_GAP))
+	var viewport := get_viewport_rect().size
+	var egg_scale := EGG_TABLE_CARD_WIDTH * maxf(viewport.x / EGG_IMAGE_SIZE.x, viewport.y / EGG_IMAGE_SIZE.y) / card_size.x
+	var base_scale := minf(egg_scale, minf(fit_x, fit_y))
+	var focus_scale := minf(base_scale * FOCUS_ZOOM, area.y / slot.y)
+	var scaled := slot * base_scale
+	var row_step := scaled.y * (1.0 + ROW_GAP)
 	var first_y := (area.y - scaled.y - (rows - 1) * row_step) / 2 + scaled.y / 2
 
 	if _card_tween:
@@ -272,32 +377,32 @@ func _layout_cards(animate := false) -> void:
 		var focused: int = cards.find(_focused_card)
 		var centers := _row_centers(cards.size(), focused, scaled.x, card_size.x * focus_scale, area.x)
 		for i in cards.size():
-			var center := Vector2(centers[i], first_y + row * row_step)
+			var slot_center := Vector2(centers[i], first_y + row * row_step)
 			var card: RewardCard = cards[i]
 			card.size = card_size
 			card.pivot_offset = card_size / 2
 			var is_focused := i == focused
+			var card_scale := focus_scale if is_focused else base_scale
 			if is_focused:
-				# aufgerichtete Karte bleibt ganz auf dem Tisch
-				var half_height := card_size.y * focus_scale / 2
-				center.y = clampf(center.y, half_height, area.y - half_height)
-			var target_scale := Vector2.ONE * (focus_scale if is_focused else base_scale)
-			var target_rotation := 0.0 if is_focused else CARD_TILT
+				# vergrößerte Karte bleibt samt Preis ganz auf dem Tisch
+				var half_height := slot.y * focus_scale / 2
+				slot_center.y = clampf(slot_center.y, half_height, area.y - half_height)
+			# die Karte füllt den unteren Teil ihres Platzes, darüber steht der Preis
+			var center := slot_center + Vector2(0, PRICE_HEIGHT * card_scale / 2)
+			var target_scale := Vector2.ONE * card_scale
 			var target_position := center - card.pivot_offset
 			if animate:
 				_card_tween.tween_property(card, "position", target_position, CARD_MOVE_SECONDS)
-				_card_tween.tween_property(card, "rotation", target_rotation, CARD_MOVE_SECONDS)
 				_card_tween.tween_property(card, "scale", target_scale, CARD_MOVE_SECONDS)
 			else:
 				card.position = target_position
-				card.rotation = target_rotation
 				card.scale = target_scale
 
-## Mittelpunkte der Karten einer Reihe. Mit aufgerichteter Karte (focused >= 0) rücken die anderen
-## beiseite und überlappen sich untereinander so stark, wie es nötig ist, um auf dem Tisch zu bleiben.
+## Mittelpunkte der Karten einer Reihe. Mit vergrößerter Karte (focused >= 0) rücken die anderen
+## beiseite und überlappen sich untereinander nur so stark, wie es nötig ist, um auf dem Tisch zu bleiben.
 func _row_centers(count: int, focused: int, card_width: float, focus_width: float, width: float) -> Array[float]:
 	var centers: Array[float] = []
-	var step := card_width * (1.0 - CARD_OVERLAP)
+	var step := card_width * (1.0 + CARD_GAP)
 	if focused < 0:
 		var x := (width - card_width - (count - 1) * step) / 2
 		for i in count:
@@ -318,7 +423,7 @@ func _row_centers(count: int, focused: int, card_width: float, focus_width: floa
 			x += card_width + PUSH_GAP if i == focused - 1 else peek
 	return centers
 
-## Klick auf eine Karte richtet sie auf, nochmal Klicken legt sie zurück
+## Klick auf eine Karte vergrößert sie, nochmal Klicken legt sie zurück
 func _toggle_focus(card: RewardCard) -> void:
 	_set_focus(null if card == _focused_card else card)
 
@@ -358,22 +463,84 @@ func _on_table_input(event: InputEvent) -> void:
 	if _focused_card and event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		_toggle_focus(_focused_card)
 
-## Klick auf ein Monster: Übersicht öffnen, wechseln oder wieder schließen
+## Klick auf ein Monster: die Kamera fährt nach rechts, rechts erscheint die Übersicht seiner Attacken
+## (dasselbe MonSkillsModal wie im Shop), das Monster bleibt markiert. Ein anderes Monster wechselt nur
+## die Übersicht, dasselbe nochmal fährt zurück.
 func _toggle_mon(plate: PlateMon) -> void:
 	if _replace_picker:
 		_bubble.say(tr("TRAINER_FINISH_CHOICE"))
 		return
-	var was_open := plate == _open_plate
+	if plate == _open_plate:
+		_close_mon()
+		return
+	if _focused_card:
+		_set_focus(null)
 	if _open_plate:
 		_open_plate.set_selected(false)
-		_open_plate = null
-		_modal.queue_free()
-	if was_open:
-		return
+	_clear_modal()
 	_open_plate = plate
 	plate.set_selected(true)
-	_modal = MonSkillsModal.new(plate.mon)
-	_left_side.add_child(_modal)
+	_modal_holder.add_child(MonSkillsModal.new(plate.mon))
+	# solange die Übersicht offen ist, verlässt kein versehentlicher Klick oben rechts den Trainer
+	_exit_button.visible = false
+	_pan_to(_pan_width)
+
+## Bühne zurückfahren, die Übersicht fährt rechts mit hinaus und verschwindet danach
+func _close_mon() -> void:
+	if _open_plate == null:
+		return
+	_open_plate.set_selected(false)
+	_open_plate = null
+	_exit_button.visible = true
+	_pan_to(0.0)
+
+func _clear_modal() -> void:
+	for modal in _modal_holder.get_children():
+		_modal_holder.remove_child(modal)
+		modal.queue_free()
+
+## Die Fahrt bringt den Trainer an die Stelle des Tisches; die Übersicht füllt rechts daneben alles bis zum Bildschirmrand
+func _layout_pan() -> void:
+	_pan_width = _stage.position.x
+	var stage_left_after := _content.get_global_rect().position.x
+	var width := get_global_rect().end.x - (stage_left_after + _stage.size.x) - 2 * MODAL_GAP
+	_modal_holder.position = Vector2(_stage.size.x + MODAL_GAP, 0)
+	_modal_holder.size = Vector2(maxf(width, 0.0), _stage.size.y - MODAL_GAP)
+	if not (_pan_tween and _pan_tween.is_running()):
+		_set_pan(_pan_width if _open_plate else 0.0)
+
+func _pan_to(target: float) -> void:
+	if _pan_tween:
+		_pan_tween.kill()
+	_pan_tween = create_tween()
+	_pan_tween.tween_method(_set_pan, _pan, target, PAN_SECONDS).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	if target <= 0.0:
+		_pan_tween.tween_callback(_clear_modal)
+
+## Tisch, Trainer und Übersicht hängen aneinander, nur die obere Leiste bleibt stehen
+func _set_pan(value: float) -> void:
+	_pan = value
+	_columns.position.x = -value
+	_modal_holder.visible = value > 0.0
+
+## Parallax wie im Shop: der Hintergrund fährt mit einem Bruchteil der Fahrt mit und weicht der Maus leicht aus.
+## Er ist dafür um genau den größten Ausschlag größer als der Bildschirm, so bleibt nie ein Rand frei.
+func _process(delta: float) -> void:
+	super(delta)
+	if _columns == null:
+		return
+	# die Spalten sitzen in einem Container, der sie beim Neuordnen zurücksetzt
+	if _columns.position.x != -_pan:
+		_columns.position.x = -_pan
+	var view := get_viewport_rect().size
+	var mouse := get_viewport().get_mouse_position() / view - Vector2(0.5, 0.5)
+	_mouse_parallax = _mouse_parallax.lerp(-2.0 * PARALLAX_MOUSE * mouse.clamp(Vector2(-0.5, -0.5), Vector2(0.5, 0.5)), minf(1.0, delta * PARALLAX_FOLLOW))
+	# fährt nach links mit, darum reicht er rechts um die ganze Fahrt über den Bildschirm hinaus
+	var shift := Vector2(-_pan * PARALLAX_PAN, 0.0) + _mouse_parallax
+	background.offset_left = shift.x - PARALLAX_MOUSE
+	background.offset_right = shift.x + _pan_width * PARALLAX_PAN + PARALLAX_MOUSE
+	background.offset_top = shift.y - PARALLAX_MOUSE
+	background.offset_bottom = shift.y + PARALLAX_MOUSE
 
 ## Der Trainer sagt die Hinweise selbst, statt dass sie dauerhaft als Text dastehen
 func set_drag_hint(key: String) -> void:
@@ -457,32 +624,49 @@ func _pick_recommended(taken: Array) -> Array:
 static func _learnable(skill: Dictionary) -> bool:
 	return State.mons.any(func(mon): return not Skills.knows_skill(mon, skill.name))
 
-## Goldenes Abzeichen oben auf der Karte, ragt etwas über den Rand
-func _add_recommended_badge(card: RewardCard) -> void:
+## Stempel "Trainers Choice" als Wasserzeichen: liegt direkt auf dem Papier, hinter Text und Symbolen
+func _add_recommended_stamp(card: RewardCard) -> void:
+	var stamp := TrainerStamp.new()
+	stamp.text = tr("TRAINER_CHOICE_STAMP")
+	stamp.font = LABEL_THEME.get_font("font", "Label")
+	card.add_child(stamp)
+	var paper_index := 0
+	for child in card.get_children():
+		if child is SkillCardPaper:
+			paper_index = child.get_index()
+	card.move_child(stamp, paper_index + 1)
+	card.tooltip_text += "\n" + tr("TRAINER_RECOMMENDED_HINT").format({"biome": tr(ColorMap.get_combo(next_biome()).label)})
+
+## Preis aus der Karte nehmen und mit dem ME-Icon über die Karte stellen (wächst mit der Karte mit)
+func _add_price_tag(card: RewardCard) -> void:
+	var label: Label = _price_labels[card]
+	label.get_parent().remove_child(label)
+	label.add_theme_font_size_override("font_size", PRICE_FONT_SIZE)
+	label.add_theme_color_override("font_outline_color", Color.BLACK)
+	label.add_theme_constant_override("outline_size", 6)
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	# der Container der Karte zieht jedes Kind auf ihre Größe, der Preis braucht eine Hülle
 	var holder := Control.new()
 	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card.add_child(holder)
-	var badge := PanelContainer.new()
-	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var label := Label.new()
-	label.text = tr("TRAINER_RECOMMENDED")
-	label.add_theme_font_size_override("font_size", BADGE_FONT_SIZE)
-	label.add_theme_color_override("font_color", SkillDetailPopup.GOLD)
-	# die Karten stehen verkleinert auf dem Tisch: große Schrift, bei Bedarf zweizeilig über die Kartenbreite
-	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	# feste Umbruchbreite, sonst rechnet der Umbruch ohne Breite und das Abzeichen wird riesig hoch
-	label.custom_minimum_size.x = TRAINER_CARD_SIZE.x - 2 * (BADGE_INSET + BADGE_PADDING)
-	IronPlate.frame(badge, label, BADGE_PADDING, 2)
-	holder.add_child(badge)
-	badge.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	badge.offset_left = BADGE_INSET
-	badge.offset_right = -BADGE_INSET
-	# Höhe 0: die Mindestgröße (Text samt Platte) bestimmt sie, nach unten wachsend
-	badge.offset_top = -BADGE_RISE
-	badge.offset_bottom = -BADGE_RISE
-	badge.grow_vertical = Control.GROW_DIRECTION_END
-	card.tooltip_text += "\n" + tr("TRAINER_RECOMMENDED_HINT").format({"biome": tr(ColorMap.get_combo(next_biome()).label)})
+	var tag := HBoxContainer.new()
+	tag.alignment = BoxContainer.ALIGNMENT_CENTER
+	tag.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tag.add_theme_constant_override("separation", 6)
+	var icon := texture_icon(ESSENCE_ICON)
+	icon.custom_minimum_size = PRICE_ICON_SIZE
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tag.add_child(icon)
+	tag.add_child(label)
+	holder.add_child(tag)
+	tag.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	tag.offset_top = -PRICE_HEIGHT
+	tag.offset_bottom = -4.0
+
+## Neben dem Icon reicht die Zahl
+func _show_price(card: RewardCard) -> void:
+	super(card)
+	_price_labels[card].text = str(price_of(card))
 
 func _add_skill_card(skill: Dictionary) -> void:
 	var card := add_skill_card(skill, func(mon: Monster): _learn(_dragged, mon))
@@ -493,10 +677,24 @@ func _add_skill_card(skill: Dictionary) -> void:
 	scroll_description(card, DESCRIPTION_HEIGHT)
 	# Text nicht auf den Papierrahmen setzen (card.row liegt in der VBox mit Kopf- und Fußzeile, darüber der Rand)
 	card.row.get_parent().get_parent().add_theme_constant_override("margin_bottom", 14)
+	# Kosten, Abklingzeit, Wert und Element etwas größer, auf der verkleinerten Karte sonst kaum lesbar
+	var face := card.row.get_parent()
+	_enlarge(face.get_child(0), FACE_ROW_ZOOM)
+	_enlarge(face.get_child(face.get_child_count() - 1), FACE_ROW_ZOOM)
 	set_price(card, randi_range(skill.shop_cost.min, skill.shop_cost.max))
+	_add_price_tag(card)
 	if _recommended.has(skill.name):
-		_add_recommended_badge(card)
+		_add_recommended_stamp(card)
 	ignore_mouse_below(card)
+
+## Schriften, Icons und Mindestgrößen eines Kartenteils samt Kindern um factor vergrößern
+static func _enlarge(node: Node, factor: float) -> void:
+	if node is Label:
+		node.add_theme_font_size_override("font_size", roundi(node.get_theme_font_size("font_size") * factor))
+	elif node is Control and node.custom_minimum_size != Vector2.ZERO:
+		node.custom_minimum_size *= factor
+	for child in node.get_children():
+		_enlarge(child, factor)
 
 func _learn(card: RewardCard, mon: Monster) -> void:
 	if await learn_skill(card.drag.skill, mon, _left_side):
