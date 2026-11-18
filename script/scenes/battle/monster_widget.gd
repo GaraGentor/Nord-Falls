@@ -94,7 +94,9 @@ func init_skills(mon: Monster) -> void:
 			var dupe = (DuplicateFlags.DUPLICATE_USE_INSTANTIATION | DuplicateFlags.DUPLICATE_SCRIPTS | DuplicateFlags.DUPLICATE_SIGNALS) if st == "name" else DuplicateFlags.DUPLICATE_USE_INSTANTIATION
 			var name_label: Label = initial_skill_label.duplicate(dupe)
 			name_label.visible = true
-			var text: String = tr(skill[st]) if st == "name" else Skills.power_text(skill, mon) if st == "value" else Helper.format_number(skill[st])
+			# Buffs, Debuffs und Passive zeigen keine Stärke, die Zelle bleibt leer
+			var power := "" if Skills.shows_only_icon(skill) else Skills.power_text(skill, mon)
+			var text: String = tr(skill[st]) if st == "name" else power if st == "value" else Helper.format_number(skill[st])
 			name_label.text = display_skill_or_questionmark(skill, text)
 			if st == "name":
 				print(skill.nature)

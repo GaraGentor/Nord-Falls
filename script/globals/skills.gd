@@ -738,17 +738,33 @@ const EGG_SKILL_CATEGORIES = [
 const PHYSICAL_ICON := preload("res://assets/ui/icons/fist.svg")
 const MAGIC_ICON := preload("res://assets/ui/icons/sparkle.svg")
 const PASSIVE_ICON := preload("res://assets/ui/icons/passive.svg")
+const BUFF_ICON := preload("res://assets/ui/icons/battle/buff.svg")
+const DEBUFF_ICON := preload("res://assets/ui/icons/battle/debuff.svg")
 
-## Icon oben rechts auf Karten und in Tabellen: der Wert, den die Fähigkeit verändert, mit denselben Symbolen wie die
-## Werte-Tabellen (StatsGrid.ICONS). Schaden = Angriffswert (Faust bzw. Funken), Schild = Verteidigung (Schild bzw.
-## Magie-Schild), Buff und Passiv = der verstärkte Wert (z. B. Herz bei KP). Unbekanntes Passiv: Passiv-Symbol.
+## Icon unten links auf Karten und in Tabellen. Passive, Buffs (auch Sonder-Verstärkungen) und Debuffs zeigen ihr
+## eigenes Symbol. Sonst der Wert, mit dem die Fähigkeit rechnet, mit denselben Symbolen wie die Werte-Tabellen
+## (StatsGrid.ICONS): Schaden = Angriffswert (Faust bzw. Funken), Schild = Verteidigung (Schild bzw. Magie-Schild).
 func kind_icon(skill: Dictionary) -> Texture2D:
+	if is_passive(skill):
+		return PASSIVE_ICON
+	if is_buff_skill(skill):
+		return BUFF_ICON
+	if is_debuff_skill(skill):
+		return DEBUFF_ICON
 	var stat := affected_stat(skill)
 	if stat != "":
 		return StatsGrid.ICONS[stat]
-	if is_passive(skill):
-		return PASSIVE_ICON
 	return PHYSICAL_ICON if is_physical(skill) else MAGIC_ICON
+
+func is_buff_skill(skill: Dictionary) -> bool:
+	return skill.get("effect", "") in ["buff", "boon"]
+
+func is_debuff_skill(skill: Dictionary) -> bool:
+	return skill.get("effect", "") == "debuff"
+
+## Fähigkeiten, die auf Karten unten links nur ihr Symbol zeigen, ohne Stärke: Passive, Buffs und Debuffs
+func shows_only_icon(skill: Dictionary) -> bool:
+	return is_passive(skill) or is_buff_skill(skill) or is_debuff_skill(skill)
 
 ## Stat-Key, den die Fähigkeit verändert bzw. mit dem sie rechnet ("" = keiner)
 func affected_stat(skill: Dictionary) -> String:

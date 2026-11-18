@@ -5,11 +5,11 @@ extends RefCounted
 ## oben   [Kosten]        [Sterne = Stufe]        [Abklingzeit Uhr]
 ## unten  [Icon Gesamtwert]                         [Element]
 ## Der Gesamtwert ist Skills.power_text: Schaden bzw. Schild mit den Werten des Monsters, ohne Monster die Formel.
+## Buffs, Debuffs und Passive zeigen unten links nur ihr Symbol (Skills.kind_icon), ohne Zahl.
 
 const MOVES_BADGE := preload("res://script/ui/moves_badge/moves_badge.tscn")
 const STAR_TEXTURE := preload("res://assets/ui/icons/rarity_star.svg")
 const CLOCK_TEXTURE := preload("res://assets/ui/icons/clock.svg")
-const BUFF_TEXTURE := preload("res://assets/ui/icons/battle/buff.svg")
 const STAR_COLOR := Color(0.858824, 0.717647, 0.45098, 1)
 const TEXT_COLOR := Color(1.0, 0.95, 0.85)
 const STAR_SIZE := 14.0
@@ -71,14 +71,12 @@ class TopRow extends HBoxContainer:
 		_cooldown.modulate.a = 0.0 if Skills.is_passive(skill) or not known else 1.0
 		_cooldown_label.text = str(skill.get("cooldown", 0))
 
-## Untere Zeile: Icon des veränderten Werts mit dem Gesamtwert links, Element rechts.
-## Buffs zeigen ganz rechts zusätzlich das Buff-Icon mit ihrer Dauer in Zügen.
+## Untere Zeile: Icon (Skills.kind_icon) mit dem Gesamtwert links, Element rechts.
+## Buffs, Debuffs und Passive zeigen nur ihr Icon, ohne Wert.
 class BottomRow extends HBoxContainer:
 	var _icon: TextureRect
 	var _value: Label
 	var _element: Label
-	var _duration: HBoxContainer
-	var _duration_label: Label
 
 	func _init() -> void:
 		mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -94,30 +92,15 @@ class BottomRow extends HBoxContainer:
 		_element.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		_element.clip_text = true
 		add_child(_element)
-		_duration = HBoxContainer.new()
-		_duration.add_theme_constant_override("separation", 2)
-		_duration.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		add_child(_duration)
-		_duration.add_child(SkillCardFace.icon(SkillCardFace.BUFF_TEXTURE, SkillCardFace.ICON_SIZE))
-		_duration_label = SkillCardFace.label(SkillCardFace.FONT_SIZE, SkillCardFace.TEXT_COLOR)
-		_duration.add_child(_duration_label)
 
 	## known = false: unbekannter Skill eines Gegners, nur das Element ist sichtbar
 	func show_skill(skill: Dictionary, mon: Monster, known := true) -> void:
 		_icon.texture = Skills.kind_icon(skill) if known else null
-		_value.text = Skills.power_text(skill, mon) if known else ""
-		var turns := SkillCardFace.buff_duration(skill)
-		_duration.visible = known and turns > 0
-		_duration_label.text = str(turns)
+		_value.text = Skills.power_text(skill, mon) if known and not Skills.shows_only_icon(skill) else ""
+		_value.visible = _value.text != ""
 		var element := tr(ColorMap.get_combo(skill.nature).label)
 		_element.text = element
 		_element.add_theme_color_override("font_color", SkillCardPaper.readable_color(Helper.color_by_type(skill.nature)))
-
-## Dauer eines Buffs (auch Sonder-Verstärkung) in eigenen Zügen des Ziels, 0 = kein Buff oder bis verbraucht
-static func buff_duration(skill: Dictionary) -> int:
-	if not ["buff", "boon"].has(skill.get("effect", "")):
-		return 0
-	return maxi(int(skill.get("buff_turns", 0)), 0)
 
 ## Kleinste Schrift für den Skill-Namen, falls er selbst so nicht in TITLE_MAX_LINES Zeilen passt
 const MIN_TITLE_FONT_SIZE := 9

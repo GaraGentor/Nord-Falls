@@ -125,7 +125,8 @@ func _portrait(mon: Monster) -> Control:
 	var box := VBoxContainer.new()
 	var icon := RewardDialog.mon_icon(mon)
 	icon.custom_minimum_size = MON_SIZE
-	box.add_child(icon)
+	# Züge des Monsters als Rune unten links am Bild
+	box.add_child(MovesBadge.attach_to_portrait(icon, mon))
 	var label := Label.new()
 	label.theme = LABEL_THEME
 	label.text = Helper.mon_display_name(mon._name)

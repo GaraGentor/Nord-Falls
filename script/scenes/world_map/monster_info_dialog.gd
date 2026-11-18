@@ -2,12 +2,19 @@ class_name MonsterInfoDialog
 extends Control
 
 ## Details eines eigenen Monsters über der ganzen Kartenfläche (der Header der Karte bleibt sichtbar):
-## links Bild, Name und Typ, rechts Werte, gesammelte Edelsteine und darunter alle Attacken
-## als große Karten wie im Kampf in einer waagerechten Scrollview (reine Anzeige, ohne Klick).
+## oben links Name und Bild (unten links am Bild die Züge als Rune), daneben die Werte wie im Kampf (mit Trophäen)
+## und darunter Element- und Seltenheits-Chip, rechts das Wachstum pro Stufe als Netzdiagramm und der Zurück-Knopf.
+## Darunter alle Attacken als große Karten wie im Kampf in einer waagerechten Scrollview (reine Anzeige, ohne Klick).
 
 const BATTLE_CARD := preload("res://script/scenes/battle/battle_card.tscn")
-const LEFT_WIDTH := 300.0
-const PORTRAIT_SIZE := Vector2(0, 150)
+const ELEMENT_CHIP := preload("res://script/ui/element_chip/element_chip.tscn")
+const PORTRAIT_SIZE := Vector2(160, 160)
+const NAME_FONT_SIZE := 26
+const CHIP_HEIGHT := 32.0
+## Werte wie im Kampf: Schriftgröße und Breite der Platte im BattleInfoPanel (580 breit, je 12 Rand)
+const STATS_FONT_SIZE := 15
+const STATS_WIDTH := 556.0
+const RADAR_MIN_SIZE := Vector2(190, 150)
 const SKILL_CARD_SIZE := Vector2(220, 260)
 const BACK_ICON := preload("res://assets/ui/icons/icon_back.svg")
 
@@ -25,53 +32,86 @@ func _ready() -> void:
 	var panel := PanelContainer.new()
 	RewardDialog.fit_to_map_area(panel)
 	add_child(panel)
-	var columns := HBoxContainer.new()
-	columns.add_theme_constant_override("separation", 24)
-	IronPlate.frame(panel, columns, 24, 20)
-	columns.add_child(_left_side())
-	columns.add_child(_right_side())
-
-func _left_side() -> Control:
 	var box := VBoxContainer.new()
-	box.custom_minimum_size.x = LEFT_WIDTH
-	box.add_theme_constant_override("separation", 6)
-	var portrait := RewardDialog.mon_icon(_mon)
-	portrait.custom_minimum_size = PORTRAIT_SIZE
-	box.add_child(portrait)
-	var name_label := Label.new()
-	name_label.text = Helper.mon_battle_name(_mon)
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", 26)
-	name_label.add_theme_color_override("font_color", SkillCardPaper.readable_color(Helper.color_by_mon(_mon)))
-	box.add_child(name_label)
-	var chip_row := HBoxContainer.new()
-	chip_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	chip_row.custom_minimum_size.y = 32
-	RewardDialog.add_element_chip(chip_row, _mon._type)
-	box.add_child(chip_row)
-	return box
-
-func _right_side() -> Control:
-	var box := VBoxContainer.new()
-	box.size_flags_horizontal = SIZE_EXPAND_FILL
-	box.add_theme_constant_override("separation", 14)
+	box.add_theme_constant_override("separation", 16)
+	IronPlate.frame(panel, box, 24, 20)
 	var top := HBoxContainer.new()
-	top.add_theme_constant_override("separation", 16)
+	top.add_theme_constant_override("separation", 24)
 	box.add_child(top)
-	var facts := VBoxContainer.new()
-	facts.size_flags_horizontal = SIZE_EXPAND_FILL
-	facts.alignment = BoxContainer.ALIGNMENT_CENTER
-	facts.add_theme_constant_override("separation", 10)
-	top.add_child(facts)
-	# Trophäen stehen direkt unter ihrem Wert, ihr Anteil grün hinter der Zahl (wie im Trophäen-Feld)
-	facts.add_child(StatsGrid.stacked_for(_mon, 18, true))
+	top.add_child(_portrait_side())
+	top.add_child(_facts())
+	top.add_child(_radar())
 	var back := RewardDialog.icon_button(BACK_ICON)
 	back.tooltip_text = tr("MONSTER_INFO_BACK")
 	back.size_flags_vertical = SIZE_SHRINK_BEGIN
 	back.pressed.connect(queue_free)
 	top.add_child(back)
 	box.add_child(_skill_cards())
+
+## Name über dem Bild, unten links am Bild die Züge
+func _portrait_side() -> Control:
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 4)
+	var name_label := Label.new()
+	name_label.text = Helper.mon_battle_name(_mon)
+	name_label.add_theme_font_size_override("font_size", NAME_FONT_SIZE)
+	name_label.add_theme_color_override("font_color", SkillCardPaper.readable_color(Helper.color_by_mon(_mon)))
+	box.add_child(name_label)
+	var portrait := RewardDialog.mon_icon(_mon)
+	portrait.custom_minimum_size = PORTRAIT_SIZE
+	box.add_child(MovesBadge.attach_to_portrait(portrait, _mon))
 	return box
+
+## Element und Seltenheit, darunter die Werte wie im Kampf; Trophäen stehen direkt unter ihrem Wert,
+## ihr Anteil grün hinter der Zahl (wie im Trophäen-Feld)
+func _facts() -> Control:
+	var box := VBoxContainer.new()
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", 12)
+	var chips := HBoxContainer.new()
+	chips.add_theme_constant_override("separation", 12)
+	chips.custom_minimum_size.y = CHIP_HEIGHT
+	box.add_child(chips)
+	var element_chip: Control = ELEMENT_CHIP.instantiate()
+	element_chip.size_flags_horizontal = SIZE_SHRINK_BEGIN
+	element_chip.size_flags_vertical = SIZE_FILL
+	chips.add_child(element_chip)
+	element_chip.set_element(_mon._type)
+	var rarity := Monmap.rarity_of(_mon._name)
+	var rarity_chip: Control = ELEMENT_CHIP.instantiate()
+	rarity_chip.size_flags_horizontal = SIZE_SHRINK_BEGIN
+	rarity_chip.size_flags_vertical = SIZE_FILL
+	chips.add_child(rarity_chip)
+	rarity_chip._init_with_element({"label": Monmap.RARITY_LABELS[rarity], "color": Monmap.RARITY_COLORS[rarity]})
+	var stats_panel := PanelContainer.new()
+	stats_panel.custom_minimum_size.x = STATS_WIDTH
+	IronPlate.frame(stats_panel, StatsGrid.stacked_for(_mon, STATS_FONT_SIZE, true), 10, 8)
+	box.add_child(stats_panel)
+	# Werte oben, Element und Seltenheit darunter
+	box.move_child(stats_panel, 0)
+	return box
+
+## Wachstum pro Stufe als Netzdiagramm (wie im Judgement) in der Farbe des Monsters
+func _radar() -> Control:
+	var panel := PanelContainer.new()
+	panel.size_flags_horizontal = SIZE_EXPAND_FILL
+	panel.mouse_filter = MOUSE_FILTER_PASS
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 4)
+	box.mouse_filter = MOUSE_FILTER_IGNORE
+	IronPlate.frame(panel, box, 10, 8)
+	var heading := Label.new()
+	heading.text = tr("JUDGEMENT_GROWTH")
+	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	heading.add_theme_font_size_override("font_size", 17)
+	heading.add_theme_color_override("font_color", SkillDetailPopup.GOLD)
+	box.add_child(heading)
+	var radar := GrowthRadar.new()
+	radar.custom_minimum_size = RADAR_MIN_SIZE
+	radar.size_flags_vertical = SIZE_EXPAND_FILL
+	box.add_child(radar)
+	radar.show_mons([{"mon": _mon, "color": Helper.color_by_mon(_mon)}])
+	return panel
 
 ## Alle Attacken als Kampfkarten nebeneinander. Die Karten nehmen keine Eingabe an,
 ## so landen Mausrad und Wischen direkt bei der Scrollview und ein Klick bewirkt nichts.

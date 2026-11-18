@@ -61,9 +61,8 @@ func refresh() -> void:
 		var rarity := Monmap.rarity_of(monster._name)
 		rarity_chip._init_with_element({"label": Monmap.RARITY_LABELS[rarity], "color": Monmap.RARITY_COLORS[rarity]})
 	if moves_badge:
-		# Grundzug plus beim Kerkermeister gesprengte Ketten, von maximal möglichen
-		var max_moves: int = Monster.BASE_MOVES + Monmap.mon_metainfos_by_name(monster._name).get("max_upgrades", 0)
-		moves_badge.set_moves(Monster.BASE_MOVES + monster._upgrades, max_moves)
+		var moves := MovesBadge.mon_moves(monster)
+		moves_badge.set_moves(moves.x, moves.y)
 	if monster_texture:
 		# sofort sichtbar, ohne Einblenden
 		Monmap.show_on(monster_texture, monster._name, Monmap.MEDIUM)
@@ -260,7 +259,9 @@ func _build_skill_list() -> void:
 				if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 					_show_skill_info(skill))
 		skill_grid.add_child(skill_name)
-		for value in [Helper.format_number(skill.cost), Helper.format_number(skill.cooldown), Skills.power_text(skill, monster)]:
+		# Buffs, Debuffs und Passive: Stärke-Zelle bleibt leer (das Symbol vorne genügt), damit das Raster stimmt
+		var power := "" if Skills.shows_only_icon(skill) else Skills.power_text(skill, monster)
+		for value in [Helper.format_number(skill.cost), Helper.format_number(skill.cooldown), power]:
 			skill_grid.add_child(_label(value if known else "?"))
 
 func _label(text: String, color: Color = IronPlate.TEXT_COLOR) -> Label:

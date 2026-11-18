@@ -568,6 +568,8 @@ func _mon_entry(mon: Monster, color: Color, fill: bool) -> VBoxContainer:
 	picture.mouse_filter = MOUSE_FILTER_IGNORE
 	picture_area.add_child(picture)
 	picture.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	# Züge als Rune unten links am Bild
+	MovesBadge.pin_to_picture(picture, mon)
 	var chip: Control = ELEMENT_CHIP.instantiate()
 	chip.mouse_filter = MOUSE_FILTER_PASS
 	picture_area.add_child(chip)
