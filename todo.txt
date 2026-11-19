@@ -1,6 +1,105 @@
-- Neue Fähigkeiten und alle durchgucken...
-- Tests
-- Monster durchschauen (seltenheit pro element)
-- 
+1. Wenn ich von den EI Attacken auf die Map Move, läd es irgendwie etwas länger woran liegt das?
+Das gleiche wenn ich game over gehe, dann sehe ich erstmal ein grauen bildschirm. Wenn das an den Lade  Zeiten liegt. Dann würd ich gerne immer die Grünen wellen sehen (transition von EI Attacken zur Map) anstelle nur Grauen bildschirm am besten auch mit Ladebalken. Man könnte ja die wellen von unten nach oben mit farbe füllen. (man braucht kein Lade Balken aber ein Lade Indikator*)
 
-Morgen: Inventar, Spiel Tests, 
+2. Setze mir ein Inventory System um. One Way Items wird tlw. als Loot bezeichnet.
+- Loot ist nach Rarität gestuft
+- Gewöhnliches Loot wird öfters gefunden als seltenes Loot
+- Es können maximal zwei loot items gedropped werden (nach einem Kampf)
+- One Way Items können sowohl bei bossen als auch bei normalen Kämpfen gedropped werden
+- Die Wahrscheinlichkeit für ein Loot item beträgt gleich wie die eines schlüssels (für gewöhnliche)
+- Loot Rarität hat "gewöhnlich", "selten", "episch"
+- Loot muss nach kampf in die Tasche gezogen werden
+Das sind die Loot prinzipien, wenn man lootet. Dafür kannst du auch erstmal Platzhalter bilder nehmen wie bei den relikten
+
+3. Inventory:
+- Auf der Map kann man oben Links auf die Tasche klicken
+- Das ist das Layout:C:\Users\sheni\Downloads\Unbenannt (20).png oben sieht man noch den Map Header und unten drunter ist das Inventory (eqivalent zu Monster Details)
+	- Inventory kann man togglen
+	- Man kann auch währenddessen die Monster Stats aufmachen (wie eigentlich auch in anderen screens)
+	- Monster Details (klick auf monster aus dem Map Header) legen sich über das Inventory
+	- Links sind die eigenen Monster untereinander Aufgelistet mit jeweils zwei leeren slots
+	- In der Mitte sind alle gelooteten One Way Use Items
+	- Die Items kann man immer überall hin drag and droppen (zum monster wieder back und auch plätze im inventar tauschen)
+	- Rechts auf der Seite stehen immer die Details zu den Items und das Icon d.h. ein Item muss auch gehighlighted werden (gleich wie bei den Monstern mit dem Gold Gelben rahmen?) oder eher den Inventory Slot highlighten?
+- Ergänze mir das Tutorial hier an der Stelle
+
+4. Kampf und usage
+- Layout im Kampf C:\Users\sheni\Downloads\Unbenannt (21).png
+	- Wenn Items ausgerüstet sind, erscheinen Links auf dem Bildschirm Rand so kleine Monster Postits, die bei klick raus fahren, und die Items anzeigen
+	- Manche Items können auf eigene Monster gedroppt werden, auf gegner, einfach nur eingesetzt oder aktivieren sich selber. (Die Info muss auch in der Beschreibung von den Items stehen)
+	- Wenn ich ein Item eingesetzt habe fährt das Postit wieder ein
+	- Wenn ich auf das Monsterklicke, fährt es aus und wieder ein 
+	- Layout für rausgefahren: C:\Users\sheni\Downloads\Unbenannt (22).png
+
+5. Laden Da nun One Way Items dazu gekommen sind müssen wir im Shop etwas umstellen:
+	- Die Zwei Tränke oben Rechts im Regal werden mit zwei Schwachen One Way Use Items ersetzt, die in die Tasche gezogen werden müssen
+		- Dazu kann man auch nach rechts und nach links scrollen (wie bei den trophäen) um sich durch das sortiment zu schauen
+		- Eins gekauft, ist der platz gone
+	- Die ersten beiden Tränke sollen auch scollbar sein (wie bei den trophäen)
+		- Eins gekauft, ist der platz gone
+
+6. Items:
+Gewöhnlich (können im Shop erworben werden 10-20 ME Kosten pro Item):
+- Wurfnetz: Kann auf ein monster gespielt werden und aktiviert die Hypnose (ohne den Zug zu beenden oder eine Aktion zu verbrauchen)
+- Köder: erhöht die Fangchance um 5% auf das ausgewählte gegnerische Monster (einmalig verwendbar)
+- Wetzstein: gibt einem Monster eine zusätzliche Aktion
+- Schildrune: Monster Starten den Kampf mit einem Initialen Schild von 10 Punkten (einmalig selbst aktivierend)
+- Tragbarer Schild: Nach verwenden bekommen alle verbündete Monster 10 Schuld Punkte
+- Vogelschäuche: Entfernt eine Inititative vom ausgewählten gegner (z.B.: Es will 3 aktionen machen, ich nutze es, dann macht er nur noch 2 aktionen), bei einer Aktion skipped er seinen Zug
+
+Selten (Vom Shop ausgenommen):
+- Sanduhr: das ausgewählt Monster rückt direkt an erste stelle im initiativen Rad (für einen Zug)
+- Weckstein: kann ein Schlummernden Skill mit voller Kraft einsetzen (einmalig)
+- Ekelhafter Gestank: rollt die initiativen des gegnerischen Monsters neu
+- Blutstein: Der nächste Angriff trifft das Monster immer mit 1.5x den Schaden (einmalig)
+- Kuckucks Uhr: Setzte alle abklingzeiten von fähigkeiten eines ausgewählten Monster um -1
+
+Episch (Vom Shop ausgenommen):
+- Todes Totem: sollte ein eigenes Monster Sterben, wird es nach allen gegnerischen aktionen mit 1hp wieder belebt (kommt im Run nur ein einziges mal vor)
+- Klarwasser: Entfernt Gifte, Verbrennung, Paralyse und andere Schächungen
+- Bannsiegel: Schaltet Boss Relikte für 2 Runden ab
+- Spiegelscherbe: Alle Treffer auf das ausgewählte verbündete Monster werfen 50% Schaden zurück, solange bis das monster wieder am Zug ist, der das Item gespielt hat
+
+Danach führe mir das hier aus:
+Stelle die Schilde auf "wird abgelaufen bis der wirker wieder am Zug dran kommt". Das gleiche Gilt auch für Schild One Way Items.
+Plan: Schilde halten bis zum nächsten Zug des Wirkers
+
+1. Datenstruktur (script/classes/mon.gd)
+- _shield: float wird zu _shields: Array mit Einträgen {"amount": float, "source": Monster}.
+- Eine neue Funktion shield() -> float liefert die Summe aller Schilde. Alle Stellen, die bisher _shield lesen, nutzen dann diese Funktion.
+- add_shield(amount, source: Monster = self): Schilde vom selben Wirker werden zu einem Eintrag zusammengezählt, weil sie ja gleichzeitig ablaufen.
+- expire_shields_from(caster) entfernt alle Einträge mit source == caster.
+- start_turn() setzt den Schild nicht mehr auf 0. Stattdessen entfernt es die Einträge, deren Wirker tot ist oder nicht mehr im Kampf. Das deckt deinen Punkt 3 ab.
+- reset_battle_state() setzt _shields = [].
+
+2. Ablauf im Kampf (script/scenes/battle/battle.gd, _on_turn_for)
+- Vor mon.start_turn() wird expire_shields_from(mon) auf allen Monstern beider Seiten aufgerufen. Damit verliert jeder die Schilde, die das Monster am Zug gewirkt hat.
+- Die Reihenfolge bleibt: erst laufen die alten Schilde ab, dann kommen die Relikte (Bongos, Fate-Spiegel) dran.
+
+3. Abbau-Reihenfolge (deine Nummer 2)
+- absorb_damage verbraucht zuerst den Schild, dessen Wirker auf dem Rad als Nächstes dran ist.
+- Dafür bekommt das Turn-Wheel eine Funktion turns_until(mon) -> int. Sie zählt die Positionen ab current_index in order und rechnet bei Überlauf in die nächste Runde weiter. Ein toter Wirker zählt wie der Träger selbst.
+- Damit mon.gd das Rad nicht direkt kennen muss, setzt battle.gd zu Kampfbeginn eine statische Callable auf Monster und leert sie am Kampfende. Ist sie nicht gesetzt, gilt die Reihenfolge des Hinzufügens.
+
+4. Wirker übergeben (deine Nummer 4)
+- skills.gd:180: props.mon.add_shield(amount, props.from)
+- element_effects.gd:130 (Eis): Der Schild geht an den Wirker selbst, source = from. Hier ändert sich nichts.
+- boss_relics.gd:208/213 (Bongos, Spiegel): source = mon, also auch hier keine Änderung.
+
+5. Stellen, die den Schild lesen, auf shield() umstellen
+- element_effects.gd:138 (show_pierce)
+- skills.gd:238 (incoming_hits, die Vorschau): Die Summe reicht hier. Ungenau wird es nur, wenn ein Wirker zwischen zwei angekündigten Gegnerangriffen dran ist, denn dann fällt sein Schild mittendrin weg. Ich würde das als bekannte Ungenauigkeit kommentieren, so wie es bei den Aufladungen schon gemacht ist. Wenn du es exakt willst, kann die Vorschau die Reihenfolge auf dem Rad nachspielen.
+- monster_scene.gd:213-214 (Anzeige): zeigt die Summe. Optional kann ein Tooltip zeigen, wessen Schild bis wann hält.
+
+6. Texte und Kommentare
+- translations.csv:239 (SKILL_SHIELD_DESC): „bis zu seinem nächsten Zug“ wird zu „bis zu deinem nächsten Zug“ bzw. „until your next turn“.
+- translations.csv:915 (STAT_INFO_TIP_SHIELD): „bis zum nächsten Zug des geschützten Monsters“ wird zu „bis zum nächsten Zug des Monsters, das ihn gewirkt hat“.
+- Die Kommentare in mon.gd:125-126 und skills.gd:175 werden angepasst.
+
+7. Testen
+- Schild auf einen Verbündeten, der direkt danach dran ist: Der Schild muss bis zum nächsten Zug des Wirkers bleiben.
+- Schild auf sich selbst: Es verhält sich wie bisher.
+- Zwei Schilde von verschiedenen Wirkern: Schaden geht zuerst auf den, der früher abläuft.
+- Wirker stirbt: Sein Schild fällt beim nächsten Zug des Trägers weg.
+- Gegner, die sich gegenseitig schützen, folgen derselben Regel.
+- Balancing im Auge behalten: Schilde auf Verbündete werden im Schnitt stärker.
