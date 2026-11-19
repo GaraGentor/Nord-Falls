@@ -135,7 +135,7 @@ func rolls_pierce(skill: Dictionary, from: Monster = null) -> bool:
 
 ## Zeigt "Durchschlag!" über dem Ziel, wenn es einen Schild hatte
 func show_pierce(target: Monster) -> void:
-	if target._shield > 0:
+	if target.shield() > 0:
 		Events.monster_effect_text.emit(target, tr("EFFECT_TEXT_PIERCE"), PIERCE_COLOR)
 
 ## Blitz: schlägt die Fähigkeit dieses Monsters diesmal fehl?

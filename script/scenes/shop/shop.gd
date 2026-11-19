@@ -24,7 +24,10 @@ const NO_OUTLINE := Color(1, 1, 0, 0)
 ## Der Laden lohnt sich durch die Wahl: Tränke mit gezieltem Element (Schatzkisten haben nur zufällige),
 ## Trophäen mit frei wählbarem Wert (Beute ist zufällig) und Relikte, die es sonst nur als Boss-Belohnung gibt.
 ## Schlüssel gibt es hier nicht (mehr), die bringen nur Kämpfe.
-const ELEMENT_PRICE := 45
+const ELEMENT_PRICE := 35
+## zwei Trank-Plätze oben links und zwei Item-Plätze oben rechts, die Pfeile blättern durch das Sortiment
+const POTION_OFFERS := 2
+const ITEM_OFFERS := 2
 ## pro Trophäe, unabhängig von der Biom-Tiefe
 const GEM_PRICE := 20
 ## pro Relikt; jedes angebotene Relikt lässt sich einzeln kaufen
@@ -33,7 +36,8 @@ const GEM_OFFERS := 2
 const RELIC_OFFERS := 2
 
 ## Regale, alle Maße in Bühnen-Pixeln: zwei Reihen mit je zwei Brettern links der Kasse, je zwei Waren pro Brett.
-## Index = Gruppe im Tutorial (tut_shop_shelf_<i>): oben die Tränke, unten links Trophäen, unten rechts Relikte.
+## Index = Gruppe im Tutorial (tut_shop_shelf_<i>): oben links Tränke, oben rechts One-Way-Items,
+## unten links Trophäen, unten rechts Relikte.
 const SHELF_HEIGHT := 46.0
 const SHELF_ROWS_Y := [96.0, 266.0]
 const SHELF_LAYOUT := [
@@ -42,8 +46,8 @@ const SHELF_LAYOUT := [
 	{"column": 0, "row": 1},
 	{"column": 1, "row": 1},
 ]
-const SHELF_POTIONS_LEFT := 0
-const SHELF_POTIONS_RIGHT := 1
+const SHELF_POTIONS := 0
+const SHELF_ITEMS := 1
 const SHELF_GEMS := 2
 const SHELF_RELICS := 3
 ## Abstand der beiden Bretter einer Reihe und der Regale zur Kassen-Spalte
@@ -97,7 +101,7 @@ const PARALLAX_FOLLOW := 6.0
 const LINE_BASE_SECONDS := 2.5
 const LINE_SECONDS_PER_CHAR := 0.04
 const THANKS_COUNT := 3
-const HOWTO_LINES := ["SHOP_SAY_WELCOME", "SHOP_SAY_POTIONS", "SHOP_SAY_GEMS", "SHOP_SAY_RELICS", "SHOP_SAY_CLICK"]
+const HOWTO_LINES := ["SHOP_SAY_WELCOME", "SHOP_SAY_POTIONS", "SHOP_SAY_ITEMS", "SHOP_SAY_GEMS", "SHOP_SAY_RELICS", "SHOP_SAY_CLICK"]
 
 ## Ware im Regal: oben steht das Bild auf dem Brett, darunter hängt das Schild mit dem Namen.
 ## Die Beschreibung steht nur im Popup, das ein Klick öffnet.
@@ -681,10 +685,10 @@ func _show_popup(item: ShelfItem) -> void:
 	_popup.show_item(item, checkout_image.position.x + checkout_image.size.x / 2, ICON_BUTTON_SIZE.y + POPUP_GAP)
 
 func _fill_shelves() -> void:
-	var elements: Array = Treasure.ELEMENTS
-	for i in elements.size():
-		_filling_shelf = SHELF_POTIONS_LEFT if i < elements.size() / 2 else SHELF_POTIONS_RIGHT
-		set_price(Treasure.add_potion_card(self, elements[i]), ELEMENT_PRICE, true)
+	_filling_shelf = SHELF_POTIONS
+	_add_potion_offers()
+	_filling_shelf = SHELF_ITEMS
+	_add_item_offers()
 	_filling_shelf = SHELF_GEMS
 	_add_gem_offers()
 	_filling_shelf = SHELF_RELICS
@@ -717,6 +721,69 @@ func _switch_trophy(step: int, item: ShelfItem) -> void:
 	item.set_text(parts.title, parts.text)
 	item.set_art(GemField.gem_icon(stat))
 	# der neue Name kann anders umbrechen, das Schild passt sich an
+	_layout_stage()
+	item.set_gold(item == _selected or item.get_global_rect().has_point(get_global_mouse_position()))
+	if item == _selected:
+		_show_popup(item)
+	_update_previews()
+
+## Zwei Trank-Plätze mit verschiedenen Elementen, die Pfeile blättern durch alle Elemente. Ein gekaufter Platz ist weg.
+func _add_potion_offers() -> void:
+	var elements: Array = Treasure.ELEMENTS.duplicate()
+	elements.shuffle()
+	for i in POTION_OFFERS:
+		var card: ShelfItem = Treasure.add_potion_card(self, elements[i % elements.size()])
+		card.add_switch(_switch_potion.bind(card), tr("SHOP_POTION_SWITCH"))
+		set_price(card, ELEMENT_PRICE)
+
+func _switch_potion(step: int, item: ShelfItem) -> void:
+	if item.sold:
+		return
+	var elements: Array = Treasure.ELEMENTS
+	var element: int = elements[posmod(elements.find(item.drag.element) + step, elements.size())]
+	var parts := Treasure.potion_card_parts(self, element)
+	item.drag.merge(parts.drag, true)
+	item.set_text(parts.title, parts.text)
+	item.set_art(Treasure.potion_art(element))
+	_after_switch(item)
+
+## Sortiment an One-Way-Items für diesen Besuch (nur gewöhnliche, je mit eigenem Preis). Zwei Plätze starten auf
+## verschiedenen Items, die Pfeile blättern durch das ganze Sortiment. Gekauft landet das Item in der Tasche.
+var _item_assortment: Array = []
+
+func _add_item_offers() -> void:
+	_item_assortment = Items.shop_assortment()
+	if _item_assortment.is_empty():
+		return
+	for i in ITEM_OFFERS:
+		var offer: Dictionary = _item_assortment[i % _item_assortment.size()]
+		var parts := _item_card_parts(offer)
+		var card: ShelfItem = add_bag_card(parts.title, parts.text, Items.icon(offer.item), parts.drag.on_drop)
+		card.drag.offer = i % _item_assortment.size()
+		card.add_switch(_switch_item.bind(card), tr("SHOP_ITEM_SWITCH"))
+		set_price(card, offer.price)
+
+func _item_card_parts(offer: Dictionary) -> Dictionary:
+	var item: Dictionary = offer.item
+	var text := "%s\n%s" % [Items.description(item), Items.use_hint(item)]
+	return {"title": Items.title(item), "text": text, "drag": {"on_drop": func(): Items.add_to_bag(item.duplicate())}}
+
+func _switch_item(step: int, item: ShelfItem) -> void:
+	if item.sold:
+		return
+	var index: int = posmod(item.drag.offer + step, _item_assortment.size())
+	var offer: Dictionary = _item_assortment[index]
+	var parts := _item_card_parts(offer)
+	item.drag.merge(parts.drag, true)
+	item.drag.offer = index
+	item.drag.price = offer.price
+	item.set_text(parts.title, parts.text)
+	item.set_art(Items.icon(offer.item))
+	_money_changed(State.ep)
+	_after_switch(item)
+
+## Nach dem Umschalten: Schild neu umbrechen, Gold und offene Beschreibung nachziehen
+func _after_switch(item: ShelfItem) -> void:
 	_layout_stage()
 	item.set_gold(item == _selected or item.get_global_rect().has_point(get_global_mouse_position()))
 	if item == _selected:

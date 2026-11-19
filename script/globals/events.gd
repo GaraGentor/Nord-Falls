@@ -53,3 +53,10 @@ signal status_vfx(mon, kind)
 
 # upgrade status to make them upgraded on the run
 signal mon_upgraded(mon_name)
+
+## One-Way-Items im Kampf: Postit-Item auf ein Ziel gezogen (target null = aufs Kampffeld), battle.gd setzt es ein
+signal use_item(carrier, index, target)
+## Ein Item wurde eingesetzt (Tutorial wartet darauf)
+signal item_used(item)
+## Todes-Totem: ein gefallenes Monster steht wieder auf
+signal monster_revived(mon)

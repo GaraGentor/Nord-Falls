@@ -25,6 +25,7 @@ func _ready() -> void:
 	Events.monster_effect_text.connect(_show_effect_text)
 	Events.monster_faints.connect(_remove_mon)
 	Events.mon_is_catched.connect(_remove_mon)
+	Events.monster_revived.connect(_on_revived)
 	Events.intents_changed.connect(_refresh_intent)
 	Events.skill_vfx.connect(_play_skill_vfx)
 	Events.status_vfx.connect(_play_status_vfx)
@@ -210,8 +211,8 @@ func _refresh_status() -> void:
 	if not home_mons:
 		var chance := "%d%%" % roundi(Helper.catch_chance(mon) * 100)
 		status_box.add_child(_icon_row([ICON_CATCH, chance], CATCH_COLOR, STATUS_FONT_SIZE))
-	if mon._shield > 0:
-		status_box.add_child(_icon_row([ICON_SHIELD, str(roundi(mon._shield))], STATUS_COLOR, STATUS_FONT_SIZE))
+	if mon.shield() > 0:
+		status_box.add_child(_icon_row([ICON_SHIELD, str(roundi(mon.shield()))], STATUS_COLOR, STATUS_FONT_SIZE))
 	# Verstärkungen als Pfeil hoch, Schwächungen als Pfeil runter, dahinter die Symbole der betroffenen Werte.
 	# Ein Klick öffnet eine kleine Liste, was genau wie lange verändert ist (StatusPopup).
 	if mon.is_buffed():
@@ -255,11 +256,20 @@ func _remove_mon(_mon) -> void:
 	if _mon == mon:
 		visible = false
 
+## Todes-Totem: das Monster steht wieder auf dem Feld
+func _on_revived(_mon) -> void:
+	if _mon == mon:
+		visible = true
+		_refresh_status()
 
-## Drag & Drop: Skill-Karten können auf passende Ziele gezogen werden
+
+## Drag & Drop: Skill-Karten und One-Way-Items (Postits) können auf passende Ziele gezogen werden
 func _can_drop_data(_at_position: Vector2, data) -> bool:
 	if not visible or mon == null or not mon.is_alive():
 		return false
+	if data is Dictionary and data.get("type") == "battle_item":
+		# Items ohne Ziel wirken auch, wenn sie auf einem Monster landen
+		return Items.battle_target_ok(data.item, null if Items.use_of(data.item) == Items.USE_FIELD else mon)
 	if not (data is Dictionary and data.get("type") == "skill_card"):
 		return false
 	match data.skill.get("target", Enums.CARD_TARGETS.SINGLE_ENEMY):
@@ -274,6 +284,9 @@ func _can_drop_data(_at_position: Vector2, data) -> bool:
 
 func _drop_data(_at_position: Vector2, data) -> void:
 	modulate = Color.WHITE
+	if data.get("type") == "battle_item":
+		Events.use_item.emit(data.carrier, data.index, null if Items.use_of(data.item) == Items.USE_FIELD else mon)
+		return
 	Events.mouse_event.emit({"action": Enums.MOUSE_ACTION.SELECT_MONSTER, "mon": mon})
 	Events.mouse_event.emit({"action": Enums.MOUSE_ACTION.PLAY_CARD, "skill": data.skill, "mon": mon})
 
@@ -333,8 +346,8 @@ func _process(delta: float) -> void:
 var _preview_label: Label
 
 func _update_drag_preview(drag_data) -> void:
-	var show_preview = drag_data != null and not home_mons and _can_drop_data(Vector2.ZERO, drag_data) \
-		and Skills.is_damage_skill(drag_data.skill)
+	var show_preview = drag_data != null and not home_mons and drag_data is Dictionary and drag_data.get("type") == "skill_card" \
+		and _can_drop_data(Vector2.ZERO, drag_data) and Skills.is_damage_skill(drag_data.skill)
 	if not show_preview:
 		if _preview_label:
 			_preview_label.visible = false

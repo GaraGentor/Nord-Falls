@@ -114,10 +114,25 @@ func description(id: String) -> String:
 
 ## IDs aus RELICS, die im laufenden Boss-Kampf wirken. Leer außerhalb von Boss-Kämpfen und nach dem Zerbrechen.
 var active: Array = []
+## Runde des laufenden Kampfs (battle.gd setzt sie zu Beginn jeder Runde)
+var current_round := 0
+## Bannsiegel (One-Way-Item): bis einschließlich dieser Runde wirken die Relikte nicht
+var banned_until_round := 0
+
+## Wirkt das Relikt gerade? Aktiv und nicht gebannt.
+func works(id: String) -> bool:
+	return active.has(id) and not is_banned()
+
+func is_banned() -> bool:
+	return current_round <= banned_until_round
+
+## Bannsiegel: die Relikte wirken in dieser und den nächsten rounds - 1 Runden nicht
+func ban(rounds: int) -> void:
+	banned_until_round = current_round + rounds - 1
 
 ## Wirkt das Relikt für dieses Monster? Nur für lebende Gegner (gefangene stehen nicht mehr in State.enemy_mons).
 func has(mon: Monster, id: String) -> bool:
-	return active.has(id) and mon != null and mon.is_alive() and State.enemy_mons.has(mon)
+	return works(id) and mon != null and mon.is_alive() and State.enemy_mons.has(mon)
 
 ## Nimmt die Relikte aus dem Kampf und gibt sie zurück (zum Zerbrechen)
 func take_active() -> Array:
@@ -190,7 +205,7 @@ func add_trophies(mon: Monster, trophies: Dictionary) -> void:
 ## Zu Beginn jeder Runde: Glutboden trifft einmal alle eigenen Monster.
 ## Als Verursacher (Kopfgelder, Todesursache) zählt der erste lebende Gegner.
 func on_round_started() -> void:
-	if not active.has("ember_floor"):
+	if not works("ember_floor"):
 		return
 	var source: Monster = null
 	for mon in State.enemy_mons:
@@ -217,7 +232,7 @@ func on_turn_start(mon: Monster, _round_number: int) -> void:
 
 ## Mikrofon: in ungeraden Runden fallen alle Züge aus
 func silences_round(round_number: int) -> bool:
-	return round_number % 2 == 1 and active.has("microphone")
+	return round_number % 2 == 1 and works("microphone")
 
 ## Statt des ausgefallenen Zuges heilt sich das Monster um einen Teil seiner fehlenden KP
 func microphone_turn(mon: Monster) -> void:

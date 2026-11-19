@@ -47,6 +47,8 @@ func catch_chance(mon: Monster) -> float:
 		CATCH_LEVEL_FACTOR_RANGE[0], CATCH_LEVEL_FACTOR_RANGE[1])
 	var chance = CATCH_RARITY_BASE[rarity] * hp_factor * level_factor * low_hp_factor(hp_left)
 	chance = Relics.modify("catch_chance", chance, mon)
+	# Köder (One-Way-Item): fester Zuschlag für diesen Kampf
+	chance += mon._item_marks.get("bait", 0.0)
 	return clampf(chance,
 		CATCH_CHANCE_RANGE[0], CATCH_CHANCE_RANGE[1])
 

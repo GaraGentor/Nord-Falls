@@ -4,6 +4,12 @@ func deal_damage(props):
 	# für Kopfgelder: wer zuletzt getroffen hat, hat das Monster besiegt
 	props.mon._last_hit_by = props.from
 	var full_damage = calc_damage(props.from, props.mon, props.skill)
+	# Blutstein: der nächste Treffer auf dieses Monster macht mehr Schaden, danach ist die Markierung weg
+	var blood: float = props.mon._item_marks.get("blood", 0.0)
+	if blood > 0.0:
+		full_damage = ceilf(full_damage * blood)
+		props.mon._item_marks.erase("blood")
+		Events.monster_effect_text.emit(props.mon, tr("ITEM_BLOOD_STONE") + " x" + String.num(blood, 1), Items.EFFECT_COLOR)
 	reveal_stats_by_hit(props.from, props.mon, props.skill)
 	# der Schild fängt den Schaden zuerst ab (physisch und magisch), Magma und Schlamm gehen mit etwas Glück durch
 	var absorbed: float = full_damage
@@ -23,6 +29,10 @@ func deal_damage(props):
 	if State.mons.has(props.mon) and kills:
 		State.record_own_faint(props.mon, props.from, props.skill, damage, multiplier)
 	props.mon._lost_hp += damage
+	# Spiegelscherbe: ein Anteil des Treffers (vor den Schilden) prallt zum Angreifer zurück
+	var reflect: float = props.mon.reflect_share()
+	if reflect > 0.0 and props.from != props.mon:
+		Items.reflect_hit(props.from, props.mon, ceilf(full_damage * reflect))
 	# Passiv "Heilung bei K.O.": der Angreifer heilt sich um einen Anteil seiner max. KP
 	if kills and props.from.is_alive():
 		var kill_heal := own_passive_sum(props.from, "kill_heal")
@@ -172,12 +182,12 @@ func skill_element_multiplier(skill: Dictionary, target_type: int) -> float:
 	return element_multiplier(skill.get("nature", 0), target_type)
 
 # ─────────────────────────
-# Schilde halten bis zum nächsten eigenen Zug des geschützten Monsters oder bis sie aufgebraucht sind (siehe Monster.start_turn, Monster.absorb_damage).
+# Schilde halten, bis der Wirker wieder am Zug ist, oder bis sie aufgebraucht sind (siehe Monster.expire_from, Monster.absorb_damage).
 # Es gibt nur eine Art Schild: er blockt physische und magische Angriffe (außer Karten, die ausdrücklich durchgehen, z. B. Magma).
 
 # Schild: fester Wert + scaling x Verteidigung des Wirkers.
 func add_shield(props):
-	props.mon.add_shield(shield_amount(props.from, props.skill))
+	props.mon.add_shield(shield_amount(props.from, props.skill), props.from)
 
 ## Schildstärke, die der Wirker mit dieser Karte gibt (auch für Karten, Absichten und KI):
 ## fester Wert + scaling x seine Verteidigung, Schild-Passive des Wirkers kommen obendrauf.
@@ -235,7 +245,7 @@ func action_hits(action: Dictionary, mon: Monster) -> bool:
 # {"physical": bool, "full": ohne Schild, "after": nach Schild}. Der Schild blockt physische und magische Treffer,
 # und jeder Treffer verbraucht ihn, wie Monster.absorb_damage es im Kampf tut.
 func incoming_hits(target: Monster, attackers: Array) -> Array:
-	var shield = target._shield
+	var shield = target.shield()
 	var hits = []
 	for attacker: Monster in attackers:
 		if not attacker.is_alive():
@@ -247,7 +257,8 @@ func incoming_hits(target: Monster, attackers: Array) -> Array:
 			var full = calc_damage(attacker, target, action.skill)
 			# Aufladungen gelten nur für den ersten passenden Angriff, die Vorschau rechnet sie bei jedem mit (kleine Ungenauigkeit)
 			# gleiche Rechnung wie Monster.absorb_damage. Dass Magma oder Schlamm durch den Schild gehen, ist Zufall
-			# und steht nicht in der Vorschau.
+			# und steht nicht in der Vorschau. Ebenso, dass ein Schild mittendrin abläuft, weil sein Wirker zwischen
+			# zwei angekündigten Angriffen am Zug ist (kleine Ungenauigkeit).
 			var blocked = minf(shield, full)
 			shield -= blocked
 			hits.append({"physical": physical, "full": full, "after": full - blocked})

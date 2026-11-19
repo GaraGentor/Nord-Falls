@@ -99,6 +99,12 @@ func _taken(card: RewardCard) -> void:
 ## Die Liste wird erst beim Ziehen bestimmt, damit sie im Shop nach jedem Kauf stimmt.
 ## Was aus dem Monster wird, zeigt der Typ am Ziel (RewardDialog.show_element_preview).
 static func add_potion_card(dialog: RewardDialog, element: int) -> RewardDialog.RewardCard:
+	var parts := potion_card_parts(dialog, element)
+	return dialog.add_mon_card(parts.title, parts.text, potion_art(element), dialog.tr("TREASURE_POTION_CHOOSE_MON"), parts.drag.mons, parts.drag.on_drop, Callable(), {"element": element})
+
+## Titel, Text und die Drag-Einträge (mons, on_drop, element) eines Tranks. Der Shop tauscht damit das Element
+## einer Karte aus, ohne sie neu anzulegen (wie bei den Trophäen).
+static func potion_card_parts(dialog: Node, element: int) -> Dictionary:
 	var element_name = dialog.tr(ColorMap.get_combo(element).label)
 	var text = dialog.tr("TREASURE_POTION_DESC").format({"element": element_name})
 	var give := func(mon: Monster):
@@ -108,7 +114,8 @@ static func add_potion_card(dialog: RewardDialog, element: int) -> RewardDialog.
 		# neues Element: das Monster darf den Aufstiegs-Skill oder einen Standard-Skill des Elements lernen
 		# (läuft für sich, auch wenn der Dialog schließt)
 		ElementGainOverlayScript.reward(mon, old_type)
-	return dialog.add_mon_card(potion_title(dialog, element), text, potion_art(element), dialog.tr("TREASURE_POTION_CHOOSE_MON"), func(): return mons_without(element), give, Callable(), {"element": element})
+	return {"title": potion_title(dialog, element), "text": text,
+		"drag": {"mons": func(): return mons_without(element), "on_drop": give, "element": element}}
 
 static func potion_title(dialog: Node, element: int) -> String:
 	return dialog.tr("TREASURE_POTION").format({"element": dialog.tr(ColorMap.get_combo(element).label)})

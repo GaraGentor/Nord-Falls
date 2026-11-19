@@ -77,6 +77,16 @@ var _pending_breaks := 0
 var _practice_snapshot := {}
 ## zählt jeden Zug mit: ein verzögertes Auto-Zugende greift nur im Zug, in dem es angestoßen wurde
 var _turn_serial := 0
+## One-Way-Items der eigenen Monster als Postits am linken Rand (ItemPostits)
+var _item_postits: ItemPostitsScript
+## Items, die in diesem Kampf schon als Beute gefallen sind (höchstens Items.MAX_DROPS_PER_BATTLE)
+var _item_drops := 0
+## Todes-Totem: gefallene eigene Monster, die am Ende des laufenden Zuges mit wenigen KP zurückkommen
+var _pending_revives: Array[Monster] = []
+## Wurfnetz: der laufende Fangversuch beendet den Zug nicht
+var _catch_keeps_turn := false
+
+const ItemPostitsScript := preload("res://script/scenes/battle/item_postits.gd")
 
 func _enter_tree() -> void:
 	if Tutorial.practice:
@@ -94,6 +104,11 @@ func _ready() -> void:
 	# Schilde, Buffs und Abklingzeiten gelten nur für einen Kampf
 	for mon in State.mons + State.enemy_mons:
 		mon.reset_battle_state()
+	BossRelics.current_round = 0
+	BossRelics.banned_until_round = 0
+	# Schaden verbraucht zuerst den Schild, der am frühesten abläuft
+	Monster.shield_expiry = _shield_expiry
+	Events.use_item.connect(_on_use_item)
 	if Relics.works("all_skills"):
 		for emon in State.enemy_mons:
 			emon.unlock_skills()
@@ -120,6 +135,13 @@ func _ready() -> void:
 	$GameWindow.add_child(controls)
 	controls.auto_end_toggled.connect(func(_enabled): _try_auto_end())
 	_relic_bar.pressed.connect(func(): _relic_overlay.play_intro(BossRelics.active, false))
+	_item_postits = ItemPostitsScript.new($GameWindow)
+	_item_postits.can_use = func(mon: Monster) -> bool:
+		return not _battle_over and _is_own_turn() and mon == active_mon and mon.is_alive()
+	# über dem Eingabe-Blocker: auch im Zug der Gegner lassen sich die Postits ausfahren (Einsetzen nur im eigenen Zug)
+	add_child(_item_postits)
+	move_child(_item_postits, $UI_Blocker.get_index() + 1)
+	_apply_start_items()
 	_relic_overlay = BossRelicOverlayScript.new()
 	add_child(_relic_overlay)
 	# Boss-Relikte stellen sich vor, bevor die erste Runde beginnt
@@ -147,8 +169,22 @@ func _add_tutorial_targets() -> void:
 			scene.add_to_group("tut_bat_enemies")
 			scene.intent_box.add_to_group("tut_bat_intent")
 
-func _on_round_started(_round_number: int) -> void:
+func _on_round_started(round_number: int) -> void:
+	BossRelics.current_round = round_number
+	_relic_bar.refresh()
+	# Schilde zu Kampfbeginn (Schildrune) halten genau die erste Runde
+	if round_number == 2:
+		for mon: Monster in State.mons + State.enemy_mons:
+			mon.expire_start_shields()
 	BossRelics.on_round_started()
+
+## Wie viele Zugwechsel, bis ein Schild von source auf holder abläuft (Monster.shield_expiry)
+func _shield_expiry(source: Monster, holder: Monster) -> int:
+	if source == null:
+		return turn_wheel.turns_until_round_end()
+	if not source.is_alive() or not (State.mons.has(source) or State.enemy_mons.has(source)):
+		return turn_wheel.turns_until(holder)
+	return turn_wheel.turns_until(source)
 
 ## Im schwarzen Infobereich zieht das Wetter des aktuellen Bioms durch, im selben Pixel-Look wie auf der Karte
 func _add_ambient() -> void:
@@ -178,11 +214,15 @@ func _on_turn_for(mon: Monster) -> void:
 	await _relic_overlay.wait_idle()
 	if not is_inside_tree():
 		return
+	_item_postits.refresh()
 	# Gift wirkt vor dem Zug und geht durch alle Schilde
 	if ElementEffects.tick_poison(mon):
 		await get_tree().create_timer(STATUS_TICK_TIME).timeout
 		if not is_inside_tree():
 			return
+	# wer am Zug ist, dessen Schilde und Spiegelungen laufen ab, egal auf wem sie liegen
+	for other: Monster in State.mons + State.enemy_mons:
+		other.expire_from(mon)
 	mon.start_turn()
 	# am Gift gestorben: das Rad hat das Monster schon entfernt, weiter zum nächsten
 	if not mon.is_alive():
@@ -241,8 +281,9 @@ func _on_turn_for(mon: Monster) -> void:
 	Events.intents_changed.emit()
 	_end_turn(mon)
 
-## Ende eines Zuges: das nächste Monster ist dran.
+## Ende eines Zuges: das nächste Monster ist dran. Vorher stehen die vom Todes-Totem geretteten Monster wieder auf.
 func _end_turn(_mon: Monster) -> void:
+	_revive_pending()
 	turn_wheel.next_mon()
 
 func _monster_scenes() -> Array:
@@ -286,8 +327,11 @@ func _exit_tree() -> void:
 	Events.mouse_event.disconnect(_catch_mouse_event)
 	Events.monster_faints.disconnect(_check_game_over)
 	Events.finish_catching.disconnect(_finish_catching)
+	Events.use_item.disconnect(_on_use_item)
+	Monster.shield_expiry = Callable()
 	# Boss-Relikte gelten nur für diesen Kampf
 	BossRelics.active = []
+	BossRelics.banned_until_round = 0
 	# Buffs sollen nach dem Kampf nicht in den Werten auf der Karte stehen bleiben
 	for mon in State.mons:
 		mon.reset_battle_state()
@@ -363,6 +407,11 @@ func _use_skill(from: Monster, card: Dictionary, target: Monster) -> void:
 		return
 	# schlummernde Skills wirken schwächer und ohne Element-Effekt (Skills.effective_skill), die Abklingzeit läuft auf der Karte
 	var skill := Skills.effective_skill(from, card)
+	# Weckstein: der nächste schlummernde Skill wirkt mit voller Kraft
+	if from._item_marks.get("awake", false) and Skills.is_dormant(from, card):
+		skill = card
+		from._item_marks.erase("awake")
+		Events.monster_effect_text.emit(from, tr("ITEM_WAKE_STONE"), Items.EFFECT_COLOR)
 	var targets = [target]
 	if Skills.targets_team(skill):
 		targets = _allies_of(target)
@@ -479,9 +528,14 @@ func _generate_practice() -> void:
 		"defeated_mon_names": State.defeated_mon_names.duplicate(),
 		"revealed_mon_stats": State.revealed_mon_stats.duplicate(true),
 		"skills": State.mons.map(func(mon: Monster): return mon._skills.duplicate()),
+		# im Übungskampf eingesetzte Items kommen zurück, der geliehene Köder geht wieder
+		"items": State.mons.map(func(mon: Monster): return mon._items.duplicate()),
+		"bag": State.bag.duplicate(),
 	}
 	for mon: Monster in State.mons:
 		_add_practice_attacks(mon)
+		# das Tutorial zeigt am Köder, wie One-Way-Items funktionieren: jedes Monster bekommt einen geliehen
+		mon._items[0] = Items.make("bait")
 	var enemy: Monster = Helper.generate_mons({"count": 1, "species": [_practice_species()]})[0]
 	enemy._level = State.INITIAL_LEVEL
 	enemy._initial_moves = Monster.BASE_MOVES
@@ -524,6 +578,8 @@ func _restore_practice_snapshot() -> void:
 	for i in mini(State.mons.size(), _practice_snapshot.lost_hp.size()):
 		State.mons[i]._lost_hp = _practice_snapshot.lost_hp[i]
 		State.mons[i]._skills = _practice_snapshot.skills[i]
+		State.mons[i]._items = _practice_snapshot.items[i]
+	State.bag = _practice_snapshot.bag
 	State.run_catches = _practice_snapshot.run_catches
 	State.caught_mon_names = _practice_snapshot.caught_mon_names
 	State.defeated_mon_names = _practice_snapshot.defeated_mon_names
@@ -597,6 +653,8 @@ func _check_game_over(last_fainted:Monster) -> void:
 	_reselect_if_gone(last_fainted)
 	_retarget_intents()
 	var is_enemy = true if State.enemy_mons.find(last_fainted) > -1 else false
+	if not is_enemy and State.mons.has(last_fainted):
+		_try_death_totem(last_fainted)
 	print("check gameover", State.mons.all(
 			func(mon: Monster):
 			return not mon.is_alive()
@@ -624,14 +682,16 @@ func _check_game_over(last_fainted:Monster) -> void:
 			return not mon.is_alive()
 			)
 	)
+	# vom Todes-Totem gerettete Monster zählen schon als lebendig
 	if State.mons.all(
 			func(mon: Monster):
-			return not mon.is_alive()
+			return not mon.is_alive() and not _pending_revives.has(mon)
 			):
 		_battle_over = true
 		State.end_run(false)
 		_clear_fainted_mons()
-		get_tree().change_scene_to_file("res://script/scenes/run_end/run_end.tscn")
+		# statt eines grauen Bildes beim Laden: Lade-Bildschirm mit den Wellen
+		SceneLoader.change_scene("res://script/scenes/run_end/run_end.tscn")
 		return
 	if State.enemy_mons.all(func(mon: Monster): return not mon.is_alive()) or State.enemy_mons.size() == 0:
 		# zerbrechen die Relikte gerade noch, beendet erst deren Aufruf den Kampf
@@ -639,6 +699,7 @@ func _check_game_over(last_fainted:Monster) -> void:
 			return
 		_battle_over = true
 		print("will close battle")
+		_revive_pending()
 		State.stage_clear()
 		_add_boss_loot()
 		# besiegte Gegner bleiben in enemy_mons, gefangene nicht: nur Kills bringen Essenz
@@ -647,6 +708,9 @@ func _check_game_over(last_fainted:Monster) -> void:
 		# clear dead monsters.
 		# open stats.
 		var fallen = _clear_fainted_mons()
+		# Items gefallener Monster liegen auf dem Schlachtfeld und müssen neu eingesammelt werden
+		for mon: Monster in fallen:
+			Items.drop_items(mon)
 		# nach dem finalen Boss kommt kein Kampf mehr, Wiederbelebung und Letzter Wille brächten nichts
 		if not State.is_final_boss:
 			State.fainted_own_mons.append_array(fallen)
@@ -669,6 +733,10 @@ func _roll_kill_loot() -> void:
 		return
 	if randf() < Relics.modify("key_chance", KEY_LOOT_CHANCE):
 		State.pending_keys += 1
+	# One-Way-Items: gleiche Chance wie ein Schlüssel (ohne Relikt-Bonus), höchstens zwei pro Kampf
+	if _item_drops < Items.MAX_DROPS_PER_BATTLE and randf() < KEY_LOOT_CHANCE:
+		_item_drops += 1
+		State.pending_items.append(Items.roll_item(is_boss_battle))
 	if randf() < GEM_LOOT_CHANCE:
 		State.pending_gems += 1
 	if randf() < COUPON_LOOT_CHANCE:
@@ -902,6 +970,9 @@ func _auto_end_ready() -> bool:
 		and Skills.skill_cost(active_mon, skill) <= active_mon._computed_moves)
 
 func _finish_catching(catched: bool, mon: Monster) -> void:
+	# Wurfnetz: der Fangversuch kostet nichts und beendet den Zug nicht
+	var keeps_turn := _catch_keeps_turn
+	_catch_keeps_turn = false
 	if Tutorial.practice and catched:
 		_end_practice()
 		return
@@ -920,7 +991,129 @@ func _finish_catching(catched: bool, mon: Monster) -> void:
 		_check_game_over(mon)
 		if not is_inside_tree():
 			return
+	if keeps_turn and not _battle_over:
+		$UI_Blocker.visible = false
+		_item_postits.refresh()
+		_try_auto_end()
+		return
 	_on_end_turn_pressed()
+
+# ─────────────────────────
+# One-Way-Items (Items): ausgerüstete Items der eigenen Monster, eingesetzt über die Postits am linken Rand.
+# Nur im Zug des Monsters, das das Item trägt; kostet keine Aktion und beendet den Zug nicht.
+
+## Zu Kampfbeginn: Items, die sich selbst aktivieren (Schildrune)
+func _apply_start_items() -> void:
+	for mon: Monster in State.mons:
+		for i in mon._items.size():
+			var item = mon._items[i]
+			if item != null and item.id == "shield_rune":
+				Items.consume({"mon": mon, "index": i})
+				mon.add_start_shield(Items.RUNE_SHIELD)
+				Events.monster_effect_text.emit(mon, Items.title(item), Items.EFFECT_COLOR)
+	_item_postits.refresh()
+
+func _on_use_item(carrier: Monster, index: int, target: Monster) -> void:
+	if _battle_over or not _is_own_turn() or carrier != active_mon or not carrier.is_alive():
+		return
+	var slot := {"mon": carrier, "index": index}
+	var item = Items.get_at(slot)
+	if item == null or not Items.battle_target_ok(item, target):
+		return
+	Items.consume(slot)
+	Events.monster_effect_text.emit(target if target != null else carrier, Items.title(item), Items.EFFECT_COLOR)
+	_apply_item(carrier, item, target)
+	_item_postits.refresh()
+	Events.item_used.emit(item)
+	if selected_mon != null:
+		battle_info.refresh()
+
+func _apply_item(carrier: Monster, item: Dictionary, target: Monster) -> void:
+	match item.id:
+		"net":
+			_catch_keeps_turn = true
+			_select_mon(target)
+			catch_anim._catch_animation(target)
+		"bait":
+			target._item_marks["bait"] = target._item_marks.get("bait", 0.0) + Items.BAIT_BONUS
+			Events.monster_status_changed.emit(target)
+		"whetstone":
+			# wer gerade am Zug ist, darf sofort mehr; andere bekommen die Aktion in ihrem nächsten Zug
+			if target == active_mon:
+				target._computed_moves += 1
+			else:
+				target.add_boon("extra_moves", 1, 2)
+			Events.status_vfx.emit(target, "buff")
+		"portable_shield":
+			for mon: Monster in _allies_of(carrier):
+				mon.add_shield(Items.PORTABLE_SHIELD, carrier)
+		"scarecrow":
+			# eine geplante Aktion weniger, bei nur einer Aktion fällt der ganze Zug aus
+			if not target._intent.is_empty():
+				target._intent.pop_back()
+			Events.status_vfx.emit(target, "debuff")
+			Events.intents_changed.emit()
+		"hourglass":
+			turn_wheel.pull_forward(target)
+		"wake_stone":
+			target._item_marks["awake"] = true
+			Events.status_vfx.emit(target, "buff")
+		"stench":
+			for emon: Monster in _opponents_of(carrier):
+				_plan_intent(emon)
+			Events.intents_changed.emit()
+		"blood_stone":
+			target._item_marks["blood"] = Items.BLOOD_FACTOR
+			Events.status_vfx.emit(target, "debuff")
+		"cuckoo_clock":
+			for skill in target._skills:
+				if Skills.cooldown_left(skill) > 0:
+					skill._cooldown_left -= 1
+			Events.monster_status_changed.emit(target)
+			if target == active_mon:
+				card_hand.show_mon(target)
+		"clear_water":
+			target._statuses = {}
+			target._debuffs = {}
+			Events.status_vfx.emit(target, "heal")
+			Events.monster_status_changed.emit(target)
+		"ban_seal":
+			BossRelics.ban(Items.BAN_ROUNDS)
+			_relic_bar.refresh()
+		"mirror_shard":
+			target.add_reflect(Items.MIRROR_SHARE, carrier)
+
+## Todes-Totem: fällt ein eigenes Monster und trägt irgendein Team-Monster das Totem, steht es am Ende
+## des laufenden Zuges (also nach den Aktionen des Gegners) mit wenigen KP wieder auf
+func _try_death_totem(mon: Monster) -> void:
+	if _pending_revives.has(mon) or Tutorial.practice:
+		return
+	var slot := Items.find_equipped("death_totem", State.mons)
+	if slot.is_empty():
+		return
+	Items.consume(slot)
+	_pending_revives.append(mon)
+	_item_postits.refresh()
+
+func _revive_pending() -> void:
+	if _pending_revives.is_empty():
+		return
+	for mon in _pending_revives:
+		mon._lost_hp = mon.hp() - Items.TOTEM_HP
+		# der K.O. zählt nicht für den Endbildschirm und die Meilensteine ohne K.O.
+		for i in range(State.run_deaths.size() - 1, -1, -1):
+			if State.run_deaths[i].victim == mon._name:
+				State.run_deaths.remove_at(i)
+				break
+		Events.monster_revived.emit(mon)
+		Events.monster_effect_text.emit(mon, tr("ITEM_DEATH_TOTEM"), Items.EFFECT_COLOR)
+	_pending_revives.clear()
+	# Gegner, die mangels Ziel nichts geplant haben, planen neu
+	for emon: Monster in State.enemy_mons:
+		if emon.is_alive() and emon._intent.is_empty():
+			_plan_intent(emon)
+	_retarget_intents()
+	_item_postits.refresh()
 
 func _on_catch_pressed() -> void:
 	# Events.mouse_event.emit({"action": Enums.MOUSE_ACTION.CATCH_MONSTER})

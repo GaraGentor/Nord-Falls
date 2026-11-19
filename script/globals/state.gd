@@ -55,6 +55,10 @@ var pending_gem_rewards: int = 0
 var pending_potions: Array[int] = []
 # Einzigartige Skills, die in diesem Run schon jemand gelernt hat, sie kommen kein zweites Mal (Skills.reward_offers)
 var taught_reward_skills: Array[String] = []
+# One-Way-Items (Items): Tasche als Raster, null = leerer Platz (Items.normalize_bag). Ausgerüstete stehen an den Monstern.
+var bag: Array = []
+# Items, die es pro Run nur einmal gibt (Todes-Totem) und die schon gefunden wurden
+var found_unique_items: Array = []
 
 # money
 signal ep_changed(ep)
@@ -100,10 +104,13 @@ var pending_relic_chest: bool = false
 var pending_skill_envelope: bool = false
 # nach einem Biom-Boss: Boss Tränen auf dem Schlachtfeld
 var pending_boss_shards: int = 0
+# One-Way-Items auf dem Schlachtfeld: Beute und die Items gefallener eigener Monster
+var pending_items: Array = []
 
 # Liegt noch etwas auf dem Schlachtfeld? Dann führt der Weg zur Karte erst über den Level-Up-Bildschirm.
 func has_pending_loot() -> bool:
-	return pending_ep > 0 or pending_keys > 0 or pending_gems > 0 or pending_coupons > 0 or pending_relic_chest or pending_skill_envelope or pending_boss_shards > 0
+	return pending_ep > 0 or pending_keys > 0 or pending_gems > 0 or pending_coupons > 0 or pending_relic_chest or pending_skill_envelope or pending_boss_shards > 0 \
+		or not pending_items.is_empty()
 
 # Was noch auf dem Schlachtfeld liegt, ist beim Weitergehen weg.
 func clear_pending_loot() -> void:
@@ -114,6 +121,7 @@ func clear_pending_loot() -> void:
 	pending_relic_chest = false
 	pending_skill_envelope = false
 	pending_boss_shards = 0
+	pending_items = []
 
 # Run-Statistik für den Endbildschirm (run_end.gd). killed_monsters wird beim Level-Up verbraucht, daher eigene Zähler.
 var run_won := false
@@ -178,6 +186,8 @@ func reset() -> void:
 	pending_gem_rewards = 0
 	pending_potions = []
 	taught_reward_skills = []
+	bag = []
+	found_unique_items = []
 	rolled_mon_stats = {}
 	defeated_mon_names = []
 	caught_mon_names = []

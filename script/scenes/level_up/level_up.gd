@@ -194,6 +194,9 @@ func _build_battlefield() -> void:
 		_add_loot(BOSS_SHARD_ICON, "+" + tr(shard_text).format({"amount": State.pending_boss_shards}), _take_boss_shards)
 	if State.is_boss_fight:
 		_add_egg_loot()
+	# One-Way-Items: Beute und die Items gefallener Monster, jedes einzeln
+	for item in State.pending_items.duplicate():
+		_add_item_loot(item)
 	_hint_panel.visible = _loot_field.get_child_count() > 0
 	_scatter_loot()
 
@@ -212,6 +215,17 @@ func _add_egg_loot() -> void:
 	var mon_name: String = missing.pick_random()._name
 	var loot := _add_loot(EGG_ICON, tr("EGG_LOOT"), SaveManager.add_catched_monster_mon.bind(mon_name), Monmap.egg_material(Monmap.rarity_of(mon_name)))
 	loot.tooltip_text = tr("EGG_LOOT_DESC")
+
+## One-Way-Item in der Farbe seiner Seltenheit, in die Tasche gezogen landet es im Inventar
+func _add_item_loot(item: Dictionary) -> void:
+	var art := Items.icon(item)
+	var loot := _add_loot(art.texture, Items.title(item), _take_item.bind(item), art.material)
+	loot.tooltip_text = "%s (%s)\n%s\n%s" % [Items.title(item), tr(Items.RARITY_LABELS[Items.rarity_of(item)]), Items.description(item), Items.use_hint(item)]
+	art.free()
+
+func _take_item(item: Dictionary) -> void:
+	State.pending_items.erase(item)
+	Items.add_to_bag(item)
 
 func _add_loot(texture: Texture2D, text: String, on_taken: Callable, art_material: ShaderMaterial = RewardDialog.ICON_BUTTON_MATERIAL) -> LootIcon:
 	var loot := LootIcon.new(texture, text, art_material)

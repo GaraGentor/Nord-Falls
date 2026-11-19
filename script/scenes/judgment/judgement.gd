@@ -276,6 +276,8 @@ func _place(mon: Monster, slot: int) -> void:
 		return
 	var pool_index = _pool.find(mon)
 	if slot < State.mons.size():
+		# wer das Team verlässt, gibt seine One-Way-Items in die Tasche zurück
+		Items.return_items(State.mons[slot])
 		_pool[pool_index] = State.mons[slot]
 		State.mons[slot] = mon
 		_index = pool_index
@@ -285,6 +287,7 @@ func _place(mon: Monster, slot: int) -> void:
 
 # Teammitglied nach links ablegen: es liegt danach vorne im Blätterstapel
 func _bench(mon: Monster) -> void:
+	Items.return_items(mon)
 	State.mons.erase(mon)
 	_pool.append(mon)
 	_index = _pool.size() - 1
@@ -323,6 +326,7 @@ func _may_lose(mon: Monster) -> bool:
 	return await dialog.confirm(tr("JUDGEMENT_LOSE_STARTER_TITLE"), _starter_warning(), tr("JUDGEMENT_LOSE_STARTER_CONFIRM"))
 
 func _remove(mon: Monster) -> void:
+	Items.return_items(mon)
 	State.mons.erase(mon)
 	State.catched_mons.erase(mon)
 	_pool.erase(mon)

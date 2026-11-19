@@ -103,6 +103,36 @@ func set_selected_mon(mon: Monster) -> void:
 func is_own(mon: Monster) -> bool:
 	return State.mons.has(mon)
 
+## Wie viele Zugwechsel, bis mon wieder am Zug ist. Wer in dieser Runde schon dran war (oder gerade dran ist),
+## kommt erst in der nächsten Runde wieder, dort grob an seinem jetzigen Platz. Nicht auf dem Rad: nach der nächsten Runde.
+func turns_until(mon: Monster) -> int:
+	var index := order.find(mon)
+	if index > current_index:
+		return index - current_index
+	return order.size() - current_index + (index if index >= 0 else order.size())
+
+## Zugwechsel bis zum Ende dieser Runde (dann laufen Schilde zu Kampfbeginn ab)
+func turns_until_round_end() -> int:
+	return order.size() - current_index
+
+## Sanduhr: mon ist direkt als Nächstes dran. War es in dieser Runde schon am Zug, steht es dafür
+## in der nächsten Runde ganz vorne. Danach gilt wieder die normale Reihenfolge nach Initiative.
+func pull_forward(mon: Monster) -> void:
+	var index := order.find(mon)
+	if index > current_index:
+		order.remove_at(index)
+		order.insert(current_index + 1, mon)
+		var icon: Control = icons[index]
+		icons.remove_at(index)
+		icons.insert(current_index + 1, icon)
+		_update_slots()
+		_highlight()
+	elif not _first_next_round.has(mon):
+		_first_next_round.append(mon)
+
+## Monster, die in der nächsten Runde vorne stehen (Sanduhr), in dieser Reihenfolge
+var _first_next_round: Array = []
+
 func _start_round() -> void:
 	round_number += 1
 	round_label.text = tr("TURN_WHEEL_ROUND").format({"round": round_number})
@@ -119,6 +149,13 @@ func _start_round() -> void:
 	if round_number == 1:
 		order = Relics.modify("first_round_order", order)
 	order = BossRelics.order_for_round(order, round_number)
+	# Sanduhr: gilt nur für diese eine Runde
+	for i in range(_first_next_round.size() - 1, -1, -1):
+		var mon: Monster = _first_next_round[i]
+		if order.has(mon):
+			order.erase(mon)
+			order.push_front(mon)
+	_first_next_round = []
 	_build_icons()
 	current_index = 0
 	wheel.angle_offset = 0.0

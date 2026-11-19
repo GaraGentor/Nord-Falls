@@ -62,11 +62,15 @@ const SEQUENCES := {
 		{"text": "TUT_BAT_END", "target": "bat_end_turn", "wait": "pressed:bat_end_turn"},
 		{"text": "TUT_BAT_FAINTED"},
 		{"text": "TUT_BAT_BOSS"},
+		# One-Way-Items: links am Rand stecken die Postits, im Übungskampf hat jedes Monster einen Köder geliehen
+		{"text": "TUT_BAT_ITEMS", "target": "bat_items"},
+		{"text": "TUT_BAT_BAIT", "target": ["bat_items", "bat_enemies"], "wait": "signal:item_used"},
 		{"text": "TUT_BAT_CATCH", "target": "bat_catch", "wait": "pressed:bat_catch"},
 	]},
 	"map": {"speaker": "trainer", "steps": [
 		{"text": "TUT_MAP_INTRO"},
 		{"text": "TUT_MAP_TEAM", "target": "map_team"},
+		{"text": "TUT_MAP_BAG", "target": "map_bag"},
 		{"text": "TUT_MAP_LEGEND", "target": "map_legend"},
 		# nur zu Beginn eines Runs, wenn die erste Reihe noch frei wählbar ist
 		{"text": "TUT_MAP_START", "target": "map_start", "wait": "pressed:map_start", "if_present": true, "dismiss": true},
@@ -86,7 +90,8 @@ const SEQUENCES := {
 	# Die Kasse (rechts) spricht ihre eigenen Sätze (shop.gd HOWTO_LINES), jetzt mit Blick auf Regale, Monster und Tasche
 	"shop": {"speaker": "npc", "steps": [
 		{"text": "SHOP_SAY_WELCOME"},
-		{"text": "SHOP_SAY_POTIONS", "target": ["shop_shelf_0", "shop_shelf_1", "shop_mon_0", "shop_mon_1"]},
+		{"text": "SHOP_SAY_POTIONS", "target": ["shop_shelf_0", "shop_mon_0", "shop_mon_1"]},
+		{"text": "SHOP_SAY_ITEMS", "target": ["shop_shelf_1", "shop_bag"]},
 		{"text": "SHOP_SAY_GEMS", "target": ["shop_shelf_2", "shop_mon_0", "shop_mon_1"]},
 		{"text": "SHOP_SAY_RELICS", "target": ["shop_shelf_3", "shop_bag"]},
 		{"text": "SHOP_SAY_CLICK", "target": ["shop_shelf_0", "shop_shelf_1", "shop_shelf_2", "shop_shelf_3", "shop_mon_0", "shop_mon_1"]},
@@ -173,13 +178,13 @@ func wants_practice() -> bool:
 
 func start_practice() -> void:
 	practice = true
-	get_tree().change_scene_to_file(BATTLE_SCENE)
+	SceneLoader.change_scene(BATTLE_SCENE)
 
 ## battle.gd: der Übungskampf ist vorbei (gefangen oder Tutorial ausgeschaltet), weiter zur Karte
 func end_practice() -> void:
 	practice = false
 	_back_from_practice = true
-	get_tree().change_scene_to_file(MAP_SCENE)
+	SceneLoader.change_scene(MAP_SCENE)
 
 ## Karte: kommt der Spieler gerade aus dem Übungskampf? Fragt nur einmal.
 func take_back_from_practice() -> bool:

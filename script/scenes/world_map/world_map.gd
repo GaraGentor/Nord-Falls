@@ -22,22 +22,40 @@ extends Control
 @export var biome_path_label: RichTextLabel
 @export var team_bar: HBoxContainer
 
-@export var heal_camp_scene: PackedScene
-@export var shop_scene: PackedScene
-# gogogo
-@export var jailer_scene: PackedScene
-@export var trainer_scene: PackedScene
-@export var treasure_scene: PackedScene
-
-const RELIC_REWARD_SCENE := preload("res://script/scenes/relic_reward/relic_reward.tscn")
-const GEM_SCENE := preload("res://script/scenes/gems/gems.tscn")
-const SKILL_REWARD_SCENE := preload("res://script/scenes/skill_reward/skill_reward.tscn")
-const WHEEL_EVENT := preload("res://script/scenes/wheel_event/wheel_event.gd")
-const VOID_EVENT := preload("res://script/scenes/void_event/void_event.gd")
-const CONFRONTATION_EVENT := preload("res://script/scenes/confrontation_event/confrontation_event.gd")
-const HUB_CAMP := preload("res://script/scenes/hub_camp/hub_camp.gd")
-const DEBUG_MENU := preload("res://script/scenes/world_map/map_debug_menu.gd")
-const POTION_REWARD := preload("res://script/scenes/potion_reward/potion_reward.gd")
+# Felder, Ereignisse und Dialoge holt sich die Karte erst, wenn sie gebraucht werden (load im Getter). Sie liegen
+# schon seit dem Intro im Speicher (SceneLoader), so kostet die Karte selbst keine Ladezeit für sie.
+var heal_camp_scene: PackedScene:
+	get: return load("res://script/scenes/heal_camp/heal_camp.tscn")
+var shop_scene: PackedScene:
+	get: return load("res://script/scenes/shop/shop.tscn")
+var jailer_scene: PackedScene:
+	get: return load("res://script/scenes/jailer/jailer.tscn")
+var trainer_scene: PackedScene:
+	get: return load("res://script/scenes/trainer/trainer.tscn")
+var treasure_scene: PackedScene:
+	get: return load("res://script/scenes/treasure/treasure.tscn")
+var RELIC_REWARD_SCENE: PackedScene:
+	get: return load("res://script/scenes/relic_reward/relic_reward.tscn")
+var GEM_SCENE: PackedScene:
+	get: return load("res://script/scenes/gems/gems.tscn")
+var SKILL_REWARD_SCENE: PackedScene:
+	get: return load("res://script/scenes/skill_reward/skill_reward.tscn")
+var WHEEL_EVENT: GDScript:
+	get: return load("res://script/scenes/wheel_event/wheel_event.gd")
+var VOID_EVENT: GDScript:
+	get: return load("res://script/scenes/void_event/void_event.gd")
+var CONFRONTATION_EVENT: GDScript:
+	get: return load("res://script/scenes/confrontation_event/confrontation_event.gd")
+var HUB_CAMP: GDScript:
+	get: return load("res://script/scenes/hub_camp/hub_camp.gd")
+## nur in Debug-Builds gebraucht
+var DEBUG_MENU: GDScript:
+	get: return load("res://script/scenes/world_map/map_debug_menu.gd")
+var POTION_REWARD: GDScript:
+	get: return load("res://script/scenes/potion_reward/potion_reward.gd")
+var INVENTORY_DIALOG: GDScript:
+	get: return load("res://script/scenes/world_map/inventory_dialog.gd")
+const BATTLE_SCENE := "res://script/scenes/battle/battle.tscn"
 ## Boss-Felder sind halb so groß wie der Biom-Boss (64 statt 128 px), ihre Relikt-Bahn auch
 const MAP_BOSS_ORBIT_SCALE := 0.55
 
@@ -47,8 +65,11 @@ const MAP_BOSS_ORBIT_SCALE := 0.55
 @onready var map_paper: Control = $HBoxContainer/Panel2/ScrollContainer/MarginContainer/MapPaper
 @onready var map_panel: Control = $HBoxContainer/Panel2
 @onready var desk_background: CanvasItem = $ColorRect
+## Tasche oben links im Header: öffnet und schließt das Inventar
+@onready var bag_icon: TextureRect = $HBoxContainer/Panel/BagIcon
 
 var tweens = []
+var _inventory: Control
 var lines: Array[UILine] = []
 var weather: MapWeather
 # Biom, dessen Aussehen gerade gezeigt wird (weicht nur in der Vorschau mit Taste B vom echten Biom ab)
@@ -142,6 +163,7 @@ func _ready() -> void:
 	if OS.is_debug_build():
 		add_debug_button()
 	show_pending_rewards()
+	_setup_bag_button()
 	team_bar.add_to_group("tut_map_team")
 	$HBoxContainer/Panel/LegendButton.add_to_group("tut_map_legend")
 	Tutorial.enabled_changed.connect(_on_tutorial_enabled_changed)
@@ -153,6 +175,36 @@ func _ready() -> void:
 func _on_tutorial_enabled_changed(on: bool) -> void:
 	if on and Tutorial.wants_practice():
 		Tutorial.start_practice()
+
+# ─────────────────────────
+# Inventar (One-Way-Items): die Tasche oben links schaltet es ein und aus. Monster-Details aus dem Header
+# legen sich darüber, beide liegen im view_container.
+
+func _setup_bag_button() -> void:
+	bag_icon.mouse_filter = Control.MOUSE_FILTER_STOP
+	bag_icon.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	bag_icon.tooltip_text = tr("INVENTORY_OPEN")
+	# eigenes Material: der goldene Umriss soll nur diese Tasche treffen
+	bag_icon.material = bag_icon.material.duplicate()
+	bag_icon.gui_input.connect(func(event: InputEvent):
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			toggle_inventory())
+	bag_icon.mouse_entered.connect(func(): RewardDialog.set_outline(bag_icon.material, true))
+	bag_icon.mouse_exited.connect(func(): RewardDialog.set_outline(bag_icon.material, _inventory != null))
+	bag_icon.add_to_group("tut_map_bag")
+
+func toggle_inventory() -> void:
+	if _inventory:
+		_inventory.queue_free()
+		return
+	_inventory = INVENTORY_DIALOG.new()
+	_inventory.tree_exiting.connect(func():
+		_inventory = null
+		RewardDialog.set_outline(bag_icon.material, false))
+	view_container.add_child(_inventory)
+	# offene Monster-Details bleiben obenauf
+	view_container.move_child(_inventory, 0)
+	RewardDialog.set_outline(bag_icon.material, true)
 
 # Zahnrad im Header direkt links neben dem Legenden-Button, gleich groß wie dieser
 func add_settings_button() -> void:
@@ -329,7 +381,7 @@ func _on_button_pressed() -> void:
 func _call_map_event(map_node) -> void:
 	if map_node._pos.y == State.map_progress_level:
 		print("same level, go!")
-		get_tree().change_scene_to_file("res://script/scenes/battle/battle.tscn")
+		SceneLoader.change_scene(BATTLE_SCENE)
 
 func scroll_container_to_bottom(animate := true) -> void:
 	var cur_pos = State.current_map_position
@@ -366,11 +418,11 @@ func can_walk_to(node, pos: Vector3) -> bool:
 
 func call_event_by_type(type) -> void:
 	if type == Map.PATH_TYPE.COMBAT:
-		get_tree().change_scene_to_file("res://script/scenes/battle/battle.tscn")
+		SceneLoader.change_scene(BATTLE_SCENE)
 		pass
 	if type == Map.PATH_TYPE.BOSS:
 		State.is_map_boss = true
-		get_tree().change_scene_to_file("res://script/scenes/battle/battle.tscn")
+		SceneLoader.change_scene(BATTLE_SCENE)
 	if type == Map.PATH_TYPE.CAMP:
 		open_heal_camp()
 	if type == Map.PATH_TYPE.HUB:
@@ -461,7 +513,7 @@ func start_biome_boss() -> void:
 	Map.pending_relics = Map.boss_relics
 	if State.map_level == Map.map_settings.size() - 1:
 		State.is_final_boss = true
-	get_tree().change_scene_to_file("res://script/scenes/battle/battle.tscn")
+	SceneLoader.change_scene(BATTLE_SCENE)
 	State.current_map_position = State.NO_MAP_POSITION
 
 func change_position(pos, initial = false) -> void:

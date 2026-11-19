@@ -236,7 +236,7 @@ SKILL_AIR_MAG_LIGHT_CANNON,Light Wind Cannon,Leichte Windkanone
 SKILL_AIR_ARMOR_PLAIN,Light Shield,Leichter Schild
 SKILL_STONE_GUARD,Stone Guard,Felsenpanzer
 SKILL_MIST_VEIL,Mist Veil,Nebelschleier
-SKILL_SHIELD_DESC,Shields an ally with [hl]{value} shield + ({scaling}*DEF)[/hl] against [hl]physical and magical damage[/hl] until its next turn,Schützt ein eigenes Monster mit [hl]{value} Schild + ({scaling}*VER)[/hl] vor [hl]physischem und magischem Schaden[/hl] bis zu seinem nächsten Zug
+SKILL_SHIELD_DESC,Shields an ally with [hl]{value} shield + ({scaling}*DEF)[/hl] against [hl]physical and magical damage[/hl] until your next turn,Schützt ein eigenes Monster mit [hl]{value} Schild + ({scaling}*VER)[/hl] vor [hl]physischem und magischem Schaden[/hl] bis zu deinem nächsten Zug
 SKILL_BUFF_DEF_DESC,[hl]+{value}% DEF[/hl] for an ally for [hl]{buff_turns} turns[/hl],[hl]+{value}% VER[/hl] für ein eigenes Monster für [hl]{buff_turns} Züge[/hl]
 SKILL_LIFE_SPRING,Life Spring,Lebensquell
 SKILL_PASSIVE_HP_DESC,Passive: [hl]+{value} HP[/hl] for every monster in the team,Passiv: [hl]+{value} KP[/hl] für jedes Monster im Team
@@ -537,7 +537,7 @@ GEM_SPEED,Stormgryph Feather,Sturmgreif Feder
 GEM_SPEED_DESC,Weighs almost nothing and carries the storm within.,Wiegt fast nichts und trägt den Sturm in sich.
 SHOP_BOUGHT,{item} bought!,{item} gekauft!
 SHOP_SAY_WELCOME,Welcome to self-checkout! There are no staff here. You serve yourself.,Willkommen an der Selbstzahler-Kasse! Personal gibt es hier nicht. Sie bedienen sich selbst.
-SHOP_SAY_POTIONS,"Potions are on the top shelves. Drag one onto a monster: it gains the element and can use more skills.","Tränke stehen oben im Regal. Auf ein Monster gezogen, bekommt es das Element dazu und kann mehr Skills einsetzen."
+SHOP_SAY_POTIONS,"Potions are on the upper left shelf, the arrows switch the element. Drag one onto a monster: it gains the element and can use more skills.","Tränke stehen oben links im Regal, mit den Pfeilen wählen Sie das Element. Auf ein Monster gezogen, bekommt es das Element dazu und kann mehr Skills einsetzen."
 SHOP_SAY_GEMS,"Trophies are on the lower left. Pick a stat with the arrows, then drag it onto a monster.","Trophäen liegen links unten. Mit den Pfeilen wählen Sie den Wert, dann ziehen Sie sie auf ein Monster."
 SHOP_SAY_RELICS,"Relics are on the lower right, please place them in the bag next to your monsters.","Relikte finden Sie rechts unten, legen Sie diese bitte in die Tasche neben Ihren Monstern."
 SHOP_SAY_CLICK,"Click an item for details, or a monster for its info. Payment is automatic once you put an item down.","Klicken Sie eine Ware für Details an oder ein Monster für seine Infos. Bezahlt wird automatisch, sobald Sie eine Ware ablegen."
@@ -912,7 +912,7 @@ STAT_INFO_BST_NAME,Base Stat Total (BST),Gesamtwert (GES)
 STAT_INFO_BST_DESC,"How strong the species is overall. A higher BST means more stat points per level.","Wie stark die Art insgesamt ist. Ein höherer GES bringt mehr Wertepunkte pro Stufe."
 STAT_INFO_TIPS_TITLE,What to watch for when playing cards,Worauf du beim Spielen der Karten achten solltest
 STAT_INFO_TIP_TYPE,"Check the symbol on the card: fist cards scale with ATK, sparkle cards scale with SPA. Shields stop both. The target's defense does not matter.","Schau auf das Symbol der Karte: Faust-Karten wachsen mit ANG, Funken-Karten wachsen mit SAN. Schilde fangen beide ab. Die Verteidigung des Ziels zählt nicht."
-STAT_INFO_TIP_SHIELD,"Shields block physical and magic damage alike and last until the protected monster's next turn. Only a few cards (e.g. Magma) can go through.","Schilde blocken physischen und magischen Schaden gleichermaßen und halten bis zum nächsten Zug des geschützten Monsters. Nur wenige Karten (z. B. Magma) gehen durch."
+STAT_INFO_TIP_SHIELD,"Shields block physical and magic damage alike and last until the monster that cast them is on turn again. Only a few cards (e.g. Magma) can go through.","Schilde blocken physischen und magischen Schaden gleichermaßen und halten bis zum nächsten Zug des Monsters, das sie gewirkt hat. Nur wenige Karten (z. B. Magma) gehen durch."
 STAT_INFO_TIP_ELEMENT,"For magic cards the element counts on top: Water > Fire > Air > Earth > Water, 50 % more or less damage each. Physical cards always hit neutral.","Bei magischen Karten zählt dazu das Element: Wasser > Feuer > Luft > Erde > Wasser, jeweils 50 % mehr oder weniger Schaden. Physische Karten treffen immer neutral."
 STAT_INFO_TIP_SPEED,"Watch the wheel and the enemies' announced moves: act before a dangerous enemy to knock it out or shield the target in time.","Behalte Rad und angekündigte Gegner-Züge im Blick: Ist dein Monster vorher dran, kannst du einen gefährlichen Gegner noch erledigen oder das Ziel rechtzeitig schützen."
 STAT_INFO_TIP_HIDDEN,"Enemy stats start hidden (?) and are revealed by landing hits.","Werte der Gegner sind anfangs verdeckt (?) und werden durch Treffer aufgedeckt."
@@ -1210,3 +1210,50 @@ TUT_BAT_KINDS,"Look at the symbol on a card: the fist is a physical attack, the 
 TUT_BAT_BUFFS,"Besides attacks and shields there are buffs: they raise a stat of your monster for a few turns. Passives can't be played, they work all by themselves as long as the monster knows them.","Neben Attacken und Schilden gibt es Buffs: Sie erhöhen für ein paar Züge einen Wert deines Monsters. Passive spielst du nicht aus, sie wirken ganz von selbst, solange das Monster sie kennt."
 TRAINER_CHOICE_STAMP,Trainer's Choice,Trainers Choice
 TRAINER_RECOMMENDED_HINT,Very effective against the monsters of the next biome ({biome}).,Sehr effektiv gegen die Monster des nächsten Bioms ({biome}).
+ITEM_NET,Throwing Net,Wurfnetz
+ITEM_NET_DESC,"Starts a hypnosis (catch attempt) on the enemy right away, without using an action or ending your turn.","Startet sofort eine Hypnose (Fangversuch) auf den Gegner, ohne eine Aktion zu verbrauchen oder den Zug zu beenden."
+ITEM_BAIT,Bait,Köder
+ITEM_BAIT_DESC,"Raises the catch chance on the chosen enemy by {value}% for this battle.","Erhöht die Fangchance auf das gewählte gegnerische Monster für diesen Kampf um {value} %."
+ITEM_WHETSTONE,Whetstone,Wetzstein
+ITEM_WHETSTONE_DESC,"Gives a monster {value} extra action. The one on turn can use it right away, others on their next turn.","Gibt einem Monster {value} zusätzliche Aktion. Wer am Zug ist, kann sie sofort nutzen, andere in ihrem nächsten Zug."
+ITEM_SHIELD_RUNE,Shield Rune,Schildrune
+ITEM_SHIELD_RUNE_DESC,"The wearer starts the battle with a shield of {value} that lasts the whole first round.","Der Träger startet den Kampf mit einem Schild von {value}, der die ganze erste Runde hält."
+ITEM_PORTABLE_SHIELD,Portable Shield,Tragbarer Schild
+ITEM_PORTABLE_SHIELD_DESC,"All your monsters gain a shield of {value} until the user is on turn again.","Alle eigenen Monster bekommen einen Schild von {value}, bis der Wirker wieder am Zug ist."
+ITEM_SCARECROW,Scarecrow,Vogelscheuche
+ITEM_SCARECROW_DESC,"The chosen enemy loses one planned action. If it only planned one, it skips its turn.","Das gewählte gegnerische Monster verliert eine geplante Aktion. Hatte es nur eine, setzt es seinen Zug aus."
+ITEM_HOURGLASS,Hourglass,Sanduhr
+ITEM_HOURGLASS_DESC,"The chosen monster is next on the wheel. If it already had its turn this round, it goes first next round. After that the usual order applies again.","Das gewählte Monster ist auf dem Rad direkt als Nächstes dran. War es in dieser Runde schon am Zug, ist es in der nächsten Runde als Erstes dran. Danach gilt wieder die normale Reihenfolge."
+ITEM_WAKE_STONE,Wake Stone,Weckstein
+ITEM_WAKE_STONE_DESC,"The next dormant skill of the chosen monster works at full power (once).","Der nächste schlummernde Skill des gewählten Monsters wirkt mit voller Kraft (einmalig)."
+ITEM_STENCH,Foul Stench,Ekelhafter Gestank
+ITEM_STENCH_DESC,"All enemies throw away their planned actions and plan new ones.","Alle Gegner verwerfen ihre geplanten Aktionen und planen neu."
+ITEM_BLOOD_STONE,Blood Stone,Blutstein
+ITEM_BLOOD_STONE_DESC,"The next hit on the chosen enemy deals {value}x damage (once).","Der nächste Treffer auf das gewählte gegnerische Monster macht {value}x Schaden (einmalig)."
+ITEM_CUCKOO_CLOCK,Cuckoo Clock,Kuckucksuhr
+ITEM_CUCKOO_CLOCK_DESC,"All cooldowns of the chosen monster drop by {value}.","Alle Abklingzeiten des gewählten Monsters sinken um {value}."
+ITEM_DEATH_TOTEM,Death Totem,Todes-Totem
+ITEM_DEATH_TOTEM_DESC,"If one of your monsters falls, it stands up again with 1 HP after the enemy's actions. Works for every monster in the team as long as someone wears it. Only found once per run.","Fällt ein eigenes Monster, steht es nach den gegnerischen Aktionen mit 1 KP wieder auf. Gilt für jedes Monster im Team, solange einer es trägt. Kommt nur einmal pro Run vor."
+ITEM_CLEAR_WATER,Clear Water,Klarwasser
+ITEM_CLEAR_WATER_DESC,"Removes poison, burn, paralysis and all weakenings from the chosen monster.","Entfernt Gift, Verbrennung, Paralyse und alle Schwächungen vom gewählten Monster."
+ITEM_BAN_SEAL,Ban Seal,Bannsiegel
+ITEM_BAN_SEAL_DESC,"The boss relics stop working for {value} rounds (this one and the next).","Die Boss-Relikte wirken {value} Runden lang nicht (diese und die nächste)."
+ITEM_MIRROR_SHARD,Mirror Shard,Spiegelscherbe
+ITEM_MIRROR_SHARD_DESC,"Every hit on the chosen monster throws {value}% of the damage back at the attacker, until the user is on turn again.","Jeder Treffer auf das gewählte Monster wirft {value} % des Schadens auf den Angreifer zurück, bis der Wirker wieder am Zug ist."
+ITEM_USE_ENEMY,Drag onto an enemy,Auf einen Gegner ziehen
+ITEM_USE_ALLY,Drag onto one of your monsters,Auf ein eigenes Monster ziehen
+ITEM_USE_FIELD,Drag onto the battlefield,Aufs Kampffeld ziehen
+ITEM_USE_AUTO,Works by itself while equipped,"Wirkt von selbst, solange es ausgerüstet ist"
+INVENTORY_OPEN,Inventory,Inventar
+INVENTORY_BAG,Bag,Tasche
+INVENTORY_TEAM,Team,Team
+INVENTORY_PICK_ITEM,Click an item to see what it does.,"Klick auf ein Item, um zu sehen, was es kann."
+INVENTORY_EMPTY_DETAIL,"Your bag is still empty. One-way items drop after battles or can be bought in the shop.","Deine Tasche ist noch leer. One-Way-Items gibt es als Beute nach Kämpfen oder im Shop."
+INVENTORY_EQUIP_HINT,"Drag it onto a monster on the left, only equipped items can be used in battle.","Zieh es links auf ein Monster, nur ausgerüstete Items lassen sich im Kampf einsetzen."
+BATTLE_ITEMS_HINT,Click to show or hide the items,"Klick zum Aus- und Einfahren der Items"
+SHOP_POTION_SWITCH,Choose another element,Anderes Element wählen
+SHOP_ITEM_SWITCH,Choose another item,Anderes Item wählen
+SHOP_SAY_ITEMS,"One-way items are on the upper right, use the arrows to browse. They go into your bag, equip them on the map.","One-Way-Items liegen oben rechts, mit den Pfeilen blättern Sie durch das Sortiment. Sie kommen in Ihre Tasche, ausrüsten können Sie sie auf der Karte."
+TUT_MAP_BAG,"Up here is your bag with your one-way items. Equip them by dragging them onto a monster, only equipped items can be used in battle.","Hier oben ist deine Tasche mit deinen One-Way-Items. Rüste sie per Drag and Drop auf ein Monster aus, nur ausgerüstete Items lassen sich im Kampf einsetzen."
+TUT_BAT_ITEMS,"On the left edge you'll find your one-way items. Click your monster there and its equipped items slide out. Each one works only once and only on the turn of the monster wearing it.","Am linken Rand findest du deine One-Way-Items. Klick dort auf dein Monster, dann fahren seine ausgerüsteten Items heraus. Jedes wirkt nur einmal und nur im Zug des Monsters, das es trägt."
+TUT_BAT_BAIT,"For practice you borrowed a bait. Drag it onto the enemy: your catch chance goes up by 5%, without using an action.","Für die Übung hast du einen Köder geliehen. Zieh ihn auf den Gegner: Deine Fangchance steigt um 5 %, ganz ohne Aktion."

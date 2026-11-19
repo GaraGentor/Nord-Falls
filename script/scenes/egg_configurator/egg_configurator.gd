@@ -678,4 +678,5 @@ func _on_go_pressed() -> void:
 	if Tutorial.wants_practice():
 		Tutorial.start_practice()
 		return
-	get_tree().change_scene_to_file("res://script/scenes/world_map/world_map.tscn")
+	# die Karte braucht beim ersten Mal etwas: solange füllen sich die Wellen als Lade-Anzeige
+	SceneLoader.change_scene("res://script/scenes/world_map/world_map.tscn")

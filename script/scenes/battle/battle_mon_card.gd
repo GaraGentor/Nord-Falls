@@ -48,6 +48,10 @@ func _ready() -> void:
 	Events.monster_status_changed.connect(_on_mon_event.bind(_animate_hp))
 	Events.monster_faints.connect(_on_mon_event.bind(hide))
 	Events.mon_is_catched.connect(_on_mon_event.bind(hide))
+	# Todes-Totem: die Karte kommt mit dem Monster zurück
+	Events.monster_revived.connect(_on_mon_event.bind(func():
+		show()
+		_animate_hp()))
 	gui_input.connect(_on_gui_input)
 	mouse_entered.connect(plate.set_rim.bind(SkillDetailPopup.GOLD))
 	mouse_exited.connect(_show_rim)

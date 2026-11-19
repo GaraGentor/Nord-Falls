@@ -52,8 +52,21 @@ var _gained_elements: int = 0
 var _revived: bool = false
 
 # Kampf-Zustand, wird zu Beginn jedes Kampfes zurückgesetzt (reset_battle_state)
-# Schild fängt Schaden ab (physisch und magisch), bis er aufgebraucht ist oder der nächste eigene Zug beginnt (start_turn)
-var _shield: float = 0
+# Schilde fangen Schaden ab (physisch und magisch), bis sie aufgebraucht sind oder der Wirker wieder am Zug ist.
+# Einträge {"amount": float, "source": Monster}; source == null = Schild zu Kampfbeginn (Schildrune), hält die erste Runde.
+# Schilde desselben Wirkers laufen gleichzeitig ab und liegen daher in einem Eintrag (add_shield).
+# Stirbt der Wirker, kommt sein Zug nie wieder: dann fällt der Schild zu Beginn des nächsten eigenen Zuges weg (start_turn).
+var _shields: Array = []
+## Wie viele Züge bis ein Schild dieses Wirkers abläuft (source, holder) -> int, gesetzt von battle.gd (Turn Wheel).
+## Damit verbraucht Schaden zuerst den Schild, der am frühesten abläuft. Ohne Kampf zählt die Reihenfolge des Hinzufügens.
+static var shield_expiry: Callable
+# Spiegelscherbe: Treffer werfen einen Anteil des Schadens zurück, Einträge {"share": float, "source": Monster},
+# laufen ab wie Schilde (bis der Wirker wieder am Zug ist)
+var _reflects: Array = []
+# Markierungen durch One-Way-Items im Kampf: "bait" = +Fangchance (0..1), "blood" = Schadensfaktor des nächsten Treffers
+var _item_marks: Dictionary = {}
+# Ausgerüstete One-Way-Items (Items), zwei Plätze, null = leer. Gehören zum Run, nicht zum Kampf.
+var _items: Array = [null, null]
 # Buffs: Stat-Key (wie bei _gems) -> {"factor": 0.3 = +30 %, "turns": übrige eigene Züge}
 var _buffs: Dictionary = {}
 # Schwächungen (ElementEffects): Quelle -> {"stat": Stat-Key, "factor": 0.2 = -20 %, "turns": übrige eigene Züge, -1 = bis Kampfende}.
@@ -110,7 +123,9 @@ func upgrade_skill(skill, level):
 	pass
 
 func reset_battle_state() -> void:
-	_shield = 0
+	_shields = []
+	_reflects = []
+	_item_marks = {}
 	_buffs = {}
 	_debuffs = {}
 	_statuses = {}
@@ -122,10 +137,12 @@ func reset_battle_state() -> void:
 		skill.erase("_cooldown_left")
 	Events.monster_status_changed.emit(self)
 
-# Beginn eines eigenen Zuges (eigene Monster und Gegner): Abklingzeiten und Buffs zählen herunter,
-# Schilde laufen ab (sie halten also genau bis zum nächsten eigenen Zug).
+# Beginn eines eigenen Zuges (eigene Monster und Gegner): Abklingzeiten und Buffs zählen herunter.
+# Die eigenen Schilde und die anderer Monster dieses Wirkers sind schon abgelaufen (battle.gd ruft vorher
+# expire_from für alle Monster auf). Hier fallen nur noch Schilde weg, deren Wirker nicht mehr kämpft.
 func start_turn() -> void:
-	_shield = 0
+	_shields = _shields.filter(func(entry): return entry.source == null or _still_fighting(entry.source))
+	_reflects = _reflects.filter(func(entry): return _still_fighting(entry.source))
 	for skill in _skills:
 		Skills.tick_cooldown(skill)
 	for stat in _buffs.keys():
@@ -146,18 +163,81 @@ func start_turn() -> void:
 			_boons.erase(key)
 	Events.monster_status_changed.emit(self)
 
-func add_shield(amount: float) -> void:
-	_shield += amount
+## Summe aller Schilde
+func shield() -> float:
+	var total := 0.0
+	for entry in _shields:
+		total += entry.amount
+	return total
+
+## Schild von source (null = dieses Monster selbst): hält, bis source wieder am Zug ist
+func add_shield(amount: float, source: Monster = null) -> void:
+	if amount <= 0:
+		return
+	_add_shield_entry(amount, self if source == null else source)
+
+## Schild zu Kampfbeginn (Schildrune): hält die ganze erste Runde, egal wer wann am Zug ist (expire_start_shields)
+func add_start_shield(amount: float) -> void:
+	if amount > 0:
+		_add_shield_entry(amount, null)
+
+func _add_shield_entry(amount: float, source: Monster) -> void:
+	for entry in _shields:
+		if entry.source == source:
+			entry.amount += amount
+			Events.monster_status_changed.emit(self)
+			return
+	_shields.append({"amount": amount, "source": source})
 	Events.monster_status_changed.emit(self)
 
-# Zieht den Schaden vom Schild ab (er blockt physische und magische Angriffe) und liefert, was durchkommt.
+## caster ist wieder am Zug: seine Schilde und Spiegelungen auf diesem Monster laufen ab
+func expire_from(caster: Monster) -> void:
+	var before := _shields.size() + _reflects.size()
+	_shields = _shields.filter(func(entry): return entry.source != caster)
+	_reflects = _reflects.filter(func(entry): return entry.source != caster)
+	if _shields.size() + _reflects.size() != before:
+		Events.monster_status_changed.emit(self)
+
+## Die erste Runde ist vorbei: Schilde zu Kampfbeginn laufen ab
+func expire_start_shields() -> void:
+	expire_from(null)
+
+## Steht source noch lebend im Kampf? (gefangene Gegner stehen nicht mehr in enemy_mons)
+func _still_fighting(source: Monster) -> bool:
+	return source != null and source.is_alive() and (State.mons.has(source) or State.enemy_mons.has(source))
+
+# Zieht den Schaden von den Schilden ab (sie blocken physische und magische Angriffe) und liefert, was durchkommt.
+# Zuerst wird der Schild verbraucht, der am frühesten abläuft (shield_expiry).
 func absorb_damage(damage: float) -> float:
-	var blocked = minf(_shield, damage)
-	if blocked <= 0:
+	if _shields.is_empty() or damage <= 0:
 		return damage
-	_shield = maxf(_shield - blocked, 0.0)
+	var order := _shields.duplicate()
+	if shield_expiry.is_valid():
+		var holder := self
+		order.sort_custom(func(a, b): return shield_expiry.call(a.source, holder) < shield_expiry.call(b.source, holder))
+	var left := damage
+	for entry in order:
+		var blocked := minf(entry.amount, left)
+		entry.amount -= blocked
+		left -= blocked
+		if left <= 0:
+			break
+	_shields = _shields.filter(func(entry): return entry.amount > 0)
 	Events.monster_status_changed.emit(self)
-	return damage - blocked
+	return left
+
+## Spiegelscherbe: Treffer werfen share des Schadens zurück, bis source wieder am Zug ist
+func add_reflect(share: float, source: Monster) -> void:
+	_reflects = _reflects.filter(func(entry): return entry.source != source)
+	_reflects.append({"share": share, "source": source})
+	Events.monster_status_changed.emit(self)
+
+## Anteil des Schadens, der zum Angreifer zurückprallt (mehrere Spiegelungen zählen nicht doppelt, die stärkste gilt)
+func reflect_share() -> float:
+	var share := 0.0
+	for entry in _reflects:
+		share = maxf(share, entry.share)
+	return share
 
 # Erneutes Buffen desselben Werts stapelt nicht, sondern frischt Stärke und Dauer auf.
 func add_buff(stat: String, factor: float, turns: int) -> void:
