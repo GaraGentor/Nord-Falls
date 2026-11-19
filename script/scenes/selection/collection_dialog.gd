@@ -4,6 +4,7 @@ extends InfoDialog
 ## Startbildschirm: alle Monster-Arten, geöffnet über den Knopf "Sammlung".
 ## Gesehene Arten (SaveManager "seen_monsters" oder spielbar) mit Bild und Namen, die anderen als schwarze Silhouette.
 ## Jede zeigt ihre Seltenheit und ab welchem Biom sie häufig auftaucht (Map.usual_depth).
+## Besessene Arten (Start-Monster, gefangen) haben ein abgedunkeltes Ei im Hintergrund der Kachel.
 
 const LIST_SIZE := Vector2(700, 470)
 const COLUMNS := 4
@@ -13,6 +14,10 @@ const NAME_FONT_SIZE := 17
 const INFO_FONT_SIZE := 14
 const SILHOUETTE := Color(0.04, 0.04, 0.05)
 const UNKNOWN_COLOR := Color(0.5, 0.5, 0.48)
+## Ei hinter besessenen Arten: füllt die Kachel bis auf den Rand, abgedunkelt, damit der Inhalt lesbar bleibt
+const EGG_ICON := preload("res://assets/ui/eggs/common_1.png")
+const OWNED_EGG_MARGIN := 6
+const OWNED_EGG_TINT := Color(0.42, 0.42, 0.42, 0.75)
 
 func _build(content: VBoxContainer) -> void:
 	content.add_child(_title(tr("COLLECTION_TITLE"), SkillDetailPopup.GOLD))
@@ -22,6 +27,7 @@ func _build(content: VBoxContainer) -> void:
 		var rarity_b: int = b.get("rarity", Enums.MON_RARITY.COMMON)
 		return rarity_a < rarity_b if rarity_a != rarity_b else a.name.naturalnocasecmp_to(b.name) < 0)
 	var seen := _seen_names()
+	var owned := Helper.get_all_owned_monster_names()
 	var known := species.filter(func(meta): return seen.has(meta.name)).size()
 	content.add_child(_text(tr("COLLECTION_PROGRESS").format({"seen": known, "total": species.size()}),
 		IronPlate.TEXT_COLOR, ROW_FONT_SIZE))
@@ -37,7 +43,7 @@ func _build(content: VBoxContainer) -> void:
 	grid.add_theme_constant_override("v_separation", 12)
 	scroll.add_child(grid)
 	for meta: Dictionary in species:
-		grid.add_child(_entry(meta, seen.has(meta.name)))
+		grid.add_child(_entry(meta, seen.has(meta.name), owned.has(meta.name)))
 	# nur der ScrollContainer selbst nimmt Mausrad und Ziehen an
 	RewardDialog.ignore_mouse_below(grid)
 
@@ -49,12 +55,33 @@ func _seen_names() -> Array:
 			names.append(mon_name)
 	return names
 
-func _entry(meta: Dictionary, seen: bool) -> Control:
+## Besessene Art (Start-Monster oder schon gefangen): abgedunkeltes Ei in ihrer Seltenheitsfarbe über die ganze
+## Kachel, zwischen Eisenplatte und Inhalt
+func _add_owned_egg(panel: PanelContainer, rarity: int) -> void:
+	var holder := MarginContainer.new()
+	holder.mouse_filter = MOUSE_FILTER_IGNORE
+	for side in ["left", "right", "top", "bottom"]:
+		holder.add_theme_constant_override("margin_" + side, OWNED_EGG_MARGIN)
+	var egg := TextureRect.new()
+	egg.texture = EGG_ICON
+	egg.material = Monmap.egg_material(rarity)
+	egg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	egg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	egg.modulate = OWNED_EGG_TINT
+	egg.mouse_filter = MOUSE_FILTER_IGNORE
+	holder.add_child(egg)
+	panel.add_child(holder)
+	# hinter den Inhalt, aber über die Eisenplatte (IronPlate.frame: Platte, dann Inhalt)
+	panel.move_child(holder, 1)
+
+func _entry(meta: Dictionary, seen: bool, owned: bool) -> Control:
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size.x = ENTRY_WIDTH
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 4)
 	IronPlate.frame(panel, column, 8, 8)
+	if owned:
+		_add_owned_egg(panel, meta.get("rarity", Enums.MON_RARITY.COMMON))
 
 	var image := TextureRect.new()
 	image.custom_minimum_size = IMAGE_SIZE

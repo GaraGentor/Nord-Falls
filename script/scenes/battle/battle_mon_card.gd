@@ -133,8 +133,9 @@ func _update_hp_bar() -> void:
 	hp_clip.size = Vector2(hp_bar.size.x * share, hp_bar.size.y)
 	hp_fill.size = hp_bar.size
 	hp_fill.color = hp_color(share)
-	# genaue HP von Gegnern nur bei Arten, die man hat oder in diesem Run gefangen hat, sonst bleibt der Balken ohne Zahl
-	if State.mons.has(mon) or State.is_mon_known(mon._name):
+	# genaue HP von Gegnern nur bei Arten, die man hat oder in diesem Run gefangen hat, oder mit dem Relikt enemy_hp,
+	# sonst bleibt der Balken ohne Zahl
+	if State.mons.has(mon) or State.is_mon_known(mon._name) or Relics.works("enemy_hp"):
 		hp_label.text = "%d / %d" % [roundi(_shown_hp), roundi(max_hp)]
 	else:
 		hp_label.text = ""

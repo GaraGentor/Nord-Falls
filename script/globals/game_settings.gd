@@ -17,6 +17,8 @@ var card_watermark := true
 ## Easy Mode: die Relikte aus Relics.EASY_MODE_RELICS (alle Werte und Fähigkeiten der Gegner) gelten in jedem Run
 ## als gesammelt und werden deshalb nirgends mehr angeboten
 var easy_mode := false
+## Das Relikt Relics.ENEMY_HP_RELIC (genaue HP der Gegner) gilt in jedem Run als gesammelt, unabhängig vom Easy Mode
+var show_enemy_hp := false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -59,6 +61,14 @@ func set_easy_mode(on: bool) -> void:
 	changed.emit()
 	Relics.relics_changed.emit()
 
+func set_show_enemy_hp(on: bool) -> void:
+	if show_enemy_hp == on:
+		return
+	show_enemy_hp = on
+	_save()
+	changed.emit()
+	Relics.relics_changed.emit()
+
 func toggle_fullscreen() -> void:
 	set_fullscreen(not fullscreen)
 
@@ -92,6 +102,7 @@ func _load() -> void:
 	card_effects = config.get_value("display", "card_effects", true)
 	card_watermark = config.get_value("display", "card_watermark", true)
 	easy_mode = config.get_value("gameplay", "easy_mode", false)
+	show_enemy_hp = config.get_value("gameplay", "show_enemy_hp", false)
 
 func _save() -> void:
 	var config := ConfigFile.new()
@@ -99,4 +110,5 @@ func _save() -> void:
 	config.set_value("display", "card_effects", card_effects)
 	config.set_value("display", "card_watermark", card_watermark)
 	config.set_value("gameplay", "easy_mode", easy_mode)
+	config.set_value("gameplay", "show_enemy_hp", show_enemy_hp)
 	config.save(PATH)

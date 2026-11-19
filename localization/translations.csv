@@ -506,6 +506,8 @@ RELIC_ALL_STATS,All-Seeing Eye,Allsehendes Auge
 RELIC_ALL_STATS_DESC,All enemy stats are always visible in battle.,Im Kampf sind alle Werte der Gegner immer sichtbar.
 RELIC_ALL_SKILLS,Battle Codex,Kampf-Kodex
 RELIC_ALL_SKILLS_DESC,All enemy attacks are visible from the start of battle.,Alle Attacken der Gegner sind ab Kampfbeginn sichtbar.
+RELIC_ENEMY_HP,Stethoscope,Stethoskop
+RELIC_ENEMY_HP_DESC,The HP bars in battle show the exact HP of enemies too.,Die HP-Balken im Kampf zeigen auch bei Gegnern die genauen HP.
 RELIC_DOUBLE_LEVEL,Double Growth,Doppeltes Wachstum
 RELIC_DOUBLE_LEVEL_DESC,Every level-up grants 2 levels.,Jedes Level-Up bringt 2 Stufen.
 RELIC_TROPHY_BONUS,Trophy Polish,Trophäenpolitur
@@ -888,6 +890,8 @@ SETTINGS_CARD_WATERMARK_HINT,Large symbol of the skill type in the background of
 SETTINGS_GAMEPLAY,Gameplay,Spiel
 SETTINGS_EASY_MODE,Easy Mode,Easy Mode
 SETTINGS_EASY_MODE_HINT,"Every run starts with the All-Seeing Eye and the Battle Codex: all enemy stats and attacks are visible. They are then no longer offered in the shop.","Jeder Run beginnt mit dem Allsehenden Auge und dem Kampf-Kodex: alle Werte und Attacken der Gegner sind sichtbar. Im Shop werden sie dann nicht mehr angeboten."
+SETTINGS_ENEMY_HP,Show enemy HP,Gegner-HP anzeigen
+SETTINGS_ENEMY_HP_HINT,"Every run starts with the Stethoscope: the HP bars in battle show the exact HP of enemies too. It is then no longer offered in the shop.","Jeder Run beginnt mit dem Stethoskop: die HP-Balken im Kampf zeigen auch bei Gegnern die genauen HP. Im Shop wird es dann nicht mehr angeboten."
 SETTINGS_TUTORIAL,Tutorial,Tutorial
 SETTINGS_TUTORIAL_TOGGLE,Show tutorial,Tutorial anzeigen
 SETTINGS_TUTORIAL_HINT,"When switched on, the trainer explains everything from the start, including a practice fight before the map.","Eingeschaltet erklärt dir der Trainer alles von Anfang an, auch in einem Übungskampf vor der Karte."

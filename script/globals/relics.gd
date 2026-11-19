@@ -99,6 +99,13 @@ var RELICS := {
 		"icon": "res://assets/ui/icons/info.svg",
 		"rarity": Rarity.RARE,
 	},
+	# Ohne Hook: die HP-Balken im Kampf zeigen damit auch bei Gegnern die genauen HP (battle_mon_card.gd, battle_info_panel.gd)
+	"enemy_hp": {
+		"name": "RELIC_ENEMY_HP",
+		"description": "RELIC_ENEMY_HP_DESC",
+		"icon": "res://assets/ui/icons/stat_heart.svg",
+		"rarity": Rarity.COMMON,
+	},
 	# Ohne Hook: der Kampf deckt damit zu Beginn alle gegnerischen Attacken auf (battle.gd)
 	"all_skills": {
 		"name": "RELIC_ALL_SKILLS",
@@ -162,15 +169,24 @@ func get_relic(id: String) -> Dictionary:
 func has_relic(id: String) -> bool:
 	return State.relics.has(id) or is_easy_mode_relic(id)
 
-## Kommt aus dem Easy Mode, nicht aus dem Run (lässt sich z. B. im Void nicht tauschen)
+## Kommt aus den Einstellungen (Easy Mode oder Gegner-HP), nicht aus dem Run (lässt sich z. B. im Void nicht tauschen)
 func is_easy_mode_relic(id: String) -> bool:
-	return GameSettings.easy_mode and EASY_MODE_RELICS.has(id)
+	return settings_relics().has(id)
 
-## Alle Relikte, die gerade gelten: die gesammelten und die des Easy Mode
+## Relikte, die die Einstellungen gerade schenken
+func settings_relics() -> Array[String]:
+	var ids: Array[String] = []
+	if GameSettings.easy_mode:
+		ids.append_array(EASY_MODE_RELICS)
+	if GameSettings.show_enemy_hp:
+		ids.append(ENEMY_HP_RELIC)
+	return ids
+
+## Alle Relikte, die gerade gelten: die gesammelten und die aus den Einstellungen
 func owned() -> Array[String]:
 	var ids: Array[String] = State.relics.duplicate()
-	for id in EASY_MODE_RELICS:
-		if is_easy_mode_relic(id) and not ids.has(id):
+	for id in settings_relics():
+		if not ids.has(id):
 			ids.append(id)
 	return ids
 
@@ -179,10 +195,12 @@ func is_active(id: String) -> bool:
 	return not DebugSettings.is_relic_disabled(id)
 
 ## Diese Relikte gibt es nur im Shop, alle anderen nur aus Relikt-Kisten (Boss-Belohnung)
-const SHOP_RELICS := ["spyglass", "super_catcher", "all_stats", "all_skills"]
+const SHOP_RELICS := ["spyglass", "super_catcher", "all_stats", "all_skills", "enemy_hp"]
 
 ## Im Easy Mode (GameSettings.easy_mode) gelten diese Relikte in jedem Run als gesammelt
 const EASY_MODE_RELICS := ["all_stats", "all_skills"]
+## Mit GameSettings.show_enemy_hp gilt dieses Relikt in jedem Run als gesammelt
+const ENEMY_HP_RELIC := "enemy_hp"
 
 ## Was der Shop anbieten kann: nur SHOP_RELICS, aktiv und noch nicht gesammelt
 func shop_offers() -> Array:

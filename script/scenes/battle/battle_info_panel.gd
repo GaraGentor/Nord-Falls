@@ -78,7 +78,9 @@ func refresh() -> void:
 func _hidden_stats() -> Array:
 	if reveal_all or State.mons.has(monster) or State.is_mon_known(monster._name) or Relics.works("all_stats"):
 		return []
-	var hidden := ["hp", "speed", "bst"]
+	var hidden := ["speed", "bst"]
+	if not Relics.works("enemy_hp"):
+		hidden.append("hp")
 	for stat in ["atk", "def", "s_atk"]:
 		if not State.is_mon_stat_revealed(monster._name, stat):
 			hidden.append(stat)

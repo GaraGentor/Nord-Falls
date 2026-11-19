@@ -1,25 +1,15 @@
 Tasks:
 	
 > Konkretes Balancing der ELemente und Karten sowie mehr Mobs...
-PT 1 Done muss man testen.
-	> Fähigkeit:
-		> Legendary shield, Nimmt den höchsten DEF Wert oder MDEF Wert und macht ihm (MOON) zum anderen shield
-		> Legendary shield, Nimmt den höchsten DEF Wert oder MDEF Wert und macht ihm (SUN) zum gleichen shield
-	> Status Effekte
-> Passiven
-	> Stat Switcher
-	> Mehr ideen...
 > Vill noch eins zwei mehr Relics
-> End Boss hinzufügen
 > Schwarze Tür dropped beim Endboss als loot, beim aufheben wird direkt ein neuer Endboss kampf getriggert mit dem Clue, dass dort der Endboss gefangen werden kann und der Run beendet wird ohne loot.
-> Was mit One Way Use Items?
 
-- Konzept durchgehen
-- Playtests
+Konzept durchgehen:
+	- Attacke vill nochmal auf nur einen typ Beschränken?
 
-MM Feedback
-5. One Use Items..
-7. Heilungs Optionen nochmal überdneken (Notlösung sehr gering)
-
-- 
+Ideen:
 Shop mit Flohmarkt kiste ersetzen wo man sich durchsuchen muss? xD
+
+Nach Game Finish:
+- Tutorial Final Testen wenn Game Fertig ist
+- Tutorial Text bei Monster Auswahl updaten

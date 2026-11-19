@@ -321,6 +321,16 @@ function collect() {
 	Object.assign(ctx.helpers, bossConsts, { roundi: Math.round });
 	const bossRelics = readVar(bossSrc, "RELICS", "BossRelics") ?? {};
 
+	// One-Way-Items: eigenes Rarity-Enum (wird als Name gelesen), Werte aus den Konstanten der Datei (BAIT_BONUS * 100)
+	const itemsSrc = read("script/globals/items.gd");
+	Object.assign(ctx.enums.Rarity, parseEnum(itemsSrc, "Rarity"));
+	const itemConsts = {};
+	for (const m of stripComments(itemsSrc).matchAll(/^const\s+([A-Z_]+)\s*(?::\s*\w+\s*)?:?=\s*([-\d.]+|"[^"\n]*"|\[[^\]\n]*\])\s*$/gm)) {
+		itemConsts[m[1]] = evalGd(m[2], `Items ${m[1]}`);
+	}
+	Object.assign(ctx.helpers, itemConsts);
+	const items = readVar(itemsSrc, "ITEMS", "Items") ?? {};
+
 	return {
 		enums: ctx.enums,
 		elements: {
@@ -359,6 +369,16 @@ function collect() {
 			wildWeights: readVar(mapSrc, "RARITY_SPAWN_WEIGHTS", "Map") ?? {},
 			unlocks: readVar(mapSrc, "RARITY_UNLOCKS", "Map") ?? {},
 			mythicChance: bossConsts.MYTHIC_BOSS_CHANCE ?? [],
+		},
+		items,
+		itemSettings: {
+			rarityWeights: readVar(itemsSrc, "RARITY_WEIGHTS", "Items") ?? {},
+			bossRarityWeights: readVar(itemsSrc, "BOSS_RARITY_WEIGHTS", "Items") ?? {},
+			treasureRarityWeights: readVar(itemsSrc, "TREASURE_RARITY_WEIGHTS", "Items") ?? {},
+			maxDrops: itemConsts.MAX_DROPS_PER_BATTLE,
+			slotsPerMon: itemConsts.SLOTS_PER_MON,
+			shopAssortment: itemConsts.SHOP_ASSORTMENT,
+			shopPrice: itemConsts.SHOP_PRICE,
 		},
 		gems: {
 			stats: readVar(gemsSrc, "STATS", "Gems") ?? {},
@@ -401,7 +421,7 @@ function build() {
 
 	console.log(`Wiki gebaut: ${path.relative(ROOT, path.join(OUT_DIR, "index.html"))}`);
 	console.log(`  ${data.mons.length} Monster, ${data.skills.length} Skills, ${Object.keys(data.relics).length} Relikte, ` +
-		`${Object.keys(data.bossRelics).length} Boss-Relikte, ` +
+		`${Object.keys(data.bossRelics).length} Boss-Relikte, ${Object.keys(data.items).length} Items, ` +
 		`${Object.keys(data.gems.stats).length} Trophäen, ${data.elements.combos.length} Elemente`);
 	for (const w of warnings) console.warn("  WARNUNG: " + w);
 }

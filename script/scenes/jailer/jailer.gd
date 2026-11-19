@@ -17,9 +17,12 @@ const EXIT_TEXTURE = preload("res://assets/ui/jailer/icon_exit.svg")
 ## Pixel-Look für Käfig, Beutel, Kristalle, Podest und Buttons, passend zum Hintergrund
 const PROPS_MATERIAL = preload("res://script/scenes/jailer/jailer_props_material.tres")
 const PIXEL_FONT = preload("res://script/ui/fonts/pxelfont/PixelifySans-VariableFont_wght.ttf")
+const RARITY_STAR = preload("res://assets/ui/icons/rarity_star.svg")
+const LIVING_MATERIAL = preload("res://script/ui/shader/living_pixels_material.tres")
+const MOVES_BADGE = preload("res://script/ui/moves_badge/moves_badge.tscn")
 const MON_OFFERS := 3
 const REROLL_COST := 25
-## Fundorte, je als Ansage (JAILER_PLACE_0 ...) und als Name auf dem Schild (JAILER_ORIGIN_0 ...)
+## Fundorte, als Ansage in der Vorstellung (JAILER_PLACE_0 ...)
 const PLACE_COUNT := 5
 ## Aktionen pro Zug ohne Verbesserung (Monster._initial_moves)
 const BASE_MOVES := Monster.BASE_MOVES
@@ -81,18 +84,25 @@ class ChainLink extends TextureRect:
 		mouse_filter = MOUSE_FILTER_IGNORE
 		material = PROPS_MATERIAL
 
-## Platz einer Monster-Art: Vogelkäfig mit Monster und Ketten, darunter das Schild, ganz unten das Podest
+## Platz einer Monster-Art: Vogelkäfig mit Monster und Ketten, oben im Dach der Seltenheits-Stern,
+## darunter das Schild (Name, Preis und Wirkung als Icons), ganz unten das Podest
 class CageSlot extends VBoxContainer:
 	const CAGE_SIZE := Vector2(280, 320)
 	## im Käfigbild: Standfläche des Monsters, Mitte des Sockelrings, Monstergröße
 	const FLOOR_Y := 268.0
 	const BAND_Y := 296.0
 	const MON_SIZE := 205.0
+	## Seltenheits-Stern im Käfigdach (Mitte, Größe im Käfigbild)
+	const STAR_CENTER := Vector2(140, 50)
+	const STAR_SIZE := 34.0
 	const PEDESTAL_HEIGHT := 44.0
-	const SIGN_FONT_SIZE := 18
+	const SIGN_FONT_SIZE := 22
 	const SIGN_TITLE_SIZE := 24
 	const SIGN_MARGIN_X := 11
 	const SIGN_MARGIN_Y := 10
+	## Zeile "1x [Träne] = [Aktionen] -> [Aktionen]"
+	const PRICE_TEAR_SIZE := Vector2(28, 42)
+	const PRICE_GAP := 6
 	const REVEAL_SECONDS := 0.8
 
 	var jailer: Node
@@ -103,13 +113,16 @@ class CageSlot extends VBoxContainer:
 	var _back: TextureRect
 	var _monster: TextureRect
 	var _front: TextureRect
+	var _star: TextureRect
 	var _chains: HBoxContainer
 	var _sign: IronPlate
 	var _sign_plate: Control
+	var _price_row: HBoxContainer
 	var _cost_label: Label
-	var _effect_label: Label
+	var _moves_now: MovesBadge
+	var _moves_next: MovesBadge
 
-	func _init(owner_dialog: Node, species: String, origin: String) -> void:
+	func _init(owner_dialog: Node, species: String) -> void:
 		jailer = owner_dialog
 		mon_name = species
 		size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -134,8 +147,19 @@ class CageSlot extends VBoxContainer:
 		_front.add_child(_chains)
 		for i in jailer.max_level(mon_name):
 			_chains.add_child(ChainLink.new())
+		# Seltenheit als Stern wie auf der Kampf-Karte, die Farbe zeigt die Stufe
+		var rarity := Monmap.rarity_of(mon_name)
+		_star = TextureRect.new()
+		_star.texture = RARITY_STAR
+		_star.material = LIVING_MATERIAL
+		_star.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		_star.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		_star.self_modulate = Monmap.RARITY_COLORS[rarity]
+		_star.tooltip_text = tr(Monmap.RARITY_LABELS[rarity])
+		_star.mouse_filter = Control.MOUSE_FILTER_PASS
+		_front.add_child(_star)
 
-		_sign_plate = _build_sign(origin)
+		_sign_plate = _build_sign()
 		add_child(_sign_plate)
 		# bis zur Vorstellung unsichtbar, aber per Alpha statt visible, damit das Layout schon steht
 		_monster.modulate.a = 0.0
@@ -148,20 +172,50 @@ class CageSlot extends VBoxContainer:
 		pedestal.material = PROPS_MATERIAL
 		add_child(pedestal)
 		RewardDialog.ignore_mouse_below(self)
+		# Stern und Preiszeile erklären sich per Tooltip, Klicks gehen weiter an den Platz
+		_star.mouse_filter = Control.MOUSE_FILTER_PASS
+		_price_row.mouse_filter = Control.MOUSE_FILTER_PASS
 		refresh()
 		set_glow(false)
 
-	func _build_sign(origin: String) -> Control:
+	## Schild: Name, darunter "1x [Träne] = [Aktionen jetzt] -> [Aktionen danach]" über die ganze Breite
+	func _build_sign() -> Control:
 		var plate := PanelContainer.new()
 		var box := VBoxContainer.new()
-		box.add_theme_constant_override("separation", 1)
+		box.add_theme_constant_override("separation", 4)
 		_sign = IronPlate.frame(plate, box, SIGN_MARGIN_X, SIGN_MARGIN_Y)
 		var title := _sign_label(box, Helper.mon_display_name(mon_name), SIGN_TITLE_SIZE)
 		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		_sign_label(box, tr("JAILER_ORIGIN").format({"place": origin}), SIGN_FONT_SIZE)
-		_cost_label = _sign_label(box, "", SIGN_FONT_SIZE)
-		_effect_label = _sign_label(box, "", SIGN_FONT_SIZE)
+		_price_row = HBoxContainer.new()
+		_price_row.alignment = BoxContainer.ALIGNMENT_CENTER
+		_price_row.add_theme_constant_override("separation", PRICE_GAP)
+		_price_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		_price_row.mouse_filter = Control.MOUSE_FILTER_PASS
+		box.add_child(_price_row)
+		_cost_label = _sign_label(_price_row, "", SIGN_FONT_SIZE)
+		_cost_label.clip_text = false
+		var tear := RewardDialog.texture_icon(SHARD_TEXTURE)
+		tear.material = PROPS_MATERIAL
+		tear.custom_minimum_size = PRICE_TEAR_SIZE
+		tear.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		_price_row.add_child(tear)
+		_sign_label(_price_row, "=", SIGN_FONT_SIZE).clip_text = false
+		_moves_now = _price_badge()
+		_sign_label(_price_row, "->", SIGN_FONT_SIZE).clip_text = false
+		_moves_next = _price_badge()
+		for label in _price_row.get_children():
+			if label is Label:
+				label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		return plate
+
+	## Aktionen-Rune wie im Kampf
+	func _price_badge() -> MovesBadge:
+		var badge: MovesBadge = MOVES_BADGE.instantiate()
+		badge.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		badge.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_price_row.add_child(badge)
+		return badge
 
 	func _sign_label(parent: Control, text: String, font_size: int) -> Label:
 		var label := Label.new()
@@ -188,6 +242,9 @@ class CageSlot extends VBoxContainer:
 		_monster.position = origin + Vector2(CAGE_SIZE.x / 2, FLOOR_Y) * cage_scale - Vector2(mon_size / 2, mon_size)
 		_chains.size = _chains.get_combined_minimum_size()
 		_chains.position = Vector2(cage_size.x / 2, BAND_Y * cage_scale) - _chains.size / 2
+		var star_size := Vector2.ONE * STAR_SIZE * cage_scale
+		_star.size = star_size
+		_star.position = STAR_CENTER * cage_scale - star_size / 2
 		_cage.pivot_offset = Vector2(_cage.size.x / 2, _cage.size.y)
 
 	func refresh() -> void:
@@ -198,9 +255,13 @@ class CageSlot extends VBoxContainer:
 		if freed:
 			return
 		var moves: int = BASE_MOVES + level
-		_cost_label.text = tr("JAILER_PRICE").format({"cost": jailer.tear_count_text(jailer.upgrade_cost(mon_name))})
+		var cost: int = jailer.upgrade_cost(mon_name)
+		_cost_label.text = "%dx" % cost
 		_cost_label.add_theme_color_override("font_color", IronPlate.TEXT_COLOR if jailer.affordable(mon_name) else TOO_EXPENSIVE_COLOR)
-		_effect_label.text = tr("JAILER_EFFECT").format({"now": moves, "next": moves + 1})
+		_moves_now.show_number(moves, false)
+		_moves_next.show_number(moves + 1, false)
+		_price_row.tooltip_text = tr("JAILER_PRICE").format({"cost": jailer.tear_count_text(cost)}) \
+				+ "\n" + tr("JAILER_EFFECT").format({"now": moves, "next": moves + 1})
 
 	## Monster und Schild erscheinen, sobald der Kerkermeister sie vorstellt
 	func reveal() -> void:
@@ -404,7 +465,7 @@ func _roll_offers() -> void:
 			gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			_cages.add_child(gap)
 			continue
-		var slot := CageSlot.new(self, offers[i], tr("JAILER_ORIGIN_%d" % places[i]))
+		var slot := CageSlot.new(self, offers[i])
 		_cages.add_child(slot)
 		_slots.append(slot)
 		lines.append({"slot": slot, "text": _intro_text(i, offers.size(), offers[i], tr("JAILER_PLACE_%d" % places[i]))})
