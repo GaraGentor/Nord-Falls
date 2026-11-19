@@ -39,7 +39,7 @@ const RELIC_OFFERS := 2
 ## Index = Gruppe im Tutorial (tut_shop_shelf_<i>): oben links Tränke, oben rechts One-Way-Items,
 ## unten links Trophäen, unten rechts Relikte.
 const SHELF_HEIGHT := 46.0
-const SHELF_ROWS_Y := [96.0, 266.0]
+const SHELF_ROWS_Y := [112.0, 292.0]
 const SHELF_LAYOUT := [
 	{"column": 0, "row": 0},
 	{"column": 1, "row": 0},
@@ -112,9 +112,14 @@ class ShelfItem extends RewardDialog.RewardCard:
 	const TITLE_FONT_SIZE := 16
 	const PRICE_FONT_SIZE := 17
 	const TAG_MARGIN := 7
-	const SWITCH_SIZE := Vector2(30, 34)
-	const SWITCH_FONT_SIZE := 26
-	const SWITCH_Y := 10.0
+	## Blätter-Pfeile: zwei quadratische Eisenplatten nebeneinander mittig über dem Bild
+	const SWITCH_SIZE := Vector2(40, 40)
+	const SWITCH_GAP := 4.0
+	## Abstand der Platten zur Oberkante des Bildes (das Bild hat oben etwas leeren Rand)
+	const SWITCH_LIFT := 2.0
+	## Dreieck in der Platte: halbe Breite und halbe Höhe, schwarzer Umriss darum
+	const ARROW_HALF := Vector2(8, 10)
+	const ARROW_OUTLINE := 2.0
 
 	var art: Control
 	var title: String
@@ -201,27 +206,44 @@ class ShelfItem extends RewardDialog.RewardCard:
 		drag.title = card_title
 		_title_label.text = card_title
 
-	## Pfeile neben dem Bild, on_switch(step) mit -1 (links) bzw. +1 (rechts)
+	## Pfeile über dem Bild, on_switch(step) mit -1 (links) bzw. +1 (rechts).
+	## Jeder Pfeil ist eine kleine Eisenplatte mit Dreieck, beim Darüberfahren werden Rand und Dreieck golden.
 	func add_switch(on_switch: Callable, tooltip: String) -> void:
 		for step in [-1, 1]:
 			var button := Button.new()
-			button.text = "<" if step < 0 else ">"
 			button.tooltip_text = tooltip
 			button.focus_mode = Control.FOCUS_NONE
 			button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 			button.size = SWITCH_SIZE
-			button.add_theme_font_override("font", PIXEL_FONT)
-			button.add_theme_font_size_override("font_size", SWITCH_FONT_SIZE)
 			RewardDialog.clear_button_styles(button, StyleBoxEmpty.new())
-			button.add_theme_color_override("font_color", IronPlate.TEXT_COLOR)
-			button.add_theme_color_override("font_hover_color", GOLD)
-			button.add_theme_color_override("font_pressed_color", GOLD)
-			button.add_theme_color_override("font_outline_color", Color.BLACK)
-			button.add_theme_constant_override("outline_size", 6)
+			var plate := IronPlate.back(button)
+			# rechtwinklige Ecken statt der Schrägen der großen Platten
+			(plate.material as ShaderMaterial).set_shader_parameter("corner_cells", 0.0)
+			button.mouse_entered.connect(plate.set_rim.bind(GOLD))
+			button.mouse_exited.connect(plate.set_rim.bind(IronPlate.RIM))
+			button.draw.connect(_draw_arrow.bind(button, step))
 			button.pressed.connect(on_switch.bind(step))
 			_holder.add_child(button)
 			_switch_buttons.append(button)
 		_ignore_mouse_below()
+
+	func _draw_arrow(button: Button, step: int) -> void:
+		var center := button.size / 2
+		var color := GOLD if button.is_hovered() else IronPlate.TEXT_COLOR
+		# gedrückt sinkt das Dreieck einen Pixel ein
+		if button.get_draw_mode() == BaseButton.DRAW_PRESSED:
+			center.y += 1
+		var outline := Vector2(ARROW_OUTLINE, ARROW_OUTLINE)
+		button.draw_colored_polygon(_arrow_points(center, ARROW_HALF + outline, step), Color.BLACK)
+		button.draw_colored_polygon(_arrow_points(center, ARROW_HALF, step), color)
+
+	func _arrow_points(center: Vector2, half: Vector2, step: int) -> PackedVector2Array:
+		var dir := float(step)
+		return PackedVector2Array([
+			center + Vector2(dir * half.x, 0),
+			center + Vector2(-dir * half.x, -half.y),
+			center + Vector2(-dir * half.x, half.y),
+		])
 
 	func set_gold(gold: bool) -> void:
 		_gold_target.set_shader_parameter("outline_color", GOLD if gold else NO_OUTLINE)
@@ -246,10 +268,12 @@ class ShelfItem extends RewardDialog.RewardCard:
 		art.position = Vector2((width - ART_SIZE.x) / 2, ART_SINK)
 		if _price_label:
 			_price_label.position = Vector2(art.position.x + ART_SIZE.x, ART_SIZE.y - 26)
-		# Pfeile auf halber Höhe des Bildes, oberhalb des Preises
+		# Pfeile nebeneinander über dem Bild, mittig darüber
+		var switches_width := 2 * SWITCH_SIZE.x + SWITCH_GAP
+		var switches_left := art.position.x + (ART_SIZE.x - switches_width) / 2
 		for i in _switch_buttons.size():
-			var x := art.position.x - SWITCH_SIZE.x if i == 0 else art.position.x + ART_SIZE.x
-			_switch_buttons[i].position = Vector2(x, SWITCH_Y)
+			var x := switches_left + i * (SWITCH_SIZE.x + SWITCH_GAP)
+			_switch_buttons[i].position = Vector2(x, art.position.y - SWITCH_LIFT - SWITCH_SIZE.y)
 		_tag.position = Vector2(0, ART_SIZE.y + SHELF_HEIGHT / 2)
 		size = Vector2(width, _tag.position.y + _tag.size.y)
 

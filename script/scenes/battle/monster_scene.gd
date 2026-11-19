@@ -11,7 +11,7 @@ var mon: Monster
 
 ## Statuseffekte über dem Monster: Schilde, Buffs und bei Gegnern die Fangchance
 @export var status_box: HFlowContainer
-## Slots über dem Status: bei Gegnern die Absichten, bei eigenen Monstern die eingehenden Angriffe
+## Slots über dem Status: bei Gegnern die Absichten (bei eigenen Monstern leer)
 @export var intent_box: HFlowContainer
 
 @export var is_healing: bool
@@ -116,7 +116,8 @@ func _show_hit_text(_mon: Monster, damage: float, multiplier: float, blocked: fl
 		color = NOT_EFFECTIVE_COLOR
 		box.add_child(_icon_row([tr("BATTLE_NOT_EFFECTIVE") + " x" + _format_multiplier(multiplier)], color, font_size))
 	box.add_child(_icon_row(["-%d" % roundi(damage)], color, font_size))
-	if blocked > 0:
+	# eigene Monster: nur der Schaden, keine Rechnung mit dem Schild (den Schildtreffer zeigt der Effekt)
+	if blocked > 0 and not home_mons:
 		box.add_child(_icon_row([ICON_SHIELD, "-%d" % roundi(blocked)], STATUS_COLOR, 24))
 	box.z_index = 10
 	add_child(box)
@@ -376,7 +377,7 @@ func _update_drag_preview(drag_data) -> void:
 
 # Slots über dem Status, als Symbole:
 # Gegner zeigen ihren geplanten Zug (Schwert = Angriff, Stern = Sp.-Angriff, Schild, Buff-Pfeil, dahinter das Bild des Ziels),
-# eigene Monster je Slot einen Angriff, der im nächsten Zug der Gegner auf sie zukommt, mit und ohne Schild (Schwert -12, Schild -4).
+# eigene Monster zeigen hier nichts (nur ihren Status mit Schilden und Buffs).
 const INTENT_COLOR := Color(1.0, 0.45, 0.4)
 const INTENT_BLOCKED_COLOR := Color(0.55, 0.8, 1.0)
 const BUFF_COLOR := Color(0.55, 1.0, 0.55)
@@ -386,22 +387,12 @@ func _refresh_intent() -> void:
 	if mon == null or not is_inside_tree():
 		return
 	_clear_box(intent_box)
-	for row in (_own_intent_rows() if home_mons else _enemy_intent_rows()):
+	# über eigenen Monstern keine Schadensrechnung: dort stehen nur Schilde und Buffs (Status),
+	# den angekündigten Schaden zeigen die Absichten der Gegner
+	if home_mons:
+		return
+	for row in _enemy_intent_rows():
 		intent_box.add_child(row)
-
-func _own_intent_rows() -> Array:
-	var rows = []
-	for hit in Skills.incoming_hits(mon, State.enemy_mons):
-		var attack_icon = ICON_ATTACK if hit.physical else ICON_S_ATTACK
-		var full = roundi(hit.full)
-		var after = roundi(hit.after)
-		# Blau, wenn der Schild etwas abfängt: so sieht man direkt, dass sich Blocken gelohnt hat
-		if after < full:
-			rows.append(_icon_row([attack_icon, "-%d" % full, ICON_SHIELD, "-%d" % after],
-				INTENT_BLOCKED_COLOR, INTENT_FONT_SIZE))
-		else:
-			rows.append(_icon_row([attack_icon, "-%d" % full], INTENT_COLOR if hit.physical else SPECIAL_COLOR, INTENT_FONT_SIZE))
-	return rows
 
 func _enemy_intent_rows() -> Array:
 	var rows = []

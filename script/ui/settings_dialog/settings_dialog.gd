@@ -13,6 +13,8 @@ const CHECK_SIZE := Vector2(40, 40)
 const SLIDE_DISTANCE := 160.0
 ## nicht gewählte Option abgedunkelt, wie die Schalter im Debug-Menü
 const UNPICKED_COLOR := Color(0.65, 0.65, 0.65)
+## Höhe für Titel, Schließen-Button und Ränder des Panels: der Rest des Fensters gehört der scrollbaren Liste
+const SCROLL_RESERVED_HEIGHT := 230.0
 
 ## Wählbare Option -> Wert, den sie setzt (für das Hervorheben der aktiven)
 var _window_buttons := {}
@@ -68,6 +70,8 @@ static func make_check(text: String, on: bool, on_toggled: Callable) -> HBoxCont
 
 func _build(content: VBoxContainer) -> void:
 	content.add_child(_title(tr("SETTINGS_TITLE"), SkillDetailPopup.GOLD))
+	# Titel und Schließen-Button bleiben stehen, die Abschnitte dazwischen scrollen
+	content = _scroll_list(content)
 	content.add_child(_section(tr("SETTINGS_DISPLAY")))
 	if GameSettings.has_window_mode():
 		var row := HBoxContainer.new()
@@ -101,6 +105,39 @@ func _build(content: VBoxContainer) -> void:
 	content.add_child(tutorial_check)
 	content.add_child(_note(tr("SETTINGS_TUTORIAL_HINT"), IronPlate.TEXT_COLOR))
 
+## Scrollbare Liste in content: so hoch wie ihr Inhalt, höchstens so hoch, dass der Dialog ins Fenster passt
+func _scroll_list(content: VBoxContainer) -> VBoxContainer:
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	content.add_child(scroll)
+	DragScroll.attach(scroll)
+	var list := VBoxContainer.new()
+	list.add_theme_constant_override("separation", content.get_theme_constant("separation"))
+	list.size_flags_horizontal = SIZE_EXPAND_FILL
+	scroll.add_child(list)
+	_scroll = scroll
+	_list = list
+	list.minimum_size_changed.connect(_fit_scroll)
+	_fit_scroll.call_deferred()
+	return list
+
+var _scroll: ScrollContainer
+var _list: VBoxContainer
+
+func _fit_scroll() -> void:
+	if not is_inside_tree():
+		return
+	var wanted := _list.get_combined_minimum_size()
+	var max_height := maxf(get_viewport_rect().size.y - SCROLL_RESERVED_HEIGHT, 120.0)
+	var scrolls := wanted.y > max_height
+	# Platz für die Scroll-Leiste, damit sie nichts überdeckt
+	var bar := _scroll.get_v_scroll_bar().get_combined_minimum_size().x + 8 if scrolls else 0.0
+	_scroll.custom_minimum_size = Vector2(wanted.x + bar, minf(wanted.y, max_height))
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_RESIZED and _list:
+		_fit_scroll()
+
 func _option_button(text: String, fullscreen: bool) -> Button:
 	var button := RewardDialog.plate_button(text)
 	button.add_theme_font_size_override("font_size", ROW_FONT_SIZE)
@@ -130,7 +167,10 @@ func _exit_tree() -> void:
 
 ## Panel fährt von unten hoch
 func _animate_in() -> void:
-	var target_y := _panel.position.y
+	# Ziel aus der Mindestgröße: die scrollbare Liste ist gerade erst auf Fensterhöhe geschrumpft (_fit_scroll),
+	# der CenterContainer hat das Panel womöglich noch nicht neu ausgerichtet
+	_fit_scroll()
+	var target_y := (size.y - _panel.get_combined_minimum_size().y) / 2
 	_panel.position.y = target_y + SLIDE_DISTANCE
 	_panel.modulate.a = 0
 	var tween := create_tween().set_parallel()

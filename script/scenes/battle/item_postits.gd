@@ -5,6 +5,7 @@ extends Control
 ## und wieder ein. Items zieht man auf ein Ziel (Monster oder Kampffeld), battle.gd setzt sie ein (Events.use_item).
 ## Einsetzen geht nur im Zug des Monsters, das das Item trägt; danach fährt das Postit wieder ein.
 ## Items, die von selbst wirken (Schildrune, Todes-Totem), stehen nur zur Info da.
+## Antippen eines Items öffnet seine Erklärung als Dialog (ItemInfoDialog). Die Postits stehen mittig am Rand.
 
 const CELL_SIZE := Vector2(64, 64)
 const PORTRAIT_SIZE := Vector2(72, 72)
@@ -13,8 +14,6 @@ const MARGIN := 8
 ## so viel vom Postit schaut eingefahren heraus: das Monster samt Rand
 const PEEK := PORTRAIT_SIZE.x + 2 * MARGIN
 const SLIDE_SECONDS := 0.25
-## Oberkante der Postits als Anteil der Höhe des Kampffelds (auf Höhe der eigenen Monster)
-const TOP_SHARE := 0.42
 const SPACING := 10.0
 const INACTIVE_MODULATE := Color(0.6, 0.6, 0.6)
 const AUTO_MODULATE := Color(0.75, 0.75, 0.75, 0.8)
@@ -25,6 +24,7 @@ class ItemCell extends PanelContainer:
 	var mon: Monster
 	var index: int
 	var item
+	var _press_pos := Vector2.ZERO
 
 	func _init(owner_postits: Node, monster: Monster, slot_index: int) -> void:
 		postits = owner_postits
@@ -41,13 +41,21 @@ class ItemCell extends PanelContainer:
 		var art := Items.icon(item)
 		art.custom_minimum_size = CELL_SIZE - Vector2(8, 8)
 		add_child(art)
-		tooltip_text = "%s\n%s\n%s" % [Items.title(item), Items.description(item), Items.use_hint(item)]
-		mouse_default_cursor_shape = Control.CURSOR_DRAG if usable() else Control.CURSOR_ARROW
+		mouse_default_cursor_shape = Control.CURSOR_DRAG if usable() else Control.CURSOR_POINTING_HAND
 		if Items.use_of(item) == Items.USE_AUTO:
 			modulate = AUTO_MODULATE
 
 	func usable() -> bool:
 		return item != null and Items.use_of(item) != Items.USE_AUTO and postits.can_use.call(mon)
+
+	## Antippen (ohne Ziehen) öffnet die Erklärung als Dialog, Tooltips gibt es am Handy nicht
+	func _gui_input(event: InputEvent) -> void:
+		if item == null or not event is InputEventMouseButton or event.button_index != MOUSE_BUTTON_LEFT:
+			return
+		if event.pressed:
+			_press_pos = event.position
+		elif event.position.distance_to(_press_pos) < RewardDialog.CLICK_MAX_MOVE:
+			InfoDialog.present(postits, ItemInfoDialog.new(item, mon, usable()))
 
 	func _get_drag_data(_at_position: Vector2):
 		if not usable():
@@ -64,6 +72,42 @@ class ItemCell extends PanelContainer:
 	func _notification(what: int) -> void:
 		if what == NOTIFICATION_DRAG_END and item != null and Items.use_of(item) != Items.USE_AUTO:
 			modulate.a = 1.0
+
+## Erklärung eines Items im Kampf (wie die Skill-Details der Gegner als Dialog): Bild, Name, Seltenheit,
+## Wirkung, wie man es einsetzt und wer es trägt
+class ItemInfoDialog extends InfoDialog:
+	const ART_SIZE := Vector2(110, 110)
+	var item: Dictionary
+	var mon: Monster
+	var usable_now: bool
+
+	func _init(battle_item: Dictionary, carrier: Monster, can_use_now: bool) -> void:
+		super()
+		item = battle_item
+		mon = carrier
+		usable_now = can_use_now
+
+	func _accent() -> Color:
+		return Items.rarity_color(item)
+
+	func _build(content: VBoxContainer) -> void:
+		var art_holder := CenterContainer.new()
+		var art := Items.icon(item)
+		art.custom_minimum_size = ART_SIZE
+		art_holder.add_child(art)
+		content.add_child(art_holder)
+		content.add_child(_title(Items.title(item), SkillDetailPopup.GOLD))
+		content.add_child(_text(tr(Items.RARITY_LABELS[Items.rarity_of(item)]), Items.rarity_color(item), NOTE_FONT_SIZE))
+		var mon_name := Helper.mon_battle_name(mon)
+		content.add_child(_text(tr("BATTLE_ITEM_CARRIER").format({"mon": mon_name}), IronPlate.TEXT_COLOR, NOTE_FONT_SIZE))
+		var description := _note(Items.description(item), IronPlate.TEXT_COLOR)
+		description.modulate.a = 1.0
+		description.custom_minimum_size.x = SkillDetailPopup.WIDTH + 100
+		description.add_theme_font_size_override("font_size", ROW_FONT_SIZE + 2)
+		content.add_child(description)
+		content.add_child(_text(Items.use_hint(item), SkillDetailPopup.GOLD, ROW_FONT_SIZE))
+		if not usable_now and Items.use_of(item) != Items.USE_AUTO:
+			content.add_child(_text(tr("BATTLE_ITEM_WAIT_TURN").format({"mon": mon_name}), INACTIVE_MODULATE, NOTE_FONT_SIZE))
 
 ## Postit eines Monsters, fährt per Klick auf das Monster aus und ein
 class Postit extends PanelContainer:
@@ -174,8 +218,14 @@ func refresh() -> void:
 		postit.set_open.call_deferred(before.get("open", false) and before.get("count", 0) == count, false)
 	_layout.call_deferred()
 
+## Postits untereinander, als Gruppe mittig über der Höhe des Kampffelds
 func _layout() -> void:
-	var y := size.y * TOP_SHARE
+	var total := 0.0
+	for postit in _postits:
+		postit.reset_size()
+		total += postit.size.y
+	total += SPACING * maxi(_postits.size() - 1, 0)
+	var y := maxf((size.y - total) / 2, 0.0)
 	for postit in _postits:
 		postit.reset_size()
 		postit.position.y = y

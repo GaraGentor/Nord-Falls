@@ -15,6 +15,8 @@ const TITLE_FONT_SIZE := 24
 const TEXT_FONT_SIZE := 18
 const BACK_ICON := preload("res://assets/ui/icons/icon_back.svg")
 const HOVER_RIM := Color(0.5, 0.62, 0.63)
+## so viele Zeilen teilen sich die Höhe der Team-Spalte (ein einzelnes Monster nimmt die Hälfte)
+const TEAM_ROWS := 2
 
 ## Ein Platz am Monster oder in der Tasche: Ablegeziel und, wenn belegt, ziehbar
 class InvSlot extends PanelContainer:
@@ -117,21 +119,27 @@ func _ready() -> void:
 	_grid.add_theme_constant_override("v_separation", 10)
 	center.add_child(_grid)
 
+	# Details zwischen Tasche und Zurück-Button, oben ausgerichtet; langer Text scrollt statt alles zu strecken
+	var detail_scroll := ScrollContainer.new()
+	detail_scroll.custom_minimum_size.x = DETAIL_WIDTH
+	detail_scroll.size_flags_vertical = SIZE_EXPAND_FILL
+	detail_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	DragScroll.attach(detail_scroll)
+	columns.add_child(detail_scroll)
 	var detail_panel := PanelContainer.new()
-	detail_panel.custom_minimum_size.x = DETAIL_WIDTH
+	detail_panel.size_flags_horizontal = SIZE_EXPAND_FILL
+	detail_panel.size_flags_vertical = SIZE_EXPAND_FILL
 	_detail = VBoxContainer.new()
 	_detail.add_theme_constant_override("separation", 10)
 	IronPlate.frame(detail_panel, _detail, 16, 14)
-	var right := VBoxContainer.new()
-	right.add_theme_constant_override("separation", 12)
-	var back := RewardDialog.icon_button(BACK_ICON)
+	detail_scroll.add_child(detail_panel)
+
+	# Zurück zeigt nach rechts: der Dialog schließt zur Karte hin
+	var back := RewardDialog.icon_button(_mirrored(BACK_ICON))
 	back.tooltip_text = tr("MONSTER_INFO_BACK")
-	back.size_flags_horizontal = SIZE_SHRINK_END
+	back.size_flags_vertical = SIZE_SHRINK_BEGIN
 	back.pressed.connect(queue_free)
-	right.add_child(back)
-	detail_panel.size_flags_vertical = SIZE_EXPAND_FILL
-	right.add_child(detail_panel)
-	columns.add_child(right)
+	columns.add_child(back)
 
 	Items.normalize_bag()
 	Items.items_changed.connect(_rebuild)
@@ -164,8 +172,11 @@ func _rebuild() -> void:
 		child.get_parent().remove_child(child)
 		child.queue_free()
 	_left.add_child(_heading(tr("INVENTORY_TEAM")))
-	for mon: Monster in State.mons:
-		_left.add_child(_mon_entry(mon))
+	# jedes Monster bekommt die Hälfte der Höhe, auch wenn nur eins im Team ist
+	for i in maxi(State.mons.size(), TEAM_ROWS):
+		var entry: Control = _mon_entry(State.mons[i]) if i < State.mons.size() else Control.new()
+		entry.size_flags_vertical = SIZE_EXPAND_FILL
+		_left.add_child(entry)
 	for i in State.bag.size():
 		var slot := InvSlot.new(self, {"mon": null, "index": i})
 		_grid.add_child(slot)
@@ -174,16 +185,19 @@ func _rebuild() -> void:
 		_selected = {}
 	_show_selection()
 
-## Monster mit Bild und Namen, rechts daneben seine Plätze untereinander
+## Monster mit Bild und Namen (ohne eigenen Rahmen), das Bild füllt die Höhe der Zeile,
+## rechts dicht daneben seine Plätze untereinander
 func _mon_entry(mon: Monster) -> Control:
-	var panel := PanelContainer.new()
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 12)
-	IronPlate.frame(panel, row, 10, 8)
+	row.add_theme_constant_override("separation", 8)
 	var info := VBoxContainer.new()
 	info.alignment = BoxContainer.ALIGNMENT_CENTER
-	var portrait := RewardDialog.mon_icon(mon)
+	var portrait: TextureRect = RewardDialog.mon_icon(mon)
 	portrait.custom_minimum_size = PORTRAIT_SIZE
+	# Breite folgt der Höhe, das Bild wächst mit der Zeile
+	portrait.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	portrait.size_flags_vertical = SIZE_EXPAND_FILL
 	info.add_child(portrait)
 	var name_label := Label.new()
 	name_label.text = Helper.mon_battle_name(mon)
@@ -193,13 +207,20 @@ func _mon_entry(mon: Monster) -> Control:
 	info.add_child(name_label)
 	row.add_child(info)
 	var slots := VBoxContainer.new()
+	slots.alignment = BoxContainer.ALIGNMENT_CENTER
 	slots.add_theme_constant_override("separation", 8)
 	for i in Items.SLOTS_PER_MON:
 		var slot := InvSlot.new(self, {"mon": mon, "index": i})
 		slots.add_child(slot)
 		_slots.append(slot)
 	row.add_child(slots)
-	return panel
+	return row
+
+## Spiegelbild eines Symbols (Zurück-Pfeil nach rechts)
+static func _mirrored(texture: Texture2D) -> Texture2D:
+	var image := texture.get_image()
+	image.flip_x()
+	return ImageTexture.create_from_image(image)
 
 ## Goldener Rahmen am angeklickten Platz, rechts seine Details
 func _show_selection() -> void:
