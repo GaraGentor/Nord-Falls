@@ -232,7 +232,8 @@ const UI = {
 		onlyBase: "Nur Grund-Elemente", allCombos: "Alle Kombinationen", catchHint: "bei 0 HP und gleicher Stufe",
 		bossRelics: "Boss-Relikte", relicsPerBattle: "Relikte pro Boss-Kampf", bossRarity: "Seltenheit der Bosse (Gewicht, in Klammern normales Feld)", rarityUnlocks: "Freischaltung (wild und Boss)", fromBiome: "ab Biom", needs: "braucht", mythicBossChance: "Chance auf einen mythischen Boss pro Boss-Kampf",
 		starter: "Start-Monster", onlyStarters: "Nur Start-Monster", noStarters: "Ohne Start-Monster", close: "Schließen",
-		clickHint: "Klick auf ein Monster zeigt alle Details.", weakTo: "Verwundbar gegen", resists: "Resistent gegen",
+		clickHint: "Klick auf ein Monster zeigt alle Details.", weakTo: "Verwundbar gegen (Magie)", resists: "Resistent gegen (Magie)",
+		elementMagicOnly: "Der Element-Faktor gilt nur für magische Angriffe (auch kritische). Physische Angriffe treffen immer neutral (×1), egal welches Element sie haben.",
 		dormantHint: "Schlummert: {power} % Stärke, dem Monster fehlt ein Element", effect: "Effekt",
 		rarityBonusHint: "Standard-Fähigkeiten werden pro Seltenheitsstufe über Gewöhnlich etwas stärker", perRarity: "pro Seltenheit",
 		elementEffects: "Element-Effekte", noEffect: "Kein Zusatzeffekt (Grundelement)",
@@ -248,12 +249,12 @@ const UI = {
 		unused: "Unbenutzt", usage: "Nutzung", usedOnly: "von Arten benutzt", unusedOnly: "von keiner Art benutzt",
 		unusedTotal: "{n} von {total} Skills hat keine Art (Start, Opfern, Meilenstein, Kopfgeld)",
 		perList: "Nach Quelle", perElement: "Nach Element und Kategorie", reachable: "trotzdem erreichbar über",
-		cats: { physical: "Angriff physisch", magic: "Angriff magisch", shield: "Rüstung", s_shield: "Magie-Schild", buff: "Buff", passive: "Passiv", area: "Fläche" },
+		cats: { physical: "Angriff physisch", magic: "Angriff magisch", shield: "Schild", buff: "Buff", passive: "Passiv", area: "Fläche" },
 		leads: {
 			unused: "Alle Skills, die <b>keine Monster-Art</b> als Start-Skill, Ei-Attacke, Meilenstein oder Kopfgeld hat. Pool-Skills können trotzdem bei wilden Monstern oder beim Trainer auftauchen (steht dahinter), Entwürfe (<code>Skills.draft_skills</code>) tauchen nirgends auf.",
 			monsters: "Alle Monster-Arten aus <code>Monmap.mons</code> mit ihren Ei-Attacken und wie man sie freischaltet.",
-			skills: "Alle Skills aus <code>Skills</code>, Regeln in <code>skill_regeln.txt</code>. Ein Monster kann einen Skill spielen, sobald es eins seiner Elemente hat; fehlen Elemente, schlummert er (schwächer, ohne Element-Effekt). Unter der Quelle steht, ob Trainer oder wilde Monster ihn haben. Spalten sind sortierbar.",
-			elements: "Element-Kreis und alle Kombinationen aus <code>ColorMap</code>. Jedes Skill-Element wird gegen jedes Ziel-Element verglichen; Kombi-Monster erben alle Schwächen und Resistenzen.",
+			skills: "Alle Skills aus <code>Skills</code>, Regeln in <code>skill_regeln.txt</code>. Ein Monster kann einen Skill spielen, sobald es eins seiner Elemente hat; fehlen Elemente, schlummert er (schwächer, ohne Element-Effekt). Unter der Quelle steht, ob Trainer oder wilde Monster ihn haben. Es gibt nur eine Art Schild: Er blockt physische und magische Angriffe. Spalten sind sortierbar.",
+			elements: "Element-Kreis und alle Kombinationen aus <code>ColorMap</code>. Jedes Skill-Element wird gegen jedes Ziel-Element verglichen; Kombi-Monster erben alle Schwächen und Resistenzen. Der Element-Faktor gilt nur für magische Angriffe, physische treffen immer neutral.",
 			gems: "Trophäen erhöhen einen Wert eines eigenen Monsters um feste Punkte für den restlichen Run.",
 			relics: "Relikte sind passive Run-Boni. Es gibt sie zur Auswahl in der Kiste nach Biom-Bossen und im Laden, unabhängig von ihrer Seltenheit.",
 			bossRelics: "Boss-Relikte aus <code>BossRelics.RELICS</code> gehören zum Boss-Kampf, nicht zu einem Boss: Jeder Boss-Kampf würfelt sie einmal, und sie stärken alle Gegner gleich. Ist der letzte Gegner besiegt oder gefangen, zerbrechen sie; ein gefangener Boss behält nur Werte, Fähigkeiten und Trophäen.",
@@ -279,7 +280,8 @@ const UI = {
 		onlyBase: "Base elements only", allCombos: "All combinations", catchHint: "at 0 HP and same level",
 		bossRelics: "Boss relics", relicsPerBattle: "Relics per boss battle", bossRarity: "Boss rarity (weight, normal node in brackets)", rarityUnlocks: "Unlocks (wild and boss)", fromBiome: "from biome", needs: "needs", mythicBossChance: "Chance for one mythic boss per boss battle",
 		starter: "Starter", onlyStarters: "Starters only", noStarters: "No starters", close: "Close",
-		clickHint: "Click a monster to see all details.", weakTo: "Weak to", resists: "Resists",
+		clickHint: "Click a monster to see all details.", weakTo: "Weak to (magic)", resists: "Resists (magic)",
+		elementMagicOnly: "The element multiplier only applies to magic attacks (critical hits included). Physical attacks always hit neutral (×1), whatever their element.",
 		dormantHint: "Dormant: {power} % strength, the monster lacks an element", effect: "Effect",
 		rarityBonusHint: "Standard skills get slightly stronger with each rarity step above Common", perRarity: "per rarity",
 		elementEffects: "Element effects", noEffect: "No extra effect (base element)",
@@ -295,12 +297,12 @@ const UI = {
 		unused: "Unused", usage: "Usage", usedOnly: "used by species", unusedOnly: "used by no species",
 		unusedTotal: "{n} of {total} skills belong to no species (starter, sacrifice, milestone, bounty)",
 		perList: "By source", perElement: "By element and category", reachable: "still reachable via",
-		cats: { physical: "Physical attack", magic: "Magic attack", shield: "Armor", s_shield: "Magic shield", buff: "Buff", passive: "Passive", area: "Area" },
+		cats: { physical: "Physical attack", magic: "Magic attack", shield: "Shield", buff: "Buff", passive: "Passive", area: "Area" },
 		leads: {
 			unused: "All skills that <b>no monster species</b> has as starter skill, egg move, milestone or bounty. Pool skills can still show up on wild monsters or at the trainer (noted behind them), drafts (<code>Skills.draft_skills</code>) appear nowhere.",
 			monsters: "All monster species from <code>Monmap.mons</code> with their egg moves and how to unlock them.",
-			skills: "All skills from <code>Skills</code>, rules in <code>skill_regeln.txt</code>. A monster can play a skill once it has one of its elements; missing elements make it dormant (weaker, no element effect). Below the source: whether the trainer or wild monsters have it. Columns are sortable.",
-			elements: "Element cycle and all combinations from <code>ColorMap</code>. Every skill element is compared with every target element; combined monsters inherit all weaknesses and resistances.",
+			skills: "All skills from <code>Skills</code>, rules in <code>skill_regeln.txt</code>. A monster can play a skill once it has one of its elements; missing elements make it dormant (weaker, no element effect). Below the source: whether the trainer or wild monsters have it. There is only one kind of shield: it blocks physical and magic attacks. Columns are sortable.",
+			elements: "Element cycle and all combinations from <code>ColorMap</code>. Every skill element is compared with every target element; combined monsters inherit all weaknesses and resistances. The element multiplier only applies to magic attacks, physical ones always hit neutral.",
 			gems: "Trophies raise one stat of your own monster by fixed points for the rest of the run.",
 			relics: "Relics are passive run bonuses. You can pick them from the chest after biome bosses and buy them in the shop, regardless of rarity.",
 			bossRelics: "Boss relics from <code>BossRelics.RELICS</code> belong to the boss battle, not to a boss: each boss battle rolls them once and they empower all enemies alike. When the last enemy is defeated or caught they break; a caught boss keeps only its stats, skills and trophies.",
@@ -414,7 +416,7 @@ const tierStars = (t) => "◆".repeat(t || 1) + `<span class="muted">${"◇".rep
 const dmgType = (s) => (s.damage_type === "ABILITY" ? ui("ability") : ui("physical"));
 // Wie Helper.skill_description: Haupttext mit {stat}/{element}, darunter die Extras (Skills.extras_text) und der
 // Element-Effekt der Karte (ElementEffects.skill_effect_text, mit effect_chance / effect_power der Karte)
-const STAT_KEYS = { hp: "STAT_HP", atk: "STAT_ATK", def: "STAT_DEF", s_atk: "STAT_SPA", s_def: "STAT_SPD", speed: "STAT_SPE" };
+const STAT_KEYS = { hp: "STAT_HP", atk: "STAT_ATK", def: "STAT_DEF", s_atk: "STAT_SPA", speed: "STAT_SPE" };
 const statLabel = (stat) => (STAT_KEYS[stat] ? tr(STAT_KEYS[stat]).replace(":", "") : stat || "");
 function skillEffectText(s) {
 	const key = DATA.elements.effectKeys?.[s.nature];
@@ -425,8 +427,8 @@ function skillEffectText(s) {
 	return effectText(key, power, chance);
 }
 // Stärke wie Skills.power_text ohne Monster: fester Wert + Anteil x Wert ("5 + 0.2×SAN")
-// Kreuz-Schilde (scaling_stat) rechnen mit dem anderen Verteidigungswert, wie Skills.shield_stat
-const SCALING_STAT = (s) => s.effect === "shield" ? (s.scaling_stat || (s.damage_type === "ABILITY" ? "s_def" : "def")) : (s.damage_type === "ABILITY" ? "s_atk" : "atk");
+// Schilde wachsen mit der Verteidigung, Angriffe mit Angriff bzw. Sp. Angriff (wie Skills.shield_amount / calc_damage)
+const SCALING_STAT = (s) => s.effect === "shield" ? "def" : (s.damage_type === "ABILITY" ? "s_atk" : "atk");
 const powerLabel = (s) => s.scaling != null ? `${fmtNum(s.value)} + ${fmtNum(s.scaling)}×${statLabel(SCALING_STAT(s))}` : fmtNum(s.value ?? s.damage ?? 0);
 function skillDesc(s) {
 	const lines = [tr(s.description, {
@@ -498,7 +500,7 @@ function header(key) {
 
 // Bevorzugte Werteverteilung der Art, Spielwerte heißen im Spiel STAT_*
 function statProfile(m) {
-	const labels = { hp: "HP", atk: "ATK", def: "DEF", s_atk: "SPA", s_def: "SPD", speed: "SPE" };
+	const labels = { hp: "HP", atk: "ATK", def: "DEF", s_atk: "SPA", speed: "SPE" };
 	if (!m.preferred_stats) return "";
 	return `<div class="skill-group"><h4>${ui("preferredStats")}</h4><div class="stat-row" title="${esc(ui("preferredHint"))}">${
 		Object.entries(labels).map(([key, label]) => `<div><span>${esc(tr("STAT_" + label).replace(":", ""))}</span>${m.preferred_stats[key] ?? "–"} %</div>`).join("")}</div></div>`;
@@ -556,7 +558,7 @@ function skillCard(name, m, how) {
 
 function renderMonDetail(m) {
 	const catchBase = DATA.catch.rarityBase?.[m.rarity];
-	const labels = { hp: "HP", atk: "ATK", def: "DEF", s_atk: "SPA", s_def: "SPD", speed: "SPE" };
+	const labels = { hp: "HP", atk: "ATK", def: "DEF", s_atk: "SPA", speed: "SPE" };
 	const maxPref = Math.max(...Object.values(m.preferred_stats || { x: 1 }));
 	const bars = m.preferred_stats ? `<div class="skill-group"><h4 title="${esc(ui("preferredHint"))}">${ui("preferredStats")}</h4><div class="bars">${
 		Object.entries(labels).map(([key, label]) => {
@@ -739,11 +741,11 @@ function skillUsers(name) {
 		...Object.values(m.milestone_egg_skills || {}), ...Object.values(m.bounty_egg_skills || {})].includes(name));
 }
 
-// Kategorie für die Übersicht (wie Skills.egg_skill_category, Schilde getrennt nach Rüstung / Magie-Schild)
+// Kategorie für die Übersicht (wie Skills.egg_skill_category, nur eine Art Schild)
 function skillCategory(s) {
 	if (s.effect === "passive") return "passive";
 	if (s.effect === "buff" || s.effect === "boon") return "buff";
-	if (s.effect === "shield") return s.damage_type === "ABILITY" ? "s_shield" : "shield";
+	if (s.effect === "shield") return "shield";
 	if (s.target === "TEAM_ENEMY") return "area";
 	return s.damage_type === "ABILITY" ? "magic" : "physical";
 }
@@ -780,7 +782,8 @@ function renderElements() {
 	while (cur && !cycle.includes(cur)) { cycle.push(cur); cur = strong[cur]; }
 	const cycleHtml = `<div class="card wide"><h3>${ui("strongVs")}</h3><div class="cycle" style="margin-top:8px">${
 		cycle.map(chip).join(" <span class='muted'>→</span> ")} <span class="muted">→</span> ${chip(cycle[0])}</div>
-		<p class="small muted" style="margin:8px 0 0">+1 → ×${1 + DATA.elements.elementBonus}, +2 → ×${1 + 2 * DATA.elements.elementBonus} · −1 → ×${1 - DATA.elements.elementBonus}, −2 → ×${Math.pow(1 - DATA.elements.elementBonus, 2)}</p></div>`;
+		<p class="small muted" style="margin:8px 0 0">+1 → ×${1 + DATA.elements.elementBonus}, +2 → ×${1 + 2 * DATA.elements.elementBonus} · −1 → ×${1 - DATA.elements.elementBonus}, −2 → ×${Math.pow(1 - DATA.elements.elementBonus, 2)}</p>
+		<p class="small muted" style="margin:4px 0 0">${esc(ui("elementMagicOnly"))}</p></div>`;
 
 	const combos = DATA.elements.combos
 		.filter((c) => matches(tr(c.label), c.label, ...elementsIn(c.mask).map(elementName)))

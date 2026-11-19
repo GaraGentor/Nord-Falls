@@ -134,20 +134,11 @@ layout_mode = 2
 size_flags_horizontal = 3
 mon_slot = 2
 
-[node name="HandBackground" type="ColorRect" parent="GameWindow" unique_id=1565682947]
-layout_mode = 1
-anchors_preset = -1
-anchor_top = 0.7
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_right = 2.0
-mouse_filter = 2
-color = Color(0, 0, 0, 0.45)
-
 [node name="CardHand" parent="GameWindow" unique_id=1000149303 instance=ExtResource("14_hand")]
 layout_mode = 1
 anchors_preset = -1
-anchor_top = 0.7
+anchor_top = 1.0
+offset_top = -248.0
 offset_right = 2.0
 
 [node name="Phase" type="Control" parent="." unique_id=1459139747]

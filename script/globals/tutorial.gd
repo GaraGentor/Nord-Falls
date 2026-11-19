@@ -55,7 +55,7 @@ const SEQUENCES := {
 		{"text": "TUT_BAT_WHEEL", "target": "bat_wheel"},
 		{"text": "TUT_BAT_INTENT", "target": "bat_intent"},
 		{"text": "TUT_BAT_CARD", "target": ["bat_hand", "bat_enemies"], "wait": "signal:call_skill_card"},
-		# Faust = physisch, Funkeln (Diamant) = magisch, je eigener Schild; dazu Buffs und Passive
+		# Faust = physisch, Funkeln (Diamant) = magisch (nur Magie nutzt das Element), ein Schild blockt beides; dazu Buffs und Passive
 		{"text": "TUT_BAT_KINDS", "target": "bat_hand"},
 		{"text": "TUT_BAT_BUFFS", "target": "bat_hand"},
 		{"text": "TUT_BAT_ELEMENTS"},

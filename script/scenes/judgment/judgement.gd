@@ -31,7 +31,7 @@ const CATCH_COLOR := Color(0.36, 0.82, 0.4)
 const SLOT_COLORS := [Color(0.7, 0.45, 0.96), Color(0.25, 0.85, 0.8)]
 const STAT_KEYS := Growth.ATTRS
 const STAT_LABELS := GrowthRadar.STAT_LABELS
-## Breite einer Werte-Zelle (Symbol und Zahl): passen alle sechs nebeneinander, stehen sie in einer Zeile
+## Breite einer Werte-Zelle (Symbol und Zahl): passen alle fünf nebeneinander, stehen sie in einer Zeile
 const STAT_CELL_WIDTH := 46.0
 ## Höhe des Monsterbilds links (das Netzdiagramm braucht darunter Platz), im Team füllt das Bild den Platz
 const CATCH_PICTURE_HEIGHT := 130.0
@@ -660,7 +660,7 @@ func _stats_box(mon: Monster, color: Color) -> PanelContainer:
 	grid.add_theme_constant_override("v_separation", 3)
 	grid.mouse_filter = MOUSE_FILTER_IGNORE
 	box.add_child(grid)
-	var values := {"hp": mon.hp(), "atk": mon.attack(), "def": mon.defense(), "s_atk": mon.s_attack(), "s_def": mon.s_defense(), "speed": mon.speed()}
+	var values := {"hp": mon.hp(), "atk": mon.attack(), "def": mon.defense(), "s_atk": mon.s_attack(), "speed": mon.speed()}
 	for key in STAT_KEYS:
 		var cell := HBoxContainer.new()
 		cell.add_theme_constant_override("separation", 3)

@@ -1,12 +1,12 @@
 class_name GrowthRadar
 extends Control
 
-## Netzdiagramm im Judgement-Screen: sechs Achsen (KP, Angriff, Verteidigung, Sp. Angriff, Sp. Verteidigung, Initiative),
+## Netzdiagramm im Judgement-Screen: fünf Achsen (KP, Angriff, Verteidigung, Sp. Angriff, Initiative),
 ## jedes Monster als Fläche in seiner Farbe (wie der Rahmen seiner Werte). Gezeigt wird der Zuwachs pro Stufe,
 ## alle Flächen teilen sich einen Maßstab, damit sie sich vergleichen lassen.
 
 const STATS := Growth.ATTRS
-const STAT_LABELS := {"hp": "STAT_HP", "atk": "STAT_ATK", "def": "STAT_DEF", "s_atk": "STAT_SPA", "s_def": "STAT_SPD", "speed": "STAT_SPE"}
+const STAT_LABELS := {"hp": "STAT_HP", "atk": "STAT_ATK", "def": "STAT_DEF", "s_atk": "STAT_SPA", "speed": "STAT_SPE"}
 const RINGS := 4
 const GRID_COLOR := Color(0.86, 0.83, 0.72, 0.18)
 const AXIS_COLOR := Color(0.86, 0.83, 0.72, 0.3)

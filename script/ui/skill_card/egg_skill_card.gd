@@ -2,7 +2,7 @@ class_name EggSkillCard
 extends PanelContainer
 
 ## Große Karte einer Ei-Attacke für die Ei-Auswahl, aufgebaut wie die Spielkarte im Kampf.
-## Kosten, Sterne, Abklingzeit, Name und unten Gesamtwert und Element stehen fest (SkillCardFace). Nur die Beschreibung darunter scrollt:
+## Kosten schräg auf der Ecke, der Name und unten Wert mit Art-Symbol, Sterne, Abklingzeit und Element stehen fest (SkillCardFace). Nur die Beschreibung darunter scrollt:
 ## von selbst, wenn sie nicht passt, und per Mausrad / Leiste auch von Hand. Nach eigenem Scrollen
 ## setzt das automatische Scrollen erst nach einer Weile Ruhe wieder ein.
 ## Gesperrte Attacken liegen unter zwei gekreuzten Ketten, mittig steht, wie man sie freischaltet.
@@ -16,6 +16,7 @@ const GOLD := SkillCardPaper.GOLD
 
 var _scroll: AutoScrollContainer
 var _paper: SkillCardPaper
+var _bottom_row: SkillCardFace.BottomRow
 var _name_label: Label
 
 ## locked_label/locked_hint: gesperrte Attacke, Texte mittig auf den Ketten (leer = nicht gesperrt)
@@ -46,14 +47,14 @@ func _build(skill: Dictionary, mon: Monster, locked_label: String, locked_hint: 
 	lines.add_theme_constant_override("separation", 4)
 	margin.add_child(lines)
 
-	# oben: Kosten, Sterne (Stufe) und Abklingzeit
+	# oben: Kosten schräg auf der Ecke, der Name daneben
 	var top_row := SkillCardFace.TopRow.new()
 	lines.add_child(top_row)
 	top_row.show_skill(skill)
 
 	var name_label := _label(tr(skill.name), 18, SkillCardPaper.readable_color(Helper.color_by_type(skill.nature)))
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	top_row.set_title(name_label)
 	lines.add_child(name_label)
 	# höchstens zwei Zeilen, lange Namen werden kleiner
 	SkillCardFace.fit_title(name_label, 18)
@@ -91,10 +92,12 @@ func _build(skill: Dictionary, mon: Monster, locked_label: String, locked_hint: 
 		missing.custom_minimum_size.x = 1
 		lines.add_child(missing)
 
-	# unten: Icon mit Gesamtwert und Element
+	# unten: Wert und Art-Symbol (fett, etwas größer als der Name), Sterne (Stufe), Abklingzeit und Element
 	var bottom_row := SkillCardFace.BottomRow.new()
 	lines.add_child(bottom_row)
+	bottom_row.set_value_size(18)
 	bottom_row.show_skill(skill, mon)
+	_bottom_row = bottom_row
 
 	if locked:
 		_scroll.set_process(false)
@@ -140,6 +143,7 @@ func _build_lock(locked_label: String, locked_hint: String) -> Control:
 ## Kleinerer Name für schmale Karten (z. B. Ei-Auswahl), lange Namen werden weiterhin noch kleiner
 func set_title_size(font_size: int) -> void:
 	SkillCardFace.fit_title(_name_label, font_size)
+	_bottom_row.set_value_size(font_size)
 
 ## Angeklickte Karte leuchtet am Rahmen
 func set_selected(selected: bool) -> void:

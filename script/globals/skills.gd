@@ -5,18 +5,18 @@ func deal_damage(props):
 	props.mon._last_hit_by = props.from
 	var full_damage = calc_damage(props.from, props.mon, props.skill)
 	reveal_stats_by_hit(props.from, props.mon, props.skill)
-	# Schilde fangen den Schaden zuerst ab, Magma und Schlamm gehen mit etwas Glück durch den passenden Schild
+	# der Schild fängt den Schaden zuerst ab (physisch und magisch), Magma und Schlamm gehen mit etwas Glück durch
 	var absorbed: float = full_damage
 	if ElementEffects.rolls_pierce(props.skill, props.from):
-		ElementEffects.show_pierce(props.mon, is_physical(props.skill))
+		ElementEffects.show_pierce(props.mon)
 	else:
-		absorbed = props.mon.absorb_damage(full_damage, is_physical(props.skill))
+		absorbed = props.mon.absorb_damage(full_damage)
 	# Übungskampf: niemand geht K.O.
 	var damage = Tutorial.cap_damage(props.mon, absorbed)
 	# für Element-Effekte, die vom verursachten Schaden abhängen (Eis), siehe battle.gd _use_skill
 	props.dealt = props.get("dealt", 0.0) + damage
 	props.blocked = props.get("blocked", 0.0) + full_damage - absorbed
-	var multiplier = element_multiplier(props.skill.nature, props.mon._type)
+	var multiplier = skill_element_multiplier(props.skill, props.mon._type)
 	print("lose:" + str(props.skill.value) + ":" + str(damage) + " (Element x" + str(multiplier) + ")")
 	Events.monster_hit_with_element.emit(props.mon, damage, multiplier, full_damage - damage)
 	var kills: bool = props.mon.is_alive() and roundi(props.mon.hp() - props.mon._lost_hp - damage) <= 0
@@ -32,15 +32,16 @@ func deal_damage(props):
 # ─────────────────────────
 # Schadensformel
 # Jeder Skill hat einen festen Schaden (value) und bekommt einen Anteil (scaling) des eigenen Angriffs obendrauf:
-# physisch vom Angriff, magisch vom Sp. Angriff. Verteidigung und Sp. Verteidigung des Ziels zählen nicht,
-# nur Schilde fangen Schaden ab. Danach wirkt der Element-Faktor.
+# physisch vom Angriff, magisch vom Sp. Angriff. Die Verteidigung des Ziels zählt nicht, nur Schilde fangen Schaden ab.
+# Danach wirkt der Element-Faktor, aber nur bei magischen Angriffen (skill_element_multiplier): physische Angriffe
+# treffen immer neutral, egal welches Element sie haben.
 
-# Treffer decken Werte auf: trifft man den Gegner, wird seine (Sp.) Verteidigung aufgedeckt,
+# Treffer decken Werte auf: trifft man den Gegner, wird seine Verteidigung aufgedeckt,
 # trifft er einen selbst, sein (Sp.) Angriff.
 func reveal_stats_by_hit(from: Monster, to: Monster, skill: Dictionary) -> void:
 	var physical = is_physical(skill)
 	if State.mons.has(from) and not State.mons.has(to):
-		State.reveal_mon_stat(to._name, "def" if physical else "s_def")
+		State.reveal_mon_stat(to._name, "def")
 	elif State.mons.has(to) and not State.mons.has(from):
 		State.reveal_mon_stat(from._name, "atk" if physical else "s_atk")
 
@@ -53,8 +54,8 @@ func calc_damage(from: Monster, to: Monster, skill: Dictionary) -> float:
 	var physical = is_physical(skill)
 	var atk: float = from.attack() if physical else from.s_attack()
 	# Passive, Aufladungen und Extras (Jäger, Ausnutzen) wirken als Faktor auf den ganzen Schaden,
-	# kritische Treffer (Fokusflamme, Überladung) multiplizieren obendrauf
-	var factor := damage_factor(from, to, skill) * element_multiplier(skill.nature, to._type) * crit_factor(from)
+	# kritische Treffer (Fokusflamme, Überladung) multiplizieren obendrauf. Der Element-Faktor gilt nur für Magie.
+	var factor := damage_factor(from, to, skill) * skill_element_multiplier(skill, to._type) * crit_factor(from)
 	return stat_damage(atk, skill.value, skill.get("scaling", 0.0), factor)
 
 # ─────────────────────────
@@ -163,27 +164,27 @@ func element_multiplier(skill_nature: int, target_type: int) -> float:
 		return 1.0 + ELEMENT_BONUS * score + bonus
 	return pow(1.0 - ELEMENT_BONUS, -score) + bonus
 
+## Element-Faktor eines Angriffs auf ein Ziel: nur magische Angriffe nutzen den Element-Kreis (auch bei kritischen
+## Treffern), physische treffen immer neutral (x1), egal welches Element sie haben.
+func skill_element_multiplier(skill: Dictionary, target_type: int) -> float:
+	if is_physical(skill):
+		return 1.0
+	return element_multiplier(skill.get("nature", 0), target_type)
+
 # ─────────────────────────
 # Schilde halten bis zum nächsten eigenen Zug des geschützten Monsters oder bis sie aufgebraucht sind (siehe Monster.start_turn, Monster.absorb_damage).
-# Physische Schilde fangen nur physischen Schaden ab, magische nur magischen.
+# Es gibt nur eine Art Schild: er blockt physische und magische Angriffe (außer Karten, die ausdrücklich durchgehen, z. B. Magma).
 
-# Rüstung: fester Wert + scaling x Verteidigung des Wirkers, Magie-Schild: fester Wert + scaling x seine Sp. Verteidigung.
+# Schild: fester Wert + scaling x Verteidigung des Wirkers.
 func add_shield(props):
-	props.mon.add_shield(shield_amount(props.from, props.skill), is_physical(props.skill))
+	props.mon.add_shield(shield_amount(props.from, props.skill))
 
 ## Schildstärke, die der Wirker mit dieser Karte gibt (auch für Karten, Absichten und KI):
-## fester Wert + scaling x seine (Sp.) Verteidigung, Schild-Passive des Wirkers kommen obendrauf.
-## Kreuz-Schilde (Feld "scaling_stat") rechnen mit dem anderen Wert: Eiserner Wille = Magie-Schild aus der Verteidigung.
+## fester Wert + scaling x seine Verteidigung, Schild-Passive des Wirkers kommen obendrauf.
 func shield_amount(from: Monster, skill: Dictionary) -> float:
 	var used := effective_skill(from, skill)
-	var physical := is_physical(used)
-	var def: float = from.defense() if shield_stat(used) == "def" else from.s_defense()
-	var bonus := own_passive_sum(from, "shield_power" if physical else "s_shield_power") / 100.0
-	return ceilf((used.value + used.get("scaling", 0.0) * def) * (1.0 + bonus))
-
-## Wert, mit dem ein Schild wächst: "def" bei Rüstung, "s_def" bei Magie-Schild, außer die Karte sagt es anders (scaling_stat)
-func shield_stat(skill: Dictionary) -> String:
-	return skill.get("scaling_stat", "def" if is_physical(skill) else "s_def")
+	var bonus := own_passive_sum(from, "shield_power") / 100.0
+	return ceilf((used.value + used.get("scaling", 0.0) * from.defense()) * (1.0 + bonus))
 # Buff: value % mehr auf buff_stat für buff_turns eigene Züge des Ziels.
 # +1, weil Buffs zu Beginn jedes eigenen Zuges herunterzählen (wie bei den Element-Effekten).
 func add_buff(props):
@@ -231,11 +232,10 @@ func action_hits(action: Dictionary, mon: Monster) -> bool:
 	return targets_team(action.skill) and action.target != null and State.mons.has(action.target) == State.mons.has(mon)
 
 # Geplante Angriffe der attackers auf target, einer pro Eintrag:
-# {"physical": bool, "full": ohne Schild, "after": nach Schild}. Physisch und magisch zählen getrennt gegen ihren Schild,
-# und jeder Treffer verbraucht den Schild, wie Monster.absorb_damage es im Kampf tut.
+# {"physical": bool, "full": ohne Schild, "after": nach Schild}. Der Schild blockt physische und magische Treffer,
+# und jeder Treffer verbraucht ihn, wie Monster.absorb_damage es im Kampf tut.
 func incoming_hits(target: Monster, attackers: Array) -> Array:
 	var shield = target._shield
-	var s_shield = target._s_shield
 	var hits = []
 	for attacker: Monster in attackers:
 		if not attacker.is_alive():
@@ -248,11 +248,8 @@ func incoming_hits(target: Monster, attackers: Array) -> Array:
 			# Aufladungen gelten nur für den ersten passenden Angriff, die Vorschau rechnet sie bei jedem mit (kleine Ungenauigkeit)
 			# gleiche Rechnung wie Monster.absorb_damage. Dass Magma oder Schlamm durch den Schild gehen, ist Zufall
 			# und steht nicht in der Vorschau.
-			var blocked = minf(shield if physical else s_shield, full)
-			if physical:
-				shield -= blocked
-			else:
-				s_shield -= blocked
+			var blocked = minf(shield, full)
+			shield -= blocked
 			hits.append({"physical": physical, "full": full, "after": full - blocked})
 	return hits
 
@@ -263,10 +260,11 @@ func incoming_hits(target: Monster, attackers: Array) -> Array:
 #                     im Team (beim letzten das erste), "team" = jedes Monster im Team (auch es selbst)
 #   "element_power":  eigene Angriffe mit passive_element machen +value % Schaden
 #   "magic_power":    eigene magische Angriffe machen +value % Schaden
-#   "shield_power":   eigene physische Schilde +value %,  "s_shield_power": eigene magische Schilde +value %
+#   "shield_power":   eigene Schilde +value %
 #   "effect_chance":  eigene Element-Effekte lösen value % öfter aus (Karten mit Auslösechance, Vulkan)
 #   "leech":          heilt sich um value % des verursachten Schadens
 #   "kill_heal":      heilt sich um value % seiner max. KP, wenn es einen Gegner besiegt
+#   "regen":          heilt sich zu Beginn jedes eigenen Zuges um value % seiner max. KP (apply_regen)
 #   "shield_cost":    eigene Schilde ab SHIELD_COST_DISCOUNT_FROM Aktionen kosten value Aktionen weniger (skill_cost)
 #   "taunt":          zieht dauerhaft die Einzelangriffe der Gegner auf sich (taunters)
 
@@ -375,6 +373,12 @@ func apply_cast_extras(from: Monster, skill: Dictionary, dealt: float) -> void:
 	if leech > 0.0 and dealt > 0.0:
 		heal(from, dealt * leech / 100.0)
 
+## Passiv "regen" (Wasser): zu Beginn jedes eigenen Zuges value % der max. KP zurück (battle.gd, nach den Boss-Relikten)
+func apply_regen(mon: Monster) -> void:
+	var regen := own_passive_sum(mon, "regen")
+	if regen > 0.0 and mon.is_alive():
+		heal(mon, mon.hp() * regen / 100.0)
+
 ## Heilt bis zu den vollen KP und zeigt "+N" (gleiche Anzeige wie die Heil-Relikte)
 func heal(mon: Monster, amount: float) -> void:
 	if not mon.is_alive() or mon._lost_hp <= 0.0:
@@ -382,9 +386,9 @@ func heal(mon: Monster, amount: float) -> void:
 	BossRelics.heal(mon, amount)
 	Events.status_vfx.emit(mon, "heal")
 
-## Kurzname eines Werts ("ANG", "SVE", ...) für Texte
+## Kurzname eines Werts ("ANG", "VER", ...) für Texte
 const STAT_LABELS := {"hp": "STAT_HP", "atk": "STAT_ATK", "def": "STAT_DEF", "s_atk": "STAT_SPA", "fail": "STAT_FAIL",
-	"s_def": "STAT_SPD", "speed": "STAT_SPE"}
+	"speed": "STAT_SPE"}
 
 func stat_label(stat: String) -> String:
 	return tr(STAT_LABELS.get(stat, stat)).trim_suffix(":")
@@ -463,7 +467,7 @@ func is_wild_skill(skill: Dictionary) -> bool:
 func is_trainer_skill(skill: Dictionary) -> bool:
 	return skill.get("trainer", true)
 
-## Standard-Skill eines Grundelements für eine Kategorie ("physical", "magic", "shield", "s_shield"), {} wenn keiner
+## Standard-Skill eines Grundelements für eine Kategorie ("physical", "magic", "shield"), {} wenn keiner
 func standard_skill(element: int, category: String) -> Dictionary:
 	for skill in standard_skills:
 		if skill.nature == element and stat_category(skill) == category:
@@ -471,19 +475,19 @@ func standard_skill(element: int, category: String) -> Dictionary:
 	return {}
 
 ## Kategorie nach dem Wert, mit dem ein Skill rechnet: Angriff -> "physical", Sp. Angriff -> "magic",
-## Verteidigung -> "shield", Sp. Verteidigung -> "s_shield" (Buffs und Passive: "")
+## Verteidigung -> "shield" (Buffs und Passive: "")
 func stat_category(skill: Dictionary) -> String:
 	if is_damage_skill(skill):
 		return "physical" if is_physical(skill) else "magic"
 	if skill.get("effect", "") == "shield":
-		return "shield" if is_physical(skill) else "s_shield"
+		return "shield"
 	return ""
 
-## Die vier Kampfwerte eines Monsters nach Größe sortiert, als Kategorien (siehe stat_category)
-const CATEGORY_STATS := {"physical": "atk", "magic": "s_atk", "shield": "def", "s_shield": "s_def"}
+## Die drei Kampfwerte eines Monsters nach Größe sortiert, als Kategorien (siehe stat_category)
+const CATEGORY_STATS := {"physical": "atk", "magic": "s_atk", "shield": "def"}
 
 func categories_by_stat(mon: Monster) -> Array:
-	var values := {"physical": mon.attack(), "magic": mon.s_attack(), "shield": mon.defense(), "s_shield": mon.s_defense()}
+	var values := {"physical": mon.attack(), "magic": mon.s_attack(), "shield": mon.defense()}
 	var keys := values.keys()
 	keys.sort_custom(func(a, b): return values[a] > values[b])
 	return keys
@@ -743,7 +747,7 @@ const DEBUFF_ICON := preload("res://assets/ui/icons/battle/debuff.svg")
 
 ## Icon unten links auf Karten und in Tabellen. Passive, Buffs (auch Sonder-Verstärkungen) und Debuffs zeigen ihr
 ## eigenes Symbol. Sonst der Wert, mit dem die Fähigkeit rechnet, mit denselben Symbolen wie die Werte-Tabellen
-## (StatsGrid.ICONS): Schaden = Angriffswert (Faust bzw. Funken), Schild = Verteidigung (Schild bzw. Magie-Schild).
+## (StatsGrid.ICONS): Schaden = Angriffswert (Faust bzw. Funken), Schild = Verteidigung (Schild).
 func kind_icon(skill: Dictionary) -> Texture2D:
 	if is_passive(skill):
 		return PASSIVE_ICON
@@ -778,10 +782,8 @@ func affected_stat(skill: Dictionary) -> String:
 		stat = skill.get("icon_stat", "")
 	elif is_damage_skill(skill):
 		stat = "atk" if is_physical(skill) else "s_atk"
-	elif skill.get("effect", "") == "shield":
-		stat = shield_stat(skill)
 	else:
-		stat = "def" if is_physical(skill) else "s_def"
+		stat = "def"
 	return stat if StatsGrid.ICONS.has(stat) else ""
 
 ## Wert, der auf Karten und in Tabellen unter "Stärke" steht: bei Angriffen der Schaden mit neutralem Element,
@@ -798,7 +800,7 @@ func power_text(skill: Dictionary, mon: Monster) -> String:
 	if is_damage_skill(skill):
 		stat = "atk" if physical else "s_atk"
 	elif skill.get("effect", "") == "shield":
-		stat = shield_stat(skill)
+		stat = "def"
 	if stat == "" or not used.has("scaling"):
 		return Helper.format_number(value)
 	if mon == null or not _stat_visible(mon, stat):
@@ -1082,7 +1084,7 @@ func claim_bounty(defeated: Monster) -> String:
 # ═════════════════════════
 # SKILL-DATEN
 # Feste Werte: value = fester Schaden bzw. Schild, scaling = Anteil des eigenen Werts obendrauf
-# (Angriff: Ang. bzw. Sp. Ang., Schild: Vert. bzw. Sp. Vert.). Die Verteidigung des Ziels zählt beim Schaden nicht.
+# (Angriff: Ang. bzw. Sp. Ang., Schild: Vert.). Die Verteidigung des Ziels zählt beim Schaden nicht.
 # Beispiel Leichter Windstoß: 5 Schaden + 0,2 x Sp. Ang.
 
 const EARTH := Enums.MON_TYPES.EARTH
@@ -1108,8 +1110,8 @@ const ALLY := Enums.CARD_TARGETS.SINGLE_FRIEND
 # ─────────────────────────
 # Start-Skills (Ei-Attacken der Arten, siehe Monmap default_egg_skills), pro Grundelement:
 #   Leichter Stoß 5 + 0,2 (keine Abklingzeit), Leichter Schlag 8 + 0,3 (Abklingzeit 1), Nutzloser Stoß 2 + 0,2,
-#   je physisch (Ang.) und magisch (Sp. Ang.), dazu Leichter Schild 5 + 0,3 und Nutzloser Schild 2 + 0,2,
-#   je als Rüstung (Vert.) und Magie-Schild (Sp. Vert.). Alle Stufe 1, 1 Aktion.
+#   je physisch (Ang.) und magisch (Sp. Ang.), dazu Leichter Schild 5 + 0,3 und Nutzloser Schild 2 + 0,2 (Vert.).
+#   Alle Stufe 1, 1 Aktion.
 # Welche Art welche drei bekommt, hängt von ihrem höchsten Kampfwert ab (Monmap).
 var starter_skills = [
 	# Earth
@@ -1119,10 +1121,8 @@ var starter_skills = [
 	_flat_attack_skill("SKILL_EARTH_MAG_LIGHT_THRUST", EARTH, 5.0, 0.2, MAG, 0),
 	_flat_attack_skill("SKILL_EARTH_MAG_LIGHT_STRIKE", EARTH, 8.0, 0.3, MAG, 1),
 	_flat_attack_skill("SKILL_EARTH_MAG_WEAK_THRUST", EARTH, 2.0, 0.2, MAG, 0),
-	_flat_shield_skill("SKILL_EARTH_ARMOR_LIGHT", EARTH, 5.0, 0.3, PHYS, 0),
-	_flat_shield_skill("SKILL_EARTH_ARMOR_WEAK", EARTH, 2.0, 0.2, PHYS, 0),
-	_flat_shield_skill("SKILL_EARTH_WARD_LIGHT", EARTH, 5.0, 0.3, MAG, 0),
-	_flat_shield_skill("SKILL_EARTH_WARD_WEAK", EARTH, 2.0, 0.2, MAG, 0),
+	_flat_shield_skill("SKILL_EARTH_ARMOR_LIGHT", EARTH, 5.0, 0.3, 0),
+	_flat_shield_skill("SKILL_EARTH_ARMOR_WEAK", EARTH, 2.0, 0.2, 0),
 	# Fire
 	_flat_attack_skill("SKILL_FIRE_PHYS_LIGHT_THRUST", FIRE, 5.0, 0.2, PHYS, 0),
 	_flat_attack_skill("SKILL_FIRE_PHYS_LIGHT_STRIKE", FIRE, 8.0, 0.3, PHYS, 1),
@@ -1130,10 +1130,8 @@ var starter_skills = [
 	_flat_attack_skill("SKILL_FIRE_MAG_LIGHT_THRUST", FIRE, 5.0, 0.2, MAG, 0),
 	_flat_attack_skill("SKILL_FIRE_MAG_LIGHT_STRIKE", FIRE, 8.0, 0.3, MAG, 1),
 	_flat_attack_skill("SKILL_FIRE_MAG_WEAK_THRUST", FIRE, 2.0, 0.2, MAG, 0),
-	_flat_shield_skill("SKILL_FIRE_ARMOR_LIGHT", FIRE, 5.0, 0.3, PHYS, 0),
-	_flat_shield_skill("SKILL_FIRE_ARMOR_WEAK", FIRE, 2.0, 0.2, PHYS, 0),
-	_flat_shield_skill("SKILL_FIRE_WARD_LIGHT", FIRE, 5.0, 0.3, MAG, 0),
-	_flat_shield_skill("SKILL_FIRE_WARD_WEAK", FIRE, 2.0, 0.2, MAG, 0),
+	_flat_shield_skill("SKILL_FIRE_ARMOR_LIGHT", FIRE, 5.0, 0.3, 0),
+	_flat_shield_skill("SKILL_FIRE_ARMOR_WEAK", FIRE, 2.0, 0.2, 0),
 	# Water
 	_flat_attack_skill("SKILL_WATER_PHYS_LIGHT_THRUST", WATER, 5.0, 0.2, PHYS, 0),
 	_flat_attack_skill("SKILL_WATER_PHYS_LIGHT_STRIKE", WATER, 8.0, 0.3, PHYS, 1),
@@ -1141,10 +1139,8 @@ var starter_skills = [
 	_flat_attack_skill("SKILL_WATER_MAG_LIGHT_THRUST", WATER, 5.0, 0.2, MAG, 0),
 	_flat_attack_skill("SKILL_WATER_MAG_LIGHT_STRIKE", WATER, 8.0, 0.3, MAG, 1),
 	_flat_attack_skill("SKILL_WATER_MAG_WEAK_THRUST", WATER, 2.0, 0.2, MAG, 0),
-	_flat_shield_skill("SKILL_WATER_ARMOR_LIGHT", WATER, 5.0, 0.3, PHYS, 0),
-	_flat_shield_skill("SKILL_WATER_ARMOR_WEAK", WATER, 2.0, 0.2, PHYS, 0),
-	_flat_shield_skill("SKILL_WATER_WARD_LIGHT", WATER, 5.0, 0.3, MAG, 0),
-	_flat_shield_skill("SKILL_WATER_WARD_WEAK", WATER, 2.0, 0.2, MAG, 0),
+	_flat_shield_skill("SKILL_WATER_ARMOR_LIGHT", WATER, 5.0, 0.3, 0),
+	_flat_shield_skill("SKILL_WATER_ARMOR_WEAK", WATER, 2.0, 0.2, 0),
 	# Air
 	_flat_attack_skill("SKILL_AIR_PHYS_LIGHT_THRUST", AIR, 5.0, 0.2, PHYS, 0),
 	_flat_attack_skill("SKILL_AIR_PHYS_LIGHT_STRIKE", AIR, 8.0, 0.3, PHYS, 1),
@@ -1152,16 +1148,14 @@ var starter_skills = [
 	_flat_attack_skill("SKILL_AIR_MAG_LIGHT_THRUST", AIR, 5.0, 0.2, MAG, 0),
 	_flat_attack_skill("SKILL_AIR_MAG_LIGHT_STRIKE", AIR, 8.0, 0.3, MAG, 1),
 	_flat_attack_skill("SKILL_AIR_MAG_WEAK_THRUST", AIR, 2.0, 0.2, MAG, 0),
-	_flat_shield_skill("SKILL_AIR_ARMOR_LIGHT", AIR, 5.0, 0.3, PHYS, 0),
-	_flat_shield_skill("SKILL_AIR_ARMOR_WEAK", AIR, 2.0, 0.2, PHYS, 0),
-	_flat_shield_skill("SKILL_AIR_WARD_LIGHT", AIR, 5.0, 0.3, MAG, 0),
-	_flat_shield_skill("SKILL_AIR_WARD_WEAK", AIR, 2.0, 0.2, MAG, 0),
+	_flat_shield_skill("SKILL_AIR_ARMOR_LIGHT", AIR, 5.0, 0.3, 0),
+	_flat_shield_skill("SKILL_AIR_ARMOR_WEAK", AIR, 2.0, 0.2, 0),
 	# Zusätzliche Ei-Attacken der Startmonster (State.INITIAL_MONS), durch Fangen & Opfern freizuschalten
 	# (Monmap unlockable_egg_skills), physisch bzw. magisch nach dem höheren Angriffswert:
 	#   Angreifer: Kleiner Punch / Kleine [Element]kanone 5 + 0,3 (keine Abklingzeit),
 	#              Punch / [Element]kanone 12 + 0,4 (Abklingzeit 1)
 	#   Tanks:     Leichte Rückhand / Leichte [Element]kanone 8 + 0,3 (Abklingzeit 1),
-	#              Leichter Schild (Rüstung, Vert.) / Leichter [Element]schild (Magie-Schild, Sp. Vert.) 5 + 0,3
+	#              Leichter Schild (Vert.) 5 + 0,3
 	# Earth
 	_flat_attack_skill("SKILL_EARTH_PHYS_SMALL_PUNCH", EARTH, 5.0, 0.3, PHYS, 0),
 	_flat_attack_skill("SKILL_EARTH_MAG_SMALL_CANNON", EARTH, 5.0, 0.3, MAG, 0),
@@ -1169,8 +1163,7 @@ var starter_skills = [
 	_flat_attack_skill("SKILL_EARTH_MAG_CANNON", EARTH, 12.0, 0.4, MAG, 1),
 	_flat_attack_skill("SKILL_EARTH_PHYS_BACKHAND", EARTH, 8.0, 0.3, PHYS, 1),
 	_flat_attack_skill("SKILL_EARTH_MAG_LIGHT_CANNON", EARTH, 8.0, 0.3, MAG, 1),
-	_flat_shield_skill("SKILL_EARTH_ARMOR_PLAIN", EARTH, 5.0, 0.3, PHYS, 0),
-	_flat_shield_skill("SKILL_EARTH_WARD_PLAIN", EARTH, 5.0, 0.3, MAG, 0),
+	_flat_shield_skill("SKILL_EARTH_ARMOR_PLAIN", EARTH, 5.0, 0.3, 0),
 	# Fire
 	_flat_attack_skill("SKILL_FIRE_PHYS_SMALL_PUNCH", FIRE, 5.0, 0.3, PHYS, 0),
 	_flat_attack_skill("SKILL_FIRE_MAG_SMALL_CANNON", FIRE, 5.0, 0.3, MAG, 0),
@@ -1178,8 +1171,7 @@ var starter_skills = [
 	_flat_attack_skill("SKILL_FIRE_MAG_CANNON", FIRE, 12.0, 0.4, MAG, 1),
 	_flat_attack_skill("SKILL_FIRE_PHYS_BACKHAND", FIRE, 8.0, 0.3, PHYS, 1),
 	_flat_attack_skill("SKILL_FIRE_MAG_LIGHT_CANNON", FIRE, 8.0, 0.3, MAG, 1),
-	_flat_shield_skill("SKILL_FIRE_ARMOR_PLAIN", FIRE, 5.0, 0.3, PHYS, 0),
-	_flat_shield_skill("SKILL_FIRE_WARD_PLAIN", FIRE, 5.0, 0.3, MAG, 0),
+	_flat_shield_skill("SKILL_FIRE_ARMOR_PLAIN", FIRE, 5.0, 0.3, 0),
 	# Water
 	_flat_attack_skill("SKILL_WATER_PHYS_SMALL_PUNCH", WATER, 5.0, 0.3, PHYS, 0),
 	_flat_attack_skill("SKILL_WATER_MAG_SMALL_CANNON", WATER, 5.0, 0.3, MAG, 0),
@@ -1187,8 +1179,7 @@ var starter_skills = [
 	_flat_attack_skill("SKILL_WATER_MAG_CANNON", WATER, 12.0, 0.4, MAG, 1),
 	_flat_attack_skill("SKILL_WATER_PHYS_BACKHAND", WATER, 8.0, 0.3, PHYS, 1),
 	_flat_attack_skill("SKILL_WATER_MAG_LIGHT_CANNON", WATER, 8.0, 0.3, MAG, 1),
-	_flat_shield_skill("SKILL_WATER_ARMOR_PLAIN", WATER, 5.0, 0.3, PHYS, 0),
-	_flat_shield_skill("SKILL_WATER_WARD_PLAIN", WATER, 5.0, 0.3, MAG, 0),
+	_flat_shield_skill("SKILL_WATER_ARMOR_PLAIN", WATER, 5.0, 0.3, 0),
 	# Air
 	_flat_attack_skill("SKILL_AIR_PHYS_SMALL_PUNCH", AIR, 5.0, 0.3, PHYS, 0),
 	_flat_attack_skill("SKILL_AIR_MAG_SMALL_CANNON", AIR, 5.0, 0.3, MAG, 0),
@@ -1196,8 +1187,7 @@ var starter_skills = [
 	_flat_attack_skill("SKILL_AIR_MAG_CANNON", AIR, 12.0, 0.4, MAG, 1),
 	_flat_attack_skill("SKILL_AIR_PHYS_BACKHAND", AIR, 8.0, 0.3, PHYS, 1),
 	_flat_attack_skill("SKILL_AIR_MAG_LIGHT_CANNON", AIR, 8.0, 0.3, MAG, 1),
-	_flat_shield_skill("SKILL_AIR_ARMOR_PLAIN", AIR, 5.0, 0.3, PHYS, 0),
-	_flat_shield_skill("SKILL_AIR_WARD_PLAIN", AIR, 5.0, 0.3, MAG, 0),
+	_flat_shield_skill("SKILL_AIR_ARMOR_PLAIN", AIR, 5.0, 0.3, 0),
 ]
 
 # Standard-Skills: ein Trank mit neuem Grundelement bietet sie zum Lernen an (ElementGainOverlay). Vorerst leer.
@@ -1215,7 +1205,7 @@ var standard_skills = []
 # "trainer": false = nicht beim Trainer (Stufe 4, Kombi-Top), bleibt am Skill stehen.
 #
 # Werte (fester Wert + Anteil x Wert, siehe Schadensformel). Element-Charakter: Feuer physische Angriffe, Luft magische
-# Angriffe, Erde Rüstung, Wasser Magie-Schild etwas stärker ("+"): gilt pro enthaltenem Element auch in den Kombis.
+# Angriffe, Erde Schild etwas stärker ("+"): gilt pro enthaltenem Element auch in den Kombis.
 #   Grundelement   Stufe 2 (CD 1, 1 Aktion)    Angriff 12 + 0,30 (+ 13 + 0,33)   Schild 12 + 0,30 (+ 14 + 0,33)
 #                  Stufe 3 (CD 2, 1 Aktion)    Angriff 15 + 0,37 (+ 17 + 0,40)   Schild 16 + 0,37 (+ 18 + 0,40)
 #                  Stufe 3 schnell (CD 0, 1)   Angriff 12 + 0,30 (+ 13 + 0,33)   Schild 12 + 0,30 (+ 14 + 0,33)
@@ -1224,7 +1214,7 @@ var standard_skills = []
 #                  Stufe 4 Top     (CD 3, 2)   45 + 0,65 (+ 48 + 0,70)
 #   Dreier-Kombi   Stufe 3 Angriff/Schild (CD 3, 3 Aktionen)   55 + 0,75 (+ 60 + 0,80)
 #                  Stufe 4 Top     (CD 4, 3)   75 + 0,95 (+ 80 + 1,00)
-#   Leichte Kombi-Skills (je 4 pro Kombi: physisch, magisch, Rüstung, Magie-Schild), billig und oft spielbar:
+#   Leichte Kombi-Skills (je 3 pro Kombi: physisch, magisch, Schild), billig und oft spielbar:
 #   Zweier-Kombi   Stufe 2 (CD 1, 1 Aktion)    18 + 0,35 (+ 20 + 0,40)
 #   Dreier-Kombi   Stufe 3 (CD 1, 1 Aktion)    20 + 0,50 (+ 22 + 0,55)
 # Dreier-Schilde kosten 3 Aktionen: genau die verbilligt der Bollwerkmeister.
@@ -1293,38 +1283,28 @@ var egg_skills = [
 # Gemeinsamer Pool: Schilde
 var defensive_skills = [
 	# Feuer
-	_shield_skill("SKILL_FIRE_ARMOR_CINDER_PLATE", FIRE, 12.0, 0.3, PHYS, 2, 1, 1),
-	_shield_skill("SKILL_FIRE_WARD_HEAT_VEIL", FIRE, 12.0, 0.3, MAG, 2, 1, 1),
-	_shield_skill("SKILL_FIRE_ARMOR_FLAME_WALL", FIRE, 16.0, 0.37, PHYS, 3, 2, 1),
-	_shield_skill("SKILL_FIRE_WARD_PHOENIX_AURA", FIRE, 16.0, 0.37, MAG, 3, 2, 1),
+	_shield_skill("SKILL_FIRE_ARMOR_CINDER_PLATE", FIRE, 12.0, 0.3, 2, 1, 1),
+	_shield_skill("SKILL_FIRE_ARMOR_FLAME_WALL", FIRE, 16.0, 0.37, 3, 2, 1),
 	# Wasser
-	_shield_skill("SKILL_WATER_ARMOR_SHELL", WATER, 12.0, 0.3, PHYS, 2, 1, 1),
-	_shield_skill("SKILL_WATER_WARD_MIST_VEIL", WATER, 14.0, 0.33, MAG, 2, 1, 1),
-	_shield_skill("SKILL_WATER_ARMOR_CORAL_WALL", WATER, 16.0, 0.37, PHYS, 3, 2, 1),
-	_shield_skill("SKILL_WATER_WARD_TIDAL_DOME", WATER, 18.0, 0.4, MAG, 3, 2, 1),
+	_shield_skill("SKILL_WATER_ARMOR_SHELL", WATER, 12.0, 0.3, 2, 1, 1),
+	_shield_skill("SKILL_WATER_ARMOR_CORAL_WALL", WATER, 16.0, 0.37, 3, 2, 1),
 	# Erde
-	_shield_skill("SKILL_EARTH_ARMOR_STONE_SKIN", EARTH, 14.0, 0.33, PHYS, 2, 1, 1),
-	_shield_skill("SKILL_EARTH_WARD_CLAY_SEAL", EARTH, 12.0, 0.3, MAG, 2, 1, 1),
-	_shield_skill("SKILL_EARTH_ARMOR_GRANITE_BASTION_SWIFT", EARTH, 14.0, 0.33, PHYS, 3, 0, 1),
-	_shield_skill("SKILL_EARTH_ARMOR_GRANITE_BASTION", EARTH, 18.0, 0.4, PHYS, 3, 2, 1),
-	_shield_skill("SKILL_EARTH_WARD_CRYSTAL_SEAL", EARTH, 16.0, 0.37, MAG, 3, 2, 1),
+	_shield_skill("SKILL_EARTH_ARMOR_GRANITE_BASTION_SWIFT", EARTH, 14.0, 0.33, 3, 0, 1),
+	_shield_skill("SKILL_EARTH_ARMOR_STONE_SKIN", EARTH, 14.0, 0.33, 2, 1, 1),
+	_shield_skill("SKILL_EARTH_ARMOR_GRANITE_BASTION", EARTH, 18.0, 0.4, 3, 2, 1),
 	# Luft
-	_shield_skill("SKILL_AIR_ARMOR_DRAFT_GUARD", AIR, 12.0, 0.3, PHYS, 2, 1, 1),
-	_shield_skill("SKILL_AIR_WARD_BREEZE_VEIL", AIR, 12.0, 0.3, MAG, 2, 1, 1),
-	_shield_skill("SKILL_AIR_ARMOR_GALE_WALL", AIR, 16.0, 0.37, PHYS, 3, 2, 1),
-	_shield_skill("SKILL_AIR_WARD_SKY_DOME", AIR, 16.0, 0.37, MAG, 3, 2, 1),
+	_shield_skill("SKILL_AIR_ARMOR_DRAFT_GUARD", AIR, 12.0, 0.3, 2, 1, 1),
+	_shield_skill("SKILL_AIR_ARMOR_GALE_WALL", AIR, 16.0, 0.37, 3, 2, 1),
 	# Blitz
-	_shield_skill("SKILL_LIGHTNING_ARMOR_STATIC_PLATE", LIGHTNING, 25.0, 0.45, PHYS, 3, 2, 1),
+	_shield_skill("SKILL_LIGHTNING_ARMOR_STATIC_PLATE", LIGHTNING, 25.0, 0.45, 3, 2, 1),
 	# Magma
-	_shield_skill("SKILL_MAGMA_ARMOR_OBSIDIAN_PLATE", MAGMA, 28.0, 0.5, PHYS, 3, 2, 1),
+	_shield_skill("SKILL_MAGMA_ARMOR_OBSIDIAN_PLATE", MAGMA, 28.0, 0.5, 3, 2, 1),
 	# Eis
-	_shield_skill("SKILL_ICE_WARD_FROST_MIRROR", ICE, 28.0, 0.5, MAG, 3, 2, 1),
+	_shield_skill("SKILL_ICE_ARMOR_ICE_PLATE", ICE, 25.0, 0.45, 3, 2, 1),
 	# Staub
-	_shield_skill("SKILL_DUST_WARD_SAND_VEIL", DUST, 25.0, 0.45, MAG, 3, 2, 1),
-	_shield_skill("SKILL_DUST_ARMOR_DUNE_WALL", DUST, 28.0, 0.5, PHYS, 3, 2, 1),
+	_shield_skill("SKILL_DUST_ARMOR_DUNE_WALL", DUST, 28.0, 0.5, 3, 2, 1),
 	# Schlamm
-	_shield_skill("SKILL_MUD_WARD_SILT_SEAL", MUD, 28.0, 0.5, MAG, 3, 2, 1),
-	_with(_shield_skill("SKILL_MUD_ARMOR_LANDSLIDE_WALL", MUD, 48.0, 0.7, PHYS, 4, 3, 2), {"trainer": false}),
+	_with(_shield_skill("SKILL_MUD_ARMOR_LANDSLIDE_WALL", MUD, 48.0, 0.7, 4, 3, 2), {"trainer": false}),
 ]
 # Gemeinsamer Pool: Buffs und Sonder-Verstärkungen
 var buff_skills = [
@@ -1336,7 +1316,6 @@ var buff_skills = [
 	_buff_skill("SKILL_WATER_BUFF_ATK", WATER, "atk", 25.0, 2, 2, 2, 1),
 	_buff_skill("SKILL_WATER_BUFF_DEF", WATER, "def", 25.0, 2, 2, 2, 1),
 	_buff_skill("SKILL_WATER_BUFF_S_ATK", WATER, "s_atk", 25.0, 2, 2, 2, 1),
-	_buff_skill("SKILL_WATER_BUFF_S_DEF", WATER, "s_def", 25.0, 2, 2, 2, 1),
 	_boon_skill("SKILL_WATER_BOON_BLOOD_TIDE", WATER, "leech", 20.0, 1, ALLY, "hp", 3, 2, 2, "SKILL_BOON_LEECH_DESC"),
 	# Erde
 	_buff_skill("SKILL_EARTH_BUFF_ATK", EARTH, "atk", 25.0, 2, 2, 2, 1),
@@ -1351,7 +1330,7 @@ var buff_skills = [
 	_buff_skill("SKILL_AIR_BUFF_S_ATK", AIR, "s_atk", 25.0, 2, 2, 2, 1),
 	_boon_skill("SKILL_AIR_BOON_TAILWIND", AIR, "extra_moves", 1.0, 3, ALLY, "speed", 3, 2, 2, "SKILL_BOON_EXTRA_MOVES_DESC"),
 	# Dampf
-	_with(_team_buff_skill("SKILL_STEAM_BUFF_T4", STEAM, "s_def", 15.0, 2, 4, 3, 2), {"trainer": false, "extras": [_extra("heal", 8.0, "", 0, 1.0)]}),
+	_with(_team_buff_skill("SKILL_STEAM_BUFF_T4", STEAM, "def", 15.0, 2, 4, 3, 2), {"trainer": false, "extras": [_extra("heal", 8.0, "", 0, 1.0)]}),
 	# Blitz
 	_with(_boon_skill("SKILL_LIGHTNING_BOON_OVERCHARGE", LIGHTNING, "crit", 50.0, 1, SELF, "atk", 4, 3, 2, "SKILL_BOON_CRIT_DESC"), {"trainer": false}),
 	# Magma
@@ -1366,7 +1345,7 @@ var buff_skills = [
 # Gemeinsamer Pool: Passive
 var passive_skills = [
 	# Wasser
-	_passive_skill("SKILL_PASSIVE_WATER_POWER", WATER, 10.0, 3, "s_shield_power", "SKILL_PASSIVE_S_SHIELD_POWER_DESC"),
+	_passive_skill("SKILL_PASSIVE_WATER_POWER", WATER, 4.0, 3, "regen", "SKILL_PASSIVE_REGEN_DESC"),
 	# Erde
 	_passive_skill("SKILL_PASSIVE_EARTH_POWER", EARTH, 10.0, 3, "shield_power", "SKILL_PASSIVE_SHIELD_POWER_DESC"),
 ]
@@ -1379,41 +1358,39 @@ var milestone_skills = [
 	# Luft
 	_passive_skill("SKILL_PASSIVE_AIR_POWER", AIR, 10.0, 3, "magic_power", "SKILL_PASSIVE_MAGIC_POWER_DESC"),
 	# Dampf
+	_shield_skill("SKILL_STEAM_ARMOR_STEAM_COAT", STEAM, 18.0, 0.35, 2, 1, 1),
 	_attack_skill("SKILL_STEAM_PHYS_HOT_JAB", STEAM, 20.0, 0.4, PHYS, 2, 1, 1),
 	_attack_skill("SKILL_STEAM_MAG_VAPOR_PUFF", STEAM, 18.0, 0.35, MAG, 2, 1, 1),
-	_shield_skill("SKILL_STEAM_ARMOR_STEAM_COAT", STEAM, 18.0, 0.35, PHYS, 2, 1, 1),
 	_with(_passive_skill("SKILL_PASSIVE_STEAM_T4", STEAM, 15.0, 4, "element_power", "SKILL_PASSIVE_ELEMENT_POWER_DESC"), {"passive_element": STEAM, "trainer": false}),
 	# Blitz
+	_shield_skill("SKILL_LIGHTNING_ARMOR_CHARGE_PLATE", LIGHTNING, 18.0, 0.35, 2, 1, 1),
 	_attack_skill("SKILL_LIGHTNING_PHYS_SHOCK_TAP", LIGHTNING, 20.0, 0.4, PHYS, 2, 1, 1),
 	_attack_skill("SKILL_LIGHTNING_MAG_SPARK_BOLT", LIGHTNING, 20.0, 0.4, MAG, 2, 1, 1),
-	_shield_skill("SKILL_LIGHTNING_WARD_ION_VEIL", LIGHTNING, 18.0, 0.35, MAG, 2, 1, 1),
 	_with(_passive_skill("SKILL_PASSIVE_BATTLE_FERVOR", LIGHTNING, 20.0, 3, "stat", "SKILL_PASSIVE_STAT_SELF_DESC"), {"passive_stat": "atk", "passive_scope": "self"}),
 	_with(_passive_skill("SKILL_PASSIVE_STORM_SPIRIT", LIGHTNING, 20.0, 3, "stat", "SKILL_PASSIVE_STAT_SELF_DESC"), {"passive_stat": "s_atk", "passive_scope": "self"}),
 	_with(_passive_skill("SKILL_PASSIVE_LIGHTNING_T4", LIGHTNING, 15.0, 4, "element_power", "SKILL_PASSIVE_ELEMENT_POWER_DESC"),
 		{"passive_element": LIGHTNING, "trainer": false}),
 	# Magma
+	_shield_skill("SKILL_MAGMA_ARMOR_PUMICE_SKIN", MAGMA, 20.0, 0.4, 2, 1, 1),
 	_attack_skill("SKILL_MAGMA_PHYS_EMBER_KNUCKLE", MAGMA, 20.0, 0.4, PHYS, 2, 1, 1),
 	_attack_skill("SKILL_MAGMA_MAG_LAVA_SPIT", MAGMA, 18.0, 0.35, MAG, 2, 1, 1),
-	_shield_skill("SKILL_MAGMA_ARMOR_PUMICE_SKIN", MAGMA, 20.0, 0.4, PHYS, 2, 1, 1),
 	_with(_passive_skill("SKILL_PASSIVE_MAGMA_T4", MAGMA, 15.0, 4, "element_power", "SKILL_PASSIVE_ELEMENT_POWER_DESC"),
 		{"passive_element": MAGMA, "trainer": false}),
 	# Eis
+	_shield_skill("SKILL_ICE_ARMOR_RIME_COAT", ICE, 18.0, 0.35, 2, 1, 1),
 	_attack_skill("SKILL_ICE_PHYS_FROST_BITE", ICE, 18.0, 0.35, PHYS, 2, 1, 1),
 	_attack_skill("SKILL_ICE_MAG_SNOW_FLURRY", ICE, 20.0, 0.4, MAG, 2, 1, 1),
-	_shield_skill("SKILL_ICE_ARMOR_RIME_COAT", ICE, 18.0, 0.35, PHYS, 2, 1, 1),
-	_shield_skill("SKILL_ICE_WARD_SNOW_VEIL", ICE, 20.0, 0.4, MAG, 2, 1, 1),
 	_with(_passive_skill("SKILL_PASSIVE_ICE_T4", ICE, 15.0, 4, "element_power", "SKILL_PASSIVE_ELEMENT_POWER_DESC"),
 		{"passive_element": ICE, "trainer": false}),
 	# Staub
+	_shield_skill("SKILL_DUST_ARMOR_SANDSTONE_SKIN", DUST, 20.0, 0.4, 2, 1, 1),
 	_attack_skill("SKILL_DUST_PHYS_GRIT_PUNCH", DUST, 18.0, 0.35, PHYS, 2, 1, 1),
-	_shield_skill("SKILL_DUST_ARMOR_SANDSTONE_SKIN", DUST, 20.0, 0.4, PHYS, 2, 1, 1),
 	_with(_passive_skill("SKILL_PASSIVE_DUST_T4", DUST, 15.0, 4, "element_power", "SKILL_PASSIVE_ELEMENT_POWER_DESC"),
 		{"passive_element": DUST, "trainer": false}),
 	# Schlamm
+	_shield_skill("SKILL_MUD_ARMOR_MUD_COAT", MUD, 20.0, 0.4, 2, 1, 1),
 	_attack_skill("SKILL_MUD_PHYS_MUD_PUNCH", MUD, 18.0, 0.35, PHYS, 2, 1, 1),
 	_attack_skill("SKILL_MUD_MAG_SLUDGE_SHOT", MUD, 18.0, 0.35, MAG, 2, 1, 1),
-	_shield_skill("SKILL_MUD_ARMOR_MUD_COAT", MUD, 20.0, 0.4, PHYS, 2, 1, 1),
-	_shield_skill("SKILL_MUD_WARD_PEAT_SEAL", MUD, 20.0, 0.4, MAG, 2, 1, 1),
 	_passive_skill("SKILL_PASSIVE_BULWARK_MASTER", MUD, 1.0, 3, "shield_cost", "SKILL_PASSIVE_SHIELD_COST_DESC"),
 	_with(_passive_skill("SKILL_PASSIVE_MUD_T4", MUD, 15.0, 4, "element_power", "SKILL_PASSIVE_ELEMENT_POWER_DESC"),
 		{"passive_element": MUD, "trainer": false}),
@@ -1422,10 +1399,10 @@ var milestone_skills = [
 	_attack_skill("SKILL_THUNDERSTORM_MAG_CHAIN_LIGHTNING", THUNDERSTORM, 60.0, 0.8, MAG, 3, 3, 3),
 	_attack_skill("SKILL_THUNDERSTORM_MAG_STATIC_RAIN", THUNDERSTORM, 22.0, 0.55, MAG, 3, 1, 1),
 	# Vulkan
+	_shield_skill("SKILL_VOLCANO_ARMOR_LAVA_CRUST", VOLCANO, 22.0, 0.55, 3, 1, 1),
 	_attack_skill("SKILL_VOLCANO_PHYS_CALDERA_CRUSH", VOLCANO, 60.0, 0.8, PHYS, 3, 3, 3),
 	_attack_skill("SKILL_VOLCANO_PHYS_VOLCANIC_FIST", VOLCANO, 22.0, 0.55, PHYS, 3, 1, 1),
-	_shield_skill("SKILL_VOLCANO_ARMOR_BASALT_FORT", VOLCANO, 60.0, 0.8, PHYS, 3, 3, 3),
-	_shield_skill("SKILL_VOLCANO_ARMOR_LAVA_CRUST", VOLCANO, 22.0, 0.55, PHYS, 3, 1, 1),
+	_shield_skill("SKILL_VOLCANO_ARMOR_BASALT_FORT", VOLCANO, 60.0, 0.8, 3, 3, 3),
 	# Aschesturm
 	_attack_skill("SKILL_ASH_STORM_PHYS_CINDER_CLAW", ASH_STORM, 60.0, 0.8, PHYS, 3, 3, 3),
 	_attack_skill("SKILL_ASH_STORM_MAG_ASH_CYCLONE", ASH_STORM, 60.0, 0.8, MAG, 3, 3, 3),
@@ -1438,63 +1415,38 @@ var milestone_skills = [
 ]
 # Kopfgeld-Ei-Attacken (Skills.BOUNTIES)
 var bounty_skills = [
-	# Dampf
-	_shield_skill("SKILL_STEAM_WARD_HAZE_SHIELD", STEAM, 20.0, 0.4, MAG, 2, 1, 1),
-	# Blitz
-	_shield_skill("SKILL_LIGHTNING_ARMOR_CHARGE_PLATE", LIGHTNING, 18.0, 0.35, PHYS, 2, 1, 1),
-	# Magma
-	_shield_skill("SKILL_MAGMA_WARD_HEAT_SHIMMER", MAGMA, 18.0, 0.35, MAG, 2, 1, 1),
 	# Staub
 	_attack_skill("SKILL_DUST_MAG_DUST_SHOT", DUST, 20.0, 0.4, MAG, 2, 1, 1),
-	_shield_skill("SKILL_DUST_WARD_DUST_CLOAK", DUST, 18.0, 0.35, MAG, 2, 1, 1),
 	# Gewitter
-	_shield_skill("SKILL_THUNDERSTORM_ARMOR_STORM_PLATE", THUNDERSTORM, 55.0, 0.75, PHYS, 3, 3, 3),
+	_shield_skill("SKILL_THUNDERSTORM_ARMOR_RAIN_GUARD", THUNDERSTORM, 20.0, 0.5, 3, 1, 1),
+	_shield_skill("SKILL_THUNDERSTORM_ARMOR_STORM_PLATE", THUNDERSTORM, 55.0, 0.75, 3, 3, 3),
 	_attack_skill("SKILL_THUNDERSTORM_PHYS_SQUALL_STRIKE", THUNDERSTORM, 22.0, 0.55, PHYS, 3, 1, 1),
-	_shield_skill("SKILL_THUNDERSTORM_ARMOR_RAIN_GUARD", THUNDERSTORM, 20.0, 0.5, PHYS, 3, 1, 1),
-	_shield_skill("SKILL_THUNDERSTORM_WARD_STORM_VEIL", THUNDERSTORM, 22.0, 0.55, MAG, 3, 1, 1),
 	# Aschesturm
-	_shield_skill("SKILL_ASH_STORM_ARMOR_CINDER_SHELL", ASH_STORM, 22.0, 0.55, PHYS, 3, 1, 1),
-	_shield_skill("SKILL_ASH_STORM_WARD_SMOKE_SCREEN", ASH_STORM, 20.0, 0.5, MAG, 3, 1, 1),
+	_shield_skill("SKILL_ASH_STORM_ARMOR_CINDER_SHELL", ASH_STORM, 22.0, 0.55, 3, 1, 1),
 	# Sumpf
-	_shield_skill("SKILL_SWAMP_WARD_BOG_MIST", SWAMP, 22.0, 0.55, MAG, 3, 1, 1),
+	_attack_skill("SKILL_SWAMP_PHYS_REED_WHIP", SWAMP, 20.0, 0.5, PHYS, 3, 1, 1),
 ]
 # Nur im Couvert der Bosse: Skills ab Stufe 2, die keine Art benutzt
 var reward_skills = [
 	# Feuer
 	_boon_skill("SKILL_FIRE_BOON_FOCUS_FLAME", FIRE, "crit_next", 50.0, -1, SELF, "atk", 3, 2, 1, "SKILL_BOON_CRIT_NEXT_DESC"),
 	# Dampf
-	_shield_skill("SKILL_STEAM_ARMOR_VAPOR_PLATE", STEAM, 25.0, 0.45, PHYS, 3, 2, 1),
-	_shield_skill("SKILL_STEAM_WARD_FOG_BARRIER", STEAM, 28.0, 0.5, MAG, 3, 2, 1),
-	# Blitz
-	_shield_skill("SKILL_LIGHTNING_WARD_SPARK_FIELD", LIGHTNING, 25.0, 0.45, MAG, 3, 2, 1),
+	_shield_skill("SKILL_STEAM_ARMOR_VAPOR_PLATE", STEAM, 25.0, 0.45, 3, 2, 1),
 	# Magma
 	_attack_skill("SKILL_MAGMA_MAG_MAGMA_BURST", MAGMA, 30.0, 0.5, MAG, 3, 2, 2),
-	_shield_skill("SKILL_MAGMA_WARD_EMBER_CRUST", MAGMA, 25.0, 0.45, MAG, 3, 2, 1),
-	# Eis
-	_shield_skill("SKILL_ICE_ARMOR_ICE_PLATE", ICE, 25.0, 0.45, PHYS, 3, 2, 1),
 	# Schlamm
-	_shield_skill("SKILL_MUD_ARMOR_CLAY_SHELL", MUD, 28.0, 0.5, PHYS, 3, 2, 1),
+	_shield_skill("SKILL_MUD_ARMOR_CLAY_SHELL", MUD, 28.0, 0.5, 3, 2, 1),
 	_with(_passive_skill("SKILL_PASSIVE_DEEP_VITALITY", MUD, 20.0, 3, "stat", "SKILL_PASSIVE_STAT_SELF_DESC"), {"passive_stat": "hp", "passive_scope": "self"}),
-	# Gewitter
-	_shield_skill("SKILL_THUNDERSTORM_WARD_CLOUD_DOME", THUNDERSTORM, 60.0, 0.8, MAG, 3, 3, 3),
 	# Vulkan
 	_attack_skill("SKILL_VOLCANO_MAG_PYROCLAST", VOLCANO, 55.0, 0.75, MAG, 3, 3, 3),
-	_shield_skill("SKILL_VOLCANO_WARD_GEYSER_SHIELD", VOLCANO, 60.0, 0.8, MAG, 3, 3, 3),
 	_attack_skill("SKILL_VOLCANO_MAG_FUME_BURST", VOLCANO, 20.0, 0.5, MAG, 3, 1, 1),
-	_shield_skill("SKILL_VOLCANO_WARD_STEAM_VENT", VOLCANO, 22.0, 0.55, MAG, 3, 1, 1),
 	_attack_skill("SKILL_VOLCANO_PHYS_MAGMA_TITAN", VOLCANO, 80.0, 1.0, PHYS, 4, 4, 3),
 	# Aschesturm
-	_shield_skill("SKILL_ASH_STORM_ARMOR_SLAG_ARMOR", ASH_STORM, 60.0, 0.8, PHYS, 3, 3, 3),
-	_shield_skill("SKILL_ASH_STORM_WARD_SOOT_VEIL", ASH_STORM, 55.0, 0.75, MAG, 3, 3, 3),
+	_shield_skill("SKILL_ASH_STORM_ARMOR_SLAG_ARMOR", ASH_STORM, 60.0, 0.8, 3, 3, 3),
 	# Sumpf
-	_shield_skill("SKILL_SWAMP_ARMOR_MANGROVE_WALL", SWAMP, 60.0, 0.8, PHYS, 3, 3, 3),
-	_shield_skill("SKILL_SWAMP_WARD_MARSH_MIST", SWAMP, 60.0, 0.8, MAG, 3, 3, 3),
-	_attack_skill("SKILL_SWAMP_PHYS_REED_WHIP", SWAMP, 20.0, 0.5, PHYS, 3, 1, 1),
-	_shield_skill("SKILL_SWAMP_ARMOR_MOSS_HIDE", SWAMP, 22.0, 0.55, PHYS, 3, 1, 1),
+	_shield_skill("SKILL_SWAMP_ARMOR_MANGROVE_WALL", SWAMP, 60.0, 0.8, 3, 3, 3),
 	# Chaos
 	_boon_skill("SKILL_CHAOS_BOON_BATTLE_CRY", CHAOS, "taunt", 1.0, 0, SELF, "def", 2, 2, 1, "SKILL_BOON_TAUNT_DESC"),
-	_cross_shield_skill("SKILL_CHAOS_WARD_IRON_WILL", CHAOS, 5.0, 0.4, MAG, 3, 2, 1),
-	_cross_shield_skill("SKILL_CHAOS_ARMOR_SPIRIT_GUARD", CHAOS, 5.0, 0.4, PHYS, 3, 2, 1),
 	_passive_skill("SKILL_PASSIVE_PROVOKER", CHAOS, 1.0, 4, "taunt", "SKILL_PASSIVE_TAUNT_DESC"),
 ]
 
@@ -1583,7 +1535,10 @@ var ascension_skills = []
 # ─────────────────────────
 # Entwürfe: Skills der Stufe 1, die keine Art benutzt, und neue Skills, bis tools/skill_verteilung.js sie einsortiert.
 # get_skill findet sie, das Wiki listet sie unter "Unbenutzt". Werte-Tabelle: siehe oben bei den Skill-Listen.
-var draft_skills = []
+var draft_skills = [
+	# Sumpf
+	_shield_skill("SKILL_SWAMP_ARMOR_MOSS_HIDE", SWAMP, 22.0, 0.55, 3, 1, 1),
+]
 
 ## Aufstiegs-Skill für genau dieses Kombi-Element (frische Kopie), {} für Grundelemente und Chaos
 func ascension_skill(nature: int) -> Dictionary:
@@ -1614,8 +1569,8 @@ func _flat_attack_skill(skill_name: String, nature: int, value: float, scaling: 
 		"handle": func(props): deal_damage(props)
 	}
 
-## Schild auf ein eigenes Monster: value fester Schild + scaling x (Sp.) Verteidigung, Stufe 1, 1 Aktion
-func _flat_shield_skill(skill_name: String, nature: int, value: float, scaling: float, damage_type: int, cooldown: int) -> Dictionary:
+## Schild auf ein eigenes Monster: value fester Schild + scaling x Verteidigung, Stufe 1, 1 Aktion. Blockt physisch und magisch.
+func _flat_shield_skill(skill_name: String, nature: int, value: float, scaling: float, cooldown: int) -> Dictionary:
 	return {
 		"cost": 1,
 		"name": skill_name,
@@ -1623,9 +1578,8 @@ func _flat_shield_skill(skill_name: String, nature: int, value: float, scaling: 
 		"value": value,
 		"scaling": scaling,
 		"cooldown": cooldown,
-		"damage_type": damage_type,
 		"effect": "shield",
-		"description": "SKILL_SHIELD_PHYSICAL_DESC" if damage_type == Enums.SKILL_DAMAGE_TYPE.PHYSICAL else "SKILL_SHIELD_ABILITY_DESC",
+		"description": "SKILL_SHIELD_DESC",
 		"target": Enums.CARD_TARGETS.SINGLE_FRIEND,
 		"scouted": false,
 		"tier": 1,
@@ -1653,7 +1607,7 @@ func _attack_skill(skill_name: String, nature: int, value: float, scaling: float
 	}
 
 ## Schild auf ein eigenes Monster mit Stufe, Abklingzeit und Kosten (Entwürfe, siehe draft_skills)
-func _shield_skill(skill_name: String, nature: int, value: float, scaling: float, damage_type: int, tier: int, cooldown: int, cost: int) -> Dictionary:
+func _shield_skill(skill_name: String, nature: int, value: float, scaling: float, tier: int, cooldown: int, cost: int) -> Dictionary:
 	return {
 		"cost": cost,
 		"name": skill_name,
@@ -1661,29 +1615,8 @@ func _shield_skill(skill_name: String, nature: int, value: float, scaling: float
 		"value": value,
 		"scaling": scaling,
 		"cooldown": cooldown,
-		"damage_type": damage_type,
 		"effect": "shield",
-		"description": "SKILL_SHIELD_PHYSICAL_DESC" if damage_type == Enums.SKILL_DAMAGE_TYPE.PHYSICAL else "SKILL_SHIELD_ABILITY_DESC",
-		"target": Enums.CARD_TARGETS.SINGLE_FRIEND,
-		"scouted": false,
-		"tier": tier,
-		"shop_cost": {"min": 5 * tier, "max": 15 * tier},
-		"handle": func(props): add_shield(props)
-	}
-
-## Kreuz-Schild: Rüstung aus der Sp. Verteidigung bzw. Magie-Schild aus der Verteidigung (scaling_stat, shield_amount)
-func _cross_shield_skill(skill_name: String, nature: int, value: float, scaling: float, damage_type: int, tier: int, cooldown: int, cost: int) -> Dictionary:
-	return {
-		"cost": cost,
-		"name": skill_name,
-		"nature": nature,
-		"value": value,
-		"scaling": scaling,
-		"scaling_stat": "s_def" if damage_type == Enums.SKILL_DAMAGE_TYPE.PHYSICAL else "def",
-		"cooldown": cooldown,
-		"damage_type": damage_type,
-		"effect": "shield",
-		"description": "SKILL_SHIELD_PHYSICAL_FROM_SPD_DESC" if damage_type == Enums.SKILL_DAMAGE_TYPE.PHYSICAL else "SKILL_SHIELD_ABILITY_FROM_DEF_DESC",
+		"description": "SKILL_SHIELD_DESC",
 		"target": Enums.CARD_TARGETS.SINGLE_FRIEND,
 		"scouted": false,
 		"tier": tier,

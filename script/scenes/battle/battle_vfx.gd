@@ -12,7 +12,7 @@ extends Node2D
 ## Buff, Schwächung und Heilung. Jeder Effekt zeichnet sich in _draw aus seinem Fortschritt (0..1), startet seine
 ## Partikelstöße zu festen Zeitpunkten und löscht sich, sobald alles vorbei ist.
 
-enum Kind { SLASH, FIRE, WATER, EARTH, AIR, SHIELD, S_SHIELD, SHIELD_HIT, S_SHIELD_HIT, BUFF,
+enum Kind { SLASH, FIRE, WATER, EARTH, AIR, SHIELD, SHIELD_HIT, BUFF,
 	STEAM, LIGHTNING, MAGMA, ICE, DUST, MUD, POISON, ASH, THUNDER, ERUPTION, CHAOS, DEBUFF, HEAL }
 
 const DURATIONS := {
@@ -22,9 +22,7 @@ const DURATIONS := {
 	Kind.EARTH: 0.8,
 	Kind.AIR: 0.8,
 	Kind.SHIELD: 0.75,
-	Kind.S_SHIELD: 0.85,
 	Kind.SHIELD_HIT: 0.4,
-	Kind.S_SHIELD_HIT: 0.4,
 	Kind.BUFF: 0.8,
 	Kind.STEAM: 0.9,
 	Kind.LIGHTNING: 0.6,
@@ -75,7 +73,6 @@ const ASH_COLOR := Color(0.3, 0.27, 0.27)
 const STORM_COLORS := [Color(0.25, 0.5, 1.0), Color(0.85, 0.93, 1.0)]
 const CHAOS_COLORS := [Color(0.62, 0.32, 1.0), Color(0.32, 0.28, 0.38), Color(0.88, 0.72, 1.0)]
 const SHIELD_COLOR := Color(0.55, 0.8, 1.0)
-const S_SHIELD_COLOR := Color(0.85, 0.6, 1.0)
 const BUFF_COLOR := Color(0.55, 1.0, 0.55)
 const DEBUFF_COLOR := Color(1.0, 0.4, 0.35)
 const HEAL_COLOR := Color(0.5, 1.0, 0.6)
@@ -156,9 +153,7 @@ func _draw() -> void:
 		Kind.EARTH: _draw_earth(t)
 		Kind.AIR: _draw_tornado(t, AIR_COLORS, 1.0)
 		Kind.SHIELD: _draw_shield(t)
-		Kind.S_SHIELD: _draw_s_shield(t)
-		Kind.SHIELD_HIT: _draw_shield_hit(t, SHIELD_COLOR, false)
-		Kind.S_SHIELD_HIT: _draw_shield_hit(t, S_SHIELD_COLOR, true)
+		Kind.SHIELD_HIT: _draw_shield_hit(t, SHIELD_COLOR)
 		Kind.BUFF: _draw_arrows(t, BUFF_COLOR, true)
 		Kind.STEAM: _draw_steam(t)
 		Kind.LIGHTNING: _draw_lightning(t)
@@ -182,8 +177,7 @@ func _roll_parts() -> void:
 		Kind.EARTH: count = 9
 		Kind.AIR: count = 8
 		Kind.THUNDER: count = 9
-		Kind.S_SHIELD: count = 8
-		Kind.SHIELD_HIT, Kind.S_SHIELD_HIT: count = 5
+		Kind.SHIELD_HIT: count = 5
 		Kind.STEAM: count = 8
 		Kind.LIGHTNING: count = 10
 		Kind.MAGMA: count = 8
@@ -401,15 +395,11 @@ func _plan_particles() -> void:
 				"spread": 180.0, "vel": Vector2(0.2, 0.5), "orbit": Vector2(0.9 * _flip, 1.5 * _flip),
 				"gravity": Vector2(0, -2.0), "explosive": 0.6, "size": Vector2(0.08, 0.14),
 				"colors": [_with_alpha(AIR_COLORS[1], 0.0), AIR_COLORS[1], _with_alpha(AIR_COLORS[0], 0.0)]})
-		Kind.SHIELD_HIT, Kind.S_SHIELD_HIT:
-			var c := SHIELD_COLOR if kind == Kind.SHIELD_HIT else S_SHIELD_COLOR
+		Kind.SHIELD_HIT:
+			var c := SHIELD_COLOR
 			_burst(0.0, {"tex": "streak", "amount": 10, "life": 0.35, "pos": Vector2(0.25 * _flip, -0.6), "spread": 75.0,
 				"vel": Vector2(2.0, 4.0), "damping": Vector2(6, 9), "gravity": Vector2(0, 3.0), "align": true,
 				"size": Vector2(0.1, 0.18), "colors": [Color.WHITE, c, _with_alpha(c, 0.0)]})
-		Kind.S_SHIELD:
-			_burst(0.15, {"tex": "glow", "amount": 10, "life": 0.6, "pos": Vector2(0, 0.4), "box": Vector2(0.7, 0.1),
-				"vel": Vector2(0.8, 1.6), "spread": 15.0, "explosive": 0.5, "size": Vector2(0.12, 0.2), "curve": "pop",
-				"colors": [Color.WHITE, S_SHIELD_COLOR, _with_alpha(S_SHIELD_COLOR, 0.0)]})
 		Kind.SHIELD:
 			_burst(0.3, {"tex": "glow", "amount": 8, "life": 0.45, "sphere": 1.0, "surface": true, "spread": 180.0,
 				"vel": Vector2(0.3, 0.7), "size": Vector2(0.1, 0.18), "curve": "pop",
@@ -732,40 +722,16 @@ func _draw_shield(t: float) -> void:
 		var dir := Vector2(1, -1).normalized() * size * 0.35
 		draw_line(Vector2(x, 0) - dir, Vector2(x, 0) + dir, Color(1, 1, 1, 0.8 * sin(PI * sweep)), r * 0.07, true)
 
-# Magischer Schild: violetter Runenkreis dreht sich, Kugel leuchtet auf, Funken steigen auf
-
-func _draw_s_shield(t: float) -> void:
-	var r := radius * 1.05
-	var pop := _ease_back(clampf(t / 0.35, 0.0, 1.0))
-	var alpha := 1.0 - clampf((t - 0.6) / 0.4, 0.0, 1.0)
-	var size := r * (0.55 + 0.45 * pop)
-	var rot := t * PI * 1.2
-	_glow(Vector2.ZERO, size * 2.6, _with_alpha(S_SHIELD_COLOR, 0.35 * alpha))
-	draw_circle(Vector2.ZERO, size, _with_alpha(S_SHIELD_COLOR, 0.15 * alpha))
-	draw_arc(Vector2.ZERO, size, 0, TAU, 48, _with_alpha(S_SHIELD_COLOR, 0.5 * alpha), r * 0.12 + 1.0, true)
-	draw_arc(Vector2.ZERO, size, 0, TAU, 48, _with_alpha(S_SHIELD_COLOR.lightened(0.5), alpha), r * 0.04 + 1.0, true)
-	draw_arc(Vector2.ZERO, size * 0.82, 0, TAU, 48, _with_alpha(S_SHIELD_COLOR, 0.6 * alpha), 1.5, true)
-	for i in 6:
-		var a := rot + i * TAU / 6.0
-		var c := Vector2.from_angle(a) * size * 0.91
-		_draw_poly(_polygon(c, r * 0.07, 4, a), _with_alpha(Color.WHITE, alpha))
-	_draw_closed(_polygon(Vector2.ZERO, size * 0.6, 3, -rot), _with_alpha(S_SHIELD_COLOR, 0.45 * alpha), 1.5)
-	_draw_closed(_polygon(Vector2.ZERO, size * 0.6, 3, -rot + PI), _with_alpha(S_SHIELD_COLOR, 0.45 * alpha), 1.5)
-
 # ─────────────────────────
 # Schildtreffer: der Schild blitzt am Einschlag auf und bekommt Risse, Funken spritzen ab
 
-func _draw_shield_hit(t: float, c: Color, round: bool) -> void:
+func _draw_shield_hit(t: float, c: Color) -> void:
 	var r := radius * 1.05
 	var alpha := 1.0 - t
 	var size := r * (1.0 + 0.08 * t)
-	if round:
-		draw_circle(Vector2.ZERO, size, _with_alpha(c, 0.22 * alpha))
-		draw_arc(Vector2.ZERO, size, 0, TAU, 48, _with_alpha(c.lightened(0.4), alpha), r * 0.06 + 1.0, true)
-	else:
-		var hex := _polygon(Vector2.ZERO, size, 6, PI / 6.0)
-		_draw_poly(hex, _with_alpha(c, 0.22 * alpha))
-		_draw_closed(hex, _with_alpha(c.lightened(0.4), alpha), r * 0.06 + 1.0)
+	var hex := _polygon(Vector2.ZERO, size, 6, PI / 6.0)
+	_draw_poly(hex, _with_alpha(c, 0.22 * alpha))
+	_draw_closed(hex, _with_alpha(c.lightened(0.4), alpha), r * 0.06 + 1.0)
 	var hit := Vector2(r * 0.25 * _flip, -size * 0.55)
 	_glow(hit, r * 1.2 * (0.6 + t), _with_alpha(c, 0.7 * alpha))
 	_glow(hit, r * 0.5, Color(1, 1, 1, alpha))

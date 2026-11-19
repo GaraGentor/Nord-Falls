@@ -20,8 +20,8 @@ static func report(columns := []) -> String:
 		columns = [["bisher", DebugSettings.DAMAGE_DEFAULTS], ["eingestellt", DebugSettings.damage_settings()]]
 	var species := _species()
 	var glass: Dictionary = _best(species, func(sp): return maxf(sp.shares.atk, sp.shares.s_atk))
-	var tank: Dictionary = _best(species, func(sp): return (sp.shares.def + sp.shares.s_def) / 2.0 + sp.shares.hp)
-	var even: Dictionary = _best(species, func(sp): return -absf(maxf(sp.shares.atk, sp.shares.s_atk) - ((sp.shares.def + sp.shares.s_def) / 2.0 + sp.shares.hp) / 1.5))
+	var tank: Dictionary = _best(species, func(sp): return sp.shares.def + sp.shares.hp)
+	var even: Dictionary = _best(species, func(sp): return -absf(maxf(sp.shares.atk, sp.shares.s_atk) - (sp.shares.def + sp.shares.hp) / 1.5))
 	var out := PackedStringArray()
 	out.append("SIMULATION (Element neutral, ohne Schilde) | Angreifer = Art %s, Tank = Art %s, ausgeglichen = Art %s" % [
 		glass.name, tank.name, even.name])

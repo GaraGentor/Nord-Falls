@@ -174,6 +174,8 @@ const BUBBLE_TAIL := 22.0
 ## Klick auf ein Monster: die Kamera fährt nach rechts, die ganze Bühne (Tisch und Trainer) also nach links,
 ## bis der Trainer mit den Monstern am linken Rand steht; rechts daneben erscheint die Attacken-Übersicht.
 const MODAL_GAP := 12.0
+## Oberkante der Monster-Übersicht, vom oberen Bildschirmrand
+const MODAL_TOP := 72.0
 const PAN_SECONDS := 0.45
 ## Parallax des Hintergrunds: Anteil der Fahrt, um den er mitfährt, Ausschlag mit der Maus, Nachziehen pro Sekunde
 const PARALLAX_PAN := 0.1
@@ -504,8 +506,10 @@ func _layout_pan() -> void:
 	_pan_width = _stage.position.x
 	var stage_left_after := _content.get_global_rect().position.x
 	var width := get_global_rect().end.x - (stage_left_after + _stage.size.x) - 2 * MODAL_GAP
-	_modal_holder.position = Vector2(_stage.size.x + MODAL_GAP, 0)
-	_modal_holder.size = Vector2(maxf(width, 0.0), _stage.size.y - MODAL_GAP)
+	# die Übersicht reicht über die Bühne hinaus nach oben bis MODAL_TOP (der Ausgang ist solange ausgeblendet)
+	var lift := maxf(_stage.get_global_rect().position.y - get_global_rect().position.y - MODAL_TOP, 0.0)
+	_modal_holder.position = Vector2(_stage.size.x + MODAL_GAP, -lift)
+	_modal_holder.size = Vector2(maxf(width, 0.0), _stage.size.y + lift - MODAL_GAP)
 	if not (_pan_tween and _pan_tween.is_running()):
 		_set_pan(_pan_width if _open_plate else 0.0)
 
@@ -605,9 +609,10 @@ static func next_biome() -> int:
 		return 0
 	return State.biome_path[mini(State.map_level + 1, State.biome_path.size() - 1)]
 
-## Ist der Skill gegen die Elemente des Bioms sehr effektiv? Nur Schaden zählt.
+## Ist der Skill gegen die Elemente des Bioms sehr effektiv? Nur magischer Schaden zählt, physische Angriffe
+## treffen immer neutral (Skills.skill_element_multiplier).
 static func is_recommended(skill: Dictionary, biome: int) -> bool:
-	return biome != 0 and Skills.is_damage_skill(skill) and Skills.element_score(skill.nature, biome) > 0
+	return biome != 0 and Skills.is_damage_skill(skill) and not Skills.is_physical(skill) and Skills.element_score(skill.nature, biome) > 0
 
 ## RECOMMENDED_OFFERS Angriffe gegen das nächste Biom, die noch nicht angeboten werden und die ein Monster lernen kann;
 ## bevorzugt welche, die es auch gleich einsetzen kann
@@ -689,6 +694,9 @@ func _add_skill_card(skill: Dictionary) -> void:
 
 ## Schriften, Icons und Mindestgrößen eines Kartenteils samt Kindern um factor vergrößern
 static func _enlarge(node: Node, factor: float) -> void:
+	# Wert und Art-Symbol hängen schon an der Größe des Namens (SkillCardFace.BottomRow)
+	if node.has_meta("keep_font_size"):
+		return
 	if node is Label:
 		node.add_theme_font_size_override("font_size", roundi(node.get_theme_font_size("font_size") * factor))
 	elif node is Control and node.custom_minimum_size != Vector2.ZERO:

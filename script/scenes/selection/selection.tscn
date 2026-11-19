@@ -4,7 +4,7 @@
 [ext_resource type="Material" path="res://script/ui/shader/background_living_material.tres" id="2_bgmat"]
 [ext_resource type="Texture2D" uid="uid://dg1hlr48dxc8e" path="res://assets/sczene_backgrounds/egg_auswahl.jpg" id="3_bg"]
 [ext_resource type="FontFile" uid="uid://cbavibkhidesl" path="res://script/ui/fonts/pxelfont/PixelifySans-VariableFont_wght.ttf" id="4_tpsnj"]
-[ext_resource type="Script" path="res://script/scenes/selection/egg_stage.gd" id="5_stage"]
+[ext_resource type="Script" uid="uid://c0ma7y4e244th" path="res://script/scenes/selection/egg_stage.gd" id="5_stage"]
 [ext_resource type="Script" uid="uid://bsftl68bgh2n1" path="res://script/scenes/selection/biome_path.gd" id="8_biome"]
 [ext_resource type="Theme" uid="uid://s3xpo0m4ka8" path="res://script/ui/materials/pixel_font_theme.tres" id="99_font_theme"]
 
@@ -32,13 +32,13 @@ biome_path = NodePath("Selection/BiomePath")
 side = NodePath("UI")
 
 [node name="Selection" type="Control" parent="." unique_id=224124060]
+clip_contents = true
 layout_mode = 1
 anchor_right = 0.703
 anchor_bottom = 1.0
 offset_right = 0.159973
 grow_horizontal = 2
 grow_vertical = 2
-clip_contents = true
 mouse_filter = 2
 
 [node name="Background" type="TextureRect" parent="Selection" unique_id=2128861748]

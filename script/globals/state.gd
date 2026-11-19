@@ -220,8 +220,12 @@ func get_mon_stats(mon_name: String) -> Dictionary:
 func restore_mon_stats(mon_name: String, best_points: int, growth: Dictionary) -> void:
 	var stats = get_mon_stats(mon_name)
 	stats.best_points = best_points
+	# alte Eier haben noch einen Anteil für die entfernte Sp. Verteidigung: die übrigen wieder auf Summe 1 bringen
+	var sum := 0.0
 	for attr in Growth.ATTRS:
-		stats.growth[attr] = growth[attr]
+		sum += float(growth.get(attr, 0.0))
+	for attr in Growth.ATTRS:
+		stats.growth[attr] = float(growth.get(attr, 0.0)) / sum if sum > 0.0 else 1.0 / Growth.ATTRS.size()
 
 # Ist das Start-Monster noch im Team? K.O. gegangene (battle.gd _clear_fainted_mons) und abgegebene Monster
 # (leaving_screen.gd) stehen nicht mehr in mons.
@@ -279,7 +283,7 @@ func record_sighting(mon: Monster, depth: int) -> void:
 		"count": previous.get("count", 0) + 1,
 		"stats": {
 			"hp": mon.hp(), "atk": mon.attack(), "def": mon.defense(),
-			"s_atk": mon.s_attack(), "s_def": mon.s_defense(), "speed": mon.speed(),
+			"s_atk": mon.s_attack(), "speed": mon.speed(),
 		},
 		"skills": mon._skills.map(func(skill): return {"name": skill.name, "egg": skill.get("egg_skill", false)}),
 	}

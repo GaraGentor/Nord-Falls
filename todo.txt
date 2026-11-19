@@ -1,10 +1,6 @@
-1. Wenn bei der Monster auswahl ganz am anfang alle Steps durch sind vom Tutorial, soll der trainer ein letztes mal weiter anzeigen, damit dieser ausgeblendet wird.
-2. Wenn bei der EI Attacken auswahl alle Steps durch sind vom Tutorial, soll der trainer ein letztes mal weiter anzeigen, damit dieser ausgeblendet wird.
-3. Beim Übungskampf im Tutorial muss noch erklärt werden, dass der Diamant Magische attacken sind und die nur mit magischen SChilden geblockt werden können sowie das für physische attacken und dass es buffs und passiven gibt.
-4. Beim Übungskampf im Tutorial müssen temporär für das eigene monster attacken ausgewählt sein, damit ich die gegner attackieren kann so wie es verlangt ist.
-5. Auf der Karte wenn das Tutorial mit allen steps durch sind, soll der Trainer nochmal weiter anzeigen, damit ich ihn weg klicken kann.
-6. Beim Judgement soll auch ein zusätzliches Weiter stehen, damit der Trainer und das Tutorial ausgeblendet wird nachdem alle steps durch sind, da ich nix sehe.
-7. Im Lager gibts grad ein Bug und stüzt mit Tutorial ab wenn ich vom debug menü da rein gehe, dabei hab ich das tutorial von anfang an durchgespielt..
-8. Im Kerkermeister gibts grad ein Bug und stüzt mit Tutorial ab wenn ich vom debug menü da rein gehe, dabei hab ich das tutorial von anfang an durchgespielt..
-9. Beim Trainer sollen mehr Fähigkeiten da sein, die für das nächste Biom Wirkungsvoller sind. Diese haben bei den Fähigkeiten ein "Empfohlen vom Trainer" Badge. 
-10. Im Laden würde ich gerne eine Übersicht der Attacken haben im Dialog, wenn ich auf ein Monster klicke. Hier kann man das gleiche modal / dialog nutzen wie beim Trainer wenn man auf ein monster klickt.
+- Neue Fähigkeiten und alle durchgucken...
+- Tests
+- Monster durchschauen (seltenheit pro element)
+- 
+
+Morgen: Inventar, Spiel Tests, 

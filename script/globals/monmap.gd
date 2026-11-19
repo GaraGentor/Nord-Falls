@@ -127,29 +127,28 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.AIR,
 		"stats": [190, 210],
 		# Bevorzugte Werteverteilung der Art in Prozent (Summe 100), schwankt pro Run um bis zu ±15 % (siehe growth.gd)
-		"preferred_stats": {"hp": 15, "atk": 15, "def": 12, "s_atk": 25, "s_def": 15, "speed": 18},
+		"preferred_stats": {"hp": 15, "atk": 15, "def": 12, "s_atk": 25, "speed": 18},
 		# default_egg_skills (Start), unlockable_egg_skills (durch Fangen & Opfern) und milestone_egg_skills (Skills.MILESTONES)
 		# schreibt tools/skill_verteilung.js nach den Regeln in skill_verteilung.txt (Kategorien nach preferred_stats,
-		# Gleichstand: Ang. vor Sp. Ang. vor Vert. vor Sp. Vert.). Nicht von Hand ändern, sondern das Skript neu laufen lassen:
+		# Gleichstand: Ang. vor Sp. Ang. vor Vert.). Nicht von Hand ändern, sondern das Skript neu laufen lassen:
 		#   node tools/skill_verteilung.js
 		# Gewöhnliche Arten starten nach ihrem höchsten Kampfwert:
-		#   Ang.: Leichter Stoß, Leichter Schlag, Nutzloser Schild (Rüstung)
-		#   Sp. Ang.: dasselbe magisch, Nutzloser Magie-Schild
-		#   Vert.: Nutzloser Stoß, Leichter Schild (Rüstung), Nutzloser Magie-Schild
-		#   Sp. Vert.: Nutzloser Stoß, Leichter Magie-Schild, Nutzloser Schild (Rüstung)
-		#   Nutzloser Stoß ist magisch, wenn Sp. Ang. höher als Ang. ist.
+		#   Ang.: Leichter Stoß, Leichter Schlag, Nutzloser Schild
+		#   Sp. Ang.: dasselbe magisch, Nutzloser Schild
+		#   Vert.: Nutzloser Stoß, Leichter Schild, Nutzloser Stoß der anderen Angriffsart
+		#   Der erste Nutzlose Stoß ist magisch, wenn Sp. Ang. höher als Ang. ist.
 		# Ab Selten: "affinity" = Neben-Element (Zweier-Kombi), ab Legendär "affinity_triple" (Dreier-Kombi).
 		# "skills_manual": true = Skills von Hand gepflegt, das Skript lässt die Art aus.
 		# Optional: bounty_egg_skills (Skills.BOUNTIES), von Hand
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_MAG_LIGHT_STRIKE", "SKILL_AIR_WARD_WEAK"],
-		"unlockable_egg_skills": ["SKILL_AIR_ARMOR_PLAIN", "SKILL_AIR_WARD_BREEZE_VEIL", "SKILL_AIR_MAG_WIND_BLADE"],
+		"default_egg_skills": ["SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_MAG_LIGHT_STRIKE", "SKILL_AIR_ARMOR_WEAK"],
+		"unlockable_egg_skills": ["SKILL_AIR_ARMOR_PLAIN", "SKILL_AIR_ARMOR_DRAFT_GUARD", "SKILL_AIR_MAG_WIND_BLADE"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_AIR_PHYS_GUST_KICK",
 			"boss_3": "SKILL_AIR_MAG_TEMPEST_RAY",
 			"chaos": "SKILL_AIR_PHYS_CYCLONE_CLAW",
 		},
-		"bounty_egg_skills": {"alpha_1": "SKILL_AIR_WARD_SKY_DOME"},
+		"bounty_egg_skills": {"alpha_1": "SKILL_AIR_ARMOR_GALE_WALL"},
 	},
 	# Leuchtkrabbe: Krabbe mit Leuchtturm auf dem Panzer
 	{
@@ -157,17 +156,17 @@ var mons = [
 		"rarity": Enums.MON_RARITY.COMMON,
 		"initial_type": Enums.MON_TYPES.WATER,
 		"stats": [190, 210],
-		"preferred_stats": {"hp": 18, "atk": 14, "def": 25, "s_atk": 14, "s_def": 19, "speed": 10},
+		"preferred_stats": {"hp": 18, "atk": 14, "def": 25, "s_atk": 14, "speed": 10},
 		"max_upgrades": 2,
-		# Startmonster (Tank), durch Fangen & Opfern: Leichter Wasserschild (Sp. Vert., ergänzt den Muschelschild) und Leichte Rückhand
-		"default_egg_skills": ["SKILL_WATER_PHYS_WEAK_THRUST", "SKILL_WATER_ARMOR_LIGHT", "SKILL_WATER_WARD_WEAK"],
-		"unlockable_egg_skills": ["SKILL_WATER_WARD_PLAIN", "SKILL_WATER_PHYS_BACKHAND"],
+		# Startmonster (Tank), durch Fangen & Opfern: Leichter Schild und Leichte Rückhand
+		"default_egg_skills": ["SKILL_WATER_PHYS_WEAK_THRUST", "SKILL_WATER_ARMOR_LIGHT", "SKILL_WATER_MAG_WEAK_THRUST"],
+		"unlockable_egg_skills": ["SKILL_WATER_ARMOR_PLAIN", "SKILL_WATER_PHYS_BACKHAND"],
 		"milestone_egg_skills": {
-			"boss_1": "SKILL_WATER_WARD_MIST_VEIL",
+			"boss_1": "SKILL_WATER_PHYS_TIDE_SLAP",
 			"kills_10": "SKILL_WATER_ARMOR_CORAL_WALL",
-			"chaos": "SKILL_WATER_WARD_TIDAL_DOME",
+			"chaos": "SKILL_WATER_PHYS_BREAKER",
 		},
-		"bounty_egg_skills": {"alpha_2": "SKILL_WATER_PHYS_BREAKER"},
+		"bounty_egg_skills": {"alpha_2": "SKILL_WATER_MAG_HYDRO_LANCE"},
 	},
 	# Schattflaum: Federgeist aus violettem Rauch
 	{
@@ -175,16 +174,16 @@ var mons = [
 		"rarity": Enums.MON_RARITY.UNCOMMON,
 		"initial_type": Enums.MON_TYPES.AIR,
 		"stats": [200, 220],
-		"preferred_stats": {"hp": 12, "atk": 8, "def": 12, "s_atk": 27, "s_def": 21, "speed": 20},
+		"preferred_stats": {"hp": 12, "atk": 8, "def": 12, "s_atk": 27, "speed": 20},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_AIR_MAG_CANNON", "SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_WARD_LIGHT"],
-		"unlockable_egg_skills": ["SKILL_AIR_PHYS_BACKHAND", "SKILL_AIR_WARD_BREEZE_VEIL", "SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_BUFF_S_ATK"],
+		"default_egg_skills": ["SKILL_AIR_MAG_CANNON", "SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_ARMOR_LIGHT"],
+		"unlockable_egg_skills": ["SKILL_AIR_PHYS_BACKHAND", "SKILL_AIR_ARMOR_DRAFT_GUARD", "SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_BUFF_S_ATK"],
 		"milestone_egg_skills": {
-			"boss_1": "SKILL_AIR_ARMOR_DRAFT_GUARD",
+			"boss_1": "SKILL_AIR_PHYS_GUST_KICK",
 			"kills_10": "SKILL_AIR_MAG_WIND_BLADE",
-			"chaos": "SKILL_AIR_WARD_SKY_DOME",
+			"chaos": "SKILL_AIR_ARMOR_GALE_WALL",
 		},
-		"bounty_egg_skills": {"alpha_3": "SKILL_AIR_ARMOR_GALE_WALL"},
+		"bounty_egg_skills": {"alpha_3": "SKILL_AIR_PHYS_CYCLONE_CLAW"},
 	},
 	# Hackschupp: Echse mit Beil und Schuppenpanzer
 	{
@@ -192,7 +191,7 @@ var mons = [
 		"rarity": Enums.MON_RARITY.COMMON,
 		"initial_type": Enums.MON_TYPES.FIRE,
 		"stats": [190, 210],
-		"preferred_stats": {"hp": 16, "atk": 27, "def": 22, "s_atk": 8, "s_def": 12, "speed": 15},
+		"preferred_stats": {"hp": 16, "atk": 27, "def": 22, "s_atk": 8, "speed": 15},
 		"max_upgrades": 2,
 		# Startmonster (Angreifer), durch Fangen & Opfern: Kleiner Punch und Punch
 		"default_egg_skills": ["SKILL_FIRE_PHYS_LIGHT_THRUST", "SKILL_FIRE_PHYS_LIGHT_STRIKE", "SKILL_FIRE_ARMOR_WEAK"],
@@ -202,7 +201,7 @@ var mons = [
 			"bounty": "SKILL_FIRE_PHYS_BLAZE_RUSH",
 			"chaos": "SKILL_FIRE_ARMOR_FLAME_WALL",
 		},
-		"bounty_egg_skills": {"alpha_4": "SKILL_FIRE_WARD_PHOENIX_AURA"},
+		"bounty_egg_skills": {"alpha_4": "SKILL_FIRE_MAG_FIREBALL"},
 	},
 	# Glotzlibelle: Libelle mit Stielaugen
 	{
@@ -210,17 +209,17 @@ var mons = [
 		"rarity": Enums.MON_RARITY.COMMON,
 		"initial_type": Enums.MON_TYPES.AIR,
 		"stats": [190, 210],
-		"preferred_stats": {"hp": 13, "atk": 18, "def": 11, "s_atk": 20, "s_def": 14, "speed": 24},
+		"preferred_stats": {"hp": 13, "atk": 18, "def": 11, "s_atk": 20, "speed": 24},
 		"max_upgrades": 2,
 		# Startmonster (Angreifer), durch Fangen & Opfern: Kleine Windkanone und Windkanone
-		"default_egg_skills": ["SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_MAG_LIGHT_STRIKE", "SKILL_AIR_WARD_WEAK"],
+		"default_egg_skills": ["SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_MAG_LIGHT_STRIKE", "SKILL_AIR_ARMOR_WEAK"],
 		"unlockable_egg_skills": ["SKILL_AIR_MAG_SMALL_CANNON", "SKILL_AIR_MAG_CANNON"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_AIR_PHYS_GUST_KICK",
 			"new_element": "SKILL_AIR_MAG_TEMPEST_RAY",
 			"finisher_2": "SKILL_AIR_PHYS_CYCLONE_CLAW",
 		},
-		"bounty_egg_skills": {"alpha_5": "SKILL_AIR_WARD_SKY_DOME"},
+		"bounty_egg_skills": {"alpha_5": "SKILL_AIR_ARMOR_GALE_WALL"},
 	},
 	# Borkenhieb: Baumkrieger mit zwei Runenäxten
 	{
@@ -229,16 +228,16 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.EARTH,
 		"affinity": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.WATER,  # Neben-Element Schlamm
 		"stats": [215, 235],
-		"preferred_stats": {"hp": 19, "atk": 28, "def": 20, "s_atk": 7, "s_def": 14, "speed": 12},
+		"preferred_stats": {"hp": 19, "atk": 28, "def": 20, "s_atk": 7, "speed": 12},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_EARTH_PHYS_BOULDER_BASH", "SKILL_EARTH_ARMOR_LIGHT", "SKILL_EARTH_PHYS_SMALL_PUNCH"],
-		"unlockable_egg_skills": ["SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_WARD_CLAY_SEAL", "SKILL_EARTH_BUFF_ATK"],
+		"unlockable_egg_skills": ["SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_MAG_PEBBLE_STORM", "SKILL_EARTH_BUFF_ATK"],
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_EARTH_ARMOR_STONE_SKIN",
 			"boss_4": "SKILL_MUD_ARMOR_MUD_COAT",
 			"chaos": "SKILL_MUD_PHYS_MUD_PUNCH",
 		},
-		"bounty_egg_skills": {"alpha_6": "SKILL_MUD_WARD_PEAT_SEAL"},
+		"bounty_egg_skills": {"alpha_6": "SKILL_MUD_MAG_SLUDGE_SHOT"},
 	},
 	# Hainschwestern: vier Baumfeen unter einer Krone
 	{
@@ -247,16 +246,16 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.EARTH,
 		"affinity": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.WATER,  # Neben-Element Schlamm
 		"stats": [230, 250],
-		"preferred_stats": {"hp": 17, "atk": 8, "def": 14, "s_atk": 25, "s_def": 24, "speed": 12},
+		"preferred_stats": {"hp": 17, "atk": 8, "def": 14, "s_atk": 25, "speed": 12},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_EARTH_MAG_GEO_PULSE", "SKILL_EARTH_WARD_CLAY_SEAL", "SKILL_EARTH_MAG_SMALL_CANNON"],
-		"unlockable_egg_skills": ["SKILL_EARTH_WARD_CRYSTAL_SEAL", "SKILL_EARTH_MAG_GEO_PULSE_SWIFT", "SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_BUFF_TEAM_S_ATK"],
+		"default_egg_skills": ["SKILL_EARTH_MAG_GEO_PULSE", "SKILL_EARTH_ARMOR_STONE_SKIN", "SKILL_EARTH_MAG_SMALL_CANNON"],
+		"unlockable_egg_skills": ["SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_MAG_GEO_PULSE_SWIFT", "SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_BUFF_TEAM_S_ATK"],
 		"milestone_egg_skills": {
-			"kills_8": "SKILL_MUD_WARD_PEAT_SEAL",
+			"kills_8": "SKILL_MUD_ARMOR_MUD_COAT",
 			"flawless_3": "SKILL_MUD_MAG_SLUDGE_SHOT",
 			"chaos": "SKILL_PASSIVE_BULWARK_MASTER",
 		},
-		"bounty_egg_skills": {"alpha_7": "SKILL_MUD_ARMOR_MUD_COAT"},
+		"bounty_egg_skills": {"alpha_7": "SKILL_MUD_PHYS_MUD_PUNCH"},
 	},
 	# Glutmolch: Lavamolch mit brennendem Schwanz
 	{
@@ -264,10 +263,10 @@ var mons = [
 		"rarity": Enums.MON_RARITY.UNCOMMON,
 		"initial_type": Enums.MON_TYPES.FIRE,
 		"stats": [200, 220],
-		"preferred_stats": {"hp": 17, "atk": 16, "def": 15, "s_atk": 24, "s_def": 14, "speed": 14},
+		"preferred_stats": {"hp": 17, "atk": 16, "def": 15, "s_atk": 24, "speed": 14},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_FIRE_MAG_CANNON", "SKILL_FIRE_MAG_LIGHT_THRUST", "SKILL_FIRE_PHYS_LIGHT_STRIKE"],
-		"unlockable_egg_skills": ["SKILL_FIRE_WARD_PLAIN", "SKILL_FIRE_PHYS_FLAME_FIST", "SKILL_FIRE_MAG_FIREBALL", "SKILL_FIRE_BUFF_S_ATK"],
+		"unlockable_egg_skills": ["SKILL_FIRE_ARMOR_PLAIN", "SKILL_FIRE_PHYS_FLAME_FIST", "SKILL_FIRE_MAG_FIREBALL", "SKILL_FIRE_BUFF_S_ATK"],
 		"milestone_egg_skills": {
 			"kills_5": "SKILL_FIRE_ARMOR_CINDER_PLATE",
 			"new_element": "SKILL_FIRE_MAG_SPARK_SHOT",
@@ -281,16 +280,16 @@ var mons = [
 		"rarity": Enums.MON_RARITY.UNCOMMON,
 		"initial_type": Enums.MON_TYPES.WATER,
 		"stats": [200, 220],
-		"preferred_stats": {"hp": 24, "atk": 10, "def": 14, "s_atk": 20, "s_def": 22, "speed": 10},
+		"preferred_stats": {"hp": 24, "atk": 10, "def": 14, "s_atk": 20, "speed": 10},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_WATER_WARD_LIGHT", "SKILL_WATER_MAG_LIGHT_THRUST", "SKILL_WATER_MAG_LIGHT_STRIKE"],
-		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BACKHAND", "SKILL_WATER_MAG_BUBBLE_BEAM", "SKILL_WATER_WARD_TIDAL_DOME", "SKILL_WATER_BUFF_S_DEF"],
+		"default_egg_skills": ["SKILL_WATER_MAG_CANNON", "SKILL_WATER_MAG_LIGHT_THRUST", "SKILL_WATER_ARMOR_LIGHT"],
+		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BACKHAND", "SKILL_WATER_ARMOR_SHELL", "SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_BUFF_S_ATK"],
 		"milestone_egg_skills": {
-			"boss_1": "SKILL_WATER_ARMOR_SHELL",
-			"new_element": "SKILL_WATER_WARD_MIST_VEIL",
-			"boss_3": "SKILL_WATER_MAG_HYDRO_LANCE",
+			"boss_1": "SKILL_WATER_PHYS_TIDE_SLAP",
+			"new_element": "SKILL_WATER_MAG_BUBBLE_BEAM",
+			"boss_3": "SKILL_WATER_ARMOR_CORAL_WALL",
 		},
-		"bounty_egg_skills": {"alpha_9": "SKILL_WATER_ARMOR_CORAL_WALL"},
+		"bounty_egg_skills": {"alpha_9": "SKILL_WATER_PHYS_BREAKER"},
 	},
 	# Glutkoloss: Lavagolem mit glühendem Kern und Felsfäusten
 	{
@@ -299,16 +298,16 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.FIRE,
 		"affinity": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.FIRE,  # Neben-Element Magma
 		"stats": [215, 235],
-		"preferred_stats": {"hp": 24, "atk": 26, "def": 24, "s_atk": 8, "s_def": 10, "speed": 8},
+		"preferred_stats": {"hp": 24, "atk": 26, "def": 24, "s_atk": 8, "speed": 8},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_FIRE_PHYS_FLAME_FIST", "SKILL_FIRE_ARMOR_LIGHT", "SKILL_FIRE_PHYS_SMALL_PUNCH"],
-		"unlockable_egg_skills": ["SKILL_FIRE_PHYS_BLAZE_RUSH", "SKILL_FIRE_ARMOR_FLAME_WALL", "SKILL_FIRE_WARD_HEAT_VEIL", "SKILL_FIRE_BUFF_ATK"],
+		"unlockable_egg_skills": ["SKILL_FIRE_PHYS_BLAZE_RUSH", "SKILL_FIRE_ARMOR_FLAME_WALL", "SKILL_FIRE_MAG_SPARK_SHOT", "SKILL_FIRE_BUFF_ATK"],
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_FIRE_ARMOR_CINDER_PLATE",
 			"boss_4": "SKILL_MAGMA_ARMOR_PUMICE_SKIN",
 			"chaos": "SKILL_MAGMA_PHYS_EMBER_KNUCKLE",
 		},
-		"bounty_egg_skills": {"alpha_10": "SKILL_MAGMA_WARD_HEAT_SHIMMER"},
+		"bounty_egg_skills": {"alpha_10": "SKILL_MAGMA_MAG_LAVA_SPIT"},
 	},
 	# Wolkenkauz: Wolkeneule auf einem kleinen Wirbelsturm
 	{
@@ -316,16 +315,16 @@ var mons = [
 		"rarity": Enums.MON_RARITY.COMMON,
 		"initial_type": Enums.MON_TYPES.AIR,
 		"stats": [190, 210],
-		"preferred_stats": {"hp": 15, "atk": 10, "def": 12, "s_atk": 24, "s_def": 19, "speed": 20},
+		"preferred_stats": {"hp": 15, "atk": 10, "def": 12, "s_atk": 24, "speed": 20},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_MAG_LIGHT_STRIKE", "SKILL_AIR_WARD_WEAK"],
-		"unlockable_egg_skills": ["SKILL_AIR_PHYS_BACKHAND", "SKILL_AIR_ARMOR_DRAFT_GUARD", "SKILL_AIR_MAG_WIND_BLADE"],
+		"default_egg_skills": ["SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_MAG_LIGHT_STRIKE", "SKILL_AIR_ARMOR_WEAK"],
+		"unlockable_egg_skills": ["SKILL_AIR_PHYS_BACKHAND", "SKILL_AIR_PHYS_GUST_KICK", "SKILL_AIR_MAG_WIND_BLADE"],
 		"milestone_egg_skills": {
-			"boss_1": "SKILL_AIR_WARD_BREEZE_VEIL",
+			"boss_1": "SKILL_AIR_ARMOR_DRAFT_GUARD",
 			"new_element": "SKILL_AIR_MAG_TEMPEST_RAY",
-			"bounty": "SKILL_AIR_WARD_SKY_DOME",
+			"bounty": "SKILL_AIR_ARMOR_GALE_WALL",
 		},
-		"bounty_egg_skills": {"alpha_11": "SKILL_AIR_ARMOR_GALE_WALL"},
+		"bounty_egg_skills": {"alpha_11": "SKILL_AIR_PHYS_CYCLONE_CLAW"},
 	},
 	# Sturmgreif: Greif mit Blitzschwingen und Wirbelsturmschweifen
 	{
@@ -334,7 +333,7 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.AIR,
 		"affinity": Enums.MON_TYPES.FIRE | Enums.MON_TYPES.AIR,  # Neben-Element Blitz
 		"stats": [230, 250],
-		"preferred_stats": {"hp": 15, "atk": 22, "def": 12, "s_atk": 22, "s_def": 10, "speed": 19},
+		"preferred_stats": {"hp": 15, "atk": 22, "def": 12, "s_atk": 22, "speed": 19},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_AIR_PHYS_CYCLONE_CLAW", "SKILL_AIR_MAG_WIND_BLADE", "SKILL_AIR_PHYS_SMALL_PUNCH"],
 		"unlockable_egg_skills": ["SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_PHYS_CYCLONE_CLAW_SWIFT", "SKILL_AIR_ARMOR_GALE_WALL", "SKILL_AIR_BOON_TAILWIND"],
@@ -352,16 +351,16 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.EARTH,
 		"affinity": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.AIR,  # Neben-Element Staub
 		"stats": [215, 235],
-		"preferred_stats": {"hp": 22, "atk": 22, "def": 27, "s_atk": 6, "s_def": 15, "speed": 8},
+		"preferred_stats": {"hp": 22, "atk": 22, "def": 27, "s_atk": 6, "speed": 8},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_EARTH_ARMOR_STONE_SKIN", "SKILL_EARTH_PHYS_PUNCH", "SKILL_EARTH_PHYS_SMALL_PUNCH"],
-		"unlockable_egg_skills": ["SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_WARD_CLAY_SEAL", "SKILL_PASSIVE_EARTH_POWER"],
+		"unlockable_egg_skills": ["SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_MAG_PEBBLE_STORM", "SKILL_PASSIVE_EARTH_POWER"],
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_EARTH_PHYS_BOULDER_BASH",
 			"boss_4": "SKILL_DUST_PHYS_GRIT_PUNCH",
 			"chaos": "SKILL_DUST_ARMOR_SANDSTONE_SKIN",
 		},
-		"bounty_egg_skills": {"alpha_13": "SKILL_DUST_WARD_DUST_CLOAK"},
+		"bounty_egg_skills": {"alpha_13": "SKILL_DUST_MAG_DUST_SHOT"},
 	},
 	# Frostfähe: Eisfüchsin mit kristallenen Schweifen
 	{
@@ -370,16 +369,16 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.WATER,
 		"affinity": Enums.MON_TYPES.AIR | Enums.MON_TYPES.WATER,  # Neben-Element Eis
 		"stats": [215, 235],
-		"preferred_stats": {"hp": 14, "atk": 20, "def": 12, "s_atk": 20, "s_def": 14, "speed": 20},
+		"preferred_stats": {"hp": 14, "atk": 20, "def": 12, "s_atk": 20, "speed": 20},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_WATER_PHYS_TIDE_SLAP", "SKILL_WATER_MAG_CANNON", "SKILL_WATER_PHYS_SMALL_PUNCH"],
-		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BREAKER", "SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_WARD_MIST_VEIL", "SKILL_WATER_BUFF_ATK"],
+		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BREAKER", "SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_ARMOR_SHELL", "SKILL_WATER_BUFF_ATK"],
 		"milestone_egg_skills": {
 			"finisher_2": "SKILL_WATER_MAG_BUBBLE_BEAM",
 			"kills_15": "SKILL_ICE_MAG_SNOW_FLURRY",
 			"chaos": "SKILL_ICE_PHYS_FROST_BITE",
 		},
-		"bounty_egg_skills": {"alpha_14": "SKILL_ICE_WARD_SNOW_VEIL"},
+		"bounty_egg_skills": {"alpha_14": "SKILL_ICE_ARMOR_RIME_COAT"},
 	},
 	# Nebelspuk: Nebelgeist mit Dunstschwaden und violetten Augen, Luftwesen
 	{
@@ -387,16 +386,16 @@ var mons = [
 		"rarity": Enums.MON_RARITY.UNCOMMON,
 		"initial_type": Enums.MON_TYPES.AIR,
 		"stats": [200, 220],
-		"preferred_stats": {"hp": 14, "atk": 6, "def": 14, "s_atk": 26, "s_def": 24, "speed": 16},
+		"preferred_stats": {"hp": 14, "atk": 6, "def": 14, "s_atk": 26, "speed": 16},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_AIR_MAG_CANNON", "SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_WARD_LIGHT"],
-		"unlockable_egg_skills": ["SKILL_AIR_PHYS_BACKHAND", "SKILL_AIR_WARD_BREEZE_VEIL", "SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_BUFF_S_ATK"],
+		"default_egg_skills": ["SKILL_AIR_MAG_CANNON", "SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_ARMOR_LIGHT"],
+		"unlockable_egg_skills": ["SKILL_AIR_PHYS_BACKHAND", "SKILL_AIR_ARMOR_DRAFT_GUARD", "SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_BUFF_S_ATK"],
 		"milestone_egg_skills": {
-			"boss_1": "SKILL_AIR_ARMOR_DRAFT_GUARD",
+			"boss_1": "SKILL_AIR_PHYS_GUST_KICK",
 			"finisher_2": "SKILL_AIR_MAG_WIND_BLADE",
-			"chaos": "SKILL_AIR_WARD_SKY_DOME",
+			"chaos": "SKILL_AIR_ARMOR_GALE_WALL",
 		},
-		"bounty_egg_skills": {"alpha_15": "SKILL_AIR_ARMOR_GALE_WALL"},
+		"bounty_egg_skills": {"alpha_15": "SKILL_AIR_PHYS_CYCLONE_CLAW"},
 	},
 	# Funkenigel: Igel mit elektrisch geladenen Stacheln
 	{
@@ -404,10 +403,10 @@ var mons = [
 		"rarity": Enums.MON_RARITY.COMMON,
 		"initial_type": Enums.MON_TYPES.FIRE,
 		"stats": [190, 210],
-		"preferred_stats": {"hp": 14, "atk": 14, "def": 22, "s_atk": 22, "s_def": 10, "speed": 18},
+		"preferred_stats": {"hp": 14, "atk": 14, "def": 22, "s_atk": 22, "speed": 18},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_FIRE_MAG_LIGHT_THRUST", "SKILL_FIRE_MAG_LIGHT_STRIKE", "SKILL_FIRE_WARD_WEAK"],
-		"unlockable_egg_skills": ["SKILL_FIRE_WARD_PLAIN", "SKILL_FIRE_PHYS_FLAME_FIST", "SKILL_FIRE_MAG_SPARK_SHOT"],
+		"default_egg_skills": ["SKILL_FIRE_MAG_LIGHT_THRUST", "SKILL_FIRE_MAG_LIGHT_STRIKE", "SKILL_FIRE_ARMOR_WEAK"],
+		"unlockable_egg_skills": ["SKILL_FIRE_PHYS_BACKHAND", "SKILL_FIRE_PHYS_FLAME_FIST", "SKILL_FIRE_MAG_SPARK_SHOT"],
 		"milestone_egg_skills": {
 			"finisher_1": "SKILL_FIRE_ARMOR_CINDER_PLATE",
 			"new_element": "SKILL_FIRE_MAG_FIREBALL",
@@ -421,10 +420,10 @@ var mons = [
 		"rarity": Enums.MON_RARITY.UNCOMMON,
 		"initial_type": Enums.MON_TYPES.FIRE,
 		"stats": [200, 220],
-		"preferred_stats": {"hp": 16, "atk": 24, "def": 22, "s_atk": 14, "s_def": 12, "speed": 12},
+		"preferred_stats": {"hp": 16, "atk": 24, "def": 22, "s_atk": 14, "speed": 12},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_FIRE_PHYS_PUNCH", "SKILL_FIRE_PHYS_LIGHT_THRUST", "SKILL_FIRE_ARMOR_LIGHT"],
-		"unlockable_egg_skills": ["SKILL_FIRE_WARD_PLAIN", "SKILL_FIRE_ARMOR_CINDER_PLATE", "SKILL_FIRE_PHYS_BLAZE_RUSH", "SKILL_FIRE_BUFF_ATK"],
+		"unlockable_egg_skills": ["SKILL_FIRE_MAG_LIGHT_CANNON", "SKILL_FIRE_ARMOR_CINDER_PLATE", "SKILL_FIRE_PHYS_BLAZE_RUSH", "SKILL_FIRE_BUFF_ATK"],
 		"milestone_egg_skills": {
 			"kills_5": "SKILL_FIRE_MAG_SPARK_SHOT",
 			"new_element": "SKILL_FIRE_PHYS_FLAME_FIST",
@@ -438,16 +437,16 @@ var mons = [
 		"rarity": Enums.MON_RARITY.COMMON,
 		"initial_type": Enums.MON_TYPES.EARTH,
 		"stats": [190, 210],
-		"preferred_stats": {"hp": 15, "atk": 22, "def": 18, "s_atk": 10, "s_def": 13, "speed": 22},
+		"preferred_stats": {"hp": 15, "atk": 22, "def": 18, "s_atk": 10, "speed": 22},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_EARTH_PHYS_LIGHT_THRUST", "SKILL_EARTH_PHYS_LIGHT_STRIKE", "SKILL_EARTH_ARMOR_WEAK"],
-		"unlockable_egg_skills": ["SKILL_EARTH_MAG_LIGHT_CANNON", "SKILL_EARTH_WARD_CLAY_SEAL", "SKILL_EARTH_PHYS_BOULDER_BASH"],
+		"unlockable_egg_skills": ["SKILL_EARTH_MAG_LIGHT_CANNON", "SKILL_EARTH_MAG_PEBBLE_STORM", "SKILL_EARTH_PHYS_BOULDER_BASH"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_EARTH_ARMOR_STONE_SKIN",
 			"boss_3": "SKILL_EARTH_PHYS_QUAKE_STOMP",
 			"chaos": "SKILL_EARTH_ARMOR_GRANITE_BASTION",
 		},
-		"bounty_egg_skills": {"alpha_18": "SKILL_EARTH_WARD_CRYSTAL_SEAL"},
+		"bounty_egg_skills": {"alpha_18": "SKILL_EARTH_MAG_GEO_PULSE"},
 	},
 	# Reifwolf: Eiswolf mit Kristallmähne (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -456,7 +455,7 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.WATER,
 		"affinity": Enums.MON_TYPES.AIR | Enums.MON_TYPES.WATER,  # Neben-Element Eis
 		"stats": [215, 235],
-		"preferred_stats": {"hp": 14, "atk": 24, "def": 12, "s_atk": 18, "s_def": 12, "speed": 20},
+		"preferred_stats": {"hp": 14, "atk": 24, "def": 12, "s_atk": 18, "speed": 20},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_WATER_PHYS_TIDE_SLAP", "SKILL_WATER_MAG_CANNON", "SKILL_WATER_PHYS_SMALL_PUNCH"],
 		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BREAKER", "SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_ARMOR_SHELL", "SKILL_WATER_BUFF_ATK"],
@@ -473,16 +472,16 @@ var mons = [
 		"rarity": Enums.MON_RARITY.UNCOMMON,
 		"initial_type": Enums.MON_TYPES.WATER,
 		"stats": [200, 220],
-		"preferred_stats": {"hp": 22, "atk": 14, "def": 22, "s_atk": 18, "s_def": 16, "speed": 8},
+		"preferred_stats": {"hp": 22, "atk": 14, "def": 22, "s_atk": 18, "speed": 8},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_WATER_ARMOR_LIGHT", "SKILL_WATER_MAG_LIGHT_THRUST", "SKILL_WATER_MAG_LIGHT_STRIKE"],
 		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BACKHAND", "SKILL_WATER_MAG_BUBBLE_BEAM", "SKILL_WATER_ARMOR_CORAL_WALL", "SKILL_WATER_BUFF_DEF"],
 		"milestone_egg_skills": {
-			"finisher_1": "SKILL_WATER_WARD_MIST_VEIL",
+			"finisher_1": "SKILL_WATER_PHYS_TIDE_SLAP",
 			"new_element": "SKILL_WATER_ARMOR_SHELL",
 			"finisher_2": "SKILL_WATER_MAG_HYDRO_LANCE",
 		},
-		"bounty_egg_skills": {"alpha_20": "SKILL_WATER_WARD_TIDAL_DOME"},
+		"bounty_egg_skills": {"alpha_20": "SKILL_WATER_PHYS_BREAKER"},
 	},
 	# Dünenstachler: Sandskorpion im Staubwirbel, flinker physischer Angreifer mit Scheren und Giftstachel, Neben-Element Staub
 	{
@@ -490,16 +489,16 @@ var mons = [
 		"rarity": Enums.MON_RARITY.COMMON,
 		"initial_type": Enums.MON_TYPES.EARTH,
 		"stats": [190, 210],
-		"preferred_stats": {"hp": 14, "atk": 26, "def": 16, "s_atk": 8, "s_def": 12, "speed": 24},
+		"preferred_stats": {"hp": 14, "atk": 26, "def": 16, "s_atk": 8, "speed": 24},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_EARTH_PHYS_LIGHT_THRUST", "SKILL_EARTH_PHYS_LIGHT_STRIKE", "SKILL_EARTH_ARMOR_WEAK"],
-		"unlockable_egg_skills": ["SKILL_EARTH_MAG_LIGHT_CANNON", "SKILL_EARTH_WARD_CLAY_SEAL", "SKILL_EARTH_PHYS_BOULDER_BASH"],
+		"unlockable_egg_skills": ["SKILL_EARTH_MAG_LIGHT_CANNON", "SKILL_EARTH_MAG_PEBBLE_STORM", "SKILL_EARTH_PHYS_BOULDER_BASH"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_EARTH_ARMOR_STONE_SKIN",
 			"new_element": "SKILL_EARTH_PHYS_QUAKE_STOMP",
 			"flawless_2": "SKILL_EARTH_ARMOR_GRANITE_BASTION",
 		},
-		"bounty_egg_skills": {"alpha_21": "SKILL_EARTH_WARD_CRYSTAL_SEAL"},
+		"bounty_egg_skills": {"alpha_21": "SKILL_EARTH_MAG_GEO_PULSE"},
 	},
 	# Schlammschlund: Moorkröte mit Wurzelschwanz, Erdwesen (Platzhalter: Werte folgen beim Balancing)
 	{
@@ -507,16 +506,16 @@ var mons = [
 		"rarity": Enums.MON_RARITY.COMMON,
 		"initial_type": Enums.MON_TYPES.EARTH,
 		"stats": [190, 210],
-		"preferred_stats": {"hp": 24, "atk": 18, "def": 18, "s_atk": 12, "s_def": 18, "speed": 10},
+		"preferred_stats": {"hp": 24, "atk": 18, "def": 18, "s_atk": 12, "speed": 10},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_EARTH_PHYS_LIGHT_THRUST", "SKILL_EARTH_PHYS_LIGHT_STRIKE", "SKILL_EARTH_ARMOR_WEAK"],
-		"unlockable_egg_skills": ["SKILL_EARTH_MAG_LIGHT_CANNON", "SKILL_EARTH_WARD_CLAY_SEAL", "SKILL_EARTH_PHYS_BOULDER_BASH"],
+		"unlockable_egg_skills": ["SKILL_EARTH_MAG_LIGHT_CANNON", "SKILL_EARTH_MAG_PEBBLE_STORM", "SKILL_EARTH_PHYS_BOULDER_BASH"],
 		"milestone_egg_skills": {
 			"finisher_1": "SKILL_EARTH_ARMOR_STONE_SKIN",
 			"boss_3": "SKILL_EARTH_PHYS_QUAKE_STOMP",
 			"chaos": "SKILL_EARTH_ARMOR_GRANITE_BASTION",
 		},
-		"bounty_egg_skills": {"alpha_22": "SKILL_EARTH_WARD_CRYSTAL_SEAL"},
+		"bounty_egg_skills": {"alpha_22": "SKILL_EARTH_MAG_GEO_PULSE"},
 	},
 	# Aschrücken: Magmaechse mit Lavaschwanz (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -525,7 +524,7 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.FIRE,
 		"affinity": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.FIRE,  # Neben-Element Magma
 		"stats": [215, 235],
-		"preferred_stats": {"hp": 20, "atk": 26, "def": 22, "s_atk": 12, "s_def": 12, "speed": 8},
+		"preferred_stats": {"hp": 20, "atk": 26, "def": 22, "s_atk": 12, "speed": 8},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_FIRE_PHYS_FLAME_FIST", "SKILL_FIRE_ARMOR_LIGHT", "SKILL_FIRE_PHYS_SMALL_PUNCH"],
 		"unlockable_egg_skills": ["SKILL_FIRE_PHYS_BLAZE_RUSH", "SKILL_FIRE_ARMOR_FLAME_WALL", "SKILL_FIRE_MAG_SPARK_SHOT", "SKILL_FIRE_BUFF_ATK"],
@@ -542,10 +541,10 @@ var mons = [
 		"rarity": Enums.MON_RARITY.UNCOMMON,
 		"initial_type": Enums.MON_TYPES.AIR,
 		"stats": [200, 220],
-		"preferred_stats": {"hp": 14, "atk": 22, "def": 24, "s_atk": 14, "s_def": 12, "speed": 14},
+		"preferred_stats": {"hp": 14, "atk": 22, "def": 24, "s_atk": 14, "speed": 14},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_AIR_ARMOR_LIGHT", "SKILL_AIR_PHYS_LIGHT_THRUST", "SKILL_AIR_PHYS_LIGHT_STRIKE"],
-		"unlockable_egg_skills": ["SKILL_AIR_WARD_PLAIN", "SKILL_AIR_PHYS_GUST_KICK", "SKILL_AIR_ARMOR_GALE_WALL", "SKILL_AIR_BUFF_DEF"],
+		"unlockable_egg_skills": ["SKILL_AIR_MAG_LIGHT_CANNON", "SKILL_AIR_PHYS_GUST_KICK", "SKILL_AIR_ARMOR_GALE_WALL", "SKILL_AIR_BUFF_DEF"],
 		"milestone_egg_skills": {
 			"kills_5": "SKILL_AIR_MAG_WIND_BLADE",
 			"new_element": "SKILL_AIR_ARMOR_DRAFT_GUARD",
@@ -560,16 +559,16 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.EARTH,
 		"affinity": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.WATER,  # Neben-Element Schlamm
 		"stats": [230, 250],
-		"preferred_stats": {"hp": 26, "atk": 14, "def": 26, "s_atk": 12, "s_def": 16, "speed": 6},
+		"preferred_stats": {"hp": 26, "atk": 14, "def": 26, "s_atk": 12, "speed": 6},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_WARD_CLAY_SEAL", "SKILL_EARTH_PHYS_SMALL_PUNCH"],
-		"unlockable_egg_skills": ["SKILL_EARTH_WARD_CRYSTAL_SEAL", "SKILL_EARTH_ARMOR_GRANITE_BASTION_SWIFT", "SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_BUFF_TEAM_DEF"],
+		"default_egg_skills": ["SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_PHYS_BOULDER_BASH", "SKILL_EARTH_PHYS_SMALL_PUNCH"],
+		"unlockable_egg_skills": ["SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_ARMOR_GRANITE_BASTION_SWIFT", "SKILL_EARTH_MAG_GEO_PULSE", "SKILL_EARTH_BUFF_TEAM_DEF"],
 		"milestone_egg_skills": {
-			"boss_2": "SKILL_MUD_WARD_PEAT_SEAL",
+			"boss_2": "SKILL_MUD_PHYS_MUD_PUNCH",
 			"flawless_3": "SKILL_MUD_ARMOR_MUD_COAT",
 			"chaos": "SKILL_PASSIVE_BULWARK_MASTER",
 		},
-		"bounty_egg_skills": {"alpha_25": "SKILL_MUD_PHYS_MUD_PUNCH"},
+		"bounty_egg_skills": {"alpha_25": "SKILL_MUD_MAG_SLUDGE_SHOT"},
 	},
 	# Aschwirbel: Rauchgeist im Glutsturm (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -577,16 +576,16 @@ var mons = [
 		"rarity": Enums.MON_RARITY.UNCOMMON,
 		"initial_type": Enums.MON_TYPES.AIR,
 		"stats": [200, 220],
-		"preferred_stats": {"hp": 12, "atk": 10, "def": 12, "s_atk": 26, "s_def": 18, "speed": 22},
+		"preferred_stats": {"hp": 12, "atk": 10, "def": 12, "s_atk": 26, "speed": 22},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_AIR_MAG_CANNON", "SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_WARD_LIGHT"],
-		"unlockable_egg_skills": ["SKILL_AIR_PHYS_BACKHAND", "SKILL_AIR_WARD_BREEZE_VEIL", "SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_BUFF_S_ATK"],
+		"default_egg_skills": ["SKILL_AIR_MAG_CANNON", "SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_ARMOR_LIGHT"],
+		"unlockable_egg_skills": ["SKILL_AIR_PHYS_BACKHAND", "SKILL_AIR_ARMOR_DRAFT_GUARD", "SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_BUFF_S_ATK"],
 		"milestone_egg_skills": {
-			"boss_1": "SKILL_AIR_ARMOR_DRAFT_GUARD",
+			"boss_1": "SKILL_AIR_PHYS_GUST_KICK",
 			"new_element": "SKILL_AIR_MAG_WIND_BLADE",
-			"flawless_2": "SKILL_AIR_WARD_SKY_DOME",
+			"flawless_2": "SKILL_AIR_ARMOR_GALE_WALL",
 		},
-		"bounty_egg_skills": {"alpha_26": "SKILL_AIR_ARMOR_GALE_WALL"},
+		"bounty_egg_skills": {"alpha_26": "SKILL_AIR_PHYS_CYCLONE_CLAW"},
 	},
 	# Donnerhorn: gehörnte Gewitterwolke (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -595,16 +594,16 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.AIR,
 		"affinity": Enums.MON_TYPES.FIRE | Enums.MON_TYPES.AIR,  # Neben-Element Blitz
 		"stats": [215, 235],
-		"preferred_stats": {"hp": 16, "atk": 12, "def": 14, "s_atk": 26, "s_def": 18, "speed": 14},
+		"preferred_stats": {"hp": 16, "atk": 12, "def": 14, "s_atk": 26, "speed": 14},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_AIR_MAG_WIND_BLADE", "SKILL_AIR_WARD_LIGHT", "SKILL_AIR_MAG_SMALL_CANNON"],
-		"unlockable_egg_skills": ["SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_WARD_SKY_DOME", "SKILL_AIR_ARMOR_DRAFT_GUARD", "SKILL_AIR_BUFF_S_ATK"],
+		"default_egg_skills": ["SKILL_AIR_MAG_WIND_BLADE", "SKILL_AIR_ARMOR_LIGHT", "SKILL_AIR_MAG_SMALL_CANNON"],
+		"unlockable_egg_skills": ["SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_ARMOR_GALE_WALL", "SKILL_AIR_PHYS_GUST_KICK", "SKILL_AIR_BUFF_S_ATK"],
 		"milestone_egg_skills": {
-			"kills_8": "SKILL_AIR_WARD_BREEZE_VEIL",
-			"kills_15": "SKILL_LIGHTNING_WARD_ION_VEIL",
+			"kills_8": "SKILL_AIR_ARMOR_DRAFT_GUARD",
+			"kills_15": "SKILL_LIGHTNING_ARMOR_CHARGE_PLATE",
 			"chaos": "SKILL_LIGHTNING_MAG_SPARK_BOLT",
 		},
-		"bounty_egg_skills": {"alpha_27": "SKILL_LIGHTNING_ARMOR_CHARGE_PLATE"},
+		"bounty_egg_skills": {"alpha_27": "SKILL_LIGHTNING_PHYS_SHOCK_TAP"},
 	},
 	# Dünenbrecher: Sandsteinnashorn (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -613,16 +612,16 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.EARTH,
 		"affinity": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.AIR,  # Neben-Element Staub
 		"stats": [230, 250],
-		"preferred_stats": {"hp": 20, "atk": 28, "def": 24, "s_atk": 6, "s_def": 12, "speed": 10},
+		"preferred_stats": {"hp": 20, "atk": 28, "def": 24, "s_atk": 6, "speed": 10},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_ARMOR_STONE_SKIN", "SKILL_EARTH_PHYS_SMALL_PUNCH"],
-		"unlockable_egg_skills": ["SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_PHYS_QUAKE_STOMP_SWIFT", "SKILL_EARTH_WARD_CRYSTAL_SEAL", "SKILL_EARTH_BUFF_TEAM_ATK"],
+		"unlockable_egg_skills": ["SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_PHYS_QUAKE_STOMP_SWIFT", "SKILL_EARTH_MAG_GEO_PULSE", "SKILL_EARTH_BUFF_TEAM_ATK"],
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_DUST_ARMOR_SANDSTONE_SKIN",
 			"kills_15": "SKILL_DUST_PHYS_GRIT_PUNCH",
 			"chaos": "SKILL_PASSIVE_EARTH_POWER",
 		},
-		"bounty_egg_skills": {"alpha_28": "SKILL_DUST_WARD_DUST_CLOAK"},
+		"bounty_egg_skills": {"alpha_28": "SKILL_DUST_MAG_DUST_SHOT"},
 	},
 	# Sturmdschinn: gepanzerter Wirbelsturm mit Blitzklauen (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -632,7 +631,7 @@ var mons = [
 		"affinity": Enums.MON_TYPES.FIRE | Enums.MON_TYPES.AIR,  # Neben-Element Blitz
 		"affinity_triple": Enums.MON_TYPES.AIR | Enums.MON_TYPES.WATER | Enums.MON_TYPES.FIRE,  # Dreier-Kombi Gewitter
 		"stats": [245, 265],
-		"preferred_stats": {"hp": 14, "atk": 10, "def": 18, "s_atk": 26, "s_def": 14, "speed": 18},
+		"preferred_stats": {"hp": 14, "atk": 10, "def": 18, "s_atk": 26, "speed": 18},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_ARMOR_GALE_WALL", "SKILL_AIR_MAG_TEMPEST_RAY_SWIFT"],
 		"unlockable_egg_skills": ["SKILL_LIGHTNING_MAG_ARC_BOLT", "SKILL_LIGHTNING_ARMOR_STATIC_PLATE", "SKILL_LIGHTNING_MAG_THUNDERCLAP", "SKILL_LIGHTNING_BOON_OVERCHARGE"],
@@ -651,7 +650,7 @@ var mons = [
 		"affinity": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.FIRE,  # Neben-Element Magma
 		"affinity_triple": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.FIRE | Enums.MON_TYPES.WATER,  # Dreier-Kombi Vulkan
 		"stats": [245, 265],
-		"preferred_stats": {"hp": 22, "atk": 28, "def": 22, "s_atk": 8, "s_def": 12, "speed": 8},
+		"preferred_stats": {"hp": 22, "atk": 28, "def": 22, "s_atk": 8, "speed": 8},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_FIRE_PHYS_BLAZE_RUSH", "SKILL_FIRE_ARMOR_FLAME_WALL", "SKILL_FIRE_PHYS_BLAZE_RUSH_SWIFT"],
 		"unlockable_egg_skills": ["SKILL_MAGMA_PHYS_LAVA_FIST", "SKILL_MAGMA_ARMOR_OBSIDIAN_PLATE", "SKILL_MAGMA_PHYS_ERUPTION_SLAM", "SKILL_MAGMA_BUFF_T4"],
@@ -670,16 +669,16 @@ var mons = [
 		"affinity": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.AIR,  # Neben-Element Staub
 		"affinity_triple": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.AIR | Enums.MON_TYPES.FIRE,  # Dreier-Kombi Aschesturm
 		"stats": [245, 265],
-		"preferred_stats": {"hp": 14, "atk": 10, "def": 14, "s_atk": 26, "s_def": 20, "speed": 16},
+		"preferred_stats": {"hp": 14, "atk": 10, "def": 14, "s_atk": 26, "speed": 16},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_EARTH_MAG_GEO_PULSE", "SKILL_EARTH_WARD_CRYSTAL_SEAL", "SKILL_EARTH_MAG_GEO_PULSE_SWIFT"],
-		"unlockable_egg_skills": ["SKILL_DUST_MAG_DUST_DEVIL", "SKILL_DUST_WARD_SAND_VEIL", "SKILL_DUST_MAG_SANDSTORM", "SKILL_DUST_BUFF_T4"],
+		"default_egg_skills": ["SKILL_EARTH_MAG_GEO_PULSE", "SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_MAG_GEO_PULSE_SWIFT"],
+		"unlockable_egg_skills": ["SKILL_DUST_MAG_DUST_DEVIL", "SKILL_DUST_ARMOR_DUNE_WALL", "SKILL_DUST_MAG_SANDSTORM", "SKILL_DUST_BUFF_T4"],
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_ASH_STORM_MAG_EMBER_GUST",
 			"boss_4": "SKILL_ASH_STORM_MAG_ASH_CYCLONE",
 			"chaos": "SKILL_PASSIVE_DUST_T4",
 		},
-		"bounty_egg_skills": {"alpha_31": "SKILL_ASH_STORM_WARD_SMOKE_SCREEN"},
+		"bounty_egg_skills": {"alpha_31": "SKILL_ASH_STORM_ARMOR_CINDER_SHELL"},
 	},
 	# Blutmähne: Mantikor mit Runenpanzer (Erde, Neben-Element Staub)
 	{
@@ -689,7 +688,7 @@ var mons = [
 		"affinity": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.AIR,  # Neben-Element Staub
 		"affinity_triple": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.AIR | Enums.MON_TYPES.FIRE,  # Dreier-Kombi Aschesturm
 		"stats": [245, 265],
-		"preferred_stats": {"hp": 16, "atk": 22, "def": 20, "s_atk": 12, "s_def": 12, "speed": 18},
+		"preferred_stats": {"hp": 16, "atk": 22, "def": 20, "s_atk": 12, "speed": 18},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_PHYS_QUAKE_STOMP_SWIFT"],
 		"unlockable_egg_skills": ["SKILL_DUST_PHYS_SAND_CLAW", "SKILL_DUST_ARMOR_DUNE_WALL", "SKILL_DUST_MAG_SANDSTORM", "SKILL_DUST_BUFF_T4"],
@@ -706,16 +705,16 @@ var mons = [
 		"rarity": Enums.MON_RARITY.UNCOMMON,
 		"initial_type": Enums.MON_TYPES.EARTH,
 		"stats": [200, 220],
-		"preferred_stats": {"hp": 12, "atk": 22, "def": 12, "s_atk": 16, "s_def": 14, "speed": 24},
+		"preferred_stats": {"hp": 12, "atk": 22, "def": 12, "s_atk": 16, "speed": 24},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_EARTH_PHYS_PUNCH", "SKILL_EARTH_PHYS_LIGHT_THRUST", "SKILL_EARTH_MAG_LIGHT_STRIKE"],
 		"unlockable_egg_skills": ["SKILL_EARTH_ARMOR_PLAIN", "SKILL_EARTH_MAG_PEBBLE_STORM", "SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_BUFF_ATK"],
 		"milestone_egg_skills": {
-			"kills_5": "SKILL_EARTH_WARD_CLAY_SEAL",
+			"kills_5": "SKILL_EARTH_ARMOR_STONE_SKIN",
 			"new_element": "SKILL_EARTH_PHYS_BOULDER_BASH",
 			"flawless_2": "SKILL_EARTH_MAG_GEO_PULSE",
 		},
-		"bounty_egg_skills": {"alpha_36": "SKILL_EARTH_WARD_CRYSTAL_SEAL"},
+		"bounty_egg_skills": {"alpha_36": "SKILL_EARTH_ARMOR_GRANITE_BASTION"},
 	},
 	# Mooskoloss: Baumriese aus Moos und Wurzeln mit Kristallkrone (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -724,7 +723,7 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.EARTH,
 		"affinity": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.WATER,  # Neben-Element Schlamm
 		"stats": [230, 250],
-		"preferred_stats": {"hp": 24, "atk": 16, "def": 18, "s_atk": 18, "s_def": 16, "speed": 8},
+		"preferred_stats": {"hp": 24, "atk": 16, "def": 18, "s_atk": 18, "speed": 8},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_EARTH_MAG_GEO_PULSE", "SKILL_EARTH_ARMOR_STONE_SKIN", "SKILL_EARTH_MAG_SMALL_CANNON"],
 		"unlockable_egg_skills": ["SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_MAG_GEO_PULSE_SWIFT", "SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_BUFF_TEAM_S_ATK"],
@@ -743,16 +742,16 @@ var mons = [
 		"affinity": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.WATER,  # Neben-Element Schlamm
 		"affinity_triple": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.AIR | Enums.MON_TYPES.WATER,  # Dreier-Kombi Sumpf
 		"stats": [245, 265],
-		"preferred_stats": {"hp": 15, "atk": 14, "def": 13, "s_atk": 26, "s_def": 16, "speed": 16},
+		"preferred_stats": {"hp": 15, "atk": 14, "def": 13, "s_atk": 26, "speed": 16},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_WARD_TIDAL_DOME", "SKILL_WATER_MAG_HYDRO_LANCE_SWIFT"],
-		"unlockable_egg_skills": ["SKILL_MUD_MAG_BOG_PULSE", "SKILL_MUD_WARD_SILT_SEAL", "SKILL_MUD_ARMOR_LANDSLIDE_WALL", "SKILL_MUD_BUFF_T4"],
+		"default_egg_skills": ["SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_PHYS_BREAKER", "SKILL_WATER_MAG_HYDRO_LANCE_SWIFT"],
+		"unlockable_egg_skills": ["SKILL_MUD_MAG_BOG_PULSE", "SKILL_MUD_PHYS_MUD_SLAM", "SKILL_MUD_ARMOR_LANDSLIDE_WALL", "SKILL_MUD_BUFF_T4"],
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_SWAMP_MAG_SPORE_PUFF",
 			"boss_4": "SKILL_SWAMP_MAG_MIASMA_CLOUD",
 			"chaos": "SKILL_PASSIVE_MUD_T4",
 		},
-		"bounty_egg_skills": {"alpha_38": "SKILL_SWAMP_WARD_BOG_MIST"},
+		"bounty_egg_skills": {"alpha_38": "SKILL_SWAMP_PHYS_REED_WHIP"},
 	},
 	# Frostgürtler: Gürteltier aus Eisplatten (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -761,16 +760,16 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.WATER,
 		"affinity": Enums.MON_TYPES.AIR | Enums.MON_TYPES.WATER,  # Neben-Element Eis
 		"stats": [215, 235],
-		"preferred_stats": {"hp": 20, "atk": 20, "def": 28, "s_atk": 8, "s_def": 16, "speed": 8},
+		"preferred_stats": {"hp": 20, "atk": 20, "def": 28, "s_atk": 8, "speed": 8},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_WATER_ARMOR_SHELL", "SKILL_WATER_PHYS_PUNCH", "SKILL_WATER_PHYS_SMALL_PUNCH"],
-		"unlockable_egg_skills": ["SKILL_WATER_ARMOR_CORAL_WALL", "SKILL_WATER_PHYS_BREAKER", "SKILL_WATER_WARD_MIST_VEIL", "SKILL_PASSIVE_WATER_POWER"],
+		"unlockable_egg_skills": ["SKILL_WATER_ARMOR_CORAL_WALL", "SKILL_WATER_PHYS_BREAKER", "SKILL_WATER_MAG_BUBBLE_BEAM", "SKILL_PASSIVE_WATER_POWER"],
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_WATER_PHYS_TIDE_SLAP",
 			"flawless_3": "SKILL_ICE_PHYS_FROST_BITE",
 			"chaos": "SKILL_ICE_ARMOR_RIME_COAT",
 		},
-		"bounty_egg_skills": {"alpha_39": "SKILL_ICE_WARD_SNOW_VEIL"},
+		"bounty_egg_skills": {"alpha_39": "SKILL_ICE_MAG_SNOW_FLURRY"},
 	},
 	# Runenskarab: gekrönter Käfer mit Runenpanzer und Geisterflammen (Platzhalter: Typ, Werte und Attacken folgen beim Balancing)
 	{
@@ -779,7 +778,7 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.EARTH,
 		"affinity": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.AIR,  # Neben-Element Staub
 		"stats": [230, 250],
-		"preferred_stats": {"hp": 16, "atk": 22, "def": 22, "s_atk": 14, "s_def": 14, "speed": 12},
+		"preferred_stats": {"hp": 16, "atk": 22, "def": 22, "s_atk": 14, "speed": 12},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_ARMOR_STONE_SKIN", "SKILL_EARTH_PHYS_SMALL_PUNCH"],
 		"unlockable_egg_skills": ["SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_PHYS_QUAKE_STOMP_SWIFT", "SKILL_EARTH_MAG_GEO_PULSE", "SKILL_EARTH_BUFF_TEAM_ATK"],
@@ -796,10 +795,10 @@ var mons = [
 		"rarity": Enums.MON_RARITY.COMMON,
 		"initial_type": Enums.MON_TYPES.FIRE,
 		"stats": [190, 210],
-		"preferred_stats": {"hp": 18, "atk": 20, "def": 22, "s_atk": 14, "s_def": 14, "speed": 12},
+		"preferred_stats": {"hp": 18, "atk": 20, "def": 22, "s_atk": 14, "speed": 12},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_FIRE_PHYS_WEAK_THRUST", "SKILL_FIRE_ARMOR_LIGHT", "SKILL_FIRE_WARD_WEAK"],
-		"unlockable_egg_skills": ["SKILL_FIRE_WARD_PLAIN", "SKILL_FIRE_MAG_SPARK_SHOT", "SKILL_FIRE_ARMOR_CINDER_PLATE"],
+		"default_egg_skills": ["SKILL_FIRE_PHYS_WEAK_THRUST", "SKILL_FIRE_ARMOR_LIGHT", "SKILL_FIRE_MAG_WEAK_THRUST"],
+		"unlockable_egg_skills": ["SKILL_FIRE_MAG_LIGHT_CANNON", "SKILL_FIRE_MAG_SPARK_SHOT", "SKILL_FIRE_ARMOR_CINDER_PLATE"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_FIRE_PHYS_FLAME_FIST",
 			"new_element": "SKILL_FIRE_ARMOR_FLAME_WALL",
@@ -813,10 +812,10 @@ var mons = [
 		"rarity": Enums.MON_RARITY.UNCOMMON,
 		"initial_type": Enums.MON_TYPES.AIR,
 		"stats": [200, 220],
-		"preferred_stats": {"hp": 16, "atk": 24, "def": 14, "s_atk": 16, "s_def": 14, "speed": 16},
+		"preferred_stats": {"hp": 16, "atk": 24, "def": 14, "s_atk": 16, "speed": 16},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_AIR_PHYS_PUNCH", "SKILL_AIR_PHYS_LIGHT_THRUST", "SKILL_AIR_MAG_LIGHT_STRIKE"],
-		"unlockable_egg_skills": ["SKILL_AIR_WARD_PLAIN", "SKILL_AIR_MAG_WIND_BLADE", "SKILL_AIR_PHYS_CYCLONE_CLAW", "SKILL_AIR_BUFF_ATK"],
+		"unlockable_egg_skills": ["SKILL_AIR_ARMOR_PLAIN", "SKILL_AIR_MAG_WIND_BLADE", "SKILL_AIR_PHYS_CYCLONE_CLAW", "SKILL_AIR_BUFF_ATK"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_AIR_ARMOR_DRAFT_GUARD",
 			"boss_3": "SKILL_AIR_PHYS_GUST_KICK",
@@ -831,7 +830,7 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.FIRE,
 		"affinity": Enums.MON_TYPES.FIRE | Enums.MON_TYPES.AIR,  # Neben-Element Blitz
 		"stats": [215, 235],
-		"preferred_stats": {"hp": 13, "atk": 27, "def": 12, "s_atk": 14, "s_def": 12, "speed": 22},
+		"preferred_stats": {"hp": 13, "atk": 27, "def": 12, "s_atk": 14, "speed": 22},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_FIRE_PHYS_FLAME_FIST", "SKILL_FIRE_MAG_CANNON", "SKILL_FIRE_PHYS_SMALL_PUNCH"],
 		"unlockable_egg_skills": ["SKILL_FIRE_PHYS_BLAZE_RUSH", "SKILL_FIRE_MAG_FIREBALL", "SKILL_FIRE_ARMOR_CINDER_PLATE", "SKILL_FIRE_BUFF_ATK"],
@@ -850,7 +849,7 @@ var mons = [
 		"affinity": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.FIRE,  # Neben-Element Magma
 		"affinity_triple": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.FIRE | Enums.MON_TYPES.WATER,  # Dreier-Kombi Vulkan
 		"stats": [245, 265],
-		"preferred_stats": {"hp": 22, "atk": 18, "def": 26, "s_atk": 18, "s_def": 10, "speed": 6},
+		"preferred_stats": {"hp": 22, "atk": 18, "def": 26, "s_atk": 18, "speed": 6},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_FIRE_ARMOR_FLAME_WALL", "SKILL_FIRE_PHYS_BLAZE_RUSH", "SKILL_FIRE_PHYS_BLAZE_RUSH_SWIFT"],
 		"unlockable_egg_skills": ["SKILL_MAGMA_ARMOR_OBSIDIAN_PLATE", "SKILL_MAGMA_PHYS_LAVA_FIST", "SKILL_MAGMA_PHYS_ERUPTION_SLAM", "SKILL_MAGMA_BUFF_T4"],
@@ -867,10 +866,10 @@ var mons = [
 		"rarity": Enums.MON_RARITY.COMMON,
 		"initial_type": Enums.MON_TYPES.FIRE,
 		"stats": [190, 210],
-		"preferred_stats": {"hp": 18, "atk": 24, "def": 22, "s_atk": 12, "s_def": 12, "speed": 12},
+		"preferred_stats": {"hp": 18, "atk": 24, "def": 22, "s_atk": 12, "speed": 12},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_FIRE_PHYS_LIGHT_THRUST", "SKILL_FIRE_PHYS_LIGHT_STRIKE", "SKILL_FIRE_ARMOR_WEAK"],
-		"unlockable_egg_skills": ["SKILL_FIRE_WARD_PLAIN", "SKILL_FIRE_MAG_SPARK_SHOT", "SKILL_FIRE_PHYS_FLAME_FIST"],
+		"unlockable_egg_skills": ["SKILL_FIRE_MAG_LIGHT_CANNON", "SKILL_FIRE_MAG_SPARK_SHOT", "SKILL_FIRE_PHYS_FLAME_FIST"],
 		"milestone_egg_skills": {
 			"kills_5": "SKILL_FIRE_ARMOR_CINDER_PLATE",
 			"new_element": "SKILL_FIRE_PHYS_BLAZE_RUSH",
@@ -884,10 +883,10 @@ var mons = [
 		"rarity": Enums.MON_RARITY.UNCOMMON,
 		"initial_type": Enums.MON_TYPES.WATER,
 		"stats": [200, 220],
-		"preferred_stats": {"hp": 13, "atk": 27, "def": 12, "s_atk": 14, "s_def": 12, "speed": 22},
+		"preferred_stats": {"hp": 13, "atk": 27, "def": 12, "s_atk": 14, "speed": 22},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_WATER_PHYS_PUNCH", "SKILL_WATER_PHYS_LIGHT_THRUST", "SKILL_WATER_MAG_LIGHT_STRIKE"],
-		"unlockable_egg_skills": ["SKILL_WATER_WARD_PLAIN", "SKILL_WATER_MAG_BUBBLE_BEAM", "SKILL_WATER_PHYS_BREAKER", "SKILL_WATER_BUFF_ATK"],
+		"unlockable_egg_skills": ["SKILL_WATER_ARMOR_PLAIN", "SKILL_WATER_MAG_BUBBLE_BEAM", "SKILL_WATER_PHYS_BREAKER", "SKILL_WATER_BUFF_ATK"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_WATER_ARMOR_SHELL",
 			"boss_3": "SKILL_WATER_PHYS_TIDE_SLAP",
@@ -902,16 +901,16 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.WATER,
 		"affinity": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.WATER,  # Neben-Element Schlamm
 		"stats": [215, 235],
-		"preferred_stats": {"hp": 24, "atk": 10, "def": 16, "s_atk": 20, "s_def": 22, "speed": 8},
+		"preferred_stats": {"hp": 24, "atk": 10, "def": 16, "s_atk": 20, "speed": 8},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_WATER_WARD_MIST_VEIL", "SKILL_WATER_MAG_CANNON", "SKILL_WATER_MAG_SMALL_CANNON"],
-		"unlockable_egg_skills": ["SKILL_WATER_WARD_TIDAL_DOME", "SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_ARMOR_SHELL", "SKILL_PASSIVE_WATER_POWER"],
+		"default_egg_skills": ["SKILL_WATER_MAG_BUBBLE_BEAM", "SKILL_WATER_ARMOR_LIGHT", "SKILL_WATER_MAG_SMALL_CANNON"],
+		"unlockable_egg_skills": ["SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_ARMOR_CORAL_WALL", "SKILL_WATER_PHYS_TIDE_SLAP", "SKILL_WATER_BUFF_S_ATK"],
 		"milestone_egg_skills": {
-			"finisher_2": "SKILL_WATER_MAG_BUBBLE_BEAM",
-			"boss_4": "SKILL_MUD_MAG_SLUDGE_SHOT",
-			"chaos": "SKILL_MUD_WARD_PEAT_SEAL",
+			"finisher_2": "SKILL_WATER_ARMOR_SHELL",
+			"boss_4": "SKILL_MUD_ARMOR_MUD_COAT",
+			"chaos": "SKILL_MUD_MAG_SLUDGE_SHOT",
 		},
-		"bounty_egg_skills": {"alpha_48": "SKILL_MUD_ARMOR_MUD_COAT"},
+		"bounty_egg_skills": {"alpha_48": "SKILL_MUD_PHYS_MUD_PUNCH"},
 	},
 	# Lohenteufel: Dämon aus glühendem Gestein in lodernden Flammen, Neben-Element Blitz
 	{
@@ -920,7 +919,7 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.FIRE,
 		"affinity": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.FIRE,  # Neben-Element Magma
 		"stats": [230, 250],
-		"preferred_stats": {"hp": 14, "atk": 22, "def": 12, "s_atk": 26, "s_def": 12, "speed": 14},
+		"preferred_stats": {"hp": 14, "atk": 22, "def": 12, "s_atk": 26, "speed": 14},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_FIRE_MAG_FIREBALL", "SKILL_FIRE_PHYS_FLAME_FIST", "SKILL_FIRE_MAG_SMALL_CANNON"],
 		"unlockable_egg_skills": ["SKILL_FIRE_PHYS_BLAZE_RUSH", "SKILL_FIRE_MAG_FIREBALL_SWIFT", "SKILL_FIRE_ARMOR_FLAME_WALL", "SKILL_FIRE_BUFF_TEAM_S_ATK"],
@@ -937,16 +936,16 @@ var mons = [
 		"rarity": Enums.MON_RARITY.UNCOMMON,
 		"initial_type": Enums.MON_TYPES.EARTH,
 		"stats": [200, 220],
-		"preferred_stats": {"hp": 22, "atk": 22, "def": 28, "s_atk": 6, "s_def": 14, "speed": 8},
+		"preferred_stats": {"hp": 22, "atk": 22, "def": 28, "s_atk": 6, "speed": 8},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_EARTH_ARMOR_LIGHT", "SKILL_EARTH_PHYS_LIGHT_THRUST", "SKILL_EARTH_PHYS_LIGHT_STRIKE"],
 		"unlockable_egg_skills": ["SKILL_EARTH_MAG_LIGHT_CANNON", "SKILL_EARTH_PHYS_BOULDER_BASH", "SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_BUFF_DEF"],
 		"milestone_egg_skills": {
-			"kills_5": "SKILL_EARTH_WARD_CLAY_SEAL",
+			"kills_5": "SKILL_EARTH_MAG_PEBBLE_STORM",
 			"kills_10": "SKILL_EARTH_ARMOR_STONE_SKIN",
 			"chaos": "SKILL_EARTH_PHYS_QUAKE_STOMP",
 		},
-		"bounty_egg_skills": {"alpha_50": "SKILL_EARTH_WARD_CRYSTAL_SEAL"},
+		"bounty_egg_skills": {"alpha_50": "SKILL_EARTH_MAG_GEO_PULSE"},
 	},
 	# Sonnensphinx: geflügelter Goldlöwe mit Krone, Neben-Elemente Staub und Blitz (mythisch, nur bei Bossen)
 	{
@@ -956,7 +955,7 @@ var mons = [
 		"affinity": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.AIR,  # Neben-Element Staub
 		"affinity_triple": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.AIR | Enums.MON_TYPES.FIRE,  # Dreier-Kombi Aschesturm
 		"stats": [260, 280],
-		"preferred_stats": {"hp": 16, "atk": 20, "def": 14, "s_atk": 22, "s_def": 16, "speed": 12},
+		"preferred_stats": {"hp": 16, "atk": 20, "def": 14, "s_atk": 22, "speed": 12},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_PHYS_CYCLONE_CLAW", "SKILL_AIR_MAG_TEMPEST_RAY_SWIFT"],
 		"unlockable_egg_skills": ["SKILL_DUST_MAG_DUST_DEVIL", "SKILL_DUST_PHYS_SAND_CLAW", "SKILL_ASH_STORM_PHYS_ASHEN_ROLLER", "SKILL_DUST_BUFF_T4"],
@@ -974,16 +973,16 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.WATER,
 		"affinity": Enums.MON_TYPES.AIR | Enums.MON_TYPES.WATER,  # Neben-Element Eis
 		"stats": [230, 250],
-		"preferred_stats": {"hp": 18, "atk": 16, "def": 14, "s_atk": 24, "s_def": 16, "speed": 12},
+		"preferred_stats": {"hp": 18, "atk": 16, "def": 14, "s_atk": 24, "speed": 12},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_PHYS_TIDE_SLAP", "SKILL_WATER_MAG_SMALL_CANNON"],
-		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BREAKER", "SKILL_WATER_MAG_HYDRO_LANCE_SWIFT", "SKILL_WATER_WARD_TIDAL_DOME", "SKILL_WATER_BOON_BLOOD_TIDE"],
+		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BREAKER", "SKILL_WATER_MAG_HYDRO_LANCE_SWIFT", "SKILL_WATER_ARMOR_CORAL_WALL", "SKILL_WATER_BOON_BLOOD_TIDE"],
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_ICE_PHYS_FROST_BITE",
 			"boss_4": "SKILL_ICE_MAG_SNOW_FLURRY",
 			"chaos": "SKILL_PASSIVE_WATER_POWER",
 		},
-		"bounty_egg_skills": {"alpha_52": "SKILL_ICE_WARD_SNOW_VEIL"},
+		"bounty_egg_skills": {"alpha_52": "SKILL_ICE_ARMOR_RIME_COAT"},
 	},
 	# Reifdrache: schlanker Himmelsdrache in Eisblau, Neben-Element Eis
 	{
@@ -992,16 +991,16 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.AIR,
 		"affinity": Enums.MON_TYPES.AIR | Enums.MON_TYPES.WATER,  # Neben-Element Eis
 		"stats": [230, 250],
-		"preferred_stats": {"hp": 14, "atk": 12, "def": 12, "s_atk": 26, "s_def": 18, "speed": 18},
+		"preferred_stats": {"hp": 14, "atk": 12, "def": 12, "s_atk": 26, "speed": 18},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_WARD_BREEZE_VEIL", "SKILL_AIR_MAG_SMALL_CANNON"],
-		"unlockable_egg_skills": ["SKILL_AIR_WARD_SKY_DOME", "SKILL_AIR_MAG_TEMPEST_RAY_SWIFT", "SKILL_AIR_PHYS_CYCLONE_CLAW", "SKILL_AIR_BOON_TAILWIND"],
+		"default_egg_skills": ["SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_PHYS_GUST_KICK", "SKILL_AIR_MAG_SMALL_CANNON"],
+		"unlockable_egg_skills": ["SKILL_AIR_PHYS_CYCLONE_CLAW", "SKILL_AIR_MAG_TEMPEST_RAY_SWIFT", "SKILL_AIR_ARMOR_GALE_WALL", "SKILL_AIR_BOON_TAILWIND"],
 		"milestone_egg_skills": {
-			"finisher_2": "SKILL_ICE_WARD_SNOW_VEIL",
+			"finisher_2": "SKILL_ICE_PHYS_FROST_BITE",
 			"kills_15": "SKILL_ICE_MAG_SNOW_FLURRY",
 			"chaos": "SKILL_PASSIVE_AIR_POWER",
 		},
-		"bounty_egg_skills": {"alpha_53": "SKILL_ICE_PHYS_FROST_BITE"},
+		"bounty_egg_skills": {"alpha_53": "SKILL_ICE_ARMOR_RIME_COAT"},
 	},
 	# Splitterkoloss: Felsbestie mit leuchtenden Kristalladern, Neben-Element Staub
 	{
@@ -1010,7 +1009,7 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.EARTH,
 		"affinity": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.AIR,  # Neben-Element Staub
 		"stats": [215, 235],
-		"preferred_stats": {"hp": 22, "atk": 18, "def": 24, "s_atk": 16, "s_def": 14, "speed": 6},
+		"preferred_stats": {"hp": 22, "atk": 18, "def": 24, "s_atk": 16, "speed": 6},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_EARTH_ARMOR_STONE_SKIN", "SKILL_EARTH_PHYS_PUNCH", "SKILL_EARTH_PHYS_SMALL_PUNCH"],
 		"unlockable_egg_skills": ["SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_MAG_PEBBLE_STORM", "SKILL_PASSIVE_EARTH_POWER"],
@@ -1028,16 +1027,16 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.WATER,
 		"affinity": Enums.MON_TYPES.FIRE | Enums.MON_TYPES.WATER,  # Neben-Element Dampf
 		"stats": [215, 235],
-		"preferred_stats": {"hp": 16, "atk": 26, "def": 24, "s_atk": 10, "s_def": 12, "speed": 12},
+		"preferred_stats": {"hp": 16, "atk": 26, "def": 24, "s_atk": 10, "speed": 12},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_WATER_PHYS_TIDE_SLAP", "SKILL_WATER_ARMOR_LIGHT", "SKILL_WATER_PHYS_SMALL_PUNCH"],
-		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BREAKER", "SKILL_WATER_ARMOR_CORAL_WALL", "SKILL_WATER_WARD_MIST_VEIL", "SKILL_WATER_BUFF_ATK"],
+		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BREAKER", "SKILL_WATER_ARMOR_CORAL_WALL", "SKILL_WATER_MAG_BUBBLE_BEAM", "SKILL_WATER_BUFF_ATK"],
 		"milestone_egg_skills": {
 			"finisher_2": "SKILL_WATER_ARMOR_SHELL",
 			"boss_4": "SKILL_STEAM_ARMOR_STEAM_COAT",
 			"chaos": "SKILL_STEAM_PHYS_HOT_JAB",
 		},
-		"bounty_egg_skills": {"alpha_55": "SKILL_STEAM_WARD_HAZE_SHIELD"},
+		"bounty_egg_skills": {"alpha_55": "SKILL_STEAM_MAG_VAPOR_PUFF"},
 	},
 	# Spukhütte: morsche, von Ranken überwucherte Hütte auf Wurzelbeinen, Neben-Element Schlamm
 	{
@@ -1045,10 +1044,10 @@ var mons = [
 		"rarity": Enums.MON_RARITY.COMMON,
 		"initial_type": Enums.MON_TYPES.EARTH,
 		"stats": [190, 210],
-		"preferred_stats": {"hp": 22, "atk": 14, "def": 26, "s_atk": 18, "s_def": 12, "speed": 8},
+		"preferred_stats": {"hp": 22, "atk": 14, "def": 26, "s_atk": 18, "speed": 8},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_EARTH_MAG_WEAK_THRUST", "SKILL_EARTH_ARMOR_LIGHT", "SKILL_EARTH_WARD_WEAK"],
-		"unlockable_egg_skills": ["SKILL_EARTH_WARD_PLAIN", "SKILL_EARTH_PHYS_BOULDER_BASH", "SKILL_EARTH_ARMOR_STONE_SKIN"],
+		"default_egg_skills": ["SKILL_EARTH_MAG_WEAK_THRUST", "SKILL_EARTH_ARMOR_LIGHT", "SKILL_EARTH_PHYS_WEAK_THRUST"],
+		"unlockable_egg_skills": ["SKILL_EARTH_PHYS_BACKHAND", "SKILL_EARTH_PHYS_BOULDER_BASH", "SKILL_EARTH_ARMOR_STONE_SKIN"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_EARTH_MAG_PEBBLE_STORM",
 			"boss_3": "SKILL_EARTH_ARMOR_GRANITE_BASTION",
@@ -1063,7 +1062,7 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.WATER,
 		"affinity": Enums.MON_TYPES.FIRE | Enums.MON_TYPES.WATER,  # Neben-Element Dampf
 		"stats": [215, 235],
-		"preferred_stats": {"hp": 14, "atk": 26, "def": 12, "s_atk": 16, "s_def": 12, "speed": 20},
+		"preferred_stats": {"hp": 14, "atk": 26, "def": 12, "s_atk": 16, "speed": 20},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_WATER_PHYS_TIDE_SLAP", "SKILL_WATER_MAG_CANNON", "SKILL_WATER_PHYS_SMALL_PUNCH"],
 		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BREAKER", "SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_ARMOR_SHELL", "SKILL_WATER_BUFF_ATK"],
@@ -1080,10 +1079,10 @@ var mons = [
 		"rarity": Enums.MON_RARITY.UNCOMMON,
 		"initial_type": Enums.MON_TYPES.EARTH,
 		"stats": [200, 220],
-		"preferred_stats": {"hp": 20, "atk": 14, "def": 16, "s_atk": 26, "s_def": 14, "speed": 10},
+		"preferred_stats": {"hp": 20, "atk": 14, "def": 16, "s_atk": 26, "speed": 10},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_EARTH_MAG_CANNON", "SKILL_EARTH_MAG_LIGHT_THRUST", "SKILL_EARTH_ARMOR_LIGHT"],
-		"unlockable_egg_skills": ["SKILL_EARTH_WARD_PLAIN", "SKILL_EARTH_ARMOR_STONE_SKIN", "SKILL_EARTH_MAG_GEO_PULSE", "SKILL_EARTH_BUFF_S_ATK"],
+		"unlockable_egg_skills": ["SKILL_EARTH_PHYS_BACKHAND", "SKILL_EARTH_ARMOR_STONE_SKIN", "SKILL_EARTH_MAG_GEO_PULSE", "SKILL_EARTH_BUFF_S_ATK"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_EARTH_PHYS_BOULDER_BASH",
 			"finisher_2": "SKILL_EARTH_MAG_PEBBLE_STORM",
@@ -1098,16 +1097,16 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.WATER,
 		"affinity": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.WATER,  # Neben-Element Schlamm
 		"stats": [230, 250],
-		"preferred_stats": {"hp": 14, "atk": 10, "def": 12, "s_atk": 28, "s_def": 20, "speed": 16},
+		"preferred_stats": {"hp": 14, "atk": 10, "def": 12, "s_atk": 28, "speed": 16},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_WARD_MIST_VEIL", "SKILL_WATER_MAG_SMALL_CANNON"],
-		"unlockable_egg_skills": ["SKILL_WATER_WARD_TIDAL_DOME", "SKILL_WATER_MAG_HYDRO_LANCE_SWIFT", "SKILL_WATER_ARMOR_CORAL_WALL", "SKILL_WATER_BOON_BLOOD_TIDE"],
+		"default_egg_skills": ["SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_ARMOR_SHELL", "SKILL_WATER_MAG_SMALL_CANNON"],
+		"unlockable_egg_skills": ["SKILL_WATER_ARMOR_CORAL_WALL", "SKILL_WATER_MAG_HYDRO_LANCE_SWIFT", "SKILL_WATER_PHYS_BREAKER", "SKILL_WATER_BOON_BLOOD_TIDE"],
 		"milestone_egg_skills": {
-			"flawless_1": "SKILL_MUD_WARD_PEAT_SEAL",
+			"flawless_1": "SKILL_MUD_ARMOR_MUD_COAT",
 			"finisher_3": "SKILL_MUD_MAG_SLUDGE_SHOT",
 			"chaos": "SKILL_PASSIVE_BULWARK_MASTER",
 		},
-		"bounty_egg_skills": {"alpha_60": "SKILL_MUD_ARMOR_MUD_COAT"},
+		"bounty_egg_skills": {"alpha_60": "SKILL_MUD_PHYS_MUD_PUNCH"},
 	},
 	# Rankenrachen: Pflanzenbestie mit Giftflecken und triefendem Maul
 	{
@@ -1116,7 +1115,7 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.EARTH,
 		"affinity": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.WATER,  # Neben-Element Schlamm
 		"stats": [230, 250],
-		"preferred_stats": {"hp": 20, "atk": 26, "def": 18, "s_atk": 14, "s_def": 12, "speed": 10},
+		"preferred_stats": {"hp": 20, "atk": 26, "def": 18, "s_atk": 14, "speed": 10},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_ARMOR_STONE_SKIN", "SKILL_EARTH_PHYS_SMALL_PUNCH"],
 		"unlockable_egg_skills": ["SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_PHYS_QUAKE_STOMP_SWIFT", "SKILL_EARTH_MAG_GEO_PULSE", "SKILL_EARTH_BUFF_TEAM_ATK"],
@@ -1135,7 +1134,7 @@ var mons = [
 		"affinity": Enums.MON_TYPES.FIRE | Enums.MON_TYPES.WATER,  # Neben-Element Dampf
 		"affinity_triple": Enums.MON_TYPES.AIR | Enums.MON_TYPES.WATER | Enums.MON_TYPES.FIRE,  # Dreier-Kombi Gewitter
 		"stats": [245, 265],
-		"preferred_stats": {"hp": 14, "atk": 18, "def": 12, "s_atk": 28, "s_def": 12, "speed": 16},
+		"preferred_stats": {"hp": 14, "atk": 18, "def": 12, "s_atk": 28, "speed": 16},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_PHYS_BREAKER", "SKILL_WATER_MAG_HYDRO_LANCE_SWIFT"],
 		"unlockable_egg_skills": ["SKILL_STEAM_MAG_STEAM_JET", "SKILL_STEAM_PHYS_SCALD_STRIKE", "SKILL_STEAM_PHYS_STEAM_HAMMER", "SKILL_STEAM_BUFF_T4"],
@@ -1152,16 +1151,16 @@ var mons = [
 		"rarity": Enums.MON_RARITY.UNCOMMON,
 		"initial_type": Enums.MON_TYPES.AIR,
 		"stats": [200, 220],
-		"preferred_stats": {"hp": 14, "atk": 14, "def": 12, "s_atk": 24, "s_def": 18, "speed": 18},
+		"preferred_stats": {"hp": 14, "atk": 14, "def": 12, "s_atk": 24, "speed": 18},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_AIR_MAG_CANNON", "SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_WARD_LIGHT"],
-		"unlockable_egg_skills": ["SKILL_AIR_ARMOR_PLAIN", "SKILL_AIR_WARD_BREEZE_VEIL", "SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_BUFF_S_ATK"],
+		"default_egg_skills": ["SKILL_AIR_MAG_CANNON", "SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_PHYS_LIGHT_STRIKE"],
+		"unlockable_egg_skills": ["SKILL_AIR_ARMOR_PLAIN", "SKILL_AIR_PHYS_GUST_KICK", "SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_BUFF_S_ATK"],
 		"milestone_egg_skills": {
-			"boss_1": "SKILL_AIR_PHYS_GUST_KICK",
+			"boss_1": "SKILL_AIR_ARMOR_DRAFT_GUARD",
 			"flawless_2": "SKILL_AIR_MAG_WIND_BLADE",
-			"chaos": "SKILL_AIR_WARD_SKY_DOME",
+			"chaos": "SKILL_AIR_PHYS_CYCLONE_CLAW",
 		},
-		"bounty_egg_skills": {"alpha_63": "SKILL_AIR_PHYS_CYCLONE_CLAW"},
+		"bounty_egg_skills": {"alpha_63": "SKILL_AIR_ARMOR_GALE_WALL"},
 	},
 	# Frostklumpen: runder Eisschleim mit Kristallstacheln und -klauen, Neben-Element Eis
 	{
@@ -1169,16 +1168,16 @@ var mons = [
 		"rarity": Enums.MON_RARITY.COMMON,
 		"initial_type": Enums.MON_TYPES.WATER,
 		"stats": [190, 210],
-		"preferred_stats": {"hp": 20, "atk": 12, "def": 18, "s_atk": 22, "s_def": 16, "speed": 12},
+		"preferred_stats": {"hp": 20, "atk": 12, "def": 18, "s_atk": 22, "speed": 12},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_WATER_MAG_LIGHT_THRUST", "SKILL_WATER_MAG_LIGHT_STRIKE", "SKILL_WATER_WARD_WEAK"],
-		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BACKHAND", "SKILL_WATER_WARD_MIST_VEIL", "SKILL_WATER_MAG_BUBBLE_BEAM"],
+		"default_egg_skills": ["SKILL_WATER_MAG_LIGHT_THRUST", "SKILL_WATER_MAG_LIGHT_STRIKE", "SKILL_WATER_ARMOR_WEAK"],
+		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BACKHAND", "SKILL_WATER_PHYS_TIDE_SLAP", "SKILL_WATER_MAG_BUBBLE_BEAM"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_WATER_ARMOR_SHELL",
 			"flawless_2": "SKILL_WATER_MAG_HYDRO_LANCE",
 			"chaos": "SKILL_WATER_ARMOR_CORAL_WALL",
 		},
-		"bounty_egg_skills": {"alpha_64": "SKILL_WATER_WARD_TIDAL_DOME"},
+		"bounty_egg_skills": {"alpha_64": "SKILL_WATER_PHYS_BREAKER"},
 	},
 	# Kristallschlund: dunkle Bestie mit eisblauen Kristallen auf dem Rücken
 	{
@@ -1187,16 +1186,16 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.EARTH,
 		"affinity": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.AIR,  # Neben-Element Staub
 		"stats": [215, 235],
-		"preferred_stats": {"hp": 20, "atk": 26, "def": 24, "s_atk": 10, "s_def": 12, "speed": 8},
+		"preferred_stats": {"hp": 20, "atk": 26, "def": 24, "s_atk": 10, "speed": 8},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_EARTH_PHYS_BOULDER_BASH", "SKILL_EARTH_ARMOR_LIGHT", "SKILL_EARTH_PHYS_SMALL_PUNCH"],
-		"unlockable_egg_skills": ["SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_WARD_CLAY_SEAL", "SKILL_EARTH_BUFF_ATK"],
+		"unlockable_egg_skills": ["SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_MAG_PEBBLE_STORM", "SKILL_EARTH_BUFF_ATK"],
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_EARTH_ARMOR_STONE_SKIN",
 			"boss_4": "SKILL_DUST_ARMOR_SANDSTONE_SKIN",
 			"chaos": "SKILL_DUST_PHYS_GRIT_PUNCH",
 		},
-		"bounty_egg_skills": {"alpha_66": "SKILL_DUST_WARD_DUST_CLOAK"},
+		"bounty_egg_skills": {"alpha_66": "SKILL_DUST_MAG_DUST_SHOT"},
 	},
 	# Sandgolem: Riese aus festgebackenem Sand, um den Staub wirbelt
 	{
@@ -1204,16 +1203,16 @@ var mons = [
 		"rarity": Enums.MON_RARITY.COMMON,
 		"initial_type": Enums.MON_TYPES.EARTH,
 		"stats": [190, 210],
-		"preferred_stats": {"hp": 22, "atk": 22, "def": 26, "s_atk": 8, "s_def": 12, "speed": 10},
+		"preferred_stats": {"hp": 22, "atk": 22, "def": 26, "s_atk": 8, "speed": 10},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_EARTH_PHYS_WEAK_THRUST", "SKILL_EARTH_ARMOR_LIGHT", "SKILL_EARTH_WARD_WEAK"],
-		"unlockable_egg_skills": ["SKILL_EARTH_MAG_LIGHT_CANNON", "SKILL_EARTH_WARD_CLAY_SEAL", "SKILL_EARTH_ARMOR_STONE_SKIN"],
+		"default_egg_skills": ["SKILL_EARTH_PHYS_WEAK_THRUST", "SKILL_EARTH_ARMOR_LIGHT", "SKILL_EARTH_MAG_WEAK_THRUST"],
+		"unlockable_egg_skills": ["SKILL_EARTH_MAG_LIGHT_CANNON", "SKILL_EARTH_MAG_PEBBLE_STORM", "SKILL_EARTH_ARMOR_STONE_SKIN"],
 		"milestone_egg_skills": {
 			"finisher_1": "SKILL_EARTH_PHYS_BOULDER_BASH",
 			"new_element": "SKILL_EARTH_ARMOR_GRANITE_BASTION",
 			"flawless_2": "SKILL_EARTH_PHYS_QUAKE_STOMP",
 		},
-		"bounty_egg_skills": {"alpha_67": "SKILL_EARTH_WARD_CRYSTAL_SEAL"},
+		"bounty_egg_skills": {"alpha_67": "SKILL_EARTH_MAG_GEO_PULSE"},
 	},
 	# Glutkerker: Lavagestein-Käfig mit glühendem Feuerkern
 	{
@@ -1222,7 +1221,7 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.FIRE,
 		"affinity": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.FIRE,  # Neben-Element Magma
 		"stats": [230, 250],
-		"preferred_stats": {"hp": 18, "atk": 16, "def": 22, "s_atk": 26, "s_def": 12, "speed": 6},
+		"preferred_stats": {"hp": 18, "atk": 16, "def": 22, "s_atk": 26, "speed": 6},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_FIRE_MAG_FIREBALL", "SKILL_FIRE_ARMOR_CINDER_PLATE", "SKILL_FIRE_MAG_SMALL_CANNON"],
 		"unlockable_egg_skills": ["SKILL_FIRE_ARMOR_FLAME_WALL", "SKILL_FIRE_MAG_FIREBALL_SWIFT", "SKILL_FIRE_PHYS_BLAZE_RUSH", "SKILL_FIRE_BUFF_TEAM_S_ATK"],
@@ -1241,16 +1240,16 @@ var mons = [
 		"affinity": Enums.MON_TYPES.AIR | Enums.MON_TYPES.WATER,  # Neben-Element Eis
 		"affinity_triple": Enums.MON_TYPES.AIR | Enums.MON_TYPES.WATER | Enums.MON_TYPES.FIRE,  # Dreier-Kombi Gewitter
 		"stats": [245, 265],
-		"preferred_stats": {"hp": 14, "atk": 8, "def": 12, "s_atk": 28, "s_def": 22, "speed": 16},
+		"preferred_stats": {"hp": 14, "atk": 8, "def": 12, "s_atk": 28, "speed": 16},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_WARD_SKY_DOME", "SKILL_AIR_MAG_TEMPEST_RAY_SWIFT"],
-		"unlockable_egg_skills": ["SKILL_ICE_MAG_FROST_RAY", "SKILL_ICE_WARD_FROST_MIRROR", "SKILL_ICE_MAG_BLIZZARD", "SKILL_ICE_BUFF_T4"],
+		"default_egg_skills": ["SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_ARMOR_GALE_WALL", "SKILL_AIR_MAG_TEMPEST_RAY_SWIFT"],
+		"unlockable_egg_skills": ["SKILL_ICE_MAG_FROST_RAY", "SKILL_ICE_ARMOR_ICE_PLATE", "SKILL_ICE_MAG_BLIZZARD", "SKILL_ICE_BUFF_T4"],
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_THUNDERSTORM_MAG_STATIC_RAIN",
 			"kills_15": "SKILL_THUNDERSTORM_MAG_CHAIN_LIGHTNING",
 			"chaos": "SKILL_PASSIVE_ICE_T4",
 		},
-		"bounty_egg_skills": {"alpha_69": "SKILL_THUNDERSTORM_WARD_STORM_VEIL"},
+		"bounty_egg_skills": {"alpha_69": "SKILL_THUNDERSTORM_ARMOR_RAIN_GUARD"},
 	},
 	# Scherenhorn: grüner Panzerkäfer mit rosa Riesenschere und Hornstachel
 	{
@@ -1258,16 +1257,16 @@ var mons = [
 		"rarity": Enums.MON_RARITY.UNCOMMON,
 		"initial_type": Enums.MON_TYPES.EARTH,
 		"stats": [200, 220],
-		"preferred_stats": {"hp": 18, "atk": 26, "def": 22, "s_atk": 10, "s_def": 12, "speed": 12},
+		"preferred_stats": {"hp": 18, "atk": 26, "def": 22, "s_atk": 10, "speed": 12},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_EARTH_PHYS_PUNCH", "SKILL_EARTH_PHYS_LIGHT_THRUST", "SKILL_EARTH_ARMOR_LIGHT"],
 		"unlockable_egg_skills": ["SKILL_EARTH_MAG_LIGHT_CANNON", "SKILL_EARTH_ARMOR_STONE_SKIN", "SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_BUFF_ATK"],
 		"milestone_egg_skills": {
-			"kills_5": "SKILL_EARTH_WARD_CLAY_SEAL",
+			"kills_5": "SKILL_EARTH_MAG_PEBBLE_STORM",
 			"flawless_2": "SKILL_EARTH_PHYS_BOULDER_BASH",
 			"chaos": "SKILL_EARTH_ARMOR_GRANITE_BASTION",
 		},
-		"bounty_egg_skills": {"alpha_70": "SKILL_EARTH_WARD_CRYSTAL_SEAL"},
+		"bounty_egg_skills": {"alpha_70": "SKILL_EARTH_MAG_GEO_PULSE"},
 	},
 	# Sonnenwächter: silberner Ritter mit Sonnenring und Flammenhand (mythisch, nur bei Bossen)
 	{
@@ -1277,7 +1276,7 @@ var mons = [
 		"affinity": Enums.MON_TYPES.FIRE | Enums.MON_TYPES.AIR,  # Neben-Element Blitz
 		"affinity_triple": Enums.MON_TYPES.AIR | Enums.MON_TYPES.WATER | Enums.MON_TYPES.FIRE,  # Dreier-Kombi Gewitter
 		"stats": [260, 280],
-		"preferred_stats": {"hp": 16, "atk": 24, "def": 20, "s_atk": 18, "s_def": 14, "speed": 8},
+		"preferred_stats": {"hp": 16, "atk": 24, "def": 20, "s_atk": 18, "speed": 8},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_FIRE_PHYS_BLAZE_RUSH", "SKILL_FIRE_ARMOR_FLAME_WALL", "SKILL_FIRE_PHYS_BLAZE_RUSH_SWIFT"],
 		"unlockable_egg_skills": ["SKILL_LIGHTNING_PHYS_VOLT_PUNCH", "SKILL_LIGHTNING_ARMOR_STATIC_PLATE", "SKILL_THUNDERSTORM_MAG_SKYFALL", "SKILL_LIGHTNING_BOON_OVERCHARGE"],
@@ -1295,7 +1294,7 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.AIR,
 		"affinity": Enums.MON_TYPES.FIRE | Enums.MON_TYPES.AIR,  # Neben-Element Blitz
 		"stats": [215, 235],
-		"preferred_stats": {"hp": 18, "atk": 18, "def": 14, "s_atk": 20, "s_def": 14, "speed": 16},
+		"preferred_stats": {"hp": 18, "atk": 18, "def": 14, "s_atk": 20, "speed": 16},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_AIR_MAG_WIND_BLADE", "SKILL_AIR_PHYS_PUNCH", "SKILL_AIR_MAG_SMALL_CANNON"],
 		"unlockable_egg_skills": ["SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_PHYS_CYCLONE_CLAW", "SKILL_AIR_ARMOR_DRAFT_GUARD", "SKILL_AIR_BUFF_S_ATK"],
@@ -1314,7 +1313,7 @@ var mons = [
 		"affinity": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.WATER,  # Neben-Element Schlamm
 		"affinity_triple": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.AIR | Enums.MON_TYPES.WATER,  # Dreier-Kombi Sumpf
 		"stats": [260, 280],
-		"preferred_stats": {"hp": 18, "atk": 26, "def": 16, "s_atk": 18, "s_def": 12, "speed": 10},
+		"preferred_stats": {"hp": 18, "atk": 26, "def": 16, "s_atk": 18, "speed": 10},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_MAG_GEO_PULSE", "SKILL_EARTH_PHYS_QUAKE_STOMP_SWIFT"],
 		"unlockable_egg_skills": ["SKILL_MUD_PHYS_MUD_SLAM", "SKILL_MUD_MAG_BOG_PULSE", "SKILL_SWAMP_MAG_BOG_MAW", "SKILL_MUD_BUFF_T4"],
@@ -1331,16 +1330,16 @@ var mons = [
 		"rarity": Enums.MON_RARITY.COMMON,
 		"initial_type": Enums.MON_TYPES.AIR,
 		"stats": [190, 210],
-		"preferred_stats": {"hp": 14, "atk": 10, "def": 12, "s_atk": 24, "s_def": 20, "speed": 20},
+		"preferred_stats": {"hp": 14, "atk": 10, "def": 12, "s_atk": 24, "speed": 20},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_MAG_LIGHT_STRIKE", "SKILL_AIR_WARD_WEAK"],
-		"unlockable_egg_skills": ["SKILL_AIR_PHYS_BACKHAND", "SKILL_AIR_ARMOR_DRAFT_GUARD", "SKILL_AIR_MAG_WIND_BLADE"],
+		"default_egg_skills": ["SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_MAG_LIGHT_STRIKE", "SKILL_AIR_ARMOR_WEAK"],
+		"unlockable_egg_skills": ["SKILL_AIR_PHYS_BACKHAND", "SKILL_AIR_PHYS_GUST_KICK", "SKILL_AIR_MAG_WIND_BLADE"],
 		"milestone_egg_skills": {
-			"kills_5": "SKILL_AIR_WARD_BREEZE_VEIL",
+			"kills_5": "SKILL_AIR_ARMOR_DRAFT_GUARD",
 			"finisher_2": "SKILL_AIR_MAG_TEMPEST_RAY",
-			"chaos": "SKILL_AIR_WARD_SKY_DOME",
+			"chaos": "SKILL_AIR_ARMOR_GALE_WALL",
 		},
-		"bounty_egg_skills": {"alpha_74": "SKILL_AIR_ARMOR_GALE_WALL"},
+		"bounty_egg_skills": {"alpha_74": "SKILL_AIR_PHYS_CYCLONE_CLAW"},
 	},
 	# Irrflamme: kleines türkisfarbenes Irrlicht
 	{
@@ -1348,16 +1347,16 @@ var mons = [
 		"rarity": Enums.MON_RARITY.COMMON,
 		"initial_type": Enums.MON_TYPES.FIRE,
 		"stats": [190, 210],
-		"preferred_stats": {"hp": 14, "atk": 10, "def": 10, "s_atk": 26, "s_def": 18, "speed": 22},
+		"preferred_stats": {"hp": 14, "atk": 10, "def": 10, "s_atk": 26, "speed": 22},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_FIRE_MAG_LIGHT_THRUST", "SKILL_FIRE_MAG_LIGHT_STRIKE", "SKILL_FIRE_WARD_WEAK"],
-		"unlockable_egg_skills": ["SKILL_FIRE_ARMOR_PLAIN", "SKILL_FIRE_PHYS_FLAME_FIST", "SKILL_FIRE_MAG_SPARK_SHOT"],
+		"default_egg_skills": ["SKILL_FIRE_MAG_LIGHT_THRUST", "SKILL_FIRE_MAG_LIGHT_STRIKE", "SKILL_FIRE_ARMOR_WEAK"],
+		"unlockable_egg_skills": ["SKILL_FIRE_ARMOR_PLAIN", "SKILL_FIRE_ARMOR_CINDER_PLATE", "SKILL_FIRE_MAG_SPARK_SHOT"],
 		"milestone_egg_skills": {
-			"boss_1": "SKILL_FIRE_WARD_HEAT_VEIL",
+			"boss_1": "SKILL_FIRE_PHYS_FLAME_FIST",
 			"bounty": "SKILL_FIRE_MAG_FIREBALL",
-			"chaos": "SKILL_FIRE_WARD_PHOENIX_AURA",
+			"chaos": "SKILL_FIRE_PHYS_BLAZE_RUSH",
 		},
-		"bounty_egg_skills": {"alpha_75": "SKILL_FIRE_PHYS_BLAZE_RUSH"},
+		"bounty_egg_skills": {"alpha_75": "SKILL_FIRE_ARMOR_FLAME_WALL"},
 	},
 	# Glühzirpe: goldener Leuchtkäfer mit langen Fühlern
 	{
@@ -1365,16 +1364,16 @@ var mons = [
 		"rarity": Enums.MON_RARITY.UNCOMMON,
 		"initial_type": Enums.MON_TYPES.AIR,
 		"stats": [200, 220],
-		"preferred_stats": {"hp": 14, "atk": 12, "def": 12, "s_atk": 22, "s_def": 18, "speed": 22},
+		"preferred_stats": {"hp": 14, "atk": 12, "def": 12, "s_atk": 22, "speed": 22},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_AIR_MAG_CANNON", "SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_WARD_LIGHT"],
-		"unlockable_egg_skills": ["SKILL_AIR_ARMOR_PLAIN", "SKILL_AIR_WARD_BREEZE_VEIL", "SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_BUFF_S_ATK"],
+		"default_egg_skills": ["SKILL_AIR_MAG_CANNON", "SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_PHYS_LIGHT_STRIKE"],
+		"unlockable_egg_skills": ["SKILL_AIR_ARMOR_PLAIN", "SKILL_AIR_PHYS_GUST_KICK", "SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_BUFF_S_ATK"],
 		"milestone_egg_skills": {
-			"boss_1": "SKILL_AIR_PHYS_GUST_KICK",
+			"boss_1": "SKILL_AIR_ARMOR_DRAFT_GUARD",
 			"new_element": "SKILL_AIR_MAG_WIND_BLADE",
-			"finisher_2": "SKILL_AIR_WARD_SKY_DOME",
+			"finisher_2": "SKILL_AIR_PHYS_CYCLONE_CLAW",
 		},
-		"bounty_egg_skills": {"alpha_76": "SKILL_AIR_PHYS_CYCLONE_CLAW"},
+		"bounty_egg_skills": {"alpha_76": "SKILL_AIR_ARMOR_GALE_WALL"},
 	},
 	# Phönixglut: Feuerkugel in einem Wirbel aus Phönixflammen
 	{
@@ -1383,16 +1382,16 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.FIRE,
 		"affinity": Enums.MON_TYPES.FIRE | Enums.MON_TYPES.AIR,  # Neben-Element Blitz
 		"stats": [230, 250],
-		"preferred_stats": {"hp": 14, "atk": 12, "def": 10, "s_atk": 28, "s_def": 14, "speed": 22},
+		"preferred_stats": {"hp": 14, "atk": 12, "def": 10, "s_atk": 28, "speed": 22},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_FIRE_MAG_FIREBALL", "SKILL_FIRE_WARD_HEAT_VEIL", "SKILL_FIRE_MAG_SMALL_CANNON"],
-		"unlockable_egg_skills": ["SKILL_FIRE_WARD_PHOENIX_AURA", "SKILL_FIRE_MAG_FIREBALL_SWIFT", "SKILL_FIRE_PHYS_BLAZE_RUSH", "SKILL_FIRE_BUFF_TEAM_S_ATK"],
+		"default_egg_skills": ["SKILL_FIRE_MAG_FIREBALL", "SKILL_FIRE_PHYS_FLAME_FIST", "SKILL_FIRE_MAG_SMALL_CANNON"],
+		"unlockable_egg_skills": ["SKILL_FIRE_PHYS_BLAZE_RUSH", "SKILL_FIRE_MAG_FIREBALL_SWIFT", "SKILL_FIRE_ARMOR_FLAME_WALL", "SKILL_FIRE_BUFF_TEAM_S_ATK"],
 		"milestone_egg_skills": {
-			"flawless_1": "SKILL_LIGHTNING_WARD_ION_VEIL",
+			"flawless_1": "SKILL_LIGHTNING_PHYS_SHOCK_TAP",
 			"boss_4": "SKILL_LIGHTNING_MAG_SPARK_BOLT",
 			"chaos": "SKILL_PASSIVE_STORM_SPIRIT",
 		},
-		"bounty_egg_skills": {"alpha_77": "SKILL_LIGHTNING_PHYS_SHOCK_TAP"},
+		"bounty_egg_skills": {"alpha_77": "SKILL_LIGHTNING_ARMOR_CHARGE_PLATE"},
 	},
 	# Denkwurzel: riesiges Gehirn auf einem knorrigen Wurzelstamm
 	{
@@ -1401,16 +1400,16 @@ var mons = [
 		"initial_type": Enums.MON_TYPES.EARTH,
 		"affinity": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.WATER,  # Neben-Element Schlamm
 		"stats": [215, 235],
-		"preferred_stats": {"hp": 20, "atk": 6, "def": 16, "s_atk": 28, "s_def": 22, "speed": 8},
+		"preferred_stats": {"hp": 20, "atk": 6, "def": 16, "s_atk": 28, "speed": 8},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_EARTH_MAG_PEBBLE_STORM", "SKILL_EARTH_WARD_LIGHT", "SKILL_EARTH_MAG_SMALL_CANNON"],
-		"unlockable_egg_skills": ["SKILL_EARTH_MAG_GEO_PULSE", "SKILL_EARTH_WARD_CRYSTAL_SEAL", "SKILL_EARTH_ARMOR_STONE_SKIN", "SKILL_EARTH_BUFF_S_ATK"],
+		"default_egg_skills": ["SKILL_EARTH_MAG_PEBBLE_STORM", "SKILL_EARTH_ARMOR_LIGHT", "SKILL_EARTH_MAG_SMALL_CANNON"],
+		"unlockable_egg_skills": ["SKILL_EARTH_MAG_GEO_PULSE", "SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_PHYS_BOULDER_BASH", "SKILL_EARTH_BUFF_S_ATK"],
 		"milestone_egg_skills": {
-			"kills_8": "SKILL_EARTH_WARD_CLAY_SEAL",
-			"finisher_3": "SKILL_MUD_WARD_PEAT_SEAL",
+			"kills_8": "SKILL_EARTH_ARMOR_STONE_SKIN",
+			"finisher_3": "SKILL_MUD_ARMOR_MUD_COAT",
 			"chaos": "SKILL_MUD_MAG_SLUDGE_SHOT",
 		},
-		"bounty_egg_skills": {"alpha_78": "SKILL_MUD_ARMOR_MUD_COAT"},
+		"bounty_egg_skills": {"alpha_78": "SKILL_MUD_PHYS_MUD_PUNCH"},
 	},
 	# Seherdämon: gehörnter Dämon mit Augenstab und Schlange (mythisch, nur bei Bossen)
 	{
@@ -1420,7 +1419,7 @@ var mons = [
 		"affinity": Enums.MON_TYPES.AIR | Enums.MON_TYPES.WATER,  # Neben-Element Eis
 		"affinity_triple": Enums.MON_TYPES.EARTH | Enums.MON_TYPES.AIR | Enums.MON_TYPES.WATER,  # Dreier-Kombi Sumpf
 		"stats": [260, 280],
-		"preferred_stats": {"hp": 18, "atk": 16, "def": 14, "s_atk": 26, "s_def": 14, "speed": 12},
+		"preferred_stats": {"hp": 18, "atk": 16, "def": 14, "s_atk": 26, "speed": 12},
 		"max_upgrades": 2,
 		"default_egg_skills": ["SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_PHYS_BREAKER", "SKILL_WATER_MAG_HYDRO_LANCE_SWIFT"],
 		"unlockable_egg_skills": ["SKILL_ICE_MAG_FROST_RAY", "SKILL_ICE_PHYS_ICICLE_JAB", "SKILL_SWAMP_MAG_BOG_MAW", "SKILL_ICE_BUFF_T4"],
@@ -1437,16 +1436,16 @@ var mons = [
 		"rarity": Enums.MON_RARITY.UNCOMMON,
 		"initial_type": Enums.MON_TYPES.WATER,
 		"stats": [200, 220],
-		"preferred_stats": {"hp": 16, "atk": 10, "def": 14, "s_atk": 24, "s_def": 20, "speed": 16},
+		"preferred_stats": {"hp": 16, "atk": 10, "def": 14, "s_atk": 24, "speed": 16},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_WATER_MAG_CANNON", "SKILL_WATER_MAG_LIGHT_THRUST", "SKILL_WATER_WARD_LIGHT"],
-		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BACKHAND", "SKILL_WATER_WARD_MIST_VEIL", "SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_BUFF_S_ATK"],
+		"default_egg_skills": ["SKILL_WATER_MAG_CANNON", "SKILL_WATER_MAG_LIGHT_THRUST", "SKILL_WATER_ARMOR_LIGHT"],
+		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BACKHAND", "SKILL_WATER_ARMOR_SHELL", "SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_BUFF_S_ATK"],
 		"milestone_egg_skills": {
-			"boss_1": "SKILL_WATER_ARMOR_SHELL",
+			"boss_1": "SKILL_WATER_PHYS_TIDE_SLAP",
 			"boss_3": "SKILL_WATER_MAG_BUBBLE_BEAM",
-			"chaos": "SKILL_WATER_WARD_TIDAL_DOME",
+			"chaos": "SKILL_WATER_ARMOR_CORAL_WALL",
 		},
-		"bounty_egg_skills": {"alpha_80": "SKILL_WATER_ARMOR_CORAL_WALL"},
+		"bounty_egg_skills": {"alpha_80": "SKILL_WATER_PHYS_BREAKER"},
 	},
 	# Panzerspinne: mechanische Spinne mit grün leuchtenden Adern
 	{
@@ -1454,35 +1453,35 @@ var mons = [
 		"rarity": Enums.MON_RARITY.COMMON,
 		"initial_type": Enums.MON_TYPES.WATER,
 		"stats": [190, 210],
-		"preferred_stats": {"hp": 16, "atk": 24, "def": 26, "s_atk": 10, "s_def": 12, "speed": 12},
+		"preferred_stats": {"hp": 16, "atk": 24, "def": 26, "s_atk": 10, "speed": 12},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_WATER_PHYS_WEAK_THRUST", "SKILL_WATER_ARMOR_LIGHT", "SKILL_WATER_WARD_WEAK"],
-		"unlockable_egg_skills": ["SKILL_WATER_MAG_LIGHT_CANNON", "SKILL_WATER_WARD_MIST_VEIL", "SKILL_WATER_ARMOR_SHELL"],
+		"default_egg_skills": ["SKILL_WATER_PHYS_WEAK_THRUST", "SKILL_WATER_ARMOR_LIGHT", "SKILL_WATER_MAG_WEAK_THRUST"],
+		"unlockable_egg_skills": ["SKILL_WATER_MAG_LIGHT_CANNON", "SKILL_WATER_MAG_BUBBLE_BEAM", "SKILL_WATER_ARMOR_SHELL"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_WATER_PHYS_TIDE_SLAP",
 			"new_element": "SKILL_WATER_ARMOR_CORAL_WALL",
 			"boss_3": "SKILL_WATER_PHYS_BREAKER",
 		},
-		"bounty_egg_skills": {"alpha_81": "SKILL_WATER_WARD_TIDAL_DOME"},
+		"bounty_egg_skills": {"alpha_81": "SKILL_WATER_MAG_HYDRO_LANCE"},
 	},
-	# Mooswürfel: bemooster Grasblock mit Knopfaugen, Startmonster (Tank mit Schwerpunkt Sp. Vert.)
+	# Mooswürfel: bemooster Grasblock mit Knopfaugen, Startmonster (Tank)
 	{
 		"name": "82",
 		"rarity": Enums.MON_RARITY.COMMON,
 		"initial_type": Enums.MON_TYPES.EARTH,
 		"stats": [190, 210],
-		"preferred_stats": {"hp": 22, "atk": 8, "def": 20, "s_atk": 14, "s_def": 28, "speed": 8},
+		"preferred_stats": {"hp": 22, "atk": 8, "def": 20, "s_atk": 14, "speed": 8},
 		"max_upgrades": 2,
-		# Sp. Vert. am höchsten: Nutzloser Erdstoß, Leichter Kristallschild, Nutzloser Steinschild,
-		# als Startmonster durch Fangen & Opfern: Leichter Schild (Vert., ergänzt den Kristallschild) und Leichte Erdkanone
-		"default_egg_skills": ["SKILL_EARTH_MAG_WEAK_THRUST", "SKILL_EARTH_WARD_LIGHT", "SKILL_EARTH_ARMOR_WEAK"],
+		# Vert. am höchsten: Nutzloser Erdstoß (magisch), Leichter Schild, Nutzloser Stoß (physisch),
+		# als Startmonster durch Fangen & Opfern: Schild (Vert.) und Leichte Erdkanone
+		"default_egg_skills": ["SKILL_EARTH_MAG_WEAK_THRUST", "SKILL_EARTH_ARMOR_LIGHT", "SKILL_EARTH_PHYS_WEAK_THRUST"],
 		"unlockable_egg_skills": ["SKILL_EARTH_ARMOR_PLAIN", "SKILL_EARTH_MAG_LIGHT_CANNON"],
 		"milestone_egg_skills": {
-			"kills_5": "SKILL_EARTH_ARMOR_STONE_SKIN",
-			"kills_10": "SKILL_EARTH_WARD_CRYSTAL_SEAL",
-			"chaos": "SKILL_EARTH_ARMOR_GRANITE_BASTION",
+			"kills_5": "SKILL_EARTH_MAG_PEBBLE_STORM",
+			"kills_10": "SKILL_EARTH_ARMOR_GRANITE_BASTION",
+			"chaos": "SKILL_EARTH_MAG_GEO_PULSE",
 		},
-		"bounty_egg_skills": {"alpha_82": "SKILL_EARTH_MAG_GEO_PULSE"},
+		"bounty_egg_skills": {"alpha_82": "SKILL_EARTH_PHYS_QUAKE_STOMP"},
 	},
 	# Weltenfresser: gehörnte Schattenwolke mit Reißzähnen und Rauchranken, Endboss des Runs (Chaos, alle vier Elemente).
 	# final_boss: taucht weder wild noch als normaler Boss auf, nur als Hauptgegner im Boss-Kampf des letzten Bioms
@@ -1494,10 +1493,10 @@ var mons = [
 		"final_boss": true,
 		"skills_manual": true,
 		"stats": [285, 305],
-		"preferred_stats": {"hp": 22, "atk": 18, "def": 14, "s_atk": 24, "s_def": 14, "speed": 8},
+		"preferred_stats": {"hp": 22, "atk": 18, "def": 14, "s_atk": 24, "speed": 8},
 		"max_upgrades": 2,
 		# Sp. Ang. am höchsten, eine Basis-Attacke je Element
-		"default_egg_skills": ["SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_FIRE_MAG_LIGHT_STRIKE", "SKILL_WATER_WARD_WEAK",
+		"default_egg_skills": ["SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_FIRE_MAG_LIGHT_STRIKE", "SKILL_WATER_MAG_LIGHT_THRUST",
 			"SKILL_EARTH_ARMOR_WEAK"],
 	},
 ]

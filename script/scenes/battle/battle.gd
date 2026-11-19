@@ -190,6 +190,8 @@ func _on_turn_for(mon: Monster) -> void:
 		return
 	# Boss-Relikte zu Zugbeginn (Bongos, Fate-Spiegel), nach dem Ablaufen der alten Schilde
 	BossRelics.on_turn_start(mon, turn_wheel.round_number)
+	# Wasser-Passiv "regen": etwas KP zu Beginn des eigenen Zuges
+	Skills.apply_regen(mon)
 	# Mikrofon: in ungeraden Runden fällt jeder Zug aus, dafür heilt sich das Monster etwas.
 	# Gegner behalten ihren angekündigten Zug für die nächste Runde.
 	if BossRelics.silences_round(turn_wheel.round_number):
@@ -792,7 +794,6 @@ func _stat_value(mon: Monster, stat: String) -> float:
 	match stat:
 		"atk": return mon.attack()
 		"s_atk": return mon.s_attack()
-		"s_def": return mon.s_defense()
 		"speed": return mon.speed()
 	return mon.defense()
 

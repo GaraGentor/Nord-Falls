@@ -14,13 +14,12 @@ extends GridContainer
 const GAIN_COLOR := Color(0.45, 0.85, 0.45)
 
 ## Symbol pro Wert (weiße Linien), auch oben rechts auf den Fähigkeiten (Skills.kind_icon):
-## Faust = physischer Angriff, Funken = magischer Angriff, Schild = Verteidigung, Schild mit Funken = Sp. Verteidigung
+## Faust = physischer Angriff, Funken = magischer Angriff, Schild = Verteidigung
 const ICONS := {
 	"hp": preload("res://assets/ui/icons/stat_heart.svg"),
 	"atk": preload("res://assets/ui/icons/fist.svg"),
 	"def": preload("res://assets/ui/icons/stat_shield.svg"),
 	"s_atk": preload("res://assets/ui/icons/sparkle.svg"),
-	"s_def": preload("res://assets/ui/icons/stat_s_shield.svg"),
 	"speed": preload("res://assets/ui/icons/stat_pentagram.svg"),
 	"bst": preload("res://assets/ui/icons/stat_arrow_up.svg"),
 }
@@ -73,11 +72,6 @@ var map = [
 		"key": "s_atk",
 		"label": "STAT_SPA",
 		"value": func(monster:Monster): return monster.s_attack(),
-	},
-	{
-		"key": "s_def",
-		"label": "STAT_SPD",
-		"value": func(monster:Monster): return monster.s_defense(),
 	},
 	{
 		"key": "speed",

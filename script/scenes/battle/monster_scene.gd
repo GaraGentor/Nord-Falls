@@ -47,7 +47,7 @@ const VFX_HIT_DELAY := 0.08
 
 # Effekte am Ziel eines Skills: physische Angriffe als Hieb in der Elementfarbe, magische je Element
 # (Feuer-Explosion, Wasser-Spritzer, Steinbrocken, Windwirbel, bei Kombi-Elementen deren eigener Effekt wie Dampfwolke,
-# Blitz, Lava oder Eissplitter), Schildtreffer, wenn der Schild etwas abfängt, neue Schilde (physisch/magisch) und Buffs.
+# Blitz, Lava oder Eissplitter), Schildtreffer, wenn der Schild etwas abfängt, neue Schilde und Buffs.
 # Physische Kombi-Treffer zeigen zum Hieb auch den Kombi-Effekt. Schwächungen, Verstärkungen und Heilungen ohne eigene
 # Karte kommen über Events.status_vfx (_play_status_vfx).
 func _play_skill_vfx(_mon: Monster, skill: Dictionary, blocked: float) -> void:
@@ -65,11 +65,11 @@ func _play_skill_vfx(_mon: Monster, skill: Dictionary, blocked: float) -> void:
 			for kind in BattleVfxScript.element_kinds(skill.nature):
 				_spawn_vfx(kind, Color.WHITE, VFX_HIT_DELAY)
 		if blocked > 0:
-			_spawn_vfx(BattleVfxScript.Kind.SHIELD_HIT if physical else BattleVfxScript.Kind.S_SHIELD_HIT, Color.WHITE, VFX_HIT_DELAY)
+			_spawn_vfx(BattleVfxScript.Kind.SHIELD_HIT, Color.WHITE, VFX_HIT_DELAY)
 	elif skill.get("effect", "") == "buff":
 		_spawn_vfx(BattleVfxScript.Kind.BUFF)
 	else:
-		_spawn_vfx(BattleVfxScript.Kind.SHIELD if physical else BattleVfxScript.Kind.S_SHIELD)
+		_spawn_vfx(BattleVfxScript.Kind.SHIELD)
 
 func _play_status_vfx(_mon: Monster, kind: String) -> void:
 	if mon != _mon or not is_inside_tree():
@@ -87,19 +87,18 @@ const SUPER_EFFECTIVE_COLOR := Color(1.0, 0.55, 0.2)
 const NOT_EFFECTIVE_COLOR := Color(0.6, 0.65, 0.7)
 
 const STATUS_COLOR := Color(0.55, 0.8, 1.0)
-## Sp.-Angriffe und Sp.-Schilde sind violett, physische Schilde blau: so passt man den Schild zum Angriff
+## Sp.-Angriffe sind violett, der Schild blau (er blockt physische und magische Angriffe)
 const SPECIAL_COLOR := Color(0.85, 0.6, 1.0)
 
 const ICON_ATTACK := preload("res://assets/ui/icons/sword.svg")
 const ICON_S_ATTACK := preload("res://assets/ui/icons/battle/s_attack.svg")
 const ICON_SHIELD := preload("res://assets/ui/icons/battle/shield.svg")
-const ICON_S_SHIELD := preload("res://assets/ui/icons/battle/s_shield.svg")
 const ICON_BUFF := preload("res://assets/ui/icons/battle/buff.svg")
 const ICON_CATCH := preload("res://assets/ui/icons/battle/catch.svg")
 
 ## Kurznamen der Werte, die ein Buff erhöhen kann
 const BUFF_STAT_KEYS := {"hp": "STAT_HP", "atk": "STAT_ATK", "def": "STAT_DEF", "s_atk": "STAT_SPA",
-	"s_def": "STAT_SPD", "speed": "STAT_SPE"}
+	"speed": "STAT_SPE"}
 
 # Schwebender Schadenstext über dem Monster, bei Element-Vorteil/-Nachteil mit Hinweis und Faktor,
 # vom Schild abgefangener Schaden steht mit Schild-Symbol darunter.
@@ -213,8 +212,6 @@ func _refresh_status() -> void:
 		status_box.add_child(_icon_row([ICON_CATCH, chance], CATCH_COLOR, STATUS_FONT_SIZE))
 	if mon._shield > 0:
 		status_box.add_child(_icon_row([ICON_SHIELD, str(roundi(mon._shield))], STATUS_COLOR, STATUS_FONT_SIZE))
-	if mon._s_shield > 0:
-		status_box.add_child(_icon_row([ICON_S_SHIELD, str(roundi(mon._s_shield))], SPECIAL_COLOR, STATUS_FONT_SIZE))
 	# Verstärkungen als Pfeil hoch, Schwächungen als Pfeil runter, dahinter die Symbole der betroffenen Werte.
 	# Ein Klick öffnet eine kleine Liste, was genau wie lange verändert ist (StatusPopup).
 	if mon.is_buffed():
@@ -343,7 +340,8 @@ func _update_drag_preview(drag_data) -> void:
 			_preview_label.visible = false
 		return
 	# schlummernde Skills treffen nur mit den Elementen des Wirkers (Skills.effective_skill)
-	var multiplier = Skills.element_multiplier(Skills.effective_skill(drag_data.get("mon"), drag_data.skill).nature, mon._type)
+	# physische Angriffe treffen immer neutral (Skills.skill_element_multiplier)
+	var multiplier = Skills.skill_element_multiplier(Skills.effective_skill(drag_data.get("mon"), drag_data.skill), mon._type)
 	if _preview_label == null:
 		_preview_label = Label.new()
 		_preview_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -386,7 +384,7 @@ func _own_intent_rows() -> Array:
 		var after = roundi(hit.after)
 		# Blau, wenn der Schild etwas abfängt: so sieht man direkt, dass sich Blocken gelohnt hat
 		if after < full:
-			rows.append(_icon_row([attack_icon, "-%d" % full, ICON_SHIELD if hit.physical else ICON_S_SHIELD, "-%d" % after],
+			rows.append(_icon_row([attack_icon, "-%d" % full, ICON_SHIELD, "-%d" % after],
 				INTENT_BLOCKED_COLOR, INTENT_FONT_SIZE))
 		else:
 			rows.append(_icon_row([attack_icon, "-%d" % full], INTENT_COLOR if hit.physical else SPECIAL_COLOR, INTENT_FONT_SIZE))
@@ -417,8 +415,7 @@ func _enemy_intent_rows() -> Array:
 		else:
 			# gleiche Rechnung wie Skills.add_shield, Wert kommt vom Wirker
 			var amount = Skills.shield_amount(mon, skill)
-			rows.append(_icon_row([ICON_SHIELD if physical else ICON_S_SHIELD, "+%d" % amount] + targets,
-				INTENT_BLOCKED_COLOR if physical else SPECIAL_COLOR, INTENT_FONT_SIZE))
+			rows.append(_icon_row([ICON_SHIELD, "+%d" % amount] + targets, INTENT_BLOCKED_COLOR, INTENT_FONT_SIZE))
 	return rows
 
 func _on_gui_input(event: InputEvent) -> void:

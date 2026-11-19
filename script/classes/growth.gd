@@ -5,10 +5,9 @@ var hp: float
 var atk: float
 var def: float
 var s_atk: float
-var s_def: float
 var speed: float
 
-const ATTRS := ["hp", "atk", "def", "s_atk", "s_def", "speed"]
+const ATTRS := ["hp", "atk", "def", "s_atk", "speed"]
 # Wie stark jeder Anteil pro Run vom Profil der Art abweichen darf (0.15 = ±15 %)
 const MAX_DEVIATION := 0.15
 

@@ -66,7 +66,11 @@ func _ready() -> void:
 	_content.size_flags_horizontal = SIZE_EXPAND_FILL
 	_content.add_theme_constant_override("h_separation", 12)
 	_content.add_theme_constant_override("v_separation", 12)
-	_scroll.add_child(_content)
+	# Platz für die Rand-Effekte der Skill-Karten (SkillCardPaper.FLAME_PAD), sonst schneidet die Scrollview sie ab
+	var flame_margin := SkillCardPaper.flame_margin()
+	flame_margin.size_flags_horizontal = SIZE_EXPAND_FILL
+	_scroll.add_child(flame_margin)
+	flame_margin.add_child(_content)
 	_content.minimum_size_changed.connect(_fit_scroll)
 	get_viewport().size_changed.connect(_fit_scroll)
 
@@ -286,7 +290,7 @@ func confirm(title: String, text: String, confirm_label: String) -> bool:
 ## Karten so hoch wie nötig, höchstens bis der Dialog den Bildschirm füllt, darüber scrollen sie
 func _fit_scroll() -> void:
 	var limit := maxf(get_viewport_rect().size.y - SCROLL_RESERVED_HEIGHT, MIN_SCROLL_HEIGHT)
-	_scroll.custom_minimum_size.y = minf(_content.get_combined_minimum_size().y, limit)
+	_scroll.custom_minimum_size.y = minf(_content.get_parent().get_combined_minimum_size().y, limit)
 
 func _reset(warning: String) -> void:
 	for child in _content.get_children():
@@ -313,7 +317,7 @@ func _skill_card(skill: Dictionary, note: String, mon: Monster = null) -> Button
 	top_row.show_skill(skill, scouted)
 	var name_label := _label(19, SkillCardPaper.readable_color(Helper.color_by_type(skill.nature)))
 	name_label.text = _skill_name(skill)
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	top_row.set_title(name_label)
 	lines.add_child(name_label)
 	# höchstens zwei Zeilen, lange Namen werden kleiner
 	SkillCardFace.fit_title(name_label, 19)
@@ -328,8 +332,10 @@ func _skill_card(skill: Dictionary, note: String, mon: Monster = null) -> Button
 		lines.add_child(note_label)
 	var bottom_row := SkillCardFace.BottomRow.new()
 	lines.add_child(bottom_row)
+	bottom_row.set_value_size(19)
 	bottom_row.show_skill(skill, mon, scouted)
-	SkillCardPaper.attach(card, skill)
+	SkillCardPaper.attach(card, skill, false, scouted)
+	SkillCardPaper.make_room_for_flames(_content)
 	# Text nicht auf den Papierrahmen setzen
 	for side in ["left", "right", "top", "bottom"]:
 		lines.get_parent().add_theme_constant_override("margin_" + side, 16)

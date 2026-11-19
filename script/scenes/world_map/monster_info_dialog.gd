@@ -15,7 +15,8 @@ const CHIP_HEIGHT := 32.0
 const STATS_FONT_SIZE := 15
 const STATS_WIDTH := 556.0
 const RADAR_MIN_SIZE := Vector2(190, 150)
-const SKILL_CARD_SIZE := Vector2(220, 260)
+## Höhe so, dass die Karten samt Rand-Effekten (SkillCardPaper.FLAME_PAD) unter dem Map-Header auf den Bildschirm passen
+const SKILL_CARD_SIZE := Vector2(210, 184)
 const BACK_ICON := preload("res://assets/ui/icons/icon_back.svg")
 
 var _mon: Monster
@@ -119,9 +120,12 @@ func _skill_cards() -> Control:
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = SIZE_EXPAND_FILL
 	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	# Platz für die Rand-Effekte der Karten, sonst schneidet die Scrollview sie ab
+	var margin := SkillCardPaper.flame_margin()
+	scroll.add_child(margin)
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 12)
-	scroll.add_child(row)
+	row.add_theme_constant_override("separation", SkillCardPaper.FLAME_GAP_X)
+	margin.add_child(row)
 	for skill in _mon._skills:
 		var card := BATTLE_CARD.instantiate()
 		card.mon = _mon

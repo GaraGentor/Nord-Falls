@@ -52,9 +52,8 @@ var _gained_elements: int = 0
 var _revived: bool = false
 
 # Kampf-Zustand, wird zu Beginn jedes Kampfes zurückgesetzt (reset_battle_state)
-# Schilde fangen Schaden ab, bis sie aufgebraucht sind oder der nächste eigene Zug beginnt (start_turn): physisch gegen physischen, magisch gegen magischen Schaden
+# Schild fängt Schaden ab (physisch und magisch), bis er aufgebraucht ist oder der nächste eigene Zug beginnt (start_turn)
 var _shield: float = 0
-var _s_shield: float = 0
 # Buffs: Stat-Key (wie bei _gems) -> {"factor": 0.3 = +30 %, "turns": übrige eigene Züge}
 var _buffs: Dictionary = {}
 # Schwächungen (ElementEffects): Quelle -> {"stat": Stat-Key, "factor": 0.2 = -20 %, "turns": übrige eigene Züge, -1 = bis Kampfende}.
@@ -112,7 +111,6 @@ func upgrade_skill(skill, level):
 
 func reset_battle_state() -> void:
 	_shield = 0
-	_s_shield = 0
 	_buffs = {}
 	_debuffs = {}
 	_statuses = {}
@@ -128,7 +126,6 @@ func reset_battle_state() -> void:
 # Schilde laufen ab (sie halten also genau bis zum nächsten eigenen Zug).
 func start_turn() -> void:
 	_shield = 0
-	_s_shield = 0
 	for skill in _skills:
 		Skills.tick_cooldown(skill)
 	for stat in _buffs.keys():
@@ -149,23 +146,16 @@ func start_turn() -> void:
 			_boons.erase(key)
 	Events.monster_status_changed.emit(self)
 
-func add_shield(amount: float, physical: bool) -> void:
-	if physical:
-		_shield += amount
-	else:
-		_s_shield += amount
+func add_shield(amount: float) -> void:
+	_shield += amount
 	Events.monster_status_changed.emit(self)
 
-# Zieht den Schaden vom passenden Schild ab und liefert, was durchkommt.
-func absorb_damage(damage: float, physical: bool) -> float:
-	var shield = _shield if physical else _s_shield
-	var blocked = minf(shield, damage)
+# Zieht den Schaden vom Schild ab (er blockt physische und magische Angriffe) und liefert, was durchkommt.
+func absorb_damage(damage: float) -> float:
+	var blocked = minf(_shield, damage)
 	if blocked <= 0:
 		return damage
-	if physical:
-		_shield = maxf(_shield - blocked, 0.0)
-	else:
-		_s_shield = maxf(_s_shield - blocked, 0.0)
+	_shield = maxf(_shield - blocked, 0.0)
 	Events.monster_status_changed.emit(self)
 	return damage - blocked
 
@@ -284,9 +274,6 @@ func defense():
 
 func s_attack():
 	return _stat_with_bonuses("s_atk")
-
-func s_defense():
-	return _stat_with_bonuses("s_def")
 
 func speed():
 	return _stat_with_bonuses("speed")

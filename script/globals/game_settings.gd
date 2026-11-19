@@ -10,6 +10,10 @@ signal changed
 const PATH := "user://settings.cfg"
 
 var fullscreen := false
+## Rand-Effekte der Skill-Karten (Flammen, Wellen, Funken, Tropfen; SkillCardPaper)
+var card_effects := true
+## großes Art-Symbol als Wasserzeichen auf den Skill-Karten (SkillCardPaper)
+var card_watermark := true
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -27,6 +31,20 @@ func set_fullscreen(on: bool) -> void:
 		return
 	fullscreen = on
 	_apply_window_mode()
+	_save()
+	changed.emit()
+
+func set_card_effects(on: bool) -> void:
+	if card_effects == on:
+		return
+	card_effects = on
+	_save()
+	changed.emit()
+
+func set_card_watermark(on: bool) -> void:
+	if card_watermark == on:
+		return
+	card_watermark = on
 	_save()
 	changed.emit()
 
@@ -60,8 +78,12 @@ func _load() -> void:
 	if config.load(PATH) != OK:
 		return
 	fullscreen = config.get_value("display", "fullscreen", false)
+	card_effects = config.get_value("display", "card_effects", true)
+	card_watermark = config.get_value("display", "card_watermark", true)
 
 func _save() -> void:
 	var config := ConfigFile.new()
 	config.set_value("display", "fullscreen", fullscreen)
+	config.set_value("display", "card_effects", card_effects)
+	config.set_value("display", "card_watermark", card_watermark)
 	config.save(PATH)

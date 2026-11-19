@@ -14,7 +14,6 @@ const STATS := {
 	"atk": {"name": "GEM_ATK", "desc": "GEM_ATK_DESC", "stat": "STAT_ATK", "icon": "res://assets/ui/trophies/branch_club.svg"},
 	"def": {"name": "GEM_DEF", "desc": "GEM_DEF_DESC", "stat": "STAT_DEF", "icon": "res://assets/ui/trophies/crystal_hide.svg"},
 	"s_atk": {"name": "GEM_S_ATK", "desc": "GEM_S_ATK_DESC", "stat": "STAT_SPA", "icon": "res://assets/ui/trophies/spark_tail.svg"},
-	"s_def": {"name": "GEM_S_DEF", "desc": "GEM_S_DEF_DESC", "stat": "STAT_SPD", "icon": "res://assets/ui/trophies/mist_veil.svg"},
 	"speed": {"name": "GEM_SPEED", "desc": "GEM_SPEED_DESC", "stat": "STAT_SPE", "icon": "res://assets/ui/trophies/storm_feather.svg"},
 }
 

@@ -68,8 +68,8 @@ static func make_check(text: String, on: bool, on_toggled: Callable) -> HBoxCont
 
 func _build(content: VBoxContainer) -> void:
 	content.add_child(_title(tr("SETTINGS_TITLE"), SkillDetailPopup.GOLD))
+	content.add_child(_section(tr("SETTINGS_DISPLAY")))
 	if GameSettings.has_window_mode():
-		content.add_child(_section(tr("SETTINGS_DISPLAY")))
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 10)
 		var caption := _text(tr("SETTINGS_WINDOW_MODE"), IronPlate.TEXT_COLOR, ROW_FONT_SIZE)
@@ -82,6 +82,14 @@ func _build(content: VBoxContainer) -> void:
 		content.add_child(_note(tr("SETTINGS_FULLSCREEN_HINT"), IronPlate.TEXT_COLOR))
 		GameSettings.changed.connect(_refresh)
 		_refresh()
+	var effects_check := make_check(tr("SETTINGS_CARD_EFFECTS"), GameSettings.card_effects, GameSettings.set_card_effects)
+	effects_check.size_flags_horizontal = SIZE_SHRINK_BEGIN
+	content.add_child(effects_check)
+	content.add_child(_note(tr("SETTINGS_CARD_EFFECTS_HINT"), IronPlate.TEXT_COLOR))
+	var watermark_check := make_check(tr("SETTINGS_CARD_WATERMARK"), GameSettings.card_watermark, GameSettings.set_card_watermark)
+	watermark_check.size_flags_horizontal = SIZE_SHRINK_BEGIN
+	content.add_child(watermark_check)
+	content.add_child(_note(tr("SETTINGS_CARD_WATERMARK_HINT"), IronPlate.TEXT_COLOR))
 	content.add_child(_section(tr("SETTINGS_TUTORIAL")))
 	var tutorial_check := make_check(tr("SETTINGS_TUTORIAL_TOGGLE"), Tutorial.is_enabled(), _on_tutorial_toggled)
 	tutorial_check.size_flags_horizontal = SIZE_SHRINK_BEGIN

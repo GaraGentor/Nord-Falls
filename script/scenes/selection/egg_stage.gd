@@ -294,17 +294,26 @@ func _build_cards_row() -> void:
 	_cards_scroll.anchor_right = 1.0
 	_cards_scroll.anchor_top = 1.0
 	_cards_scroll.anchor_bottom = 1.0
-	_cards_scroll.offset_left = CARDS_LEFT
-	_cards_scroll.offset_right = -24
-	_cards_scroll.offset_top = -CARD_SIZE.y - CARD_BOTTOM - 4
-	_cards_scroll.offset_bottom = -CARD_BOTTOM
+	# die Scrollview schneidet ab: oben, unten und an den Seiten Platz für die Rand-Effekte (SkillCardPaper.FLAME_PAD),
+	# die Karten selbst bleiben, wo sie waren
+	var pad := SkillCardPaper.FLAME_PAD
+	_cards_scroll.offset_left = CARDS_LEFT - pad.x
+	_cards_scroll.offset_right = -24 + pad.z
+	_cards_scroll.offset_top = -CARD_SIZE.y - CARD_BOTTOM - 4 - pad.y
+	_cards_scroll.offset_bottom = minf(-CARD_BOTTOM + pad.w, 0.0)
+	var margin := SkillCardPaper.flame_margin()
+	margin.size_flags_horizontal = SIZE_EXPAND_FILL
+	margin.size_flags_vertical = SIZE_EXPAND_FILL
+	# unten nur so viel Rand, wie bis zum Bildrand Platz ist (sonst rutschen die Karten nach oben)
+	margin.add_theme_constant_override("margin_bottom", int(minf(pad.w, CARD_BOTTOM)))
+	_cards_scroll.add_child(margin)
 	var center := CenterContainer.new()
 	center.size_flags_horizontal = SIZE_EXPAND_FILL
 	center.size_flags_vertical = SIZE_EXPAND_FILL
 	center.mouse_filter = MOUSE_FILTER_IGNORE
-	_cards_scroll.add_child(center)
+	margin.add_child(center)
 	_cards = HBoxContainer.new()
-	_cards.add_theme_constant_override("separation", CARD_GAP)
+	_cards.add_theme_constant_override("separation", maxi(CARD_GAP, SkillCardPaper.FLAME_GAP_X))
 	_cards.mouse_filter = MOUSE_FILTER_IGNORE
 	center.add_child(_cards)
 

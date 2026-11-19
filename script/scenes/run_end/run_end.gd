@@ -29,7 +29,6 @@ const SEARCH_STATS := [
 	["STAT_ATK", "atk"],
 	["STAT_DEF", "def"],
 	["STAT_SPA", "s_atk"],
-	["STAT_SPD", "s_def"],
 	["STAT_SPE", "speed"],
 ]
 

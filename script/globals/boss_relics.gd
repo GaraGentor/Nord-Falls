@@ -203,21 +203,17 @@ func on_round_started() -> void:
 		_relic_damage(target, source, ceilf(target.hp() * EMBER_FLOOR_SHARE), "ember_floor")
 
 ## Zu Beginn eines eigenen Zuges, nachdem die alten Schilde abgelaufen sind
-func on_turn_start(mon: Monster, round_number: int) -> void:
+func on_turn_start(mon: Monster, _round_number: int) -> void:
 	if has(mon, "bongos"):
-		var physical := round_number % 2 == 1
-		var stat: float = mon.defense() if physical else mon.s_defense()
-		mon.add_shield(ceilf(stat * BONGOS_SHIELD_VALUE / 100.0), physical)
+		mon.add_shield(ceilf(mon.defense() * BONGOS_SHIELD_VALUE / 100.0))
 		_say(mon, "bongos")
 	if has(mon, "fate_mirror"):
-		for physical in [true, false]:
-			var amount: float = mon._relic_state.get(_mirror_key(physical), 0.0)
-			if amount > 0:
-				mon.add_shield(amount, physical)
-		if mon._relic_state.has(_mirror_key(true)) or mon._relic_state.has(_mirror_key(false)):
+		var amount: float = mon._relic_state.get(MIRROR_KEY, 0.0)
+		if amount > 0:
+			mon.add_shield(amount)
+		if mon._relic_state.has(MIRROR_KEY):
 			_say(mon, "fate_mirror")
-		mon._relic_state.erase(_mirror_key(true))
-		mon._relic_state.erase(_mirror_key(false))
+		mon._relic_state.erase(MIRROR_KEY)
 
 ## Mikrofon: in ungeraden Runden fallen alle Züge aus
 func silences_round(round_number: int) -> bool:
@@ -243,8 +239,7 @@ func on_damage_dealt(from: Monster, target: Monster, skill: Dictionary, hit: flo
 	if has(from, "heal_moss"):
 		heal(from, hit * HEAL_MOSS_SHARE)
 	if has(from, "fate_mirror"):
-		var key := _mirror_key(physical)
-		from._relic_state[key] = from._relic_state.get(key, 0.0) + hit
+		from._relic_state[MIRROR_KEY] = from._relic_state.get(MIRROR_KEY, 0.0) + hit
 	# ungerade Runden prallt physischer, gerade magischer Schaden ab
 	if has(target, "magic_thorns") and physical == (round_number % 2 == 1):
 		_relic_damage(from, target, ceilf(hit * THORNS_SHARE), "magic_thorns")
@@ -266,8 +261,8 @@ func heal(mon: Monster, amount: float) -> void:
 	Events.monster_effect_text.emit(mon, "+%d" % roundi(healed), HEAL_COLOR)
 	mon._lost_hp -= healed
 
-func _mirror_key(physical: bool) -> String:
-	return "mirror_physical" if physical else "mirror_magic"
+## Schicksalsspiegel: gesammelter Schaden, der im nächsten Zug zum Schild wird
+const MIRROR_KEY := "mirror"
 
 func _say(mon: Monster, id: String) -> void:
 	Events.monster_effect_text.emit(mon, tr(get_relic(id).name), RELIC_COLOR)

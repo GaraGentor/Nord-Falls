@@ -48,14 +48,14 @@ function statOffset(sp, stat, level) {
 
 function makeMon(sp, level, statFn, mods = {}) {
 	const s = {};
-	for (const k of ["hp", "atk", "def", "s_atk", "s_def", "speed"]) s[k] = statFn(sp, k, level) * (mods[k] || 1);
+	for (const k of ["hp", "atk", "def", "s_atk", "speed"]) s[k] = statFn(sp, k, level) * (mods[k] || 1);
 	if (statFn === statOffset) s.hp *= HP_SCALE;
 	return { sp, level, ...s };
 }
 
 // Angreifer nimmt seine bessere Angriffsart
 function pick(from, to) {
-	return from.atk >= from.s_atk ? [from.atk, to.def] : [from.s_atk, to.s_def];
+	return from.atk >= from.s_atk ? [from.atk, to.def] : [from.s_atk, to.def];
 }
 
 // ── Formeln ──────────────────────────────────────────────
@@ -113,7 +113,7 @@ const species = loadSpecies();
 const byName = Object.fromEntries(species.map((s) => [s.name, s]));
 // Archetypen: stärkster Angreifer, stärkster Verteidiger, ausgeglichenstes Monster
 const atkOf = (s) => Math.max(s.shares.atk, s.shares.s_atk);
-const defOf = (s) => (s.shares.def + s.shares.s_def) / 2 + s.shares.hp;
+const defOf = (s) => s.shares.def + s.shares.hp;
 const glass = [...species].sort((x, y) => atkOf(y) - atkOf(x))[0];
 const tank = [...species].sort((x, y) => defOf(y) - defOf(x))[0];
 const avg = [...species].sort((x, y) =>
@@ -195,7 +195,7 @@ console.log(pad("Vert. x", 12) + Object.keys(FORMULAS).map((k) => lpad(k, 18)).j
 for (const x of [1, 1.5, 2, 3, 4]) {
 	let row = pad(x, 12);
 	for (const f of Object.values(FORMULAS)) {
-		const a = makeMon(avg, 10, f.stat), t = makeMon(avg, 10, f.stat, { def: x, s_def: x });
+		const a = makeMon(avg, 10, f.stat), t = makeMon(avg, 10, f.stat, { def: x });
 		const d = f.dmg(a, t, SKILL_VALUE);
 		row += lpad(`${hitsToKo(d, t.hp)} (${d}/${Math.round(t.hp)})`, 18);
 	}
@@ -204,7 +204,7 @@ for (const x of [1, 1.5, 2, 3, 4]) {
 
 // 7) Seltenheit: gleich verteilte Monster mit unterschiedlicher BST, Stufe 10, Vorteil im Duell (ungerundet)
 console.log("\n7) BST-Vorteil im Duell (Stufe 10, gleich verteilte Werte): wie viel schneller die höhere BST gewinnt");
-const even = (bst) => ({ name: "bst" + bst, bst, shares: { hp: 1 / 6, atk: 1 / 6, def: 1 / 6, s_atk: 1 / 6, s_def: 1 / 6, speed: 1 / 6 } });
+const even = (bst) => ({ name: "bst" + bst, bst, shares: { hp: 1 / 5, atk: 1 / 5, def: 1 / 5, s_atk: 1 / 5, speed: 1 / 5 } });
 console.log(pad("Paarung", 22) + Object.keys(FORMULAS).map((k) => lpad(k, 12)).join(""));
 for (const [hi, lo, label] of [[220, 200, "Uncommon vs Common"], [240, 200, "Epic vs Common"], [255, 200, "255 vs Common"],
 	[270, 200, "Mythic vs Common"], [280, 200, "280 vs Common"]]) {

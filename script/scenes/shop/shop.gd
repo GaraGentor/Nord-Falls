@@ -85,8 +85,8 @@ const MON_VIEW_WIDTH := 520.0
 const MODAL_GAP := 12.0
 ## Höhe der Übersicht wie beim Trainer: oben beginnt sie dort unter dessen Leiste (Tasche, Verlassen-Button),
 ## unten endet sie über dem Rand; beides in Bildschirm-Pixeln
-const MODAL_TOP := 142.0
-const MODAL_BOTTOM := 36.0
+const MODAL_TOP := 72.0
+const MODAL_BOTTOM := 24.0
 const PAN_SECONDS := 0.45
 ## Parallax des Hintergrunds: Anteil der Fahrt, um den er mitfährt, Ausschlag mit der Maus, Nachziehen pro Sekunde
 const PARALLAX_PAN := 0.1
@@ -257,7 +257,7 @@ class MonField extends RewardDialog.DropTarget:
 	const CHIPS_HEIGHT := 32.0
 	const FIELD_SIZE := Vector2(250, IMAGE_SIZE + CHIPS_HEIGHT)
 	const BOOST_FONT_SIZE := 18
-	const STAT_GETTERS := {"hp": "hp", "atk": "attack", "def": "defense", "s_atk": "s_attack", "s_def": "s_defense", "speed": "speed"}
+	const STAT_GETTERS := {"hp": "hp", "atk": "attack", "def": "defense", "s_atk": "s_attack", "speed": "speed"}
 	const SELECTED_SCALE := Vector2(1.08, 1.08)
 	const SELECT_SECONDS := 0.2
 

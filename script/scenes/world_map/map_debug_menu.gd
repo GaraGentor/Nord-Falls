@@ -25,7 +25,7 @@ const MAIN_LIST_HEIGHT := 480
 const UNPICKED_COLOR := Color(0.65, 0.65, 0.65)
 const EGG_LABEL_WIDTH := 170
 const EGG_BUTTON_SIZE := Vector2(300, 44)
-const STAT_NAMES := {"hp": "KP", "atk": "Angriff", "def": "Verteidigung", "s_atk": "Sp. Angriff", "s_def": "Sp. Verteidigung", "speed": "Initiative"}
+const STAT_NAMES := {"hp": "KP", "atk": "Angriff", "def": "Verteidigung", "s_atk": "Sp. Angriff", "speed": "Initiative"}
 const STAT_VALUE_WIDTH := 70
 const STAT_STEP_SIZE := Vector2(60, 40)
 const STATS_EXAMPLE_BST := 200
@@ -194,6 +194,7 @@ func _build_main() -> void:
 		["TROPHÄEN-WERTE ...", func(): _show_page(_trophy_page)],
 		["MONSTER-VORSCHAU ...", func(): _show_page(_preview_page)],
 		["VFX-VORSCHAU ...", func(): _show_page(_vfx_page)],
+		["KARTEN-TYPEN ...", _open_card_types_page],
 	])
 	# Bosse mit oder ohne Trophäen, gespeichert wie die anderen Balancing-Werte
 	var boss_trophies_button := _make_toggle_button("")
@@ -418,9 +419,7 @@ func _build_vfx_page() -> void:
 	], VFX_COLUMNS)
 	_add_section(list, "Schilde", [
 		["SCHILD", _play_vfx.bind(kinds.SHIELD)],
-		["MAG. SCHILD", _play_vfx.bind(kinds.S_SHIELD)],
 		["SCHILD-TREFFER", _play_vfx.bind(kinds.SHIELD_HIT)],
-		["MAG. SCHILD-TREFFER", _play_vfx.bind(kinds.S_SHIELD_HIT)],
 	], VFX_COLUMNS)
 	_add_section(list, "Buff, Schwächung & Heilung", [
 		["BUFF", _play_vfx.bind(kinds.BUFF)],
@@ -462,7 +461,7 @@ func _play_all_vfx() -> void:
 	var sequence := [[kinds.SLASH, Enums.MON_TYPES.FIRE], [kinds.FIRE, 0], [kinds.WATER, 0], [kinds.EARTH, 0], [kinds.AIR, 0],
 		[kinds.STEAM, 0], [kinds.LIGHTNING, 0], [kinds.MAGMA, 0], [kinds.ICE, 0], [kinds.DUST, 0], [kinds.MUD, 0],
 		[kinds.POISON, 0], [kinds.ASH, 0], [kinds.THUNDER, 0], [kinds.ERUPTION, 0], [kinds.CHAOS, 0],
-		[kinds.SHIELD, 0], [kinds.SHIELD_HIT, 0], [kinds.S_SHIELD, 0], [kinds.S_SHIELD_HIT, 0],
+		[kinds.SHIELD, 0], [kinds.SHIELD_HIT, 0],
 		[kinds.BUFF, 0], [kinds.DEBUFF, 0], [kinds.HEAL, 0]]
 	for entry in sequence:
 		# Seite gewechselt oder Menü geschlossen: Abfolge abbrechen
@@ -472,8 +471,112 @@ func _play_all_vfx() -> void:
 		await get_tree().create_timer(VFX_SEQUENCE_PAUSE).timeout
 
 func _show_page(page: VBoxContainer) -> void:
-	for other in [_main, _fight_page, _picker, _egg_page, _stats_page, _damage_page, _trophy_page, _relic_page, _preview_page, _vfx_page, _reset_page]:
-		other.visible = other == page
+	for other in [_main, _fight_page, _picker, _egg_page, _stats_page, _damage_page, _trophy_page, _relic_page, _preview_page, _vfx_page, _reset_page, _card_types_page]:
+		if other != null:
+			other.visible = other == page
+
+# ─────────────────────────
+# Karten-Typen: je Art (SkillCardPaper.kind_key) eine echte Karte mit Wasserzeichen und Rand-Effekt,
+# dazu eine gesperrte Ei-Attacke. Wird erst beim Öffnen gebaut, mit dem ersten Monster im Team.
+
+const CARD_TYPES := [
+	["physical", "Angriff physisch"],
+	["magic", "Angriff magisch"],
+	["shield", "Schild"],
+	["buff", "Buff"],
+	["debuff", "Debuff"],
+	["passive", "Passiv"],
+]
+const CARD_TYPE_COLUMNS := 4
+const CARD_TYPE_SIZE := Vector2(185, 260)
+const CARD_TYPE_LIST_HEIGHT := 480
+## Platz für die Rand-Effekte, die über die Karten hinausragen (SkillCardPaper.FLAME_PAD)
+const CARD_TYPE_GAP := Vector2(44, 64)
+
+var _card_types_page: VBoxContainer
+
+func _open_card_types_page() -> void:
+	if _card_types_page != null:
+		_card_types_page.queue_free()
+	_card_types_page = VBoxContainer.new()
+	_card_types_page.add_theme_constant_override("separation", 12)
+	add_footer(_card_types_page)
+	_card_types_page.add_child(_make_header("Karten-Typen (Wasserzeichen und Rand-Effekt je Art)"))
+
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size.y = CARD_TYPE_LIST_HEIGHT
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_card_types_page.add_child(scroll)
+	DragScroll.attach(scroll)
+	# Rand oben und an den Seiten, sonst schneidet die Liste die Flammen der ersten Reihe ab
+	var margin := MarginContainer.new()
+	margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	margin.add_theme_constant_override("margin_top", int(SkillCardPaper.FLAME_PAD.y))
+	margin.add_theme_constant_override("margin_left", int(SkillCardPaper.FLAME_PAD.x))
+	margin.add_theme_constant_override("margin_right", int(SkillCardPaper.FLAME_PAD.z))
+	margin.add_theme_constant_override("margin_bottom", int(SkillCardPaper.FLAME_PAD.w))
+	scroll.add_child(margin)
+	var grid := GridContainer.new()
+	grid.columns = CARD_TYPE_COLUMNS
+	grid.add_theme_constant_override("h_separation", int(CARD_TYPE_GAP.x))
+	grid.add_theme_constant_override("v_separation", int(CARD_TYPE_GAP.y))
+	margin.add_child(grid)
+
+	var mon: Monster = State.mons[0] if not State.mons.is_empty() else Monster.new(State.INITIAL_LEVEL, Monmap.mon_metainfos_by_name(Monmap.mons[0].name))
+	var examples := _card_type_examples()
+	for entry in CARD_TYPES:
+		var kind: String = entry[0]
+		var caption: String = entry[1]
+		var skill: Dictionary = examples.get(kind, {})
+		var preview_only := false
+		# Debuffs gibt es (noch) nicht als eigene Skills: Buff-Karte, deren Papier als Debuff gezeichnet wird
+		if skill.is_empty() and kind == "debuff" and examples.has("buff"):
+			skill = examples.buff
+			preview_only = true
+		if skill.is_empty():
+			grid.add_child(_card_type_entry(null, caption + "\n(kein Skill im Spiel)"))
+			continue
+		var card := EggSkillCard.create(skill, mon)
+		if preview_only:
+			var fake := skill.duplicate()
+			fake.effect = "debuff"
+			card._paper.set_skill(fake)
+			caption += "\n(nur Vorschau, kein Debuff-Skill im Spiel)"
+		grid.add_child(_card_type_entry(card, caption))
+	# gesperrte Ei-Attacke: grau, ohne Rand-Effekt
+	if examples.has("physical"):
+		var locked := EggSkillCard.create(examples.physical, mon, "CONFIGURATOR_LOCKED", "EGG_SKILL_HINT")
+		grid.add_child(_card_type_entry(locked, "Gesperrte Ei-Attacke"))
+
+	var back := _make_button("ZURÜCK", _show_page.bind(_main))
+	back.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_card_types_page.add_child(back)
+	_show_page(_card_types_page)
+
+## Erster Skill je Art aus allen Skills, die im Spiel vorkommen (Pool und Trainer)
+func _card_type_examples() -> Dictionary:
+	var examples := {}
+	for skill in Skills.pool_skills() + Skills.trainer_skills(1):
+		var kind := SkillCardPaper.kind_key(skill)
+		if not examples.has(kind):
+			examples[kind] = Skills.get_skill(skill.name)
+	return examples
+
+func _card_type_entry(card: Control, caption: String) -> Control:
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", int(SkillCardPaper.FLAME_PAD.w) + 4)
+	if card != null:
+		card.custom_minimum_size = CARD_TYPE_SIZE
+		card.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		box.add_child(card)
+	var label := Label.new()
+	label.text = caption
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.custom_minimum_size.x = CARD_TYPE_SIZE.x
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.add_theme_color_override("font_color", IronPlate.TEXT_COLOR)
+	box.add_child(label)
+	return box
 
 func _refresh_start() -> void:
 	# ohne Fang und Gefallenen würde das Judgement sofort zurück zur Karte springen
@@ -943,7 +1046,8 @@ func _refresh_damage_page() -> void:
 			"Höher = jede Stufe bringt anteilig weniger, Stufenunterschiede zählen weniger. Die Startstufe 5 bleibt immer gleich. " +
 			"Beispiel Sockel 10: Stufe 10 hat nur 1,33x so viel wie Stufe 5. Gilt für alle Werte.",
 		"KP-Multiplikator: steuert die Kampflänge (Treffer bis K.O.).",
-		"Schaden = fester Wert + Anteil x (Sp.) Angriff, die Verteidigung des Ziels zählt nicht, nur Schilde.",
+		"Schaden = fester Wert + Anteil x (Sp.) Angriff, die Verteidigung des Ziels zählt nicht, nur Schilde (ein Schild blockt physisch und magisch).",
+		"Element-Faktor nur für magische Angriffe, physische treffen immer neutral.",
 	])
 	_damage_sim.text = DamageSim.report()
 

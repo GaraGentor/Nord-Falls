@@ -1,14 +1,14 @@
 class_name StatInfoDialog
 extends InfoDialog
 
-## Was die Werte bedeuten (KP, ANG, VER, SAN, SVE, INI, GES) und worauf man beim Spielen der Karten achten sollte.
+## Was die Werte bedeuten (KP, ANG, VER, SAN, INI, GES) und worauf man beim Spielen der Karten achten sollte.
 ## Öffnet sich beim Klick auf eine Werte-Beschriftung (StatsGrid), der angeklickte Wert ist hervorgehoben.
 
-const ORDER := ["hp", "atk", "def", "s_atk", "s_def", "speed", "bst"]
+const ORDER := ["hp", "atk", "def", "s_atk", "speed", "bst"]
 ## Übersetzungs-Präfix pro Wert: _NAME und _DESC hängen dran
 const KEYS := {
 	"hp": "STAT_INFO_HP", "atk": "STAT_INFO_ATK", "def": "STAT_INFO_DEF", "s_atk": "STAT_INFO_SPA",
-	"s_def": "STAT_INFO_SPD", "speed": "STAT_INFO_SPE", "bst": "STAT_INFO_BST",
+	"speed": "STAT_INFO_SPE", "bst": "STAT_INFO_BST",
 }
 const TIPS := ["STAT_INFO_TIP_TYPE", "STAT_INFO_TIP_SHIELD", "STAT_INFO_TIP_ELEMENT", "STAT_INFO_TIP_SPEED", "STAT_INFO_TIP_HIDDEN"]
 const ICON_SIZE := Vector2(26, 26)

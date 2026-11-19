@@ -23,5 +23,4 @@ func _on_button_pressed() -> void:
 	print("monatk:", enemy_mon._level * enemy_mon._growth.atk * p_per_level)
 	print("mondef:", enemy_mon._level * enemy_mon._growth.def * p_per_level)
 	print("monap:", enemy_mon._level * enemy_mon._growth.s_atk * p_per_level)
-	print("monad:", enemy_mon._level * enemy_mon._growth.s_def * p_per_level)
 	pass # Replace with function body.

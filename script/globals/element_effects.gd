@@ -4,11 +4,11 @@ extends Node
 ## Ausschlaggebend ist das Element des Skills (skill.nature), nicht das des Monsters. Grundelemente haben keinen Effekt.
 ##
 ## Zweier-Kombis, lösen nur mit einer Chance aus (TRIGGER_CHANCES), Schwächungen halten EFFECT_TURNS Züge:
-##   Dampf:   Ziel -20 % Verteidigung und Sp. Verteidigung (10 %)
+##   Dampf:   Ziel -20 % Verteidigung (10 %)
 ##   Staub:   Ziel -20 % Angriff und Sp. Angriff (10 %)
 ##   Blitz:   Fähigkeiten des Ziels schlagen zu 10 % fehl (10 %)
-##   Eis:     Wirker bekommt 25 % des verursachten Schadens als passenden Schild (25 %)
-##   Magma:   Treffer geht durch den passenden Schild (20 %)
+##   Eis:     Wirker bekommt 25 % des verursachten Schadens als Schild (25 %)
+##   Magma:   Treffer geht durch den Schild (20 %)
 ##   Schlamm: wie Magma (Platzhalter, bis es einen eigenen Effekt gibt)
 ## Dreier-Kombis: Sumpf = Gift bis Kampfende (10 % pro Treffer auf einen Stapel), Aschesturm = wahrer Zusatzschaden
 ## (10 %), Gewitter = Paralyse bis Kampfende, Vulkan = Chance auf doppelte Wirkung.
@@ -44,7 +44,7 @@ const CHAOS := EARTH | FIRE | WATER | AIR
 
 ## Wie viele eigene Züge des betroffenen Monsters Zweier-Effekte halten
 const EFFECT_TURNS := 2
-## Dampf / Staub: Chance und Schwächung (Dampf: Vert. und Sp. Vert., Staub: Ang. und Sp. Ang.)
+## Dampf / Staub: Chance und Schwächung (Dampf: Vert., Staub: Ang. und Sp. Ang.)
 const DEBUFF_CHANCE := 0.1
 const DEBUFF_FACTOR := 0.2
 ## Blitz: Chance, dass das Ziel geschwächt wird, und Fehlschlag-Chance seiner Fähigkeiten
@@ -53,7 +53,7 @@ const FAIL_CHANCE := 0.1
 ## Eis: Chance und Anteil des verursachten Schadens, der als Schild zurückkommt
 const ICE_CHANCE := 0.25
 const ICE_SHIELD_SHARE := 0.25
-## Magma / Schlamm: Chance, dass der Treffer durch den passenden Schild geht
+## Magma / Schlamm: Chance, dass der Treffer durch den Schild geht
 const PIERCE_CHANCE := 0.2
 ## Sumpf: Chance pro Treffer auf einen Stapel Gift, Gift-Schaden pro Stapel (Anteil der max. KP) vor jedem Zug des Ziels
 const POISON_CHANCE := 0.1
@@ -108,7 +108,6 @@ func on_hit(from: Monster, target: Monster, skill: Dictionary) -> void:
 	match skill.nature:
 		STEAM:
 			target.add_debuff("steam_def", "def", DEBUFF_FACTOR * power, EFFECT_TURNS + 1)
-			target.add_debuff("steam_s_def", "s_def", DEBUFF_FACTOR * power, EFFECT_TURNS + 1)
 			Events.status_vfx.emit(target, "debuff")
 		DUST:
 			target.add_debuff("dust_atk", "atk", DEBUFF_FACTOR * power, EFFECT_TURNS + 1)
@@ -124,20 +123,19 @@ func on_hit(from: Monster, target: Monster, skill: Dictionary) -> void:
 		THUNDERSTORM:
 			_apply_status(target, PARALYSIS, from, power)
 
-## Einmal pro Einsatz, nach allen Treffern: Eis gibt dem Wirker einen Schild aus dem Schaden
-## (physischer Angriff -> Rüstung, magischer -> Magie-Schild).
+## Einmal pro Einsatz, nach allen Treffern: Eis gibt dem Wirker einen Schild aus dem Schaden.
 func on_cast(from: Monster, skill: Dictionary, dealt: float) -> void:
 	if not from.is_alive() or skill.nature != ICE or dealt <= 0 or not _triggers(skill, from):
 		return
-	from.add_shield(ceilf(dealt * ICE_SHIELD_SHARE * effect_power(skill)), Skills.is_physical(skill))
+	from.add_shield(ceilf(dealt * ICE_SHIELD_SHARE * effect_power(skill)))
 
-## Magma / Schlamm: geht dieser Treffer durch den passenden Schild?
+## Magma / Schlamm: geht dieser Treffer durch den Schild?
 func rolls_pierce(skill: Dictionary, from: Monster = null) -> bool:
 	return skill.get("nature", 0) in [MAGMA, MUD] and _triggers(skill, from)
 
-## Zeigt "Durchschlag!" über dem Ziel, wenn es einen passenden Schild hatte
-func show_pierce(target: Monster, physical: bool) -> void:
-	if (target._shield if physical else target._s_shield) > 0:
+## Zeigt "Durchschlag!" über dem Ziel, wenn es einen Schild hatte
+func show_pierce(target: Monster) -> void:
+	if target._shield > 0:
 		Events.monster_effect_text.emit(target, tr("EFFECT_TEXT_PIERCE"), PIERCE_COLOR)
 
 ## Blitz: schlägt die Fähigkeit dieses Monsters diesmal fehl?

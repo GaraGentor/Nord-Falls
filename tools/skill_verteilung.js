@@ -34,31 +34,32 @@ const MILESTONE_SEED = SEED_ARG ? SEED_ARG.slice(7) : 'meilensteine-1';
 // Daten-Tabellen
 
 const STARTERS = ['2', '4', '5', '82']; // wie State.INITIAL_MONS
-const ORDER = ['atk', 's_atk', 'def', 's_def']; // Gleichstand der Kategorien
-const CAT = { atk: 'PHYS', s_atk: 'MAG', def: 'ARMOR', s_def: 'WARD' };
-const STATNAME = { atk: 'Ang.', s_atk: 'Sp. Ang.', def: 'Vert.', s_def: 'Sp. Vert.', hp: 'KP', speed: 'Init.' };
+// Drei Kategorien: physischer Angriff, magischer Angriff, Schild (es gibt nur noch einen Schild, er blockt beides)
+const ORDER = ['atk', 's_atk', 'def']; // Gleichstand der Kategorien
+const CAT = { atk: 'PHYS', s_atk: 'MAG', def: 'ARMOR' };
+const STATNAME = { atk: 'Ang.', s_atk: 'Sp. Ang.', def: 'Vert.', hp: 'KP', speed: 'Init.' };
 const isAtk = c => c === 'atk' || c === 's_atk';
 
 // Stufe 2 / Stufe 3 pro Grundelement und Kategorie (draft_skills)
 const BASE = {
-  FIRE: { atk: ['FLAME_FIST', 'BLAZE_RUSH'], s_atk: ['SPARK_SHOT', 'FIREBALL'], def: ['CINDER_PLATE', 'FLAME_WALL'], s_def: ['HEAT_VEIL', 'PHOENIX_AURA'] },
-  WATER: { atk: ['TIDE_SLAP', 'BREAKER'], s_atk: ['BUBBLE_BEAM', 'HYDRO_LANCE'], def: ['SHELL', 'CORAL_WALL'], s_def: ['MIST_VEIL', 'TIDAL_DOME'] },
-  EARTH: { atk: ['BOULDER_BASH', 'QUAKE_STOMP'], s_atk: ['PEBBLE_STORM', 'GEO_PULSE'], def: ['STONE_SKIN', 'GRANITE_BASTION'], s_def: ['CLAY_SEAL', 'CRYSTAL_SEAL'] },
-  AIR: { atk: ['GUST_KICK', 'CYCLONE_CLAW'], s_atk: ['WIND_BLADE', 'TEMPEST_RAY'], def: ['DRAFT_GUARD', 'GALE_WALL'], s_def: ['BREEZE_VEIL', 'SKY_DOME'] },
+  FIRE: { atk: ['FLAME_FIST', 'BLAZE_RUSH'], s_atk: ['SPARK_SHOT', 'FIREBALL'], def: ['CINDER_PLATE', 'FLAME_WALL'] },
+  WATER: { atk: ['TIDE_SLAP', 'BREAKER'], s_atk: ['BUBBLE_BEAM', 'HYDRO_LANCE'], def: ['SHELL', 'CORAL_WALL'] },
+  EARTH: { atk: ['BOULDER_BASH', 'QUAKE_STOMP'], s_atk: ['PEBBLE_STORM', 'GEO_PULSE'], def: ['STONE_SKIN', 'GRANITE_BASTION'] },
+  AIR: { atk: ['GUST_KICK', 'CYCLONE_CLAW'], s_atk: ['WIND_BLADE', 'TEMPEST_RAY'], def: ['DRAFT_GUARD', 'GALE_WALL'] },
 };
 // Kombis pro Kategorie [leicht, stark] + Top (Stufe 4).
 // Zweier: leicht = Stufe 2 (CD 1), stark = Stufe 3. Dreier: leicht = Stufe 3 (CD 1), stark = Stufe 3 (CD 3).
 const COMBO = {
-  STEAM: { atk: ['HOT_JAB', 'SCALD_STRIKE'], s_atk: ['VAPOR_PUFF', 'STEAM_JET'], def: ['STEAM_COAT', 'VAPOR_PLATE'], s_def: ['HAZE_SHIELD', 'FOG_BARRIER'], top: 'PHYS_STEAM_HAMMER' },
-  LIGHTNING: { atk: ['SHOCK_TAP', 'VOLT_PUNCH'], s_atk: ['SPARK_BOLT', 'ARC_BOLT'], def: ['CHARGE_PLATE', 'STATIC_PLATE'], s_def: ['ION_VEIL', 'SPARK_FIELD'], top: 'MAG_THUNDERCLAP' },
-  MAGMA: { atk: ['EMBER_KNUCKLE', 'LAVA_FIST'], s_atk: ['LAVA_SPIT', 'MAGMA_BURST'], def: ['PUMICE_SKIN', 'OBSIDIAN_PLATE'], s_def: ['HEAT_SHIMMER', 'EMBER_CRUST'], top: 'PHYS_ERUPTION_SLAM' },
-  ICE: { atk: ['FROST_BITE', 'ICICLE_JAB'], s_atk: ['SNOW_FLURRY', 'FROST_RAY'], def: ['RIME_COAT', 'ICE_PLATE'], s_def: ['SNOW_VEIL', 'FROST_MIRROR'], top: 'MAG_BLIZZARD' },
-  DUST: { atk: ['GRIT_PUNCH', 'SAND_CLAW'], s_atk: ['DUST_SHOT', 'DUST_DEVIL'], def: ['SANDSTONE_SKIN', 'DUNE_WALL'], s_def: ['DUST_CLOAK', 'SAND_VEIL'], top: 'MAG_SANDSTORM' },
-  MUD: { atk: ['MUD_PUNCH', 'MUD_SLAM'], s_atk: ['SLUDGE_SHOT', 'BOG_PULSE'], def: ['MUD_COAT', 'CLAY_SHELL'], s_def: ['PEAT_SEAL', 'SILT_SEAL'], top: 'ARMOR_LANDSLIDE_WALL' },
-  THUNDERSTORM: { atk: ['SQUALL_STRIKE', 'STORM_FIST'], s_atk: ['STATIC_RAIN', 'CHAIN_LIGHTNING'], def: ['RAIN_GUARD', 'STORM_PLATE'], s_def: ['STORM_VEIL', 'CLOUD_DOME'], top: 'MAG_SKYFALL' },
-  VOLCANO: { atk: ['VOLCANIC_FIST', 'CALDERA_CRUSH'], s_atk: ['FUME_BURST', 'PYROCLAST'], def: ['LAVA_CRUST', 'BASALT_FORT'], s_def: ['STEAM_VENT', 'GEYSER_SHIELD'], top: 'PHYS_MAGMA_TITAN' },
-  ASH_STORM: { atk: ['SOOT_STRIKE', 'CINDER_CLAW'], s_atk: ['EMBER_GUST', 'ASH_CYCLONE'], def: ['CINDER_SHELL', 'SLAG_ARMOR'], s_def: ['SMOKE_SCREEN', 'SOOT_VEIL'], top: 'PHYS_ASHEN_ROLLER' },
-  SWAMP: { atk: ['REED_WHIP', 'ROOT_LASH'], s_atk: ['SPORE_PUFF', 'MIASMA_CLOUD'], def: ['MOSS_HIDE', 'MANGROVE_WALL'], s_def: ['BOG_MIST', 'MARSH_MIST'], top: 'MAG_BOG_MAW' },
+  STEAM: { atk: ['HOT_JAB', 'SCALD_STRIKE'], s_atk: ['VAPOR_PUFF', 'STEAM_JET'], def: ['STEAM_COAT', 'VAPOR_PLATE'], top: 'PHYS_STEAM_HAMMER' },
+  LIGHTNING: { atk: ['SHOCK_TAP', 'VOLT_PUNCH'], s_atk: ['SPARK_BOLT', 'ARC_BOLT'], def: ['CHARGE_PLATE', 'STATIC_PLATE'], top: 'MAG_THUNDERCLAP' },
+  MAGMA: { atk: ['EMBER_KNUCKLE', 'LAVA_FIST'], s_atk: ['LAVA_SPIT', 'MAGMA_BURST'], def: ['PUMICE_SKIN', 'OBSIDIAN_PLATE'], top: 'PHYS_ERUPTION_SLAM' },
+  ICE: { atk: ['FROST_BITE', 'ICICLE_JAB'], s_atk: ['SNOW_FLURRY', 'FROST_RAY'], def: ['RIME_COAT', 'ICE_PLATE'], top: 'MAG_BLIZZARD' },
+  DUST: { atk: ['GRIT_PUNCH', 'SAND_CLAW'], s_atk: ['DUST_SHOT', 'DUST_DEVIL'], def: ['SANDSTONE_SKIN', 'DUNE_WALL'], top: 'MAG_SANDSTORM' },
+  MUD: { atk: ['MUD_PUNCH', 'MUD_SLAM'], s_atk: ['SLUDGE_SHOT', 'BOG_PULSE'], def: ['MUD_COAT', 'CLAY_SHELL'], top: 'ARMOR_LANDSLIDE_WALL' },
+  THUNDERSTORM: { atk: ['SQUALL_STRIKE', 'STORM_FIST'], s_atk: ['STATIC_RAIN', 'CHAIN_LIGHTNING'], def: ['RAIN_GUARD', 'STORM_PLATE'], top: 'MAG_SKYFALL' },
+  VOLCANO: { atk: ['VOLCANIC_FIST', 'CALDERA_CRUSH'], s_atk: ['FUME_BURST', 'PYROCLAST'], def: ['LAVA_CRUST', 'BASALT_FORT'], top: 'PHYS_MAGMA_TITAN' },
+  ASH_STORM: { atk: ['SOOT_STRIKE', 'CINDER_CLAW'], s_atk: ['EMBER_GUST', 'ASH_CYCLONE'], def: ['CINDER_SHELL', 'SLAG_ARMOR'], top: 'PHYS_ASHEN_ROLLER' },
+  SWAMP: { atk: ['REED_WHIP', 'ROOT_LASH'], s_atk: ['SPORE_PUFF', 'MIASMA_CLOUD'], def: ['MOSS_HIDE', 'MANGROVE_WALL'], top: 'MAG_BOG_MAW' },
 };
 // Elemente -> Kombi-Name (für affinity in monmap.gd)
 const COMBO_ELEMENTS = {
@@ -70,7 +71,7 @@ const comboOf = elements => {
   const hit = Object.entries(COMBO_ELEMENTS).find(([, els]) => [...els].sort().join('|') === key);
   return hit ? hit[0] : null;
 };
-const ELEM_PASSIVE = { FIRE: 'element_power (Feuer-Angriffe +10 %)', AIR: 'magic_power (magische Angriffe +10 %)', EARTH: 'shield_power (Rüstung +10 %)', WATER: 's_shield_power (Magie-Schilde +10 %)' };
+const ELEM_PASSIVE = { FIRE: 'element_power (Feuer-Angriffe +10 %)', AIR: 'magic_power (magische Angriffe +10 %)', EARTH: 'shield_power (Schilde +10 %)', WATER: 'regen (4 % der max. KP zu Beginn jedes eigenen Zuges)' };
 
 // Meilensteine (Schlüssel wie Skills.MILESTONES in skills.gd). Pro Art drei Plätze, pro Platz wird eine Bedingung
 // gewürfelt [Schlüssel, Gewicht]. Alles gilt innerhalb EINES Runs mit der Art als Start-Monster.
@@ -206,16 +207,17 @@ const categories = ps => [...ORDER].sort((a, b) => (ps[b] - ps[a]) || (ORDER.ind
 // Start-Skills gewöhnlicher Arten (Schema aus dem Kommentar in monmap.gd, nach dem höchsten Kampfwert)
 function commonDefault(el, cs, ps) {
   const k1 = cs[0];
-  if (isAtk(k1)) return [t1.thrust(el, k1), t1.strike(el, k1), t1.weakShield(el, k1 === 'atk' ? 'def' : 's_def')];
+  if (isAtk(k1)) return [t1.thrust(el, k1), t1.strike(el, k1), t1.weakShield(el, 'def')];
+  // Verteidiger: Schild plus je ein schwacher Stoß beider Angriffsarten (der stärkere zuerst)
   const weakAtk = ps.s_atk > ps.atk ? 's_atk' : 'atk';
-  return [t1.weakThrust(el, weakAtk), t1.shield(el, k1), t1.weakShield(el, k1 === 'def' ? 's_def' : 'def')];
+  return [t1.weakThrust(el, weakAtk), t1.shield(el, k1), t1.weakThrust(el, weakAtk === 'atk' ? 's_atk' : 'atk')];
 }
 
 // ─────────────────────────
 // Die Regeln pro Seltenheit (siehe skill_verteilung.txt Teil B)
 
 function plan(mon) {
-  const el = mon.type, cs = categories(mon.ps), [k1, k2, k3, k4] = cs, ba = cs.find(isAtk);
+  const el = mon.type, cs = categories(mon.ps), [k1, k2, k3] = cs, ba = cs.find(isAtk);
   const { co, tri } = mon;
   const p = { cats: cs, def: [], egg: [], ms: {}, problems: [] };
   if (['RARE', 'EPIC', 'LEGENDARY', 'MYTHIC'].includes(mon.rarity) && !co) p.problems.push('"affinity" fehlt in monmap.gd');
@@ -226,13 +228,13 @@ function plan(mon) {
   switch (mon.rarity) {
     case 'COMMON':
       p.def = commonDefault(el, cs, mon.ps);
-      p.egg = [weakOf(el, k4), base(el, k3, 2), base(el, k1, 2)];
+      p.egg = [weakOf(el, k3), base(el, k3, 2), base(el, k1, 2)];
       p.ms = [base(el, k2, 2), base(el, k1, 3), base(el, k2, 3)];
       break;
     case 'UNCOMMON':
       if (isAtk(k1)) p.def = [t1.strong(el, k1), t1.thrust(el, k1), lightOf(el, k2)];
       else p.def = [t1.shield(el, k1), t1.thrust(el, ba), k2 === ba ? t1.strike(el, k2) : lightOf(el, k2)];
-      p.egg = [weakOf(el, k4), base(el, k2, 2), base(el, k1, 3), buffT2(el, k1)];
+      p.egg = [weakOf(el, k3), base(el, k2, 2), base(el, k1, 3), buffT2(el, k1)];
       p.ms = [base(el, k3, 2), base(el, k1, 2), base(el, k2, 3)];
       break;
     case 'RARE':
@@ -260,10 +262,10 @@ function plan(mon) {
   // Kopfgeld-Ei-Attacke: der erste Kandidat, den es gibt und den die Art noch nicht hat
   const taken = new Set([...p.def, ...p.egg, ...Object.values(p.ms)]);
   const bountyCandidates = {
-    COMMON: () => [base(el, k3, 3), base(el, k4, 2), base(el, k4, 3)],
-    UNCOMMON: () => [base(el, k3, 3), base(el, k4, 3), base(el, k2, 2)],
-    RARE: () => [combo(co, k3, 0), combo(co, k4, 0), base(el, k4, 3)],
-    EPIC: () => [combo(co, k3, 0), combo(co, k4, 0), base(el, k4, 3)],
+    COMMON: () => [base(el, k3, 3), base(el, k2, 3), base(el, k1, 3)],
+    UNCOMMON: () => [base(el, k3, 3), base(el, k2, 2), base(el, k3, 2)],
+    RARE: () => [combo(co, k3, 0), combo(co, k3, 1), base(el, k3, 3)],
+    EPIC: () => [combo(co, k3, 0), combo(co, k3, 1), base(el, k3, 3)],
     LEGENDARY: () => [combo(tri, k2, 0), combo(tri, k2, 1), combo(co, k3, 1)],
     MYTHIC: () => [combo(tri, k2, 1), combo(tri, k3, 1), combo(co, k3, 1)],
   }[mon.rarity]();
@@ -512,7 +514,7 @@ for (const r of Object.keys(RLABEL)) {
     txt += `\n#${mon.id} ${mon.label}  [${RLABEL[r]}, ${mon.type}${STARTERS.includes(mon.id) ? ', Startmonster' : ''}]\n`;
     if (mon.manual) { txt += '  "skills_manual": true - wird von Hand gepflegt, nicht verändert\n'; continue; }
     const p = plans.get(mon.id);
-    txt += `  Werte: KP ${ps.hp} | Ang ${ps.atk} | Vert ${ps.def} | SpAng ${ps.s_atk} | SpVert ${ps.s_def} | Init ${ps.speed}`;
+    txt += `  Werte: KP ${ps.hp} | Ang ${ps.atk} | Vert ${ps.def} | SpAng ${ps.s_atk} | Init ${ps.speed}`;
     txt += `   Reihenfolge: ${p.cats.map(c => STATNAME[c]).join(' > ')}\n`;
     if (mon.co) txt += `  Neben-Element: ${mon.co}${mon.tri ? '   Dreier-Kombi: ' + mon.tri : ''}\n`;
     if (p.problems.length) { txt += `  FEHLER: ${p.problems.join('; ')}\n`; continue; }

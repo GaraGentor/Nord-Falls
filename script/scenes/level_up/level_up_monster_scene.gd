@@ -79,7 +79,6 @@ func get_labels() -> Array[String]:
 	var old_attack = mon.attack()
 	var old_defense = mon.defense()
 	var old_s_attack = mon.s_attack()
-	var old_s_defense = mon.s_defense()
 	var old_speed = mon.speed()
 	mon.upgrade_by_level(Relics.modify("level_up_levels", 1, mon))
 	grid.init_with_mon(mon)
@@ -88,7 +87,6 @@ func get_labels() -> Array[String]:
 		gain_text(old_attack, mon.attack()),
 		gain_text(old_defense, mon.defense()),
 		gain_text(old_s_attack, mon.s_attack()),
-		gain_text(old_s_defense, mon.s_defense()),
 		gain_text(old_speed, mon.speed()),
 		"",
 	]

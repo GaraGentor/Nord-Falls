@@ -182,8 +182,6 @@ SKILL_EARTH_MAG_LIGHT_STRIKE,Light Earth Blast,Leichter Erdschlag
 SKILL_EARTH_MAG_WEAK_THRUST,Feeble Earth Pulse,Nutzloser Erdstoß
 SKILL_EARTH_ARMOR_LIGHT,Light Stone Shield,Leichter Steinschild
 SKILL_EARTH_ARMOR_WEAK,Feeble Stone Shield,Nutzloser Steinschild
-SKILL_EARTH_WARD_LIGHT,Light Crystal Ward,Leichter Kristallschild
-SKILL_EARTH_WARD_WEAK,Feeble Crystal Ward,Nutzloser Kristallschild
 SKILL_FIRE_PHYS_LIGHT_THRUST,Light Ember Jab,Leichter Glutstoß
 SKILL_FIRE_PHYS_LIGHT_STRIKE,Light Ember Smash,Leichter Glutschlag
 SKILL_FIRE_PHYS_WEAK_THRUST,Feeble Ember Jab,Nutzloser Glutstoß
@@ -192,8 +190,6 @@ SKILL_FIRE_MAG_LIGHT_STRIKE,Light Flame Blast,Leichter Flammenschlag
 SKILL_FIRE_MAG_WEAK_THRUST,Feeble Flame Pulse,Nutzloser Flammenstoß
 SKILL_FIRE_ARMOR_LIGHT,Light Ember Shield,Leichter Glutschild
 SKILL_FIRE_ARMOR_WEAK,Feeble Ember Shield,Nutzloser Glutschild
-SKILL_FIRE_WARD_LIGHT,Light Flame Ward,Leichter Flammenschild
-SKILL_FIRE_WARD_WEAK,Feeble Flame Ward,Nutzloser Flammenschild
 SKILL_WATER_PHYS_LIGHT_THRUST,Light Fin Jab,Leichter Flossenstoß
 SKILL_WATER_PHYS_LIGHT_STRIKE,Light Fin Smash,Leichter Flossenschlag
 SKILL_WATER_PHYS_WEAK_THRUST,Feeble Fin Jab,Nutzloser Flossenstoß
@@ -202,8 +198,6 @@ SKILL_WATER_MAG_LIGHT_STRIKE,Light Water Blast,Leichter Wasserschlag
 SKILL_WATER_MAG_WEAK_THRUST,Feeble Water Pulse,Nutzloser Wasserstoß
 SKILL_WATER_ARMOR_LIGHT,Light Shell Shield,Leichter Muschelschild
 SKILL_WATER_ARMOR_WEAK,Feeble Shell Shield,Nutzloser Muschelschild
-SKILL_WATER_WARD_LIGHT,Light Mist Ward,Leichter Nebelschild
-SKILL_WATER_WARD_WEAK,Feeble Mist Ward,Nutzloser Nebelschild
 SKILL_AIR_PHYS_LIGHT_THRUST,Light Wing Jab,Leichter Flügelstoß
 SKILL_AIR_PHYS_LIGHT_STRIKE,Light Wing Smash,Leichter Flügelschlag
 SKILL_AIR_PHYS_WEAK_THRUST,Feeble Wing Jab,Nutzloser Flügelstoß
@@ -212,8 +206,6 @@ SKILL_AIR_MAG_LIGHT_STRIKE,Light Wind Blast,Leichter Windschlag
 SKILL_AIR_MAG_WEAK_THRUST,Feeble Wind Pulse,Nutzloser Windstoß
 SKILL_AIR_ARMOR_LIGHT,Light Feather Shield,Leichter Federschild
 SKILL_AIR_ARMOR_WEAK,Feeble Feather Shield,Nutzloser Federschild
-SKILL_AIR_WARD_LIGHT,Light Wind Ward,Leichter Windschild
-SKILL_AIR_WARD_WEAK,Feeble Wind Ward,Nutzloser Windschild
 SKILL_EARTH_PHYS_SMALL_PUNCH,Small Punch,Kleiner Punch
 SKILL_EARTH_MAG_SMALL_CANNON,Small Earth Cannon,Kleine Erdkanone
 SKILL_EARTH_PHYS_PUNCH,Punch,Punch
@@ -221,7 +213,6 @@ SKILL_EARTH_MAG_CANNON,Earth Cannon,Erdkanone
 SKILL_EARTH_PHYS_BACKHAND,Light Backhand,Leichte Rückhand
 SKILL_EARTH_MAG_LIGHT_CANNON,Light Earth Cannon,Leichte Erdkanone
 SKILL_EARTH_ARMOR_PLAIN,Light Shield,Leichter Schild
-SKILL_EARTH_WARD_PLAIN,Light Earth Shield,Leichter Erdschild
 SKILL_FIRE_PHYS_SMALL_PUNCH,Small Punch,Kleiner Punch
 SKILL_FIRE_MAG_SMALL_CANNON,Small Flame Cannon,Kleine Flammenkanone
 SKILL_FIRE_PHYS_PUNCH,Punch,Punch
@@ -229,7 +220,6 @@ SKILL_FIRE_MAG_CANNON,Flame Cannon,Flammenkanone
 SKILL_FIRE_PHYS_BACKHAND,Light Backhand,Leichte Rückhand
 SKILL_FIRE_MAG_LIGHT_CANNON,Light Flame Cannon,Leichte Flammenkanone
 SKILL_FIRE_ARMOR_PLAIN,Light Shield,Leichter Schild
-SKILL_FIRE_WARD_PLAIN,Light Fire Shield,Leichter Feuerschild
 SKILL_WATER_PHYS_SMALL_PUNCH,Small Punch,Kleiner Punch
 SKILL_WATER_MAG_SMALL_CANNON,Small Water Cannon,Kleine Wasserkanone
 SKILL_WATER_PHYS_PUNCH,Punch,Punch
@@ -237,7 +227,6 @@ SKILL_WATER_MAG_CANNON,Water Cannon,Wasserkanone
 SKILL_WATER_PHYS_BACKHAND,Light Backhand,Leichte Rückhand
 SKILL_WATER_MAG_LIGHT_CANNON,Light Water Cannon,Leichte Wasserkanone
 SKILL_WATER_ARMOR_PLAIN,Light Shield,Leichter Schild
-SKILL_WATER_WARD_PLAIN,Light Water Shield,Leichter Wasserschild
 SKILL_AIR_PHYS_SMALL_PUNCH,Small Punch,Kleiner Punch
 SKILL_AIR_MAG_SMALL_CANNON,Small Wind Cannon,Kleine Windkanone
 SKILL_AIR_PHYS_PUNCH,Punch,Punch
@@ -245,11 +234,9 @@ SKILL_AIR_MAG_CANNON,Wind Cannon,Windkanone
 SKILL_AIR_PHYS_BACKHAND,Light Backhand,Leichte Rückhand
 SKILL_AIR_MAG_LIGHT_CANNON,Light Wind Cannon,Leichte Windkanone
 SKILL_AIR_ARMOR_PLAIN,Light Shield,Leichter Schild
-SKILL_AIR_WARD_PLAIN,Light Air Shield,Leichter Luftschild
 SKILL_STONE_GUARD,Stone Guard,Felsenpanzer
 SKILL_MIST_VEIL,Mist Veil,Nebelschleier
-SKILL_SHIELD_PHYSICAL_DESC,Shields an ally with [hl]{value} armor + ({scaling}*DEF)[/hl] against [hl]physical damage[/hl] until its next turn,Schützt ein eigenes Monster mit [hl]{value} Rüstung + ({scaling}*VER)[/hl] vor [hl]physischem Schaden[/hl] bis zu seinem nächsten Zug
-SKILL_SHIELD_ABILITY_DESC,Shields an ally with [hl]{value} magic shield + ({scaling}*SPD)[/hl] against [hl]magical damage[/hl] until its next turn,Schützt ein eigenes Monster mit [hl]{value} Magie-Schild + ({scaling}*SVE)[/hl] vor [hl]magischem Schaden[/hl] bis zu seinem nächsten Zug
+SKILL_SHIELD_DESC,Shields an ally with [hl]{value} shield + ({scaling}*DEF)[/hl] against [hl]physical and magical damage[/hl] until its next turn,Schützt ein eigenes Monster mit [hl]{value} Schild + ({scaling}*VER)[/hl] vor [hl]physischem und magischem Schaden[/hl] bis zu seinem nächsten Zug
 SKILL_BUFF_DEF_DESC,[hl]+{value}% DEF[/hl] for an ally for [hl]{buff_turns} turns[/hl],[hl]+{value}% VER[/hl] für ein eigenes Monster für [hl]{buff_turns} Züge[/hl]
 SKILL_LIFE_SPRING,Life Spring,Lebensquell
 SKILL_PASSIVE_HP_DESC,Passive: [hl]+{value} HP[/hl] for every monster in the team,Passiv: [hl]+{value} KP[/hl] für jedes Monster im Team
@@ -326,7 +313,6 @@ STAT_HP,HP:,KP:
 STAT_ATK,ATK:,ANG:
 STAT_DEF,DEF:,VER:
 STAT_SPA,SPA:,SAN:
-STAT_SPD,SPD:,SVE:
 STAT_SPE,SPE:,INI:
 STAT_BST,BST:,GES:
 STAT_FAIL,Accuracy:,Treffsicherheit:
@@ -547,8 +533,6 @@ GEM_DEF,Crystalback Hide,Kristallwühler Haut
 GEM_DEF_DESC,"Rock and amber, packed tight. Blows simply glance off.","Fels und Bernstein, dicht an dicht. Schläge prallen einfach ab."
 GEM_S_ATK,Sparkhog Tail,Funkenigel Schwanz
 GEM_S_ATK_DESC,Still crackling with charge. Every special attack hits harder.,Knistert noch immer vor Spannung. Jede Spezial-Attacke trifft härter.
-GEM_S_DEF,Mistwraith Veil,Nebelspuk Schleier
-GEM_S_DEF_DESC,Barely there. Magic gets lost in its folds.,Kaum zu greifen. Magie verliert sich in seinen Falten.
 GEM_SPEED,Stormgryph Feather,Sturmgreif Feder
 GEM_SPEED_DESC,Weighs almost nothing and carries the storm within.,Wiegt fast nichts und trägt den Sturm in sich.
 SHOP_BOUGHT,{item} bought!,{item} gekauft!
@@ -756,7 +740,7 @@ TUTORIAL_MAP,"Field by field you pick your way to the top. The legend on the map
 TUTORIAL_BATTLE_TITLE,Fighting,Kämpfen
 TUTORIAL_BATTLE,"The turn wheel shows the order, the fastest monster (speed) goes first. On your monster's turn, play its skill cards by dragging them onto a target. Every skill costs moves and has a cooldown afterwards. Above each enemy you see what it plans next, so shield up or strike first. End Turn passes to the next monster.","Das Zugrad zeigt die Reihenfolge, das schnellste Monster (Initiative) beginnt. Ist dein Monster am Zug, spielst du seine Skill-Karten: Zieh sie auf ein Ziel. Jeder Skill kostet Züge und hat danach eine Abklingzeit. Über jedem Gegner steht, was er als Nächstes vorhat, also schütze dich oder schlag zuerst zu. Mit Zugende ist das nächste Monster dran."
 TUTORIAL_ELEMENTS_TITLE,Elements,Elemente
-TUTORIAL_ELEMENTS,"There are four base elements: earth, fire, water and air. Combined they form mixed elements like ice, steam or magma. A monster can only use a skill if it has all of its elements. A good element match hits super effectively, a bad one is weaker. Element potions from the shop give a monster an additional element.","Es gibt vier Grundelemente: Erde, Feuer, Wasser und Luft. Zusammen ergeben sie Mischelemente wie Eis, Dampf oder Magma. Ein Monster kann einen Skill nur einsetzen, wenn es alle seine Elemente hat. Passt das Element gut gegen das Ziel, ist der Treffer sehr effektiv, sonst schwächer. Element-Tränke aus dem Laden geben einem Monster ein weiteres Element."
+TUTORIAL_ELEMENTS,"There are four base elements: earth, fire, water and air. Combined they form mixed elements like ice, steam or magma. A monster can only use a skill if it has all of its elements. With magic skills a good element match hits super effectively, a bad one is weaker. Physical skills always hit neutral. Shields block both kinds. Element potions from the shop give a monster an additional element.","Es gibt vier Grundelemente: Erde, Feuer, Wasser und Luft. Zusammen ergeben sie Mischelemente wie Eis, Dampf oder Magma. Ein Monster kann einen Skill nur einsetzen, wenn es alle seine Elemente hat. Bei magischen Skills gilt: Passt das Element gut gegen das Ziel, ist der Treffer sehr effektiv, sonst schwächer. Physische Skills treffen immer neutral. Schilde blocken beide Arten. Element-Tränke aus dem Laden geben einem Monster ein weiteres Element."
 TUTORIAL_CATCH_TITLE,Catching,Fangen
 TUTORIAL_CATCH,"Wild monsters can be caught with hypnosis. The spiral above an enemy shows your chance: the less HP it has left, the better. Below 10 % HP it gets easier, below 5 % even more. A high level and rarity make it harder.","Wilde Monster kannst du mit Hypnose fangen. Die Spirale über dem Gegner zeigt deine Chance: Je weniger Leben er noch hat, desto besser. Unter 10 % Leben wird es leichter, unter 5 % noch mehr. Hohe Stufe und Seltenheit machen es schwerer."
 TUTORIAL_TEAM_TITLE,Your team,Dein Team
@@ -794,7 +778,7 @@ TUT_BAT_INTENT,"This is what the enemy plans next: skill, target and damage. Use
 TUT_BAT_CARD,"On your monster's turn you play its skill cards. Drag a card onto the enemy!","Ist dein Monster am Zug, spielst du seine Skill-Karten. Zieh eine Karte auf den Gegner!"
 TUT_BAT_END,"Every skill costs moves and has a cooldown afterwards. Out of moves? End your turn.","Jeder Skill kostet Züge und hat danach eine Abklingzeit. Keine Züge mehr? Beende deinen Zug."
 TUT_BAT_CATCH,"Now the important part: catching! The spiral above the enemy shows your chance, the less HP it has, the better. Use Hypnosis before playing a card this turn. In practice it always works, then we head to the map!","Jetzt das Wichtigste: Fangen! Die Spirale über dem Gegner zeigt deine Chance, je weniger Leben er hat, desto besser. Setz Hypnose ein, bevor du in diesem Zug eine Karte spielst. In der Übung klappt es immer, danach geht es zur Karte!"
-TUT_BAT_ELEMENTS,"Elements matter: water beats fire, fire beats air, air beats earth and earth beats water. A good match deals 50% more damage, a bad one 50% less.","Elemente zählen: Wasser schlägt Feuer, Feuer schlägt Luft, Luft schlägt Erde und Erde schlägt Wasser. Passt das Element, gibt es 50 % mehr Schaden, sonst 50 % weniger."
+TUT_BAT_ELEMENTS,"Elements matter for magic attacks: water beats fire, fire beats air, air beats earth and earth beats water. A good match deals 50% more damage, a bad one 50% less. Physical attacks always hit neutral.","Bei magischen Attacken zählen Elemente: Wasser schlägt Feuer, Feuer schlägt Luft, Luft schlägt Erde und Erde schlägt Wasser. Passt das Element, gibt es 50 % mehr Schaden, sonst 50 % weniger. Physische Attacken treffen immer neutral."
 TUT_JUD_CATCHES,Welcome to the judgement. On the left are the monsters you caught. The chart below compares how fast they grow with your team.,"Willkommen im Gericht. Links liegen die Monster, die du gefangen hast. Das Netz darunter vergleicht, wie schnell sie im Vergleich zu deinem Team wachsen."
 TUT_JUD_TEAM,"This is your team, two monsters at most. Drag a catch onto a team member to swap them, or onto a free slot. Drag your own monsters to the left to put them down.","Das ist dein Team, höchstens zwei Monster. Zieh einen Fang auf ein Teammitglied, um zu tauschen, oder auf einen freien Platz. Eigene Monster legst du ab, indem du sie nach links ziehst."
 TUT_JUD_SKILLS,In the middle are the moves of the monster with the yellow arrow. Click a monster to see its moves. Drag a move onto a team member: it absorbs that monster and learns the move.,"In der Mitte stehen die Fähigkeiten des Monsters mit dem gelben Pfeil. Klick ein Monster an, um seine zu sehen. Zieh eine Fähigkeit auf ein Teammitglied: Es verleibt sich das Monster ein und lernt sie."
@@ -844,11 +828,11 @@ ELEMENT_INFO_STRONG,Hits hard,Trifft hart
 ELEMENT_INFO_WEAK,Weak against,Schwach gegen
 ELEMENT_INFO_RESISTS,Holds up against,Hält stand gegen
 EFFECT_LIGHTNING_DESC,Lightning: the target's moves [hl]fail {fail}% of the time[/hl] for [hl]{turns} turns[/hl],Blitz: Die Fähigkeiten des Ziels [hl]schlagen zu {fail}% fehl[/hl] für [hl]{turns} Züge[/hl]
-EFFECT_STEAM_DESC,Steam: the target loses [hl]{debuff}% Defense and Sp. Defense[/hl] for [hl]{turns} turns[/hl],Dampf: Das Ziel verliert [hl]{debuff}% Verteidigung und Sp. Verteidigung[/hl] für [hl]{turns} Züge[/hl]
-EFFECT_MUD_DESC,Mud: the hit [hl]goes through[/hl] the matching [hl]shield[/hl],Schlamm: Der Treffer [hl]geht durch[/hl] den passenden [hl]Schild[/hl]
+EFFECT_STEAM_DESC,Steam: the target loses [hl]{debuff}% Defense[/hl] for [hl]{turns} turns[/hl],Dampf: Das Ziel verliert [hl]{debuff}% Verteidigung[/hl] für [hl]{turns} Züge[/hl]
+EFFECT_MUD_DESC,Mud: the hit [hl]goes through[/hl] the [hl]shield[/hl],Schlamm: Der Treffer [hl]geht durch[/hl] den [hl]Schild[/hl]
 EFFECT_DUST_DESC,Dust: the target loses [hl]{debuff}% Attack and Sp. Attack[/hl] for [hl]{turns} turns[/hl],Staub: Das Ziel verliert [hl]{debuff}% Angriff und Sp. Angriff[/hl] für [hl]{turns} Züge[/hl]
-EFFECT_MAGMA_DESC,Magma: the hit [hl]goes through[/hl] the matching [hl]shield[/hl],Magma: Der Treffer [hl]geht durch[/hl] den passenden [hl]Schild[/hl]
-EFFECT_ICE_DESC,"Ice: the user gains a [hl]shield[/hl] worth [hl]{ice}%[/hl] of the damage dealt (armor for physical, magic shield for magical damage)","Eis: Der Wirker erhält einen [hl]Schild[/hl] in Höhe von [hl]{ice}%[/hl] des verursachten Schadens (Rüstung bei physischem, Magie-Schild bei magischem Schaden)"
+EFFECT_MAGMA_DESC,Magma: the hit [hl]goes through[/hl] the [hl]shield[/hl],Magma: Der Treffer [hl]geht durch[/hl] den [hl]Schild[/hl]
+EFFECT_ICE_DESC,"Ice: the user gains a [hl]shield[/hl] worth [hl]{ice}%[/hl] of the damage dealt","Eis: Der Wirker erhält einen [hl]Schild[/hl] in Höhe von [hl]{ice}%[/hl] des verursachten Schadens"
 EFFECT_SWAMP_DESC,Swamp: [hl]poisons[/hl] the target (one stack). Before each of its turns it loses [hl]{poison}% max HP[/hl] per stack (up to [hl]{stacks}[/hl]) until the battle ends. Ignores all shields.,Sumpf: [hl]Vergiftet[/hl] das Ziel (ein Stapel). Vor jedem seiner Züge verliert es [hl]{poison}% max. KP[/hl] pro Stapel (bis [hl]{stacks}[/hl]) bis Kampfende. Ignoriert alle Schilde.
 EFFECT_ASH_STORM_DESC,Ash Storm: the hit deals an extra [hl]{ash}% of the target's max HP[/hl] as [hl]true damage[/hl] (ignores all shields),Aschesturm: Der Treffer macht zusätzlich [hl]{ash}% der max. KP[/hl] des Ziels als [hl]wahren Schaden[/hl] (ignoriert alle Schilde)
 EFFECT_THUNDERSTORM_DESC,Thunderstorm: [hl]paralyzes[/hl] the target. Each turn it has a [hl]{paralysis}% chance[/hl] to be stunned and lose its turn until the battle ends.,Gewitter: [hl]Lähmt[/hl] das Ziel. Bis Kampfende ist es jeden Zug mit [hl]{paralysis}% Chance[/hl] betäubt und setzt aus.
@@ -868,9 +852,9 @@ BOSS_RELIC_HEAL_MOSS_DESC,Enemies heal for {value}% of the damage they deal.,"Ge
 BOSS_RELIC_EMBER_FLOOR,Ember Floor,Glutboden
 BOSS_RELIC_EMBER_FLOOR_DESC,"At the start of every round, all your monsters lose {value}% of their max HP.","Zu Beginn jeder Runde verlieren alle deine Monster {value} % ihrer max. KP."
 BOSS_RELIC_FATE_MIRROR,Mirror of Fate,Fate-Spiegel
-BOSS_RELIC_FATE_MIRROR_DESC,"The damage an enemy deals becomes a shield of the same kind (physical or magic) on its next turn.","Der Schaden, den ein Gegner zufügt, wird in seinem nächsten Zug zum Schild gleicher Art (physisch oder magisch)."
+BOSS_RELIC_FATE_MIRROR_DESC,"The damage an enemy deals becomes a shield on its next turn.","Der Schaden, den ein Gegner zufügt, wird in seinem nächsten Zug zum Schild."
 BOSS_RELIC_BONGOS,Bongos,Bongos
-BOSS_RELIC_BONGOS_DESC,"At the start of each turn, enemies alternately gain armor and magic armor ({value}% of their (Sp.) Defense).","Gegner bekommen zu Beginn jedes Zuges abwechselnd Rüstung und magische Rüstung ({value} % ihrer (Sp.) Verteidigung)."
+BOSS_RELIC_BONGOS_DESC,"At the start of each turn, enemies gain a shield ({value}% of their Defense).","Gegner bekommen zu Beginn jedes Zuges einen Schild ({value} % ihrer Verteidigung)."
 BOSS_RELIC_FOG_MACHINE,Fog Machine,Nebelmaschine
 BOSS_RELIC_FOG_MACHINE_DESC,Attacks against enemies have a {value}% chance to miss.,Angriffe auf Gegner verfehlen mit {value} % Wahrscheinlichkeit.
 BOSS_RELIC_SWIFT_WEASEL,Swift Weasel,Flinkes Wiesel
@@ -897,6 +881,10 @@ SETTINGS_WINDOW_MODE,Window mode,Fenstermodus
 SETTINGS_WINDOWED,Window,Fenster
 SETTINGS_FULLSCREEN,Fullscreen,Vollbild
 SETTINGS_FULLSCREEN_HINT,You can also toggle fullscreen with F11 or Alt+Enter.,Vollbild lässt sich auch mit F11 oder Alt+Enter umschalten.
+SETTINGS_CARD_EFFECTS,Card effects,Karteneffekte
+SETTINGS_CARD_EFFECTS_HINT,Animated flames and particles around the skill cards.,Animierte Flammen und Partikel rund um die Skill-Karten.
+SETTINGS_CARD_WATERMARK,Card symbol,Karten-Symbol
+SETTINGS_CARD_WATERMARK_HINT,Large symbol of the skill type in the background of the skill cards.,Großes Symbol der Skill-Art im Hintergrund der Skill-Karten.
 SETTINGS_TUTORIAL,Tutorial,Tutorial
 SETTINGS_TUTORIAL_TOGGLE,Show tutorial,Tutorial anzeigen
 SETTINGS_TUTORIAL_HINT,"When switched on, the trainer explains everything from the start, including a practice fight before the map.","Eingeschaltet erklärt dir der Trainer alles von Anfang an, auch in einem Übungskampf vor der Karte."
@@ -913,21 +901,19 @@ STAT_INFO_TITLE,Stats,Werte
 STAT_INFO_HP_NAME,Hit Points (HP),Kraftpunkte (KP)
 STAT_INFO_HP_DESC,"How much damage the monster can take. At 0 it is knocked out. Lost HP stay lost after the fight until you heal at a camp.","Wie viel Schaden das Monster aushält. Bei 0 ist es K.O. Verlorene KP bleiben auch nach dem Kampf weg, bis du sie im Lager heilst."
 STAT_INFO_ATK_NAME,Attack (ATK),Angriff (ANG)
-STAT_INFO_ATK_DESC,Strength of physical moves (fist symbol). Each move deals a fixed amount plus a share of your ATK.,Stärke der physischen Attacken (Faust-Symbol). Jede Attacke macht einen festen Schaden plus einen Anteil deines ANG.
+STAT_INFO_ATK_DESC,"Strength of physical moves (fist symbol). Each move deals a fixed amount plus a share of your ATK. Physical moves always hit neutral, the element does not matter.","Stärke der physischen Attacken (Faust-Symbol). Jede Attacke macht einen festen Schaden plus einen Anteil deines ANG. Physische Attacken treffen immer neutral, das Element zählt nicht."
 STAT_INFO_DEF_NAME,Defense (DEF),Verteidigung (VER)
-STAT_INFO_DEF_DESC,"Makes physical shields (armor) cast by this monster stronger. It does not reduce incoming damage, only shields do.","Macht physische Schilde (Rüstung), die das Monster wirkt, stärker. Eingehenden Schaden senkt sie nicht, das tun nur Schilde."
+STAT_INFO_DEF_DESC,"Makes shields cast by this monster stronger. Shields block physical and magic attacks alike. It does not reduce incoming damage, only shields do.","Macht Schilde, die das Monster wirkt, stärker. Schilde blocken physische und magische Attacken gleichermaßen. Eingehenden Schaden senkt sie nicht, das tun nur Schilde."
 STAT_INFO_SPA_NAME,Special Attack (SPA),Spezial-Angriff (SAN)
-STAT_INFO_SPA_DESC,Strength of magic moves (sparkle symbol). Each move deals a fixed amount plus a share of your SPA.,Stärke der magischen Attacken (Funken-Symbol). Jede Attacke macht einen festen Schaden plus einen Anteil deines SAN.
-STAT_INFO_SPD_NAME,Special Defense (SPD),Spezial-Verteidigung (SVE)
-STAT_INFO_SPD_DESC,"Makes magic shields cast by this monster stronger. It does not reduce incoming damage, only shields do.","Macht Magie-Schilde, die das Monster wirkt, stärker. Eingehenden Schaden senkt sie nicht, das tun nur Schilde."
+STAT_INFO_SPA_DESC,Strength of magic moves (sparkle symbol). Each move deals a fixed amount plus a share of your SPA. Only magic moves get the element bonus.,Stärke der magischen Attacken (Funken-Symbol). Jede Attacke macht einen festen Schaden plus einen Anteil deines SAN. Nur magische Attacken bekommen den Element-Bonus.
 STAT_INFO_SPE_NAME,Initiative (SPE),Initiative (INI)
 STAT_INFO_SPE_DESC,"Decides the order on the initiative wheel: higher initiative acts earlier each round. On a tie, your monsters go first.","Bestimmt die Reihenfolge auf dem Initiative-Rad: Wer mehr INI hat, ist in jeder Runde früher dran. Bei Gleichstand beginnen deine Monster."
 STAT_INFO_BST_NAME,Base Stat Total (BST),Gesamtwert (GES)
 STAT_INFO_BST_DESC,"How strong the species is overall. A higher BST means more stat points per level.","Wie stark die Art insgesamt ist. Ein höherer GES bringt mehr Wertepunkte pro Stufe."
 STAT_INFO_TIPS_TITLE,What to watch for when playing cards,Worauf du beim Spielen der Karten achten solltest
-STAT_INFO_TIP_TYPE,"Check the symbol on the card: fist cards scale with ATK and are stopped by armor, sparkle cards scale with SPA and are stopped by magic shields. The target's defense stats do not matter.","Schau auf das Symbol der Karte: Faust-Karten wachsen mit ANG und werden von Rüstung abgefangen, Funken-Karten wachsen mit SAN und werden von Magie-Schilden abgefangen. Die Verteidigungswerte des Ziels zählen nicht."
-STAT_INFO_TIP_SHIELD,"Shields only block their own damage type (physical or magic) and last until the protected monster's next turn.","Schilde blocken nur ihre eigene Schadensart (physisch oder magisch) und halten bis zum nächsten Zug des geschützten Monsters."
-STAT_INFO_TIP_ELEMENT,"The element counts on top: Water > Fire > Air > Earth > Water, 50 % more or less damage each.","Dazu zählt das Element: Wasser > Feuer > Luft > Erde > Wasser, jeweils 50 % mehr oder weniger Schaden."
+STAT_INFO_TIP_TYPE,"Check the symbol on the card: fist cards scale with ATK, sparkle cards scale with SPA. Shields stop both. The target's defense does not matter.","Schau auf das Symbol der Karte: Faust-Karten wachsen mit ANG, Funken-Karten wachsen mit SAN. Schilde fangen beide ab. Die Verteidigung des Ziels zählt nicht."
+STAT_INFO_TIP_SHIELD,"Shields block physical and magic damage alike and last until the protected monster's next turn. Only a few cards (e.g. Magma) can go through.","Schilde blocken physischen und magischen Schaden gleichermaßen und halten bis zum nächsten Zug des geschützten Monsters. Nur wenige Karten (z. B. Magma) gehen durch."
+STAT_INFO_TIP_ELEMENT,"For magic cards the element counts on top: Water > Fire > Air > Earth > Water, 50 % more or less damage each. Physical cards always hit neutral.","Bei magischen Karten zählt dazu das Element: Wasser > Feuer > Luft > Erde > Wasser, jeweils 50 % mehr oder weniger Schaden. Physische Karten treffen immer neutral."
 STAT_INFO_TIP_SPEED,"Watch the wheel and the enemies' announced moves: act before a dangerous enemy to knock it out or shield the target in time.","Behalte Rad und angekündigte Gegner-Züge im Blick: Ist dein Monster vorher dran, kannst du einen gefährlichen Gegner noch erledigen oder das Ziel rechtzeitig schützen."
 STAT_INFO_TIP_HIDDEN,"Enemy stats start hidden (?) and are revealed by landing hits.","Werte der Gegner sind anfangs verdeckt (?) und werden durch Treffer aufgedeckt."
 STAT_TROPHY_BONUS_HINT,{bonus} of it from trophies,davon {bonus} durch Trophäen
@@ -1034,8 +1020,7 @@ SKILL_STEAM_CLOUD,Steam Cloud,Dampfwolke
 SKILL_SANDSTORM,Sandstorm,Sandsturm
 SKILL_MIASMA,Miasma,Miasma
 SKILL_AREA_PHYSICAL_DESC,Deals [hl]{value}%[/hl] of your [hl]ATK[/hl] as [hl]physical damage[/hl] to [hl]all enemies[/hl],Verursacht [hl]{value}%[/hl] deines [hl]ANG[/hl] als [hl]physischen Schaden[/hl] an [hl]allen Gegnern[/hl]
-SKILL_SHIELD_TEAM_PHYSICAL_DESC,Shields [hl]every ally[/hl] with [hl]{value}%[/hl] of your [hl]DEF[/hl] against [hl]physical damage[/hl] until its next turn,Schützt [hl]jedes eigene Monster[/hl] mit [hl]{value}%[/hl] deiner [hl]VER[/hl] vor [hl]physischem Schaden[/hl] bis zu seinem nächsten Zug
-SKILL_SHIELD_TEAM_ABILITY_DESC,Shields [hl]every ally[/hl] with [hl]{value}%[/hl] of your [hl]SPD[/hl] against [hl]magical damage[/hl] until its next turn,Schützt [hl]jedes eigene Monster[/hl] mit [hl]{value}%[/hl] deiner [hl]SVE[/hl] vor [hl]magischem Schaden[/hl] bis zu seinem nächsten Zug
+SKILL_SHIELD_TEAM_DESC,Shields [hl]every ally[/hl] with [hl]{value}%[/hl] of your [hl]DEF[/hl] against [hl]physical and magical damage[/hl] until its next turn,Schützt [hl]jedes eigene Monster[/hl] mit [hl]{value}%[/hl] deiner [hl]VER[/hl] vor [hl]physischem und magischem Schaden[/hl] bis zu seinem nächsten Zug
 SKILL_BUFF_SINGLE_DESC,[hl]+{value}% {stat}[/hl] for an ally for [hl]{buff_turns} of its turns[/hl],[hl]+{value}% {stat}[/hl] für ein eigenes Monster für [hl]{buff_turns} seiner Züge[/hl]
 SKILL_BUFF_TEAM_DESC,[hl]+{value}% {stat}[/hl] for [hl]every ally[/hl] for [hl]{buff_turns} of its turns[/hl],[hl]+{value}% {stat}[/hl] für [hl]jedes eigene Monster[/hl] für [hl]{buff_turns} seiner Züge[/hl]
 SKILL_PASSIVE_STAT_SELF_DESC,Passive: [hl]+{value}% {stat}[/hl] for this monster,Passiv: [hl]+{value}% {stat}[/hl] für dieses Monster
@@ -1043,10 +1028,10 @@ SKILL_PASSIVE_STAT_PARTNER_DESC,Passive: [hl]+{value}% {stat}[/hl] for its [hl]p
 SKILL_PASSIVE_STAT_TEAM_DESC,Passive: [hl]+{value}% {stat}[/hl] for every monster in the team,Passiv: [hl]+{value}% {stat}[/hl] für jedes Monster im Team
 SKILL_PASSIVE_ELEMENT_POWER_DESC,Passive: its [hl]{element}[/hl] attacks deal [hl]+{value}% damage[/hl],Passiv: seine [hl]{element}[/hl]-Attacken machen [hl]+{value}% Schaden[/hl]
 SKILL_PASSIVE_MAGIC_POWER_DESC,Passive: its [hl]magical attacks[/hl] deal [hl]+{value}% damage[/hl],Passiv: seine [hl]magischen Attacken[/hl] machen [hl]+{value}% Schaden[/hl]
-SKILL_PASSIVE_SHIELD_POWER_DESC,Passive: its [hl]physical shields[/hl] are [hl]{value}% stronger[/hl],Passiv: seine [hl]physischen Schilde[/hl] sind [hl]{value}% stärker[/hl]
-SKILL_PASSIVE_S_SHIELD_POWER_DESC,Passive: its [hl]magical shields[/hl] are [hl]{value}% stronger[/hl],Passiv: seine [hl]magischen Schilde[/hl] sind [hl]{value}% stärker[/hl]
+SKILL_PASSIVE_SHIELD_POWER_DESC,Passive: its [hl]shields[/hl] are [hl]{value}% stronger[/hl],Passiv: seine [hl]Schilde[/hl] sind [hl]{value}% stärker[/hl]
 SKILL_PASSIVE_EFFECT_CHANCE_DESC,"Passive: its [hl]element effects[/hl] trigger [hl]{value}% more often[/hl] (cards with a trigger chance, Volcano)","Passiv: seine [hl]Element-Effekte[/hl] lösen [hl]{value}% öfter[/hl] aus (Karten mit Auslösechance, Vulkan)"
 SKILL_PASSIVE_LEECH_DESC,Passive: heals itself for [hl]{value}%[/hl] of the damage it deals,"Passiv: heilt sich um [hl]{value}%[/hl] des Schadens, den es verursacht"
+SKILL_PASSIVE_REGEN_DESC,Passive: heals [hl]{value}% of its max HP[/hl] at the start of each of its turns,"Passiv: heilt sich zu Beginn jedes eigenen Zuges um [hl]{value}% seiner max. KP[/hl]"
 SKILL_PASSIVE_KILL_HEAL_DESC,Passive: heals [hl]{value}% of its max HP[/hl] when it defeats an enemy,"Passiv: heilt [hl]{value}% seiner max. KP[/hl], wenn es einen Gegner besiegt"
 SKILL_EXTRA_DEBUFF,Target: [hl]-{value}% {stat}[/hl] for [hl]{turns} turns[/hl],Ziel: [hl]-{value}% {stat}[/hl] für [hl]{turns} Züge[/hl]
 SKILL_EXTRA_SELF_BUFF,User: [hl]+{value}% {stat}[/hl] for [hl]{turns} turns[/hl],Wirker: [hl]+{value}% {stat}[/hl] für [hl]{turns} Züge[/hl]
@@ -1072,89 +1057,69 @@ SKILL_FIRE_MAG_SPARK_SHOT,Spark Shot,Funkenschuss
 SKILL_FIRE_MAG_FIREBALL,Fireball,Feuerball
 SKILL_FIRE_ARMOR_CINDER_PLATE,Cinder Plate,Aschepanzer
 SKILL_FIRE_ARMOR_FLAME_WALL,Flame Wall,Flammenwall
-SKILL_FIRE_WARD_HEAT_VEIL,Heat Veil,Hitzeschleier
-SKILL_FIRE_WARD_PHOENIX_AURA,Phoenix Aura,Phönixaura
 SKILL_WATER_PHYS_TIDE_SLAP,Tide Slap,Gezeitenhieb
 SKILL_WATER_PHYS_BREAKER,Breaker Wave,Brecherwelle
 SKILL_WATER_MAG_BUBBLE_BEAM,Bubble Beam,Blasenstrahl
 SKILL_WATER_MAG_HYDRO_LANCE,Hydro Lance,Hydrolanze
 SKILL_WATER_ARMOR_SHELL,Shell Guard,Muschelpanzer
 SKILL_WATER_ARMOR_CORAL_WALL,Coral Wall,Korallenwall
-SKILL_WATER_WARD_MIST_VEIL,Mist Veil,Nebelschleier
-SKILL_WATER_WARD_TIDAL_DOME,Tidal Dome,Gezeitenkuppel
 SKILL_EARTH_PHYS_BOULDER_BASH,Boulder Bash,Felsramme
 SKILL_EARTH_PHYS_QUAKE_STOMP,Quake Stomp,Bebenstampfer
 SKILL_EARTH_MAG_PEBBLE_STORM,Pebble Storm,Kieselsturm
 SKILL_EARTH_MAG_GEO_PULSE,Geo Pulse,Geopuls
 SKILL_EARTH_ARMOR_STONE_SKIN,Stone Skin,Steinhaut
 SKILL_EARTH_ARMOR_GRANITE_BASTION,Granite Bastion,Granitbastion
-SKILL_EARTH_WARD_CLAY_SEAL,Clay Seal,Lehmsiegel
-SKILL_EARTH_WARD_CRYSTAL_SEAL,Crystal Seal,Kristallsiegel
 SKILL_AIR_PHYS_GUST_KICK,Gust Kick,Böentritt
 SKILL_AIR_PHYS_CYCLONE_CLAW,Cyclone Claw,Zyklonklaue
 SKILL_AIR_MAG_WIND_BLADE,Wind Blade,Windklinge
 SKILL_AIR_MAG_TEMPEST_RAY,Tempest Ray,Sturmstrahl
 SKILL_AIR_ARMOR_DRAFT_GUARD,Draft Guard,Zugwindwehr
 SKILL_AIR_ARMOR_GALE_WALL,Gale Wall,Orkanwand
-SKILL_AIR_WARD_BREEZE_VEIL,Breeze Veil,Brisenschleier
-SKILL_AIR_WARD_SKY_DOME,Sky Dome,Himmelskuppel
 SKILL_STEAM_PHYS_SCALD_STRIKE,Scald Strike,Brühschlag
 SKILL_STEAM_MAG_STEAM_JET,Steam Jet,Dampfstrahl
 SKILL_STEAM_ARMOR_VAPOR_PLATE,Vapor Plate,Dunstpanzer
-SKILL_STEAM_WARD_FOG_BARRIER,Fog Barrier,Nebelbarriere
 SKILL_STEAM_PHYS_STEAM_HAMMER,Steam Hammer,Dampfhammer
 SKILL_LIGHTNING_PHYS_VOLT_PUNCH,Volt Punch,Voltfaust
 SKILL_LIGHTNING_MAG_ARC_BOLT,Arc Bolt,Bogenblitz
 SKILL_LIGHTNING_ARMOR_STATIC_PLATE,Static Plate,Statikpanzer
-SKILL_LIGHTNING_WARD_SPARK_FIELD,Spark Field,Funkenfeld
 SKILL_LIGHTNING_MAG_THUNDERCLAP,Thunderclap,Donnerschlag
 SKILL_MAGMA_PHYS_LAVA_FIST,Lava Fist,Lavafaust
 SKILL_MAGMA_MAG_MAGMA_BURST,Magma Burst,Magmastoß
 SKILL_MAGMA_ARMOR_OBSIDIAN_PLATE,Obsidian Plate,Obsidianpanzer
-SKILL_MAGMA_WARD_EMBER_CRUST,Ember Crust,Glutkruste
 SKILL_MAGMA_PHYS_ERUPTION_SLAM,Eruption Slam,Ausbruchsschmetterer
 SKILL_ICE_PHYS_ICICLE_JAB,Icicle Jab,Eiszapfenstich
 SKILL_ICE_MAG_FROST_RAY,Frost Ray,Froststrahl
 SKILL_ICE_ARMOR_ICE_PLATE,Ice Plate,Eispanzer
-SKILL_ICE_WARD_FROST_MIRROR,Frost Mirror,Frostspiegel
 SKILL_ICE_MAG_BLIZZARD,Blizzard,Blizzard
 SKILL_DUST_PHYS_SAND_CLAW,Sand Claw,Sandklaue
 SKILL_DUST_MAG_DUST_DEVIL,Dust Devil,Staubteufel
 SKILL_DUST_ARMOR_DUNE_WALL,Dune Wall,Dünenwall
-SKILL_DUST_WARD_SAND_VEIL,Sand Veil,Sandschleier
 SKILL_DUST_MAG_SANDSTORM,Sandstorm Fury,Sandsturmzorn
 SKILL_MUD_PHYS_MUD_SLAM,Mud Slam,Schlammwurf
 SKILL_MUD_MAG_BOG_PULSE,Bog Pulse,Moorpuls
 SKILL_MUD_ARMOR_CLAY_SHELL,Clay Shell,Lehmschale
-SKILL_MUD_WARD_SILT_SEAL,Silt Seal,Schlicksiegel
 SKILL_MUD_ARMOR_LANDSLIDE_WALL,Landslide Wall,Erdrutschwall
 SKILL_THUNDERSTORM_PHYS_STORM_FIST,Storm Fist,Gewitterfaust
 SKILL_THUNDERSTORM_MAG_CHAIN_LIGHTNING,Chain Lightning,Kettenblitz
 SKILL_THUNDERSTORM_ARMOR_STORM_PLATE,Storm Plate,Sturmpanzer
-SKILL_THUNDERSTORM_WARD_CLOUD_DOME,Cloud Dome,Wolkenkuppel
 SKILL_THUNDERSTORM_MAG_SKYFALL,Skyfall,Himmelssturz
 SKILL_VOLCANO_PHYS_CALDERA_CRUSH,Caldera Crush,Calderabrecher
 SKILL_VOLCANO_MAG_PYROCLAST,Pyroclast,Pyroklast
 SKILL_VOLCANO_ARMOR_BASALT_FORT,Basalt Fort,Basaltfeste
-SKILL_VOLCANO_WARD_GEYSER_SHIELD,Geyser Shield,Geysirschild
 SKILL_VOLCANO_PHYS_MAGMA_TITAN,Magma Titan,Magmatitan
 SKILL_ASH_STORM_PHYS_CINDER_CLAW,Cinder Claw,Schlackenklaue
 SKILL_ASH_STORM_MAG_ASH_CYCLONE,Ash Cyclone,Aschezyklon
 SKILL_ASH_STORM_ARMOR_SLAG_ARMOR,Slag Armor,Schlackenrüstung
-SKILL_ASH_STORM_WARD_SOOT_VEIL,Soot Veil,Rußschleier
 SKILL_ASH_STORM_PHYS_ASHEN_ROLLER,Ashen Roller,Aschenwalze
 SKILL_SWAMP_PHYS_ROOT_LASH,Root Lash,Wurzelgeißel
 SKILL_SWAMP_MAG_MIASMA_CLOUD,Miasma Cloud,Miasmawolke
 SKILL_SWAMP_ARMOR_MANGROVE_WALL,Mangrove Wall,Mangrovenwall
-SKILL_SWAMP_WARD_MARSH_MIST,Marsh Mist,Moornebel
 SKILL_SWAMP_MAG_BOG_MAW,Bog Maw,Moorschlund
 SKILL_FIRE_BOON_FOCUS_FLAME,Focus Flame,Fokusflamme
 SKILL_LIGHTNING_BOON_OVERCHARGE,Overcharge,Überladung
 SKILL_CHAOS_BOON_BATTLE_CRY,Battle Cry,Kampfschrei
 SKILL_AIR_BOON_TAILWIND,Tailwind,Rückenwind
 SKILL_WATER_BOON_BLOOD_TIDE,Blood Tide,Blutgezeiten
-SKILL_CHAOS_WARD_IRON_WILL,Iron Will,Eiserner Wille
-SKILL_CHAOS_ARMOR_SPIRIT_GUARD,Spirit Guard,Geisteswehr
 SKILL_PASSIVE_BATTLE_FERVOR,Battle Fervor,Kampfeslust
 SKILL_PASSIVE_STORM_SPIRIT,Storm Spirit,Sturmgeist
 SKILL_PASSIVE_BULWARK_MASTER,Bulwark Master,Bollwerkmeister
@@ -1165,8 +1130,6 @@ SKILL_BOON_CRIT_DESC,"[hl]All attacks[/hl] of the user are [hl]critical hits[/hl
 SKILL_BOON_TAUNT_DESC,"[hl]Draws the enemies' attention[/hl]: their single-target attacks must hit the user until its next turn","[hl]Zieht die Aufmerksamkeit der Gegner[/hl] auf sich: ihre Einzelangriffe müssen bis zu seinem nächsten Zug den Wirker treffen"
 SKILL_BOON_EXTRA_MOVES_DESC,"An ally (or the user) gets [hl]+{value} action[/hl] in each of its [hl]next {buff_turns} turns[/hl]","Ein eigenes Monster (auch der Wirker) bekommt [hl]+{value} Aktion[/hl] in jedem seiner [hl]nächsten {buff_turns} Züge[/hl]"
 SKILL_BOON_LEECH_DESC,"An ally (or the user) heals for [hl]{value}%[/hl] of the damage it deals until the end of its [hl]next turn[/hl]","Ein eigenes Monster (auch der Wirker) heilt sich bis zum Ende seines [hl]nächsten Zuges[/hl] um [hl]{value}%[/hl] des Schadens, den es verursacht"
-SKILL_SHIELD_ABILITY_FROM_DEF_DESC,Shields an ally with [hl]{value} magic shield + ({scaling}*DEF)[/hl] against [hl]magical damage[/hl] until its next turn,Schützt ein eigenes Monster mit [hl]{value} Magie-Schild + ({scaling}*VER)[/hl] vor [hl]magischem Schaden[/hl] bis zu seinem nächsten Zug
-SKILL_SHIELD_PHYSICAL_FROM_SPD_DESC,Shields an ally with [hl]{value} armor + ({scaling}*SPD)[/hl] against [hl]physical damage[/hl] until its next turn,Schützt ein eigenes Monster mit [hl]{value} Rüstung + ({scaling}*SVE)[/hl] vor [hl]physischem Schaden[/hl] bis zu seinem nächsten Zug
 SKILL_PASSIVE_SHIELD_COST_DESC,Passive: its shields that cost [hl]3 or more actions[/hl] cost [hl]{value} action less[/hl],Passiv: seine Schilde mit [hl]3 oder mehr Aktionen[/hl] kosten [hl]{value} Aktion weniger[/hl]
 SKILL_PASSIVE_TAUNT_DESC,Passive: [hl]permanently draws the enemies' attention[/hl] (their single-target attacks must hit it),Passiv: [hl]zieht dauerhaft die Aufmerksamkeit der Gegner[/hl] auf sich (ihre Einzelangriffe müssen es treffen)
 STATUS_BOON_CRIT_NEXT,Next attack critical (+{value}%),Nächster Angriff kritisch (+{value}%)
@@ -1178,43 +1141,33 @@ EFFECT_TEXT_CRIT,Critical!,Kritisch!
 SKILL_STEAM_PHYS_HOT_JAB,Hot Jab,Heißer Stoß
 SKILL_STEAM_MAG_VAPOR_PUFF,Vapor Puff,Dampfwolke
 SKILL_STEAM_ARMOR_STEAM_COAT,Steam Coat,Dampfmantel
-SKILL_STEAM_WARD_HAZE_SHIELD,Haze Shield,Dunstschild
 SKILL_LIGHTNING_PHYS_SHOCK_TAP,Shock Tap,Stromschlag
 SKILL_LIGHTNING_MAG_SPARK_BOLT,Spark Bolt,Funkenblitz
 SKILL_LIGHTNING_ARMOR_CHARGE_PLATE,Charge Plate,Ladungspanzer
-SKILL_LIGHTNING_WARD_ION_VEIL,Ion Veil,Ionenschleier
 SKILL_MAGMA_PHYS_EMBER_KNUCKLE,Ember Knuckle,Glutknöchel
 SKILL_MAGMA_MAG_LAVA_SPIT,Lava Spit,Lavaspucke
 SKILL_MAGMA_ARMOR_PUMICE_SKIN,Pumice Skin,Bimssteinhaut
-SKILL_MAGMA_WARD_HEAT_SHIMMER,Heat Shimmer,Hitzeflimmern
 SKILL_ICE_PHYS_FROST_BITE,Frost Bite,Frostbiss
 SKILL_ICE_MAG_SNOW_FLURRY,Snow Flurry,Schneegestöber
 SKILL_ICE_ARMOR_RIME_COAT,Rime Coat,Raureifmantel
-SKILL_ICE_WARD_SNOW_VEIL,Snow Veil,Schneeschleier
 SKILL_DUST_PHYS_GRIT_PUNCH,Grit Punch,Sandhieb
 SKILL_DUST_MAG_DUST_SHOT,Dust Shot,Staubschuss
 SKILL_DUST_ARMOR_SANDSTONE_SKIN,Sandstone Skin,Sandsteinhaut
-SKILL_DUST_WARD_DUST_CLOAK,Dust Cloak,Staubumhang
 SKILL_MUD_PHYS_MUD_PUNCH,Mud Punch,Matschfaust
 SKILL_MUD_MAG_SLUDGE_SHOT,Sludge Shot,Schlammschuss
 SKILL_MUD_ARMOR_MUD_COAT,Mud Coat,Schlammpanzer
-SKILL_MUD_WARD_PEAT_SEAL,Peat Seal,Torfsiegel
 SKILL_THUNDERSTORM_PHYS_SQUALL_STRIKE,Squall Strike,Böenschlag
 SKILL_THUNDERSTORM_MAG_STATIC_RAIN,Static Rain,Statikregen
 SKILL_THUNDERSTORM_ARMOR_RAIN_GUARD,Rain Guard,Regenwehr
-SKILL_THUNDERSTORM_WARD_STORM_VEIL,Storm Veil,Sturmschleier
 SKILL_VOLCANO_PHYS_VOLCANIC_FIST,Volcanic Fist,Vulkanfaust
 SKILL_VOLCANO_MAG_FUME_BURST,Fume Burst,Schwefelstoß
 SKILL_VOLCANO_ARMOR_LAVA_CRUST,Lava Crust,Lavakruste
-SKILL_VOLCANO_WARD_STEAM_VENT,Steam Vent,Dampfschlot
 SKILL_ASH_STORM_PHYS_SOOT_STRIKE,Soot Strike,Rußhieb
 SKILL_ASH_STORM_MAG_EMBER_GUST,Ember Gust,Glutböe
 SKILL_ASH_STORM_ARMOR_CINDER_SHELL,Cinder Shell,Schlackenschale
-SKILL_ASH_STORM_WARD_SMOKE_SCREEN,Smoke Screen,Rauchwand
 SKILL_SWAMP_PHYS_REED_WHIP,Reed Whip,Schilfpeitsche
 SKILL_SWAMP_MAG_SPORE_PUFF,Spore Puff,Sporenwolke
 SKILL_SWAMP_ARMOR_MOSS_HIDE,Moss Hide,Moospanzer
-SKILL_SWAMP_WARD_BOG_MIST,Bog Mist,Sumpfdunst
 SKILL_FIRE_PHYS_BLAZE_RUSH_SWIFT,Swift Blaze Rush,Flinker Glutansturm
 SKILL_FIRE_MAG_FIREBALL_SWIFT,Quick Fireball,Schnellfeuerball
 SKILL_WATER_MAG_HYDRO_LANCE_SWIFT,Swift Hydro Lance,Flinke Hydrolanze
@@ -1228,7 +1181,6 @@ SKILL_FIRE_BUFF_S_ATK,Ember Mind,Glutsinn
 SKILL_WATER_BUFF_ATK,Riptide Strength,Sogkraft
 SKILL_WATER_BUFF_DEF,Coral Guard,Korallenhut
 SKILL_WATER_BUFF_S_ATK,Tide Insight,Gezeitensinn
-SKILL_WATER_BUFF_S_DEF,Tide Shelter,Gezeitenhort
 SKILL_EARTH_BUFF_ATK,Rock Fury,Felsenwut
 SKILL_EARTH_BUFF_DEF,Ironbark,Eisenborke
 SKILL_EARTH_BUFF_S_ATK,Geode Gleam,Geodenglanz
@@ -1254,7 +1206,7 @@ SKILL_PASSIVE_DUST_T4,Eye of the Sandstorm,Auge des Sandsturms
 SKILL_PASSIVE_MUD_T4,Heart of the Mire,Herz des Moores
 SKILL_STEAM_BUFF_T4,Thermal Veil,Thermalschleier
 SKILL_PASSIVE_STEAM_T4,Pressure Core,Druckkern
-TUT_BAT_KINDS,"Look at the symbol on a card: the fist is a physical attack, the sparkling diamond a magical one. Physical attacks are only blocked by armor (shield), magical attacks only by magic shields. So check the enemy's plan and pick the right shield!","Schau auf das Symbol einer Karte: Die Faust ist eine physische Attacke, der funkelnde Diamant eine magische. Physische Attacken blockt nur Rüstung (Schild), magische nur ein Magie-Schild. Schau also, was der Gegner vorhat, und nimm den passenden Schild!"
+TUT_BAT_KINDS,"Look at the symbol on a card: the fist is a physical attack, the sparkling diamond a magical one. Only magical attacks use the element advantage, physical ones always hit neutral. A shield blocks both kinds, so check the enemy's plan and shield the target in time!","Schau auf das Symbol einer Karte: Die Faust ist eine physische Attacke, der funkelnde Diamant eine magische. Nur magische Attacken nutzen den Element-Vorteil, physische treffen immer neutral. Ein Schild blockt beide Arten. Schau also, was der Gegner vorhat, und schütze das Ziel rechtzeitig!"
 TUT_BAT_BUFFS,"Besides attacks and shields there are buffs: they raise a stat of your monster for a few turns. Passives can't be played, they work all by themselves as long as the monster knows them.","Neben Attacken und Schilden gibt es Buffs: Sie erhöhen für ein paar Züge einen Wert deines Monsters. Passive spielst du nicht aus, sie wirken ganz von selbst, solange das Monster sie kennt."
 TRAINER_CHOICE_STAMP,Trainer's Choice,Trainers Choice
 TRAINER_RECOMMENDED_HINT,Very effective against the monsters of the next biome ({biome}).,Sehr effektiv gegen die Monster des nächsten Bioms ({biome}).

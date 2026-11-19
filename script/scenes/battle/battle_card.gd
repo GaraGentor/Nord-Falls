@@ -37,7 +37,7 @@ var _press_pos := Vector2.ZERO
 var _pressed := false
 var _swiping := false
 var _paper: SkillCardPaper
-## oben Kosten, Sterne (Stufe) und Abklingzeit, unten Icon mit Gesamtwert und Element (SkillCardFace)
+## oben die Kosten schräg auf der Ecke, unten Wert und Art-Symbol, Sterne (Stufe), Abklingzeit und Element (SkillCardFace)
 var _top_row := SkillCardFace.TopRow.new()
 var _bottom_row := SkillCardFace.BottomRow.new()
 
@@ -45,7 +45,9 @@ func _ready() -> void:
 	var lines := name_label.get_parent()
 	lines.add_child(_top_row)
 	lines.move_child(_top_row, 0)
+	_top_row.set_title(name_label)
 	lines.add_child(_bottom_row)
+	_bottom_row.set_value_size(TITLE_FONT_SIZE)
 	# RichTextLabel nutzt sonst nicht die Label-Schrift aus dem Theme
 	description_label.add_theme_font_override("normal_font", name_label.get_theme_font("font"))
 	# auf der ganzen Karte gedrückt halten hält den Text an
@@ -77,16 +79,21 @@ func _set_description(text: String, color: Color) -> void:
 	description_scroll.restart()
 
 ## Fehlen dem Monster Elemente für diesen Skill oder läuft die Abklingzeit noch,
-## steht das statt der Beschreibung auf der Karte
+## steht das statt der Beschreibung auf der Karte. Während der Abklingzeit zeigt das Wertfeld die restlichen Züge.
 func show_state(owner_mon: Monster) -> void:
 	mon = owner_mon
 	var text = Skills.missing_elements_text(mon, skill)
-	if text.is_empty() and not Skills.is_ready(skill):
+	var cooling := not Skills.is_ready(skill)
+	if text.is_empty() and cooling:
 		text = cooldown_text(Skills.cooldown_left(skill))
 	if text.is_empty():
 		_init_card()
 		return
-	_set_description(text, Color(1, 0.45, 0.45))
+	_set_description(text, SkillCardFace.COOLDOWN_COLOR)
+	if cooling:
+		_bottom_row.show_cooldown(Skills.cooldown_left(skill))
+	else:
+		_bottom_row.show_skill(skill, mon)
 
 ## Abklingzeit in eigenen Zügen (Skills.cooldown_left zählt den laufenden Zug mit):
 ## Direkt nach dem Einsatz eines Skills mit Abklingzeit 1 steht 2 da, also "nächsten Zug gesperrt, danach bereit".

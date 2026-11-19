@@ -262,7 +262,11 @@ func use_map_layout() -> void:
 	_card_scroll = ScrollContainer.new()
 	_card_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_columns.remove_child(_card_groups)
-	_card_scroll.add_child(_card_groups)
+	# Platz für die Rand-Effekte der Skill-Karten (SkillCardPaper.FLAME_PAD), sonst schneidet die Scrollview sie ab
+	var flame_margin := SkillCardPaper.flame_margin()
+	flame_margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_card_scroll.add_child(flame_margin)
+	flame_margin.add_child(_card_groups)
 	_columns.add_child(_card_scroll)
 	_columns.move_child(_card_scroll, 0)
 
@@ -495,8 +499,9 @@ func add_mon_card(card_title: String, text: String, icon: Control, header: Strin
 
 ## Skill auf Kartenpapier (Trainer, Couvert), wird auf ein Monster gezogen, das ihn noch nicht kennt.
 ## on_given(mon) bringt ihn bei, die Bilder auf der Karte zeigen, wer ihn einsetzen kann.
-## Aufbau wie die Kampfkarte (SkillCardFace): oben Kosten, Sterne und Abklingzeit, unten Gesamtwert und Element,
-## dazwischen Bilder, Name und Beschreibung. card.row liegt dafür in einer VBox zwischen den beiden Zeilen.
+## Aufbau wie die Kampfkarte (SkillCardFace): oben die Kosten schräg auf der Ecke, unten Wert mit Art-Symbol,
+## Sterne, Abklingzeit und Element, dazwischen Bilder, Name und Beschreibung. Der Name bleibt unter den Bildern.
+## card.row liegt dafür in einer VBox zwischen den beiden Zeilen.
 func add_skill_card(skill: Dictionary, on_given: Callable) -> RewardCard:
 	var text := Helper.skill_description(skill)
 	var learners := func(): return State.mons.filter(func(mon): return not Skills.knows_skill(mon, skill.name))
@@ -517,8 +522,12 @@ func add_skill_card(skill: Dictionary, on_given: Callable) -> RewardCard:
 	face.add_child(card.row)
 	var bottom_row := SkillCardFace.BottomRow.new()
 	face.add_child(bottom_row)
-	bottom_row.show_skill(skill, null)
+	# Wert etwas größer als der Titel der Karte
+	bottom_row.set_value_size(card.info.get_child(0).get_theme_font_size("font_size"))
+	bottom_row.show_skill(skill)
 	SkillCardPaper.attach(card, skill)
+	# Nachbarkarten sollen die Rand-Effekte nicht verdecken
+	SkillCardPaper.make_room_for_flames(card.get_parent())
 	card.tooltip_text = _skill_fits_text(skill)
 	return card
 
