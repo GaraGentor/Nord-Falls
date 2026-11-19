@@ -20,6 +20,8 @@ var _missing_rows := {}
 
 func _ready() -> void:
 	use_chest_layout(ENVELOPE_TEXTURE)
+	# Skill-Karten sind zu groß zum freien Verschieben
+	free_move = false
 	_stage.custom_minimum_size.x = REWARD_STAGE_WIDTH
 	set_accent(ACCENT)
 	set_title(tr("SKILL_REWARD_CHOOSE"))

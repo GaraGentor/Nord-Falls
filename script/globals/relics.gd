@@ -158,8 +158,21 @@ func _slowest_own_first(order: Array) -> Array:
 func get_relic(id: String) -> Dictionary:
 	return RELICS.get(id, {})
 
+## Gesammelt oder durch den Easy Mode geschenkt. Geschenkte Relikte werden so auch nicht mehr angeboten (get_unowned).
 func has_relic(id: String) -> bool:
-	return State.relics.has(id)
+	return State.relics.has(id) or is_easy_mode_relic(id)
+
+## Kommt aus dem Easy Mode, nicht aus dem Run (lässt sich z. B. im Void nicht tauschen)
+func is_easy_mode_relic(id: String) -> bool:
+	return GameSettings.easy_mode and EASY_MODE_RELICS.has(id)
+
+## Alle Relikte, die gerade gelten: die gesammelten und die des Easy Mode
+func owned() -> Array[String]:
+	var ids: Array[String] = State.relics.duplicate()
+	for id in EASY_MODE_RELICS:
+		if is_easy_mode_relic(id) and not ids.has(id):
+			ids.append(id)
+	return ids
 
 ## Im Debug-Menü ausgeschaltete Relics wirken nicht und werden nirgends angeboten
 func is_active(id: String) -> bool:
@@ -167,6 +180,9 @@ func is_active(id: String) -> bool:
 
 ## Diese Relikte gibt es nur im Shop, alle anderen nur aus Relikt-Kisten (Boss-Belohnung)
 const SHOP_RELICS := ["spyglass", "super_catcher", "all_stats", "all_skills"]
+
+## Im Easy Mode (GameSettings.easy_mode) gelten diese Relikte in jedem Run als gesammelt
+const EASY_MODE_RELICS := ["all_stats", "all_skills"]
 
 ## Was der Shop anbieten kann: nur SHOP_RELICS, aktiv und noch nicht gesammelt
 func shop_offers() -> Array:
@@ -196,7 +212,7 @@ func can_swap() -> bool:
 	return State.relics.any(func(id): return not swap_offers(id).is_empty())
 
 func add_relic(id: String) -> void:
-	if not RELICS.has(id) or has_relic(id):
+	if not RELICS.has(id) or State.relics.has(id):
 		return
 	State.relics.append(id)
 	var on_add = get_relic(id).get("on_add")
@@ -205,14 +221,14 @@ func add_relic(id: String) -> void:
 	relics_changed.emit()
 
 func remove_relic(id: String) -> void:
-	if not has_relic(id):
+	if not State.relics.has(id):
 		return
 	State.relics.erase(id)
 	relics_changed.emit()
 
 ## Wendet die Hooks aller gesammelten, aktiven Relics nacheinander auf value an.
 func modify(hook: String, value, context = null):
-	for id in State.relics:
+	for id in owned():
 		if not is_active(id):
 			continue
 		var fn = get_relic(id).get("hooks", {}).get(hook)

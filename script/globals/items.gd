@@ -3,7 +3,7 @@ extends Node
 ## One-Way-Items (auch "Loot"): Gegenstände für einen einzigen Einsatz im Kampf.
 ##
 ## Woher: Beute nach Kämpfen (battle.gd _roll_kill_loot, höchstens MAX_DROPS_PER_BATTLE pro Kampf, gleiche Chance wie ein
-## Schlüssel) und gewöhnliche auch im Shop. Sie liegen erst auf dem Schlachtfeld (State.pending_items) und kommen erst in
+## Schlüssel), in Schätzen (treasure.gd, direkt in die Tasche) und gewöhnliche auch im Shop. Sie liegen erst auf dem Schlachtfeld (State.pending_items) und kommen erst in
 ## die Tasche, wenn man sie im Level-Up-Bildschirm hineinzieht.
 ## Wo: in der Tasche (State.bag, Raster mit BAG_COLUMNS Spalten, wächst bei Bedarf um eine Reihe) oder ausgerüstet an
 ## einem Monster (Monster._items, SLOTS_PER_MON Plätze). Nur ausgerüstete Items lassen sich im Kampf einsetzen.
@@ -29,6 +29,8 @@ const RARITY_COLORS := {
 ## Seltenheit der Beute: normale Kämpfe und Boss-Kämpfe (Boss-Felder und Biom-Bosse)
 const RARITY_WEIGHTS := {Rarity.COMMON: 75.0, Rarity.RARE: 20.0, Rarity.EPIC: 5.0}
 const BOSS_RARITY_WEIGHTS := {Rarity.COMMON: 40.0, Rarity.RARE: 40.0, Rarity.EPIC: 20.0}
+## Schätze (treasure.gd): jede Seltenheit gleich oft
+const TREASURE_RARITY_WEIGHTS := {Rarity.COMMON: 1.0, Rarity.RARE: 1.0, Rarity.EPIC: 1.0}
 
 ## Beute: höchstens so viele Items pro Kampf, jedes besiegte Monster würfelt mit der Schlüssel-Chance (battle.gd)
 const MAX_DROPS_PER_BATTLE := 2
@@ -156,9 +158,10 @@ func icon(item: Dictionary) -> TextureRect:
 # Beute und Shop
 
 ## Zufälliges Item einer gewürfelten Seltenheit. Items, die es pro Run nur einmal gibt (Todes-Totem), fallen weg,
-## sobald sie einmal gefunden wurden.
-func roll_item(boss := false) -> Dictionary:
-	var weights: Dictionary = BOSS_RARITY_WEIGHTS if boss else RARITY_WEIGHTS
+## sobald sie einmal gefunden wurden. weights ersetzt die Gewichte der Seltenheiten (z. B. TREASURE_RARITY_WEIGHTS).
+func roll_item(boss := false, weights: Dictionary = {}) -> Dictionary:
+	if weights.is_empty():
+		weights = BOSS_RARITY_WEIGHTS if boss else RARITY_WEIGHTS
 	var rarities := weights.keys()
 	var rarity: int = rarities[Map.pick_weighted_index(range(rarities.size()), rarities.map(func(r): return weights[r]))]
 	var ids := _available_ids(rarity)

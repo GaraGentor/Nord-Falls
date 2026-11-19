@@ -87,6 +87,28 @@ class LootBag extends Control:
 		_pop = create_tween()
 		_pop.tween_property(self, "scale", Vector2.ONE, 0.35).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 
+## Boden des Schlachtfelds: fallen gelassene Beute bleibt dort liegen, wo sie losgelassen wird (frei verschiebbar,
+## auch übereinander). Liegt die Tasche unter dem Mauszeiger, landet sie dort. Nimmt nur während des Ziehens Mausereignisse an.
+class LootField extends Control:
+	var bag: LootBag
+
+	func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
+		return data is LootIcon
+
+	func _drop_data(at_position: Vector2, data: Variant) -> void:
+		if bag.get_global_rect().has_point(get_global_mouse_position()):
+			bag._drop_data(Vector2.ZERO, data)
+			return
+		var loot: LootIcon = data
+		var half := loot.size / 2
+		var center := at_position.clamp(half, (size - half).max(half))
+		# zuletzt abgelegt liegt obenauf
+		move_child(loot, -1)
+		for side in [SIDE_LEFT, SIDE_RIGHT]:
+			loot.set_anchor_and_offset(side, center.x / size.x, 0.0, true)
+		for side in [SIDE_TOP, SIDE_BOTTOM]:
+			loot.set_anchor_and_offset(side, center.y / size.y, 0.0, true)
+
 var debug=false
 var debug_mons=2
 
@@ -103,7 +125,7 @@ var debug_mons=2
 var _bag: LootBag
 var _hint_panel: PanelContainer
 ## freie Fläche über dem ganzen Bild, darauf liegt die Beute verstreut
-var _loot_field: Control
+var _loot_field: LootField
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -167,13 +189,14 @@ func _build_battlefield() -> void:
 	IronPlate.frame(_hint_panel, hint, 12, 8)
 	column.add_child(_hint_panel)
 
-	_loot_field = Control.new()
+	_loot_field = LootField.new()
 	_loot_field.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_loot_field.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	battlefield.add_child(_loot_field)
 
 	_bag = LootBag.new()
 	column.add_child(_bag)
+	_loot_field.bag = _bag
 	State.ep_changed.connect(_show_money)
 	_show_money(State.ep)
 
@@ -238,9 +261,10 @@ func _add_loot(texture: Texture2D, text: String, on_taken: Callable, art_materia
 	_loot_field.add_child(loot)
 	return loot
 
-## Während des Ziehens fängt keine Beute den Drop ab, auch wenn sie über der Tasche liegt
+## Während des Ziehens fängt keine Beute den Drop ab, auch wenn sie über der Tasche liegt: der Boden nimmt ihn an
 func _on_loot_drag_started() -> void:
 	_bag.art.set_gold(true)
+	_loot_field.mouse_filter = Control.MOUSE_FILTER_STOP
 	for loot: Control in _loot_field.get_children():
 		loot.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
@@ -334,6 +358,7 @@ func _show_money(ep: int) -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_DRAG_END and _bag != null:
 		_bag.art.set_gold(false)
+		_loot_field.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		for loot in _loot_field.get_children():
 			loot.modulate.a = 1.0
 			loot.mouse_filter = Control.MOUSE_FILTER_STOP

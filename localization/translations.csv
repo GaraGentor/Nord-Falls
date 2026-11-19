@@ -885,6 +885,9 @@ SETTINGS_CARD_EFFECTS,Card effects,Karteneffekte
 SETTINGS_CARD_EFFECTS_HINT,Animated flames and particles around the skill cards.,Animierte Flammen und Partikel rund um die Skill-Karten.
 SETTINGS_CARD_WATERMARK,Card symbol,Karten-Symbol
 SETTINGS_CARD_WATERMARK_HINT,Large symbol of the skill type in the background of the skill cards.,Großes Symbol der Skill-Art im Hintergrund der Skill-Karten.
+SETTINGS_GAMEPLAY,Gameplay,Spiel
+SETTINGS_EASY_MODE,Easy Mode,Easy Mode
+SETTINGS_EASY_MODE_HINT,"Every run starts with the All-Seeing Eye and the Battle Codex: all enemy stats and attacks are visible. They are then no longer offered in the shop.","Jeder Run beginnt mit dem Allsehenden Auge und dem Kampf-Kodex: alle Werte und Attacken der Gegner sind sichtbar. Im Shop werden sie dann nicht mehr angeboten."
 SETTINGS_TUTORIAL,Tutorial,Tutorial
 SETTINGS_TUTORIAL_TOGGLE,Show tutorial,Tutorial anzeigen
 SETTINGS_TUTORIAL_HINT,"When switched on, the trainer explains everything from the start, including a practice fight before the map.","Eingeschaltet erklärt dir der Trainer alles von Anfang an, auch in einem Übungskampf vor der Karte."

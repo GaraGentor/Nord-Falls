@@ -40,7 +40,7 @@ func refresh() -> void:
 		if child is Button:
 			remove_child(child)
 			child.queue_free()
-	for id in State.relics:
+	for id in Relics.owned():
 		var relic = Relics.get_relic(id)
 		var button := Button.new()
 		button.custom_minimum_size = ICON_SIZE

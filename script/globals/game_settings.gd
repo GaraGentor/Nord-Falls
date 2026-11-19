@@ -14,6 +14,9 @@ var fullscreen := false
 var card_effects := true
 ## großes Art-Symbol als Wasserzeichen auf den Skill-Karten (SkillCardPaper)
 var card_watermark := true
+## Easy Mode: die Relikte aus Relics.EASY_MODE_RELICS (alle Werte und Fähigkeiten der Gegner) gelten in jedem Run
+## als gesammelt und werden deshalb nirgends mehr angeboten
+var easy_mode := false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -48,6 +51,14 @@ func set_card_watermark(on: bool) -> void:
 	_save()
 	changed.emit()
 
+func set_easy_mode(on: bool) -> void:
+	if easy_mode == on:
+		return
+	easy_mode = on
+	_save()
+	changed.emit()
+	Relics.relics_changed.emit()
+
 func toggle_fullscreen() -> void:
 	set_fullscreen(not fullscreen)
 
@@ -80,10 +91,12 @@ func _load() -> void:
 	fullscreen = config.get_value("display", "fullscreen", false)
 	card_effects = config.get_value("display", "card_effects", true)
 	card_watermark = config.get_value("display", "card_watermark", true)
+	easy_mode = config.get_value("gameplay", "easy_mode", false)
 
 func _save() -> void:
 	var config := ConfigFile.new()
 	config.set_value("display", "fullscreen", fullscreen)
 	config.set_value("display", "card_effects", card_effects)
 	config.set_value("display", "card_watermark", card_watermark)
+	config.set_value("gameplay", "easy_mode", easy_mode)
 	config.save(PATH)

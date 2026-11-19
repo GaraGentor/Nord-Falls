@@ -2,7 +2,8 @@ extends ChestRewardDialog
 
 ## Schatz: die Truhe öffnet sich nur mit einem Schlüssel. Darin liegen Häufchen Monster Essenz,
 ## die einzeln in die Tasche gezogen werden, manchmal auch ein Element-Trank. Der fällt nach der Kiste
-## aus der Tasche (potion_reward.gd) und wird dort einem Monster gegeben.
+## aus der Tasche (potion_reward.gd) und wird dort einem Monster gegeben. Dazu manchmal One-Way-Items (Items),
+## die direkt in die Tasche kommen.
 ## Ohne Schlüssel oder wenn man ihn behalten will, geht man weiter.
 ## Die Trank-Karte nutzen Shop und Trank-Belohnung.
 
@@ -19,6 +20,9 @@ const PILE_GOLD_PER_DEPTH := 5
 ## so oft liegt zusätzlich ein Element-Trank mit zufälligem Element darin (leicht gewichtet, siehe pick_potion_element).
 ## Gezielt ein bestimmtes Element gibt es nur im Shop.
 const POTION_CHANCE := 0.35
+## One-Way-Items: so viele Würfe mit der Trank-Chance, Seltenheit gleich verteilt (Items.TREASURE_RARITY_WEIGHTS).
+## Sie kommen zu Essenz und Trank dazu: höchstens PILES_MAX + 1 + ITEM_ROLLS = 7 Preise.
+const ITEM_ROLLS := 2
 
 const ELEMENTS := [Enums.MON_TYPES.EARTH, Enums.MON_TYPES.AIR, Enums.MON_TYPES.WATER, Enums.MON_TYPES.FIRE]
 
@@ -42,14 +46,18 @@ func _ready() -> void:
 	# nur Elemente, die noch jemand im Team trinken kann
 	var drinkable := ELEMENTS.filter(func(element): return not mons_without(element).is_empty())
 	var with_potion := not drinkable.is_empty() and randf() < POTION_CHANCE
-	# der Teppich hat höchstens PILES_MAX Liegeplätze, der Trank nimmt einen davon
-	for i in randi_range(PILES_MIN, PILES_MAX - (1 if with_potion else 0)):
+	# auf dem Teppich nur Bild und Name, ohne Beschreibung
+	for i in randi_range(PILES_MIN, PILES_MAX):
 		var gold := randi_range(PILE_GOLD_MIN, PILE_GOLD_MAX) + State.map_level * PILE_GOLD_PER_DEPTH
-		add_bag_card(tr("TREASURE_GOLD"), Helper.me_text(gold), texture_icon(ESSENCE_ICON), _on_gold_taken.bind(gold))
+		add_bag_card(Helper.me_text(gold), "", texture_icon(ESSENCE_ICON), _on_gold_taken.bind(gold))
 	if with_potion:
 		var element: int = pick_potion_element(drinkable)
 		# nach der Kiste fällt er wie eine Trophäe aus der Tasche auf den Teppich (world_map.gd show_pending_rewards)
-		add_bag_card(potion_title(self, element), tr("TREASURE_POTION_BAG_DESC"), potion_art(element), func(): State.pending_potions.append(element))
+		var potion := add_bag_card(potion_title(self, element), "", potion_art(element), func(): State.pending_potions.append(element))
+		potion.tooltip_text = tr("TREASURE_POTION_BAG_DESC")
+	for i in ITEM_ROLLS:
+		if randf() < POTION_CHANCE:
+			_add_item_card(Items.roll_item(false, Items.TREASURE_RARITY_WEIGHTS))
 	_build_buttons()
 	play_chest_intro()
 	_buttons.add_to_group("tut_treasure_buttons")
@@ -82,6 +90,13 @@ func _wait_before_burst() -> void:
 	# schon offen, wenn der Schlüssel benutzt wurde, bevor die Kiste fertig aufgesprungen ist: dann kommt kein Signal mehr
 	if not _is_open:
 		await _opened
+
+## One-Way-Item: Name in der Farbe seiner Seltenheit, in die Tasche gezogen landet es im Inventar
+func _add_item_card(item: Dictionary) -> void:
+	var card := add_bag_card(Items.title(item), "", Items.icon(item), Items.add_to_bag.bind(item))
+	var name_label: Label = card.info.get_child(0)
+	name_label.add_theme_color_override("font_color", Items.rarity_color(item))
+	card.tooltip_text = "%s\n%s" % [Items.description(item), Items.use_hint(item)]
 
 func _on_gold_taken(gold: int) -> void:
 	State.ep += gold

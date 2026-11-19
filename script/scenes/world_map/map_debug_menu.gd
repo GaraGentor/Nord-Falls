@@ -188,6 +188,15 @@ func _build_main() -> void:
 	extras.add_child(_make_button("RELIKTE ...", func(): _show_page(_relic_page)))
 	extras.add_child(_make_button("SPIELSTAND LÖSCHEN ...", func(): _show_page(_reset_page)))
 
+	# ein Klick legt das Item direkt in die Tasche, Schriftfarbe = Seltenheit
+	var item_grid := _add_section(list, "Items (Klick legt es in die Tasche)", [])
+	for id in Items.ITEMS:
+		var item := Items.make(id)
+		var item_button := _make_button(Items.title(item).to_upper(), _add_item.bind(id))
+		item_button.add_theme_color_override("font_color", Items.rarity_color(item))
+		item_button.tooltip_text = Items.description(item)
+		item_grid.add_child(item_button)
+
 	var balancing := _add_section(list, "Optimierung & Balancing", [
 		["WERTE-VERTEILUNG ...", func(): _show_page(_stats_page)],
 		["SCHADENSFORMEL ...", func(): _show_page(_damage_page)],
@@ -822,6 +831,11 @@ func _add_shards() -> void:
 func _add_keys() -> void:
 	State.keys += DEBUG_KEYS
 	Helper.show_unlock_message("+%d Schlüssel" % DEBUG_KEYS)
+
+func _add_item(id: String) -> void:
+	var item := Items.make(id)
+	Items.add_to_bag(item)
+	Helper.show_unlock_message("+1 %s" % Items.title(item))
 
 func _add_coupon() -> void:
 	State.coupons += 1

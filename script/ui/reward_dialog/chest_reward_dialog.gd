@@ -35,20 +35,42 @@ const LOOT_HOVER_Y := 0.2
 const CHEST_MOUTH_Y := 0.52
 const CHEST_HEIGHT := 0.62
 
+## mehr Preise als in LOOT_SPOTS: Raster mit so vielen Spalten
+const LOOT_GRID_COLUMNS := 2
+## Abstand der Preise zum Rand des Teppichs, wenn sie frei abgelegt werden
+const LOOT_STAGE_MARGIN := 8.0
+
+## Teppich: wird ein Preis außerhalb der Ziele darauf fallen gelassen, bleibt er dort liegen (free_move).
+## So lassen sich die Preise frei herumschieben und übereinanderlegen.
+class LootStage extends Control:
+	var dialog: ChestRewardDialog
+
+	func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
+		var card := dialog._dragged
+		return dialog.free_move and card != null and is_same(data, card.drag) and dialog._loot.has(card)
+
+	func _drop_data(at_position: Vector2, _data: Variant) -> void:
+		dialog.move_loot(dialog._dragged, at_position)
+
+## Preise lassen sich auf dem Teppich frei verschieben (Skills sind dafür zu groß)
+var free_move := true
 ## Fläche links: erst die Truhe, dann der Teppich mit den Preisen
-var _stage: Control
+var _stage: LootStage
+## erst nach dem Intro sind die Preise ziehbar
+var _loot_ready := false
 var _chest: TextureRect
 var _rug: TextureRect
 var _loot: Array[RewardCard] = []
 
 func use_chest_layout(container_texture: Texture2D = CHEST_TEXTURE) -> void:
 	use_map_layout()
-	_stage = Control.new()
+	_stage = LootStage.new()
+	_stage.dialog = self
 	_stage.custom_minimum_size.x = STAGE_WIDTH
 	_stage.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	# der Teppich kommt von unten herein und ist vorher nicht zu sehen
+	# PASS: nimmt frei abgelegte Preise an (LootStage), der Teppich kommt von unten herein und ist vorher nicht zu sehen
 	_stage.clip_contents = true
-	_stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_stage.mouse_filter = Control.MOUSE_FILTER_PASS
 	use_card_stage(_stage)
 	_rug = _stage_image(RUG_TEXTURE)
 	_rug.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
@@ -80,7 +102,10 @@ static func build_loot_card(card: RewardCard, card_title: String, text: String) 
 	card.info.add_theme_constant_override("separation", 0)
 	card.row.add_child(card.info)
 	card.info.add_child(_loot_label(card_title, LOOT_TITLE_FONT_SIZE, SkillDetailPopup.GOLD))
-	card.info.add_child(_loot_label(text, LOOT_TEXT_FONT_SIZE, Color.WHITE))
+	var description := _loot_label(text, LOOT_TEXT_FONT_SIZE, Color.WHITE)
+	# ohne Beschreibung nur Bild und Name (Schatz)
+	description.visible = text != ""
+	card.info.add_child(description)
 
 static func _loot_label(text: String, font_size: int, color: Color) -> Label:
 	var label := Label.new()
@@ -119,8 +144,38 @@ func play_chest_intro() -> void:
 	await _burst_loot(stage_size)
 	await _swap_chest_for_rug(stage_size)
 	await _drop_loot(stage_size)
+	_loot_ready = true
 	for card in _loot:
 		card.mouse_filter = Control.MOUSE_FILTER_STOP
+
+## Während des Ziehens fängt kein anderer Preis den Drop ab, der Teppich darunter nimmt ihn an
+func _show_targets(card: RewardCard) -> void:
+	super(card)
+	if free_move:
+		for loot in _loot:
+			loot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+func _hide_targets() -> void:
+	super()
+	if _loot_ready:
+		for loot in _loot:
+			loot.mouse_filter = Control.MOUSE_FILTER_STOP
+
+## Preis frei auf dem Teppich ablegen (Mitte an at), ganz oben auf den anderen, nicht über den Rand hinaus
+func move_loot(card: RewardCard, at: Vector2) -> void:
+	var half := card.size / 2 + Vector2.ONE * LOOT_STAGE_MARGIN
+	var center := at.clamp(half, (_stage.size - half).max(half))
+	_stage.move_child(card, -1)
+	_anchor_loot(card, center / _stage.size)
+
+## Anteil statt Pixel: bleibt passend, wenn sich die Fläche ändert
+static func _anchor_loot(card: Control, spot: Vector2) -> void:
+	card.grow_horizontal = GROW_DIRECTION_BOTH
+	card.grow_vertical = GROW_DIRECTION_BOTH
+	for side in [SIDE_LEFT, SIDE_RIGHT]:
+		card.set_anchor_and_offset(side, spot.x, 0.0, true)
+	for side in [SIDE_TOP, SIDE_BOTTOM]:
+		card.set_anchor_and_offset(side, spot.y, 0.0, true)
 
 ## Der Behälter steht schon da, die Preise bleiben noch drin (Schatz: bis der Schlüssel benutzt wurde)
 func _wait_before_burst() -> void:
@@ -144,10 +199,12 @@ static func pop_container(image: Control) -> Tween:
 
 func _burst_loot(stage_size: Vector2) -> void:
 	var tween := create_tween().set_parallel()
+	# viele Preise rücken enger zusammen, damit alle über der Truhe bleiben
+	var spacing := LOOT_HOVER_SPACING if _loot.size() <= 3 else 0.8 / (_loot.size() - 1)
 	for i in _loot.size():
 		var card := _loot[i]
 		var delay := i * 0.1
-		var hover_x := 0.5 + (i - (_loot.size() - 1) / 2.0) * LOOT_HOVER_SPACING
+		var hover_x := 0.5 + (i - (_loot.size() - 1) / 2.0) * spacing
 		var target := stage_size * Vector2(hover_x, LOOT_HOVER_Y) - card.size / 2
 		tween.tween_property(card, "modulate:a", 1.0, 0.1).set_delay(delay)
 		tween.tween_property(card, "scale", Vector2.ONE, 0.4).set_delay(delay).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
@@ -167,8 +224,18 @@ func _swap_chest_for_rug(stage_size: Vector2) -> void:
 	await tween.finished
 
 ## Liegeplätze der Preise, Unterklassen mit größeren Preisen können eigene wählen
+## Mehr als in LOOT_SPOTS (Schatz mit Trank und Items): Raster mit LOOT_GRID_COLUMNS Spalten
 func _loot_spots(count: int) -> Array:
-	return LOOT_SPOTS[count].duplicate()
+	if LOOT_SPOTS.has(count):
+		return LOOT_SPOTS[count].duplicate()
+	var rows := ceili(count / float(LOOT_GRID_COLUMNS))
+	var spots := []
+	for i in count:
+		@warning_ignore("integer_division")
+		var row := i / LOOT_GRID_COLUMNS
+		var column := i % LOOT_GRID_COLUMNS
+		spots.append(Vector2((column + 0.5) / LOOT_GRID_COLUMNS, (row + 0.5) / rows))
+	return spots
 
 func _drop_loot(stage_size: Vector2) -> void:
 	var spots := _loot_spots(_loot.size())
@@ -183,12 +250,5 @@ func _drop_loot(stage_size: Vector2) -> void:
 		tween.tween_property(card, "position:y", target.y, 0.45).set_delay(delay).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 		tween.tween_property(card.info, "modulate:a", 1.0, 0.25).set_delay(delay + 0.3)
 	await tween.finished
-	# Anteil statt Pixel: bleibt passend, wenn sich die Fläche ändert
 	for i in _loot.size():
-		var card := _loot[i]
-		card.grow_horizontal = GROW_DIRECTION_BOTH
-		card.grow_vertical = GROW_DIRECTION_BOTH
-		for side in [SIDE_LEFT, SIDE_RIGHT]:
-			card.set_anchor_and_offset(side, spots[i].x, 0.0, true)
-		for side in [SIDE_TOP, SIDE_BOTTOM]:
-			card.set_anchor_and_offset(side, spots[i].y, 0.0, true)
+		_anchor_loot(_loot[i], spots[i])

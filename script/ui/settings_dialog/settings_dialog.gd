@@ -90,6 +90,11 @@ func _build(content: VBoxContainer) -> void:
 	watermark_check.size_flags_horizontal = SIZE_SHRINK_BEGIN
 	content.add_child(watermark_check)
 	content.add_child(_note(tr("SETTINGS_CARD_WATERMARK_HINT"), IronPlate.TEXT_COLOR))
+	content.add_child(_section(tr("SETTINGS_GAMEPLAY")))
+	var easy_check := make_check(tr("SETTINGS_EASY_MODE"), GameSettings.easy_mode, GameSettings.set_easy_mode)
+	easy_check.size_flags_horizontal = SIZE_SHRINK_BEGIN
+	content.add_child(easy_check)
+	content.add_child(_note(tr("SETTINGS_EASY_MODE_HINT"), IronPlate.TEXT_COLOR))
 	content.add_child(_section(tr("SETTINGS_TUTORIAL")))
 	var tutorial_check := make_check(tr("SETTINGS_TUTORIAL_TOGGLE"), Tutorial.is_enabled(), _on_tutorial_toggled)
 	tutorial_check.size_flags_horizontal = SIZE_SHRINK_BEGIN
