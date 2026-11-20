@@ -72,37 +72,37 @@ const USE_HINTS := {
 # Platzhalter-Bilder wie bei den Relikten, die Farbe der Seltenheit kommt über das Material dazu (icon)
 const ITEMS := {
 	# ── gewöhnlich (auch im Shop) ──
-	"net": {"name": "ITEM_NET", "description": "ITEM_NET_DESC", "icon": "res://assets/ui/icons/battle/catch.svg",
+	"net": {"name": "ITEM_NET", "description": "ITEM_NET_DESC", "icon": "res://assets/items/net.png",
 		"rarity": Rarity.COMMON, "use": USE_ENEMY},
-	"bait": {"name": "ITEM_BAIT", "description": "ITEM_BAIT_DESC", "icon": "res://assets/ui/icons/collection_eggs.svg",
+	"bait": {"name": "ITEM_BAIT", "description": "ITEM_BAIT_DESC", "icon": "res://assets/items/bait.png",
 		"rarity": Rarity.COMMON, "use": USE_ENEMY, "value": BAIT_BONUS * 100},
-	"whetstone": {"name": "ITEM_WHETSTONE", "description": "ITEM_WHETSTONE_DESC", "icon": "res://assets/ui/icons/sword.svg",
+	"whetstone": {"name": "ITEM_WHETSTONE", "description": "ITEM_WHETSTONE_DESC", "icon": "res://assets/items/whetstone.png",
 		"rarity": Rarity.COMMON, "use": USE_ALLY, "value": 1},
-	"shield_rune": {"name": "ITEM_SHIELD_RUNE", "description": "ITEM_SHIELD_RUNE_DESC", "icon": "res://assets/ui/icons/stat_s_shield.svg",
+	"shield_rune": {"name": "ITEM_SHIELD_RUNE", "description": "ITEM_SHIELD_RUNE_DESC", "icon": "res://assets/items/shield_rune.png",
 		"rarity": Rarity.COMMON, "use": USE_AUTO, "value": RUNE_SHIELD},
-	"portable_shield": {"name": "ITEM_PORTABLE_SHIELD", "description": "ITEM_PORTABLE_SHIELD_DESC", "icon": "res://assets/ui/icons/battle/shield.svg",
+	"portable_shield": {"name": "ITEM_PORTABLE_SHIELD", "description": "ITEM_PORTABLE_SHIELD_DESC", "icon": "res://assets/items/portable_shield.png",
 		"rarity": Rarity.COMMON, "use": USE_FIELD, "value": PORTABLE_SHIELD},
-	"stench": {"name": "ITEM_STENCH", "description": "ITEM_STENCH_DESC", "icon": "res://assets/ui/icons/firework (1).svg",
+	"stench": {"name": "ITEM_STENCH", "description": "ITEM_STENCH_DESC", "icon": "res://assets/items/stench.png",
 		"rarity": Rarity.COMMON, "use": USE_FIELD},
 	# ── selten ──
-	"scarecrow": {"name": "ITEM_SCARECROW", "description": "ITEM_SCARECROW_DESC", "icon": "res://assets/ui/icons/battle/debuff.svg",
+	"scarecrow": {"name": "ITEM_SCARECROW", "description": "ITEM_SCARECROW_DESC", "icon": "res://assets/items/scarecrow.png",
 		"rarity": Rarity.RARE, "use": USE_ENEMY},
-	"hourglass": {"name": "ITEM_HOURGLASS", "description": "ITEM_HOURGLASS_DESC", "icon": "res://assets/ui/icons/clock.svg",
+	"hourglass": {"name": "ITEM_HOURGLASS", "description": "ITEM_HOURGLASS_DESC", "icon": "res://assets/items/hourglass.png",
 		"rarity": Rarity.RARE, "use": USE_ALLY},
-	"wake_stone": {"name": "ITEM_WAKE_STONE", "description": "ITEM_WAKE_STONE_DESC", "icon": "res://assets/ui/icons/sparkle.svg",
+	"wake_stone": {"name": "ITEM_WAKE_STONE", "description": "ITEM_WAKE_STONE_DESC", "icon": "res://assets/items/wake_stone.png",
 		"rarity": Rarity.RARE, "use": USE_ALLY},
-	"blood_stone": {"name": "ITEM_BLOOD_STONE", "description": "ITEM_BLOOD_STONE_DESC", "icon": "res://assets/ui/icons/stat_heart.svg",
+	"blood_stone": {"name": "ITEM_BLOOD_STONE", "description": "ITEM_BLOOD_STONE_DESC", "icon": "res://assets/items/blood_stone.png",
 		"rarity": Rarity.RARE, "use": USE_ENEMY, "value": BLOOD_FACTOR},
-	"cuckoo_clock": {"name": "ITEM_CUCKOO_CLOCK", "description": "ITEM_CUCKOO_CLOCK_DESC", "icon": "res://assets/ui/icons/chevron-double-right.svg",
+	"cuckoo_clock": {"name": "ITEM_CUCKOO_CLOCK", "description": "ITEM_CUCKOO_CLOCK_DESC", "icon": "res://assets/items/cuckoo_clock.png",
 		"rarity": Rarity.RARE, "use": USE_ALLY, "value": 1},
 	# ── episch ──
-	"death_totem": {"name": "ITEM_DEATH_TOTEM", "description": "ITEM_DEATH_TOTEM_DESC", "icon": "res://assets/ui/icons/stat_pentagram.svg",
+	"death_totem": {"name": "ITEM_DEATH_TOTEM", "description": "ITEM_DEATH_TOTEM_DESC", "icon": "res://assets/items/death_totem.png",
 		"rarity": Rarity.EPIC, "use": USE_AUTO, "once_per_run": true},
-	"clear_water": {"name": "ITEM_CLEAR_WATER", "description": "ITEM_CLEAR_WATER_DESC", "icon": "res://assets/ui/icons/battle/buff.svg",
+	"clear_water": {"name": "ITEM_CLEAR_WATER", "description": "ITEM_CLEAR_WATER_DESC", "icon": "res://assets/items/clear_water.png",
 		"rarity": Rarity.EPIC, "use": USE_ALLY},
-	"ban_seal": {"name": "ITEM_BAN_SEAL", "description": "ITEM_BAN_SEAL_DESC", "icon": "res://assets/ui/icons/parchment.svg",
+	"ban_seal": {"name": "ITEM_BAN_SEAL", "description": "ITEM_BAN_SEAL_DESC", "icon": "res://assets/items/ban_seal.png",
 		"rarity": Rarity.EPIC, "use": USE_FIELD, "value": BAN_ROUNDS},
-	"mirror_shard": {"name": "ITEM_MIRROR_SHARD", "description": "ITEM_MIRROR_SHARD_DESC", "icon": "res://assets/ui/icons/battle/s_shield.svg",
+	"mirror_shard": {"name": "ITEM_MIRROR_SHARD", "description": "ITEM_MIRROR_SHARD_DESC", "icon": "res://assets/items/mirror_shard.png",
 		"rarity": Rarity.EPIC, "use": USE_ALLY, "value": MIRROR_SHARE * 100},
 }
 
@@ -140,17 +140,20 @@ func description(item: Dictionary) -> String:
 func use_hint(item: Dictionary) -> String:
 	return tr(USE_HINTS[use_of(item)])
 
-## Platzhalter-Bild im Pixel-Look, eingefärbt in der Farbe der Seltenheit
+## Bild im Pixel-Look. Nur Platzhalter-Symbole (SVG) werden in der Farbe der Seltenheit eingefärbt,
+## eigene Bilder (assets/items) behalten ihre Farben.
 func icon(item: Dictionary) -> TextureRect:
 	var rect := TextureRect.new()
-	rect.texture = load(get_info(item).get("icon", "res://assets/ui/icons/bag.svg"))
+	var path: String = get_info(item).get("icon", "res://assets/ui/icons/bag.svg")
+	rect.texture = load(path)
 	rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var mat: ShaderMaterial = PROPS_MATERIAL.duplicate()
-	var tint := rarity_color(item)
-	tint.a = 0.85
-	mat.set_shader_parameter("tint_color", tint)
+	if path.ends_with(".svg"):
+		var tint := rarity_color(item)
+		tint.a = 0.85
+		mat.set_shader_parameter("tint_color", tint)
 	rect.material = mat
 	return rect
 

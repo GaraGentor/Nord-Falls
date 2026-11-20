@@ -490,7 +490,7 @@ RUN_END_KILLS,Monsters defeated,Besiegte Monster
 RUN_END_CATCHES,Monsters caught,Gefangene Monster
 RUN_END_EP,ME earned,Verdiente ME
 RUN_END_TEAM,Team: {team},Team: {team}
-RELIC_EXTRA_MOVE,Battle Drum,Kriegstrommel
+RELIC_EXTRA_MOVE,Symbol of Fate,Schicksals-Symbol
 RELIC_EXTRA_MOVE_DESC,"All monsters, yours and the enemies', get +1 move each turn.","Alle Monster, deine und die gegnerischen, haben jeden Zug +1 Aktion."
 RELIC_LUCKY_CHARM,Lucky Charm,Glücksbringer
 RELIC_LUCKY_CHARM_DESC,Catch chance +25%.,Fangchance +25 %.
@@ -1241,7 +1241,7 @@ ITEM_NET,Throwing Net,Wurfnetz
 ITEM_NET_DESC,"Starts a hypnosis (catch attempt) on the enemy right away, without using an action or ending your turn.","Startet sofort eine Hypnose (Fangversuch) auf den Gegner, ohne eine Aktion zu verbrauchen oder den Zug zu beenden."
 ITEM_BAIT,Bait,Köder
 ITEM_BAIT_DESC,"Raises the catch chance on the chosen enemy by {value}% for this battle.","Erhöht die Fangchance auf das gewählte gegnerische Monster für diesen Kampf um {value} %."
-ITEM_WHETSTONE,Whetstone,Wetzstein
+ITEM_WHETSTONE,Thumbs Up,Daumen hoch
 ITEM_WHETSTONE_DESC,"Gives a monster {value} extra action. The one on turn can use it right away, others on their next turn.","Gibt einem Monster {value} zusätzliche Aktion. Wer am Zug ist, kann sie sofort nutzen, andere in ihrem nächsten Zug."
 ITEM_SHIELD_RUNE,Shield Rune,Schildrune
 ITEM_SHIELD_RUNE_DESC,"The wearer starts the battle with a shield of {value} that lasts the whole first round.","Der Träger startet den Kampf mit einem Schild von {value}, der die ganze erste Runde hält."

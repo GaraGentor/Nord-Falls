@@ -44,7 +44,7 @@ var RELICS := {
 	"extra_move": {
 		"name": "RELIC_EXTRA_MOVE",
 		"description": "RELIC_EXTRA_MOVE_DESC",
-		"icon": "res://assets/ui/icons/sword.svg",
+		"icon": "res://assets/global_relics/extra_move.png",
 		"rarity": Rarity.RARE,
 		"hooks": {
 			# eigene UND gegnerische Monster bekommen eine Aktion mehr (battle.gd _plan_intent fragt den Hook für Gegner ab)
@@ -54,7 +54,7 @@ var RELICS := {
 	"lucky_charm": {
 		"name": "RELIC_LUCKY_CHARM",
 		"description": "RELIC_LUCKY_CHARM_DESC",
-		"icon": "res://assets/ui/icons/sparkle.svg",
+		"icon": "res://assets/global_relics/lucky_charm.png",
 		"rarity": Rarity.COMMON,
 		"hooks": {
 			"catch_chance": func(value: float, _mon: Monster) -> float: return value * 1.25,
@@ -63,7 +63,7 @@ var RELICS := {
 	"golden_idol": {
 		"name": "RELIC_GOLDEN_IDOL",
 		"description": "RELIC_GOLDEN_IDOL_DESC",
-		"icon": "res://assets/ui/icons/firework (1).svg",
+		"icon": "res://assets/global_relics/golden_idol.png",
 		"rarity": Rarity.COMMON,
 		"hooks": {
 			"battle_ep": func(value: int, _ctx) -> int: return roundi(value * 1.3),
@@ -73,19 +73,19 @@ var RELICS := {
 	"spyglass": {
 		"name": "RELIC_SPYGLASS",
 		"description": "RELIC_SPYGLASS_DESC",
-		"icon": "res://assets/ui/icons/info.svg",
+		"icon": "res://assets/global_relics/spyglass.png",
 		"rarity": Rarity.RARE,
 	},
 	"super_catcher": {
 		"name": "RELIC_SUPER_CATCHER",
 		"description": "RELIC_SUPER_CATCHER_DESC",
-		"icon": "res://assets/ui/icons/bag.svg",
+		"icon": "res://assets/global_relics/super_catcher.png",
 		"rarity": Rarity.COMMON,
 	},
 	"key_finder": {
 		"name": "RELIC_KEY_FINDER",
 		"description": "RELIC_KEY_FINDER_DESC",
-		"icon": "res://assets/ui/icons/key.svg",
+		"icon": "res://assets/global_relics/key_finder.png",
 		"rarity": Rarity.COMMON,
 		"hooks": {
 			"key_chance": func(value: float, _ctx) -> float: return value * KEY_FINDER_FACTOR,
@@ -94,7 +94,7 @@ var RELICS := {
 	"slow_start": {
 		"name": "RELIC_SLOW_START",
 		"description": "RELIC_SLOW_START_DESC",
-		"icon": "res://assets/ui/icons/chevron-double-right.svg",
+		"icon": "res://assets/global_relics/slow_start.png",
 		"rarity": Rarity.RARE,
 		"hooks": {
 			"first_round_order": func(order: Array, _ctx) -> Array: return _slowest_own_first(order),
@@ -104,27 +104,27 @@ var RELICS := {
 	"all_stats": {
 		"name": "RELIC_ALL_STATS",
 		"description": "RELIC_ALL_STATS_DESC",
-		"icon": "res://assets/ui/icons/info.svg",
+		"icon": "res://assets/global_relics/all_stats.png",
 		"rarity": Rarity.RARE,
 	},
 	# Ohne Hook: die HP-Balken im Kampf zeigen damit auch bei Gegnern die genauen HP (battle_mon_card.gd, battle_info_panel.gd)
 	"enemy_hp": {
 		"name": "RELIC_ENEMY_HP",
 		"description": "RELIC_ENEMY_HP_DESC",
-		"icon": "res://assets/ui/icons/stat_heart.svg",
+		"icon": "res://assets/global_relics/enemy_hp.png",
 		"rarity": Rarity.COMMON,
 	},
 	# Ohne Hook: der Kampf deckt damit zu Beginn alle gegnerischen Attacken auf (battle.gd)
 	"all_skills": {
 		"name": "RELIC_ALL_SKILLS",
 		"description": "RELIC_ALL_SKILLS_DESC",
-		"icon": "res://assets/ui/icons/info.svg",
+		"icon": "res://assets/global_relics/all_skills.png",
 		"rarity": Rarity.RARE,
 	},
 	"double_level": {
 		"name": "RELIC_DOUBLE_LEVEL",
 		"description": "RELIC_DOUBLE_LEVEL_DESC",
-		"icon": "res://assets/ui/icons/arrow_go.svg",
+		"icon": "res://assets/global_relics/double_level.png",
 		"rarity": Rarity.COMMON,
 		"hooks": {
 			"level_up_levels": func(_value: int, _mon: Monster) -> int: return LEVEL_UP_LEVELS,
@@ -133,7 +133,7 @@ var RELICS := {
 	"trophy_bonus": {
 		"name": "RELIC_TROPHY_BONUS",
 		"description": "RELIC_TROPHY_BONUS_DESC",
-		"icon": "res://assets/ui/icons/fist.svg",
+		"icon": "res://assets/global_relics/trophy_bonus.png",
 		"rarity": Rarity.COMMON,
 		"hooks": {
 			"trophy_bonus": func(value: int, _ctx) -> int: return value + TROPHY_EXTRA_BONUS,
@@ -142,7 +142,7 @@ var RELICS := {
 	"key_ring": {
 		"name": "RELIC_KEY_RING",
 		"description": "RELIC_KEY_RING_DESC",
-		"icon": "res://assets/ui/icons/key.svg",
+		"icon": "res://assets/global_relics/key_ring.png",
 		"rarity": Rarity.COMMON,
 		"on_add": func() -> void: State.keys += KEY_RING_KEYS,
 	},
@@ -150,27 +150,27 @@ var RELICS := {
 	"endless_fire": {
 		"name": "RELIC_ENDLESS_FIRE",
 		"description": "RELIC_ENDLESS_FIRE_DESC",
-		"icon": "res://assets/ui/icons/heart.svg",
+		"icon": "res://assets/global_relics/endless_fire.png",
 		"rarity": Rarity.RARE,
 	},
 	# Erlaubt auf der Karte jede Lane der nächsten Reihe (world_map.gd). Nur über die Einstellungen (GameSettings.flying_carpet)
 	"flying_carpet": {
 		"name": "RELIC_FLYING_CARPET",
 		"description": "RELIC_FLYING_CARPET_DESC",
-		"icon": "res://assets/ui/icons/parchment.svg",
+		"icon": "res://assets/global_relics/flying_carpet.png",
 		"rarity": Rarity.RARE,
 	},
 	# Schatzkisten können zusätzlich ein Fähigkeiten-Couvert und eine Trophäe enthalten (treasure.gd)
 	"treasure_hunter": {
 		"name": "RELIC_TREASURE_HUNTER",
 		"description": "RELIC_TREASURE_HUNTER_DESC",
-		"icon": "res://assets/ui/icons/key.svg",
+		"icon": "res://assets/global_relics/treasure_hunter.png",
 		"rarity": Rarity.COMMON,
 	},
 	"finder": {
 		"name": "RELIC_FINDER",
 		"description": "RELIC_FINDER_DESC",
-		"icon": "res://assets/ui/icons/bag.svg",
+		"icon": "res://assets/global_relics/finder.png",
 		"rarity": Rarity.COMMON,
 		"on_add": func() -> void:
 			for i in FINDER_ITEMS:
@@ -180,7 +180,7 @@ var RELICS := {
 	"brutal_strike": {
 		"name": "RELIC_BRUTAL_STRIKE",
 		"description": "RELIC_BRUTAL_STRIKE_DESC",
-		"icon": "res://assets/ui/icons/fist.svg",
+		"icon": "res://assets/global_relics/brutal_strike.png",
 		"rarity": Rarity.RARE,
 		"hooks": {
 			"element_multiplier": func(value: float, score: int) -> float: return _brutal_strike(value, score),

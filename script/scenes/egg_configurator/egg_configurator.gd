@@ -653,12 +653,12 @@ func _drop(entry: Entry) -> void:
 		var from := entry.slot
 		if from >= 0:
 			_slots[from] = null
+		# die alte Karte zuerst vom Platz nehmen: _take_off_table leert ihren Platz, und der gehört danach der neuen
+		if old and from < 0:
+			_take_off_table(old)
 		_put_on_table(entry, _drop_slot)
-		if old:
-			if from >= 0:
-				_put_on_table(old, from)
-			else:
-				_take_off_table(old)
+		if old and from >= 0:
+			_put_on_table(old, from)
 	_refresh()
 
 func _put_on_table(entry: Entry, slot: int) -> void:

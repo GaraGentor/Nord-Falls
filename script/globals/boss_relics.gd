@@ -98,11 +98,10 @@ var RELICS := {
 		"value": 0,
 		"final": true,
 	},
-	# Platzhalter-Bild, bis es ein eigenes für den Buddy gibt
 	"buddy": {
 		"name": "BOSS_RELIC_BUDDY",
 		"description": "BOSS_RELIC_BUDDY_DESC",
-		"icon": "res://assets/boss_relics/bongos.png",
+		"icon": "res://assets/boss_relics/buddy.png",
 		"value": BUDDY_INTERVAL,
 		"final": true,
 	},

@@ -1,0 +1,13 @@
+- Bei den EI Attacken gibts ein Bug. Ich habe mit meinem Donnerhorn eine EI Attacke Freigeschaltet. Wenn ich die Per Drag and Drop auf eine Vorausgefüllte position Lege, sagt er mir nur noch 2/3 ausgewählt obwohl 3 Attacken auf dem Tisch liegen und die legt sich sogar vor der einen Attacke. Wenn ich Danach die EI Attacke drauf lege, die ersetzt wurde, legt die sich einfach über der einen hin aber dann steht zumindest 3/3 obwohl nun 4 auf dem Tisch liegen.
+
+- Kriegstrommel zu "Schicksals-symbol" umbenennen. 
+- Benenne den Wetzstein zu "Daumen hoch".
+
+Bilder hinzufügen:
+	- Mach transparente hintergründe dazu
+	- Skaliere diese Runter, sodass es für Relikte und Items passen 128x128?
+	- Füge Globale Relike nach den namen ein. Assets sind unter assets/global_relics
+	- Füge Items nach den namen ein. Assets sind unter assets/items
+	- Füge den Buddy nach den namen ein. Assets sind unter assets/boss_relics
+
+Update mir das Wiki

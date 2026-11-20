@@ -174,6 +174,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .cycle { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 1rem; }
 .icon { width: 40px; height: 40px; padding: 7px; border-radius: 10px; background: #2b3336; flex: none; }
 :root[data-theme="dark"] .icon, :root:not([data-theme="light"]) .icon { filter: none; }
+.icon.art { width: 64px; height: 64px; padding: 3px; object-fit: contain; }
 code { font-family: ui-monospace, Consolas, monospace; font-size: .82rem; background: var(--panel-2); padding: 1px 5px; border-radius: 5px; word-break: break-word; }
 .warn { background: color-mix(in srgb, var(--bad) 14%, var(--panel)); border: 1px solid var(--bad); border-radius: 10px; padding: 10px 14px; margin-bottom: 16px; }
 .empty { padding: 30px; text-align: center; color: var(--muted); }
@@ -348,6 +349,8 @@ function tr(key, args = {}) {
 	return text.replace(/\[\/?hl\]/g, "").replace(/\{(\w+)\}/g, (all, k) => (k in args ? args[k] : all));
 }
 const res = (p) => (p || "").replace(/^res:\/\//, "../");
+// eigene Bilder (PNG/JPEG) größer als die Platzhalter-Symbole (SVG)
+const iconClass = (p) => (/\.svg$/i.test(p || "") ? "icon" : "icon art");
 const pct = (v) => `${Math.round(v * 1000) / 10} %`;
 const fmtNum = (v) => (Number.isInteger(v) ? String(v) : String(Math.round(v * 100) / 100));
 
@@ -870,7 +873,7 @@ function renderRelics() {
 	const cards = Object.entries(DATA.relics)
 		.filter(([id, r]) => matches(id, tr(r.name), tr(r.description), rarityName(r.rarity)))
 		.map(([id, r]) => `<article class="card"><div class="row" style="align-items:flex-start">
-			<img class="icon" src="${esc(res(r.icon))}" alt="" onerror="this.style.visibility='hidden'">
+			<img class="${iconClass(r.icon)}" src="${esc(res(r.icon))}" alt="" onerror="this.style.visibility='hidden'">
 			<div style="min-width:0"><h3>${hl(tr(r.name))}</h3>
 				<div class="row small" style="margin-top:2px"><span class="tag">${esc(rarityName(r.rarity))}</span><code>${esc(id)}</code></div>
 				<p style="margin:8px 0 0">${hl(tr(r.description))}</p>
@@ -891,7 +894,7 @@ function renderBossRelics() {
 	const cards = Object.entries(DATA.bossRelics || {})
 		.filter(([id, r]) => matches(id, tr(r.name), tr(r.description, relicVars(r))))
 		.map(([id, r]) => `<article class="card"><div class="row" style="align-items:flex-start">
-			<img class="icon" src="${esc(res(r.icon))}" alt="" onerror="this.style.visibility='hidden'">
+			<img class="${iconClass(r.icon)}" src="${esc(res(r.icon))}" alt="" onerror="this.style.visibility='hidden'">
 			<div style="min-width:0"><h3>${hl(tr(r.name))}</h3>
 				<div class="row small" style="margin-top:2px">${r.final ? `<span class="tag" style="${RARITY_STYLE.LEGENDARY || ""}">${ui("finalRelic")}</span>` : ""}<code>${esc(id)}</code></div>
 				<p style="margin:8px 0 0">${hl(tr(r.description, relicVars(r)))}</p>
@@ -914,7 +917,7 @@ function renderItems() {
 	const cards = Object.entries(DATA.items || {})
 		.filter(([id, it]) => matches(id, tr(it.name), tr(it.description, { value: value(it) }), rarityName(it.rarity)))
 		.map(([id, it]) => `<article class="card"><div class="row" style="align-items:flex-start">
-			<img class="icon" src="${esc(res(it.icon))}" alt="" onerror="this.style.visibility='hidden'">
+			<img class="${iconClass(it.icon)}" src="${esc(res(it.icon))}" alt="" onerror="this.style.visibility='hidden'">
 			<div style="min-width:0"><h3>${hl(tr(it.name))}</h3>
 				<div class="row small" style="margin-top:2px"><span class="tag" style="${RARITY_STYLE[it.rarity] || ""}">${esc(rarityName(it.rarity))}</span><code>${esc(id)}</code>${it.once_per_run ? ` <span class="tag">${ui("oncePerRun")}</span>` : ""}</div>
 				<p style="margin:8px 0 0">${hl(tr(it.description, { value: value(it) }))}</p>
