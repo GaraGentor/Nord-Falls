@@ -13,6 +13,9 @@ extends Node
 ## - dodges / on_damage_dealt: Nebelmaschine, Heilmösch, Fate-Spiegel, Magische Dornen
 ## - on_round_started: Glutboden
 ## - order_for_round: Flinkes Wiesel
+## - buddy_due / make_buddy / buddy_gone: Buddy (battle.gd _spawn_buddy)
+##
+## Endboss-Relikte ("final": true) kommen nur im Endboss-Kampf (random_final_relics), nie in anderen Boss-Kämpfen.
 
 const GemField = preload("res://script/scenes/gems/gems.gd")
 
@@ -31,6 +34,12 @@ const THORNS_SHARE := 0.15
 
 ## So viele zufällige Relikte hat jeder Boss-Kampf, egal wie viele Bosse
 const RELICS_PER_BATTLE := 1
+## So viele Endboss-Relikte hat der Endboss-Kampf (aus dem Endboss-Pool, random_final_relics)
+const FINAL_RELICS_PER_BATTLE := 1
+## Buddy: alle so viele Runden kommt ein Helfer, solange gerade keiner kämpft
+const BUDDY_INTERVAL := 3
+## Buddy: Stufe des Helfers (zufällig dazwischen), immer 1 Aktion, nicht fangbar
+const BUDDY_LEVEL := Vector2i(10, 15)
 ## Wie oft eine Seltenheit als Boss auftaucht, relativ zueinander (roll_species). Im Vergleich zu einem normalen Feld
 ## (Map.RARITY_SPAWN_WEIGHTS, 12:6:3:2:1) sind seltenere Arten als Boss deutlich wahrscheinlicher.
 ## Noch nicht freigeschaltete Seltenheiten (Map.RARITY_UNLOCKS) und solche ohne Arten fallen weg.
@@ -87,6 +96,15 @@ var RELICS := {
 		"description": "BOSS_RELIC_SWIFT_WEASEL_DESC",
 		"icon": "res://assets/boss_relics/swift_weasel.png",
 		"value": 0,
+		"final": true,
+	},
+	# Platzhalter-Bild, bis es ein eigenes für den Buddy gibt
+	"buddy": {
+		"name": "BOSS_RELIC_BUDDY",
+		"description": "BOSS_RELIC_BUDDY_DESC",
+		"icon": "res://assets/boss_relics/bongos.png",
+		"value": BUDDY_INTERVAL,
+		"final": true,
 	},
 	"microphone": {
 		"name": "BOSS_RELIC_MICROPHONE",
@@ -107,7 +125,19 @@ func get_relic(id: String) -> Dictionary:
 
 func description(id: String) -> String:
 	var relic := get_relic(id)
-	return tr(relic.description).format({"value": relic.value})
+	return tr(relic.description).format({"value": relic.value, "min": BUDDY_LEVEL.x, "max": BUDDY_LEVEL.y})
+
+## Endboss-Relikt? Die kommen nur im Endboss-Kampf vor.
+func is_final(id: String) -> bool:
+	return get_relic(id).get("final", false)
+
+## IDs der normalen Boss-Relikte (Boss-Felder, Biom-Bosse)
+func normal_ids() -> Array:
+	return RELICS.keys().filter(func(id): return not is_final(id))
+
+## IDs der Endboss-Relikte
+func final_ids() -> Array:
+	return RELICS.keys().filter(is_final)
 
 # ─────────────────────────
 # Relikte des laufenden Kampfs
@@ -118,6 +148,8 @@ var active: Array = []
 var current_round := 0
 ## Bannsiegel (One-Way-Item): bis einschließlich dieser Runde wirken die Relikte nicht
 var banned_until_round := 0
+## Buddy: Runde, seit der kein Helfer mehr kämpft (Kampfbeginn = 0, sonst die Runde, in der er fiel)
+var buddy_free_since := 0
 
 ## Wirkt das Relikt gerade? Aktiv und nicht gebannt.
 func works(id: String) -> bool:
@@ -171,15 +203,27 @@ func roll_mythic(depth: int) -> bool:
 	return Map.is_rarity_unlocked(Enums.MON_RARITY.MYTHIC, depth) \
 		and randf() < MYTHIC_BOSS_CHANCE[clampi(depth, 0, MYTHIC_BOSS_CHANCE.size() - 1)]
 
-## Zufällige Relikte für einen Boss-Kampf. Jedes Relikt kommt pro Run nur einmal zum Einsatz: schon zerbrochene
-## (State.used_boss_relics) und die in exclude (z. B. schon an andere Kämpfe des Bioms vergeben) fallen weg.
-## Sind keine mehr übrig, kämpft der Boss ohne Relikt.
+## Zufällige Relikte für einen Boss-Kampf, damit kein Boss-Kampf ohne Relikt bleibt. Bevorzugt kommen Relikte, die im
+## Biom noch nicht zerbrochen (State.used_boss_relics) und nicht in exclude (schon an andere Kämpfe des Bioms vergeben)
+## sind. Reichen die nicht, dürfen sich Relikte im Biom wiederholen (z. B. auf verschiedenen Pfaden).
+## Mit einem neuen Biom ist wieder jedes Relikt frei (Map.generate_encounters).
+## Endboss-Relikte kommen hier nie vor (random_final_relics).
 func random_relics(count := RELICS_PER_BATTLE, exclude: Array = []) -> Array:
-	var ids = RELICS.keys().filter(func(id): return not State.used_boss_relics.has(id) and not exclude.has(id))
-	ids.shuffle()
-	return ids.slice(0, count)
+	var pool := normal_ids()
+	var fresh = pool.filter(func(id): return not State.used_boss_relics.has(id) and not exclude.has(id))
+	var repeats = pool.filter(func(id): return not fresh.has(id))
+	fresh.shuffle()
+	repeats.shuffle()
+	return (fresh + repeats).slice(0, count)
 
-## Die Relikte haben ihren Kampf hinter sich (zerbrochen oder liegen gelassen) und kommen in diesem Run nicht wieder
+## Zufällige Relikte aus dem Endboss-Pool für den Endboss-Kampf (Map.generate_encounters im letzten Biom)
+func random_final_relics(count := FINAL_RELICS_PER_BATTLE) -> Array:
+	var pool := final_ids()
+	pool.shuffle()
+	return pool.slice(0, count)
+
+## Die Relikte haben ihren Kampf hinter sich (zerbrochen oder liegen gelassen) und kommen in diesem Biom nur noch,
+## wenn keine anderen mehr frei sind
 func mark_used(ids: Array) -> void:
 	for id in ids:
 		if not State.used_boss_relics.has(id):
@@ -268,6 +312,28 @@ func order_for_round(order: Array, round_number: int) -> Array:
 		else:
 			order.push_back(mon)
 	return order
+
+## Buddy: kommt in dieser Runde ein neuer Helfer? Alle BUDDY_INTERVAL Runden, solange gerade keiner kämpft.
+func buddy_due(round_number: int) -> bool:
+	if not works("buddy"):
+		return false
+	if State.enemy_mons.any(func(m: Monster): return m._minion and m.is_alive()):
+		return false
+	return round_number - buddy_free_since >= BUDDY_INTERVAL
+
+## Der Helfer fiel: ab dieser Runde läuft die Wartezeit bis zum nächsten
+func buddy_gone(round_number: int) -> void:
+	buddy_free_since = round_number
+
+## Ein Helfer: wildes Monster des Bioms auf niedriger Stufe (BUDDY_LEVEL), immer 1 Aktion, nicht fangbar
+func make_buddy() -> Monster:
+	var buddy: Monster = Helper.generate_mons({"count": 1})[0]
+	buddy._level = randi_range(BUDDY_LEVEL.x, BUDDY_LEVEL.y)
+	buddy._initial_moves = 1
+	buddy._minion = true
+	buddy._bounty = ""
+	buddy.reset_battle_state()
+	return buddy
 
 func heal(mon: Monster, amount: float) -> void:
 	var healed := minf(roundf(amount), mon._lost_hp)

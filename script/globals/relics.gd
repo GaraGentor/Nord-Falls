@@ -15,6 +15,7 @@ extends Node
 ## - "first_round_order": Zugreihenfolge der ersten Kampfrunde (Array von Monstern), kontext = null
 ## - "level_up_levels": Stufen, die ein Level-Up bringt, kontext = Monster
 ## - "trophy_bonus": Extra-Punkte pro Trophäe, auch für schon gesammelte, kontext = null
+## - "element_multiplier": Element-Faktor eines magischen Treffers, kontext = Element-Wertung (Skills.element_score)
 ##
 ## Einmalige Effekte beim Einsammeln stehen unter "on_add" (siehe add_relic).
 ##
@@ -23,13 +24,20 @@ extends Node
 
 signal relics_changed
 
-## Relics gibt es als Boss-Belohnung und im Shop
+## Relics gibt es als Boss-Belohnung und im Shop. Relikt-Kisten: Boss-Felder (Mini-Bosse) bieten nur gewöhnliche,
+## Biom-Bosse nur seltene an (chest_offers). Im Void wird nur gegen gleiche Seltenheit getauscht.
 enum Rarity { COMMON, RARE }
 
 const KEY_FINDER_FACTOR := 1.5
 const LEVEL_UP_LEVELS := 2
 const TROPHY_EXTRA_BONUS := 2
 const KEY_RING_KEYS := 2
+## Schatzjäger: Chance auf Couvert bzw. Trophäe in einer Schatzkiste, wie die auf einen Schlüssel (battle.gd KEY_LOOT_CHANCE)
+const TREASURE_HUNTER_CHANCE := 0.15
+## Finder: so viele zufällige One-Way-Items beim Einsammeln
+const FINDER_ITEMS := 3
+## Brutaler Schlag: so viel mehr Element-Faktor bei starken, so viel weniger bei schwachen magischen Treffern
+const BRUTAL_STRIKE_SHIFT := 0.5
 
 # var statt const: Lambdas sind keine konstanten Ausdrücke
 var RELICS := {
@@ -117,7 +125,7 @@ var RELICS := {
 		"name": "RELIC_DOUBLE_LEVEL",
 		"description": "RELIC_DOUBLE_LEVEL_DESC",
 		"icon": "res://assets/ui/icons/arrow_go.svg",
-		"rarity": Rarity.RARE,
+		"rarity": Rarity.COMMON,
 		"hooks": {
 			"level_up_levels": func(_value: int, _mon: Monster) -> int: return LEVEL_UP_LEVELS,
 		},
@@ -143,16 +151,50 @@ var RELICS := {
 		"name": "RELIC_ENDLESS_FIRE",
 		"description": "RELIC_ENDLESS_FIRE_DESC",
 		"icon": "res://assets/ui/icons/heart.svg",
-		"rarity": Rarity.COMMON,
+		"rarity": Rarity.RARE,
 	},
-	# Erlaubt auf der Karte jede Lane der nächsten Reihe (world_map.gd)
+	# Erlaubt auf der Karte jede Lane der nächsten Reihe (world_map.gd). Nur über die Einstellungen (GameSettings.flying_carpet)
 	"flying_carpet": {
 		"name": "RELIC_FLYING_CARPET",
 		"description": "RELIC_FLYING_CARPET_DESC",
 		"icon": "res://assets/ui/icons/parchment.svg",
 		"rarity": Rarity.RARE,
 	},
+	# Schatzkisten können zusätzlich ein Fähigkeiten-Couvert und eine Trophäe enthalten (treasure.gd)
+	"treasure_hunter": {
+		"name": "RELIC_TREASURE_HUNTER",
+		"description": "RELIC_TREASURE_HUNTER_DESC",
+		"icon": "res://assets/ui/icons/key.svg",
+		"rarity": Rarity.COMMON,
+	},
+	"finder": {
+		"name": "RELIC_FINDER",
+		"description": "RELIC_FINDER_DESC",
+		"icon": "res://assets/ui/icons/bag.svg",
+		"rarity": Rarity.COMMON,
+		"on_add": func() -> void:
+			for i in FINDER_ITEMS:
+				Items.add_to_bag(Items.roll_item()),
+	},
+	# gilt für alle Monster, eigene und gegnerische (Skills.skill_element_multiplier)
+	"brutal_strike": {
+		"name": "RELIC_BRUTAL_STRIKE",
+		"description": "RELIC_BRUTAL_STRIKE_DESC",
+		"icon": "res://assets/ui/icons/fist.svg",
+		"rarity": Rarity.RARE,
+		"hooks": {
+			"element_multiplier": func(value: float, score: int) -> float: return _brutal_strike(value, score),
+		},
+	},
 }
+
+## Brutaler Schlag: starke magische Treffer +0.5, schwache -0.5 (bei x0.5 also gar kein Schaden mehr)
+func _brutal_strike(value: float, score: int) -> float:
+	if score > 0:
+		return value + BRUTAL_STRIKE_SHIFT
+	if score < 0:
+		return maxf(value - BRUTAL_STRIKE_SHIFT, 0.0)
+	return value
 
 ## Das langsamste eigene Monster rückt ganz nach vorn. order ist schon nach Initiative sortiert.
 func _slowest_own_first(order: Array) -> Array:
@@ -180,6 +222,8 @@ func settings_relics() -> Array[String]:
 		ids.append_array(EASY_MODE_RELICS)
 	if GameSettings.show_enemy_hp:
 		ids.append(ENEMY_HP_RELIC)
+	if GameSettings.flying_carpet:
+		ids.append(CARPET_RELIC)
 	return ids
 
 ## Alle Relikte, die gerade gelten: die gesammelten und die aus den Einstellungen
@@ -201,14 +245,27 @@ const SHOP_RELICS := ["spyglass", "super_catcher", "all_stats", "all_skills", "e
 const EASY_MODE_RELICS := ["all_stats", "all_skills"]
 ## Mit GameSettings.show_enemy_hp gilt dieses Relikt in jedem Run als gesammelt
 const ENEMY_HP_RELIC := "enemy_hp"
+## Mit GameSettings.flying_carpet gilt dieses Relikt in jedem Run als gesammelt
+const CARPET_RELIC := "flying_carpet"
+## Diese Relikte gibt es nur über die Einstellungen, sie werden nirgends angeboten (zu stark für normale Runs)
+const SETTINGS_ONLY_RELICS := [CARPET_RELIC]
 
 ## Was der Shop anbieten kann: nur SHOP_RELICS, aktiv und noch nicht gesammelt
 func shop_offers() -> Array:
 	return get_unowned().filter(func(id): return SHOP_RELICS.has(id))
 
-## Was eine Relikt-Kiste anbieten kann: alles außer SHOP_RELICS
-func chest_offers() -> Array:
-	return get_unowned().filter(func(id): return not SHOP_RELICS.has(id))
+## Was eine Relikt-Kiste anbieten kann: alles außer SHOP_RELICS, optional nur einer Seltenheit.
+## Ist von der Seltenheit nichts mehr übrig, kommt die andere dran, damit die Kiste nicht leer bleibt.
+func chest_offers(rarity: int = -1) -> Array:
+	var all := get_unowned().filter(func(id): return not SHOP_RELICS.has(id))
+	if rarity < 0:
+		return all
+	var matching := all.filter(func(id): return RELICS[id].rarity == rarity)
+	return matching if not matching.is_empty() else all
+
+## Seltenheit der Relikt-Kiste nach einem Boss-Sieg: Biom-Bosse seltene, Boss-Felder gewöhnliche
+func chest_rarity(biome_boss: bool) -> int:
+	return Rarity.RARE if biome_boss else Rarity.COMMON
 
 ## Gesammelt und nicht im Debug-Menü ausgeschaltet
 func works(id: String) -> bool:
@@ -218,9 +275,10 @@ func set_active(id: String, active: bool) -> void:
 	DebugSettings.set_relic_disabled(id, not active)
 	relics_changed.emit()
 
-## Aktive Relics, die in diesem Run noch nicht gesammelt wurden, optional nur einer Seltenheit
+## Aktive Relics, die in diesem Run noch nicht gesammelt wurden, optional nur einer Seltenheit.
+## Relikte aus SETTINGS_ONLY_RELICS fehlen immer, es gibt sie nur über die Einstellungen.
 func get_unowned(rarity: int = -1) -> Array:
-	return RELICS.keys().filter(func(id): return is_active(id) and not has_relic(id) and (rarity < 0 or RELICS[id].rarity == rarity))
+	return RELICS.keys().filter(func(id): return is_active(id) and not has_relic(id) and not SETTINGS_ONLY_RELICS.has(id) and (rarity < 0 or RELICS[id].rarity == rarity))
 
 ## Wogegen sich ein gesammeltes Relic im Void tauschen lässt: gleiche Seltenheit, noch nicht gesammelt
 func swap_offers(id: String) -> Array:

@@ -667,7 +667,7 @@ func show_pending_rewards() -> void:
 func _next_pending_reward() -> Control:
 	if State.pending_relic_reward:
 		State.pending_relic_reward = false
-		if not Relics.chest_offers().is_empty():
+		if not Relics.chest_offers(State.relic_chest_rarity).is_empty():
 			return RELIC_REWARD_SCENE.instantiate()
 	if State.pending_skill_reward:
 		State.pending_skill_reward = false

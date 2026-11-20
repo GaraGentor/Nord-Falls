@@ -91,8 +91,14 @@ const ItemPostitsScript := preload("res://script/scenes/battle/item_postits.gd")
 func _enter_tree() -> void:
 	if Tutorial.practice:
 		_generate_practice()
+		return
+	# Kampf wiederholen (BattleRetry): Gegner und Zustand sind schon wiederhergestellt, nichts neu würfeln
+	var replay = BattleRetry.take_replay()
+	if replay != null:
+		is_boss_battle = replay
 	else:
 		_generate_battle()
+	BattleRetry.capture(is_boss_battle)
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -106,6 +112,7 @@ func _ready() -> void:
 		mon.reset_battle_state()
 	BossRelics.current_round = 0
 	BossRelics.banned_until_round = 0
+	BossRelics.buddy_free_since = 0
 	# Schaden verbraucht zuerst den Schild, der am frühesten abläuft
 	Monster.shield_expiry = _shield_expiry
 	Events.use_item.connect(_on_use_item)
@@ -134,6 +141,11 @@ func _ready() -> void:
 	var controls := BattleControls.new()
 	$GameWindow.add_child(controls)
 	controls.auto_end_toggled.connect(func(_enabled): _try_auto_end())
+	# Kampf-Cheats aus dem Debug-Menü links neben den Knöpfen, nicht im Übungskampf
+	if BattleDebugButtons.wanted() and not Tutorial.practice:
+		var debug_buttons := BattleDebugButtons.new()
+		$GameWindow.add_child(debug_buttons)
+		debug_buttons.win_pressed.connect(_debug_win)
 	_relic_bar.pressed.connect(func(): _relic_overlay.play_intro(BossRelics.active, false))
 	_item_postits = ItemPostitsScript.new($GameWindow)
 	_item_postits.can_use = func(mon: Monster) -> bool:
@@ -177,6 +189,26 @@ func _on_round_started(round_number: int) -> void:
 		for mon: Monster in State.mons + State.enemy_mons:
 			mon.expire_start_shields()
 	BossRelics.on_round_started()
+	# vor dem Aufbau des Rads: der neue Helfer ist in dieser Runde schon dabei
+	if BossRelics.buddy_due(round_number):
+		_spawn_buddy()
+
+## Endboss-Relikt Buddy: ein Helfer betritt den ersten freien Gegner-Platz (leer, gefallen oder gefangen).
+## Sind alle Plätze besetzt, kommt er erst, wenn einer frei wird.
+func _spawn_buddy() -> void:
+	var enemy_scenes := _monster_scenes().filter(func(scene): return not scene.home_mons)
+	var free_scenes := enemy_scenes.filter(func(scene):
+		return scene.mon == null or not scene.mon.is_alive() or not State.enemy_mons.has(scene.mon))
+	if free_scenes.is_empty():
+		return
+	var buddy := BossRelics.make_buddy()
+	State.enemy_mons.append(buddy)
+	free_scenes[0].show_mon(buddy)
+	battle_info.add_mon_card(buddy)
+	_plan_intent(buddy)
+	Events.intents_changed.emit()
+	Events.monster_effect_text.emit(buddy, tr(BossRelics.get_relic("buddy").name), BossRelics.RELIC_COLOR)
+	_relic_bar.refresh()
 
 ## Wie viele Zugwechsel, bis ein Schild von source auf holder abläuft (Monster.shield_expiry)
 func _shield_expiry(source: Monster, holder: Monster) -> int:
@@ -660,6 +692,8 @@ func _check_game_over(last_fainted:Monster) -> void:
 			return not mon.is_alive()
 			))
 	print("who ded?", str(is_enemy), State.enemy_mons.size(), ":", last_fainted._name)
+	if is_enemy and last_fainted._minion:
+		BossRelics.buddy_gone(turn_wheel.round_number)
 	if is_enemy:
 		State.killed_monsters += 1
 		State.run_kills += 1
@@ -719,10 +753,20 @@ func _check_game_over(last_fainted:Monster) -> void:
 			return
 		get_tree().change_scene_to_file("res://script/scenes/world_map/world_map.tscn")
 
+## Sofortsieg (Debug-Menü): alle Gegner fallen, danach geht es weiter wie nach einem normalen Sieg (_check_game_over).
+## Ohne letzten Treffer eines eigenen Monsters gibt es dabei keine Kopfgelder und keine Meilensteine.
+func _debug_win() -> void:
+	if _battle_over:
+		return
+	for mon: Monster in State.enemy_mons.duplicate():
+		if mon.is_alive():
+			mon._last_hit_by = null
+			mon._lost_hp = mon.hp()
+
 ## Der letzte Gegner ist weg: die Relikte des Kampfs zerbrechen, forgotten = Fang mit vollen KP (sie bleiben liegen)
 func _break_relics(forgotten: bool) -> void:
 	var relics := BossRelics.take_active()
-	# einmal zerbrochen, kommen sie in diesem Run nicht wieder
+	# einmal zerbrochen, kommen sie in diesem Biom nur noch, wenn keine anderen frei sind
 	BossRelics.mark_used(relics)
 	_relic_bar.refresh()
 	await _relic_overlay.play_break(relics, forgotten)
@@ -746,12 +790,14 @@ func _roll_kill_loot() -> void:
 
 ## Mini-Boss und Biom-Boss lassen bei jedem Sieg Kiste und Couvert fallen, auch wenn sie gefangen wurden.
 ## Biom-Bosse lassen zusätzlich Boss Tränen fallen, der finale Boss nur diese. Das Ei lost der Level-Up-Bildschirm.
+## In der Kiste: beim Biom-Boss seltene Relikte, beim Boss-Feld gewöhnliche (Relics.chest_rarity).
 func _add_boss_loot() -> void:
 	if State.is_boss_fight:
 		State.pending_boss_shards = FINAL_BOSS_SHARDS if State.is_final_boss else BIOME_BOSS_SHARDS
 	if not is_boss_battle or State.is_final_boss:
 		return
-	State.pending_relic_chest = not Relics.chest_offers().is_empty()
+	State.relic_chest_rarity = Relics.chest_rarity(State.is_boss_fight)
+	State.pending_relic_chest = not Relics.chest_offers(State.relic_chest_rarity).is_empty()
 	State.pending_skill_envelope = not Skills.reward_offers().is_empty()
 
 func _clear_fainted_mons() -> Array:
@@ -1120,5 +1166,6 @@ func _on_catch_pressed() -> void:
 	print(currently_selected_enemy_mon)
 	print(State.enemy_mons)
 	var already_catched = State.catched_mons.find(currently_selected_enemy_mon)
-	if currently_selected_enemy_mon and currently_selected_enemy_mon.is_alive() and already_catched == -1:
+	if currently_selected_enemy_mon and currently_selected_enemy_mon.is_alive() and already_catched == -1 \
+			and not currently_selected_enemy_mon._minion:
 		catch_anim._catch_animation(currently_selected_enemy_mon)

@@ -5,7 +5,7 @@ extends InfoDialog
 ## Gesehene Arten (SaveManager "seen_monsters" oder spielbar) mit Bild und Namen, die anderen als schwarze Silhouette.
 ## Jede zeigt ihre Seltenheit und ab welchem Biom sie häufig auftaucht (Map.usual_depth).
 ## Besessene Arten (Start-Monster, gefangen) haben ein abgedunkeltes Ei im Hintergrund der Kachel.
-## Klick auf eine gesehene Art zeigt alle ihre Ei-Attacken, freigeschaltete und gesperrte (SpeciesSkillsDialog).
+## Klick auf eine besessene Art zeigt alle ihre Ei-Attacken, freigeschaltete und gesperrte (SpeciesSkillsDialog).
 
 const LIST_SIZE := Vector2(700, 470)
 const COLUMNS := 4
@@ -49,9 +49,10 @@ func _build(content: VBoxContainer) -> void:
 	for meta: Dictionary in species:
 		var entry := _entry(meta, seen.has(meta.name), owned.has(meta.name))
 		grid.add_child(entry)
-		if seen.has(meta.name):
+		# die Ei-Attacken gibt es nur bei Arten, die man besitzt
+		if owned.has(meta.name):
 			clickable[entry] = meta.name
-	# nur der ScrollContainer selbst nimmt Mausrad und Ziehen an, gesehene Arten zusätzlich einen Klick
+	# nur der ScrollContainer selbst nimmt Mausrad und Ziehen an, besessene Arten zusätzlich einen Klick
 	RewardDialog.ignore_mouse_below(grid)
 	for entry in clickable:
 		_make_clickable(entry, clickable[entry])
@@ -133,23 +134,28 @@ func _requirement_text(rarity: int) -> String:
 		return ""
 	return tr("COLLECTION_REQUIRES").format({"list": ", ".join(missing)})
 
-## Klick (ohne Wischen) auf eine gesehene Art öffnet ihre Ei-Attacken (SpeciesSkillsDialog)
+## Klick (ohne Wischen) auf eine besessene Art öffnet ihre Ei-Attacken (SpeciesSkillsDialog)
 func _make_clickable(panel: Control, mon_name: String) -> void:
-	panel.mouse_filter = MOUSE_FILTER_PASS
 	panel.mouse_default_cursor_shape = CURSOR_POINTING_HAND
 	panel.tooltip_text = tr("COLLECTION_SKILLS_OPEN")
+	on_click(panel, func(): InfoDialog.present(self, SpeciesSkillsDialog.new(mon_name)))
+
+## Klick ohne Wischen auf control (Wischen scrollt weiter die Liste darunter)
+static func on_click(control: Control, action: Callable) -> void:
+	control.mouse_filter = MOUSE_FILTER_PASS
 	var press := {"pos": Vector2.INF}
-	panel.gui_input.connect(func(event: InputEvent):
+	control.gui_input.connect(func(event: InputEvent):
 		if not (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT):
 			return
 		if event.pressed:
 			press.pos = event.global_position
 		elif press.pos != Vector2.INF and event.global_position.distance_to(press.pos) < CLICK_SLOP:
 			press.pos = Vector2.INF
-			InfoDialog.present(self, SpeciesSkillsDialog.new(mon_name)))
+			action.call())
 
 ## Alle Ei-Attacken einer Art: oben die freigeschalteten (darunter, woher sie kommen),
 ## darunter die gesperrten unter Ketten mit dem Hinweis, wie man sie freischaltet (wie im Konfigurator).
+## Klick auf eine gesperrte Karte nimmt Ketten und Hinweis weg, bis man woanders hinklickt (_reveal).
 class SpeciesSkillsDialog extends InfoDialog:
 	const LIST_SIZE := Vector2(760, 420)
 	const COLUMNS := 3
@@ -158,6 +164,9 @@ class SpeciesSkillsDialog extends InfoDialog:
 	const SOURCE_FONT_SIZE := 13
 
 	var _mon_name: String
+	var _locked_cards: Array[EggSkillCard] = []
+	## Gerade aufgedeckte gesperrte Karte (null = keine)
+	var _revealed: EggSkillCard
 
 	func _init(mon_name: String) -> void:
 		super()
@@ -215,9 +224,32 @@ class SpeciesSkillsDialog extends InfoDialog:
 				if skill.is_empty():
 					continue
 				var hint: Array = egg_skills.hints[skill_name]
-				_add_card(grid, EggSkillCard.create(skill, mon, hint[0], hint[1]), "")
+				var card := EggSkillCard.create(skill, mon, hint[0], hint[1])
+				_add_card(grid, card, "")
+				_locked_cards.append(card)
 		# nur die Scrollview nimmt Mausrad und Ziehen an, die Beschreibungen scrollen von selbst
 		RewardDialog.ignore_mouse_below(list)
+		# gesperrte Karten zusätzlich einen Klick: aufdecken
+		for card in _locked_cards:
+			card.mouse_default_cursor_shape = CURSOR_POINTING_HAND
+			CollectionDialog.on_click(card, _reveal.bind(card))
+
+	## Deckt die gesperrte Karte auf, eine vorher aufgedeckte geht wieder unter die Ketten
+	func _reveal(card: EggSkillCard) -> void:
+		if _revealed == card:
+			return
+		if _revealed != null:
+			_revealed.set_revealed(false)
+		_revealed = card
+		card.set_revealed(true)
+
+	## Klick neben die aufgedeckte Karte: Ketten und Hinweis kommen zurück
+	func _input(event: InputEvent) -> void:
+		if _revealed == null or not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
+			return
+		if not _revealed.get_global_rect().has_point(event.global_position):
+			_revealed.set_revealed(false)
+			_revealed = null
 
 	## Karten-Raster mit Platz für die Rand-Effekte der Karten
 	func _grid(list: VBoxContainer) -> GridContainer:

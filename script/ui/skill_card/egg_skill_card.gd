@@ -18,6 +18,17 @@ var _scroll: AutoScrollContainer
 var _paper: SkillCardPaper
 var _bottom_row: SkillCardFace.BottomRow
 var _name_label: Label
+## Gesperrte Karte: Inhalt (abgedunkelt) und Ketten mit Hinweis, set_revealed blendet die Ketten weg
+var _margin: MarginContainer
+var _lock: ChainOverlay
+## Plakette mit dem Freischalt-Hinweis (fährt beim Aufdecken nach oben raus)
+var _lock_text: Control
+var _reveal_tween: Tween
+
+## Aufdecken: Hinweis raus, dann die Ketten, die zweite etwas versetzt
+const REVEAL_TEXT_TIME := 0.22
+const REVEAL_CHAIN_TIME := 0.38
+const REVEAL_CHAIN_STAGGER := 0.07
 
 ## locked_label/locked_hint: gesperrte Attacke, Texte mittig auf den Ketten (leer = nicht gesperrt)
 static func create(skill: Dictionary, mon: Monster, locked_label := "", locked_hint := "") -> EggSkillCard:
@@ -42,6 +53,7 @@ func _build(skill: Dictionary, mon: Monster, locked_label: String, locked_hint: 
 	if locked:
 		margin.modulate = LOCKED_TINT
 	add_child(margin)
+	_margin = margin
 	var lines := VBoxContainer.new()
 	lines.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	lines.add_theme_constant_override("separation", 4)
@@ -101,10 +113,48 @@ func _build(skill: Dictionary, mon: Monster, locked_label: String, locked_hint: 
 
 	if locked:
 		_scroll.set_process(false)
-		add_child(_build_lock(locked_label, locked_hint))
+		_lock = _build_lock(locked_label, locked_hint)
+		add_child(_lock)
+
+func is_locked() -> bool:
+	return _lock != null
+
+## Gesperrte Karte aufdecken (Ketten und Hinweis weg, Karte in voller Farbe) oder wieder verschließen.
+## Die Sammlung deckt so eine angeklickte Ei-Attacke auf, bis man woanders hinklickt.
+func set_revealed(revealed: bool) -> void:
+	if _lock == null:
+		return
+	if _reveal_tween != null:
+		_reveal_tween.kill()
+	_scroll.set_process(revealed)
+	set_selected(revealed)
+	var tween := create_tween().set_parallel()
+	_reveal_tween = tween
+	var out_y := -size.y
+	if revealed:
+		# erst fährt der Hinweis nach oben raus, dann ziehen sich die Ketten nacheinander nach oben weg
+		tween.tween_property(_lock_text, "position:y", out_y, REVEAL_TEXT_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+		tween.tween_property(_lock_text, "modulate:a", 0.0, REVEAL_TEXT_TIME).set_delay(REVEAL_TEXT_TIME * 0.5)
+		tween.tween_property(_lock, "retract_right", 1.0, REVEAL_CHAIN_TIME).set_delay(REVEAL_TEXT_TIME * 0.6) \
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+		tween.tween_property(_lock, "retract_left", 1.0, REVEAL_CHAIN_TIME).set_delay(REVEAL_TEXT_TIME * 0.6 + REVEAL_CHAIN_STAGGER) \
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+		tween.tween_property(_margin, "modulate", Color.WHITE, REVEAL_CHAIN_TIME).set_delay(REVEAL_TEXT_TIME)
+		tween.tween_method(_paper.set_muted, 1.0, 0.0, REVEAL_CHAIN_TIME).set_delay(REVEAL_TEXT_TIME)
+	else:
+		# umgekehrt: die Ketten rasseln zurück (federn nach), danach fällt der Hinweis wieder von oben herein
+		tween.tween_property(_lock, "retract_left", 0.0, REVEAL_CHAIN_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tween.tween_property(_lock, "retract_right", 0.0, REVEAL_CHAIN_TIME).set_delay(REVEAL_CHAIN_STAGGER) \
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tween.tween_property(_margin, "modulate", LOCKED_TINT, REVEAL_CHAIN_TIME)
+		tween.tween_method(_paper.set_muted, 0.0, 1.0, REVEAL_CHAIN_TIME)
+		var text_delay := REVEAL_CHAIN_TIME * 0.6
+		tween.tween_property(_lock_text, "position:y", 0.0, REVEAL_TEXT_TIME * 1.4).from(out_y).set_delay(text_delay) \
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tween.tween_property(_lock_text, "modulate:a", 1.0, REVEAL_TEXT_TIME).set_delay(text_delay)
 
 ## Zwei gekreuzte Ketten über der Karte, mittig eine Plakette mit dem Freischalt-Hinweis
-func _build_lock(locked_label: String, locked_hint: String) -> Control:
+func _build_lock(locked_label: String, locked_hint: String) -> ChainOverlay:
 	var chains := ChainOverlay.new()
 	chains.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var center := MarginContainer.new()
@@ -113,6 +163,7 @@ func _build_lock(locked_label: String, locked_hint: String) -> Control:
 	for side in ["left", "right", "top", "bottom"]:
 		center.add_theme_constant_override("margin_" + side, 14)
 	chains.add_child(center)
+	_lock_text = center
 	var plate := PanelContainer.new()
 	plate.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -167,13 +218,28 @@ class ChainOverlay extends Control:
 	const LINK_STEP := 19.0
 	const SEGMENTS := 16
 
+	## 0 = Kette liegt über der Karte, 1 = ganz nach oben rechts bzw. oben links aus der Karte gezogen
+	var retract_right := 0.0:
+		set(value):
+			retract_right = value
+			queue_redraw()
+	var retract_left := 0.0:
+		set(value):
+			retract_left = value
+			queue_redraw()
+
 	func _ready() -> void:
 		clip_contents = true
 		resized.connect(queue_redraw)
 
 	func _draw() -> void:
-		_draw_chain(Vector2(size.x, 0), Vector2(0, size.y))
-		_draw_chain(Vector2.ZERO, size)
+		_draw_retracted(Vector2(size.x, 0), Vector2(0, size.y), retract_right)
+		_draw_retracted(Vector2.ZERO, size, retract_left)
+
+	## Die Kette rutscht entlang ihrer eigenen Richtung zu ihrem oberen Ende hinaus
+	func _draw_retracted(from: Vector2, to: Vector2, retract: float) -> void:
+		var shift := (from - to) * retract * 1.15
+		_draw_chain(from + shift, to + shift)
 
 	func _draw_chain(from: Vector2, to: Vector2) -> void:
 		var length := from.distance_to(to)

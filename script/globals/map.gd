@@ -395,6 +395,8 @@ func take_pending_relics() -> Array:
 	pending_relics = null
 	if planned != null:
 		return planned.duplicate()
+	if State.is_final_boss:
+		return BossRelics.random_final_relics()
 	return BossRelics.random_relics(BossRelics.RELICS_PER_BATTLE, _planned_relics())
 
 ## Alle Boss-Relikte, die im aktuellen Biom noch an einen Kampf vergeben sind
@@ -425,8 +427,11 @@ func roll_weighted(counts: Array, t: float) -> int:
 # Würfelt die Gegner aller Kampf- und Boss-Felder und des Biom-Bosses, dazu die Boss-Relikte der Boss-Kämpfe
 func generate_encounters(grid: Array) -> void:
 	boss_enemies = roll_boss_enemies(0, is_last_biome())
-	# jedes Relikt nur einmal pro Run: der Biom-Boss wählt zuerst, die Boss-Felder teilen sich den Rest
-	boss_relics = BossRelics.random_relics()
+	# neues Biom: auch die schon zerbrochenen Boss-Relikte dürfen wieder vorkommen
+	State.used_boss_relics = []
+	# der Biom-Boss wählt zuerst, die Boss-Felder bekommen bevorzugt andere, sonst Wiederholungen (BossRelics.random_relics).
+	# Der Endboss im letzten Biom zieht aus dem eigenen Endboss-Pool, die Boss-Felder dort haben dann freie Wahl.
+	boss_relics = BossRelics.random_final_relics() if is_last_biome() else BossRelics.random_relics()
 	var taken: Array = boss_relics.duplicate()
 	for column in grid:
 		for node in column:

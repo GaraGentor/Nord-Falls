@@ -82,15 +82,15 @@ const ITEMS := {
 		"rarity": Rarity.COMMON, "use": USE_AUTO, "value": RUNE_SHIELD},
 	"portable_shield": {"name": "ITEM_PORTABLE_SHIELD", "description": "ITEM_PORTABLE_SHIELD_DESC", "icon": "res://assets/ui/icons/battle/shield.svg",
 		"rarity": Rarity.COMMON, "use": USE_FIELD, "value": PORTABLE_SHIELD},
-	"scarecrow": {"name": "ITEM_SCARECROW", "description": "ITEM_SCARECROW_DESC", "icon": "res://assets/ui/icons/battle/debuff.svg",
-		"rarity": Rarity.COMMON, "use": USE_ENEMY},
+	"stench": {"name": "ITEM_STENCH", "description": "ITEM_STENCH_DESC", "icon": "res://assets/ui/icons/firework (1).svg",
+		"rarity": Rarity.COMMON, "use": USE_FIELD},
 	# ── selten ──
+	"scarecrow": {"name": "ITEM_SCARECROW", "description": "ITEM_SCARECROW_DESC", "icon": "res://assets/ui/icons/battle/debuff.svg",
+		"rarity": Rarity.RARE, "use": USE_ENEMY},
 	"hourglass": {"name": "ITEM_HOURGLASS", "description": "ITEM_HOURGLASS_DESC", "icon": "res://assets/ui/icons/clock.svg",
 		"rarity": Rarity.RARE, "use": USE_ALLY},
 	"wake_stone": {"name": "ITEM_WAKE_STONE", "description": "ITEM_WAKE_STONE_DESC", "icon": "res://assets/ui/icons/sparkle.svg",
 		"rarity": Rarity.RARE, "use": USE_ALLY},
-	"stench": {"name": "ITEM_STENCH", "description": "ITEM_STENCH_DESC", "icon": "res://assets/ui/icons/firework (1).svg",
-		"rarity": Rarity.RARE, "use": USE_FIELD},
 	"blood_stone": {"name": "ITEM_BLOOD_STONE", "description": "ITEM_BLOOD_STONE_DESC", "icon": "res://assets/ui/icons/stat_heart.svg",
 		"rarity": Rarity.RARE, "use": USE_ENEMY, "value": BLOOD_FACTOR},
 	"cuckoo_clock": {"name": "ITEM_CUCKOO_CLOCK", "description": "ITEM_CUCKOO_CLOCK_DESC", "icon": "res://assets/ui/icons/chevron-double-right.svg",
@@ -261,7 +261,7 @@ func battle_target_ok(item: Dictionary, target: Monster) -> bool:
 		USE_ENEMY:
 			# den finalen Boss kann man nicht fangen, also auch kein Netz werfen
 			return target != null and target.is_alive() and State.enemy_mons.has(target) \
-				and (item.id != "net" or not State.is_final_boss)
+				and (item.id != "net" or not (State.is_final_boss or target._minion))
 		USE_ALLY:
 			return target != null and target.is_alive() and State.mons.has(target)
 		USE_FIELD:

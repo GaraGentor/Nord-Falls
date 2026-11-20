@@ -482,6 +482,8 @@ RUN_END_WIN,Victory!,Sieg!
 RUN_END_LOSE,Defeat,Niederlage
 RUN_END_WIN_SUB,You made it all the way north. Thanks for playing!,Du hast es bis in den Norden geschafft. Danke fürs Spielen!
 RUN_END_LOSE_SUB,Your whole team has fallen.,Dein ganzes Team ist gefallen.
+RUN_END_RETRY,RETRY,WIEDERHOLEN
+RUN_END_RETRY_TOOLTIP,Restart the lost battle from the beginning,Den verlorenen Kampf von vorn beginnen
 RUN_END_DEPTH,Biome reached,Erreichtes Biom
 RUN_END_FIGHTS,Fights won,Gewonnene Kämpfe
 RUN_END_KILLS,Monsters defeated,Besiegte Monster
@@ -518,6 +520,12 @@ RELIC_ENDLESS_FIRE,Endless Fire,Endloses Feuer
 RELIC_ENDLESS_FIRE_DESC,"Free, unlimited healing at camp: throw this relic into the fire as often as you like.","Kostenlose, unbegrenzte Heilung im Lager: Wirf dieses Relikt so oft du willst ins Feuer."
 RELIC_FLYING_CARPET,Flying Carpet,Fliegender Teppich
 RELIC_FLYING_CARPET_DESC,"On the map you can move to any field in the next row, no matter which lane you are on.","Auf der Karte kannst du zu jedem Feld der nächsten Reihe, egal auf welcher Lane du bist."
+RELIC_TREASURE_HUNTER,Treasure Hunter,Schatzjäger
+RELIC_TREASURE_HUNTER_DESC,"Treasure chests can also hold a skill envelope and a trophy.","Schatzkisten können zusätzlich ein Fähigkeiten-Couvert und eine Trophäe enthalten."
+RELIC_FINDER,Finder,Finder
+RELIC_FINDER_DESC,"Gives you 3 random items when you pick it up.","Gibt dir beim Einsammeln 3 zufällige Items."
+RELIC_BRUTAL_STRIKE,Brutal Strike,Brutaler Schlag
+RELIC_BRUTAL_STRIKE_DESC,"For all monsters: strong magic element hits deal +0.5x damage, weak ones -0.5x (x0.5 becomes no damage at all).","Für alle Monster: starke magische Element-Treffer machen +0,5x Schaden, schwache -0,5x (aus x0,5 wird gar kein Schaden)."
 CAMP_FIRE_ASK_ENDLESS,"Throw the Endless Fire in as often as you like, it always comes back! {hp} HP for each monster per throw.","Wirf das Endlose Feuer hinein, so oft du willst, es kommt immer zurück! {hp} KP für jedes Monster pro Wurf."
 RELIC_REWARD_CHOOSE,Choose a relic,Wähle ein Relikt
 MAP_NODE_GEM,TROPHIES,TROPHÄEN
@@ -861,6 +869,8 @@ BOSS_RELIC_FOG_MACHINE,Fog Machine,Nebelmaschine
 BOSS_RELIC_FOG_MACHINE_DESC,Attacks against enemies have a {value}% chance to miss.,Angriffe auf Gegner verfehlen mit {value} % Wahrscheinlichkeit.
 BOSS_RELIC_SWIFT_WEASEL,Swift Weasel,Flinkes Wiesel
 BOSS_RELIC_SWIFT_WEASEL_DESC,"Enemies alternately act first and last: first in odd rounds, last in even rounds.","Gegner sind abwechselnd als Erste und als Letzte am Zug: in ungeraden Runden zuerst, in geraden zuletzt."
+BOSS_RELIC_BUDDY,Buddy,Buddy
+BOSS_RELIC_BUDDY_DESC,"Every {value} rounds a helper joins the enemies while none is fighting (level {min}-{max}, always 1 action, cannot be caught).","Alle {value} Runden kommt den Gegnern ein Helfer zu Hilfe, solange gerade keiner kämpft (Stufe {min}-{max}, immer 1 Aktion, nicht fangbar)."
 BOSS_RELIC_MICROPHONE,Microphone,Mikrofon
 BOSS_RELIC_MICROPHONE_DESC,"In odd rounds every turn is skipped. Instead, every monster heals {value}% of its missing HP.","In ungeraden Runden fallen alle Züge aus. Stattdessen heilt sich jedes Monster um {value} % seiner fehlenden KP."
 BOSS_RELIC_MAGIC_THORNS,Magic Thorns,Magische Dornen
@@ -871,6 +881,8 @@ BOSS_RELIC_START,Let's go!,Los geht's!
 BOSS_RELIC_CLOSE,Close,Schließen
 BATTLE_SPEED_TOOLTIP,"Battle speed (left click: faster, right click: slower)","Kampfgeschwindigkeit (Linksklick: schneller, Rechtsklick: langsamer)"
 BATTLE_AUTO_END_TOOLTIP,"Auto end turn: ends your turn as soon as no card can be played","Auto-Zugende: beendet deinen Zug, sobald keine Karte mehr spielbar ist"
+BATTLE_DEBUG_WIN_TOOLTIP,"Debug: win the battle instantly","Debug: Kampf sofort gewinnen"
+BATTLE_DEBUG_CATCH_TOOLTIP,"Debug: catch chance 100 % on/off","Debug: Fangchance 100 % an/aus"
 BOSS_RELIC_BROKEN,You beat the boss so hard that its relic broke!,"Du hast den Boss so hart verprügelt, dass das Relikt dabei zerbrochen ist!"
 BOSS_RELIC_BROKEN_MANY,You beat the boss so hard that its relics broke!,"Du hast den Boss so hart verprügelt, dass die Relikte dabei zerbrochen sind!"
 BOSS_RELIC_FORGOTTEN,The boss was so dumb it left its relic lying on the ground.,Der Boss hat das Relikt durch seine Dummheit auf dem Boden vergessen.
@@ -892,6 +904,10 @@ SETTINGS_EASY_MODE,Easy Mode,Easy Mode
 SETTINGS_EASY_MODE_HINT,"Every run starts with the All-Seeing Eye and the Battle Codex: all enemy stats and attacks are visible. They are then no longer offered in the shop.","Jeder Run beginnt mit dem Allsehenden Auge und dem Kampf-Kodex: alle Werte und Attacken der Gegner sind sichtbar. Im Shop werden sie dann nicht mehr angeboten."
 SETTINGS_ENEMY_HP,Show enemy HP,Gegner-HP anzeigen
 SETTINGS_ENEMY_HP_HINT,"Every run starts with the Stethoscope: the HP bars in battle show the exact HP of enemies too. It is then no longer offered in the shop.","Jeder Run beginnt mit dem Stethoskop: die HP-Balken im Kampf zeigen auch bei Gegnern die genauen HP. Im Shop wird es dann nicht mehr angeboten."
+SETTINGS_FLYING_CARPET,Flying Carpet,Fliegender Teppich
+SETTINGS_FLYING_CARPET_HINT,"Every run starts with the Flying Carpet: on the map you can move to any field in the next row. Without this setting it can no longer be found.","Jeder Run beginnt mit dem Fliegenden Teppich: auf der Karte kannst du zu jedem Feld der nächsten Reihe. Ohne diese Einstellung lässt er sich nicht mehr finden."
+SETTINGS_RETRY_BATTLE,Retry Battle,Kampf wiederholen
+SETTINGS_RETRY_BATTLE_HINT,"After a defeat, the end screen offers to restart the lost battle with the state from before it.","Nach einer Niederlage bietet der End-Screen an, den verlorenen Kampf mit dem Stand von davor neu zu starten."
 SETTINGS_TUTORIAL,Tutorial,Tutorial
 SETTINGS_TUTORIAL_TOGGLE,Show tutorial,Tutorial anzeigen
 SETTINGS_TUTORIAL_HINT,"When switched on, the trainer explains everything from the start, including a practice fight before the map.","Eingeschaltet erklärt dir der Trainer alles von Anfang an, auch in einem Übungskampf vor der Karte."

@@ -1,0 +1,39 @@
+Idee: Shop durch eine Flohmarkt-Kiste ersetzen (oder ergänzen)
+=============================================================
+
+Grundidee
+---------
+Statt eines aufgeräumten Shop-Regals steht dort eine große Wühlkiste. Man muss sich durchwühlen
+(Kram zur Seite ziehen), um an die eigentlichen Angebote zu kommen. Was man findet, kauft man mit Essenz.
+
+Vorteile
+--------
++ Mehr Entdeckungsgefühl: jeder Besuch fühlt sich wie ein kleiner Fund an, nicht wie eine Preisliste.
++ Passt zum bestehenden Drag-&-Drop-Gefühl (Beute in die Tasche ziehen, Schatzkiste, Level-Up-Schlachtfeld).
++ Raum für Zufall und Überraschungen: seltene Funde ganz unten, Ramsch obendrauf.
++ Kann Charakter bekommen (Händler-NPC kommentiert Funde, feilscht).
++ Löst das Problem, dass ein fester Shop schnell "durchgerechnet" wirkt.
+
+Nachteile
+---------
+- Mehr Klicks / Zeit pro Besuch, kann auf Dauer nerven (besonders auf dem Handy).
+- Weniger planbar: wer gezielt einen Trank eines Elements braucht, findet ihn evtl. nicht
+  (heute gibt es gezielte Element-Tränke nur im Shop, siehe treasure.gd).
+- Überschneidung mit der Schatzkiste (auch Kiste, auch Ziehen) – die Orte könnten sich zu ähnlich anfühlen.
+- Aufwand: neues Layout, Physik/Stapel-Logik für den Kram, Balancing der Fundraten.
+
+Design-Ideen
+------------
+* Schichten: oben Ramsch (wertlos, nur zum Wegziehen), darunter Items, ganz unten selten ein Relikt.
+* Wühl-Ausdauer: man darf nur X Gegenstände wegziehen (z. B. 6), dann ist der Händler genervt.
+  Ein Gutschein oder ein Relikt könnte mehr Wühlen erlauben.
+* Preis erst beim Aufdecken sichtbar, manche Funde sind "Schnäppchen" (rabattiert, goldener Rand).
+* Feilschen: Fund auf den Händler ziehen = einmal Preis neu würfeln (kann teurer werden).
+* Fester Teil bleibt: 1–2 feste Angebote (z. B. Element-Trank nach Wahl) liegen neben der Kiste,
+  damit gezieltes Einkaufen möglich bleibt.
+* Kompromiss-Variante: Shop bleibt, Flohmarkt ist ein eigener seltener Kartenort (wie Glücksrad/Void).
+
+Empfehlung
+----------
+Zuerst als eigener, seltener Kartenort testen (geringeres Risiko), den normalen Shop behalten.
+Wenn sich das Wühlen gut anfühlt, kann der Shop schrittweise Elemente davon übernehmen.

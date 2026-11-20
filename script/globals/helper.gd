@@ -37,6 +37,9 @@ const CATCH_LOW_HP_TIERS := [
 
 ## Fangchance 0..1: je weniger HP, desto leichter; höhere Stufe und Seltenheit machen es schwerer.
 func catch_chance(mon: Monster) -> float:
+	# Fang-Knopf im Kampf (Debug-Menü): jeder Fang klappt
+	if DebugSettings.catches_for_sure():
+		return 1.0
 	var rarity: int = Monmap.rarity_of(mon._name)
 	# Kopfgeld-Monster sind eine Seltenheitsstufe schwerer zu fangen (höchstens legendär, mythisch bleibt mythisch)
 	if mon._bounty != "" and rarity < Enums.MON_RARITY.LEGENDARY:
@@ -67,7 +70,7 @@ func _team_level() -> float:
 	return alive.reduce(func(sum, m: Monster): return sum + m._level, 0) / float(alive.size())
 
 func will_catch_mon(mon) -> bool:
-	return Tutorial.catches_for_sure(mon) or randf() < catch_chance(mon)
+	return Tutorial.catches_for_sure(mon) or DebugSettings.catches_for_sure() or randf() < catch_chance(mon)
 
 func generate_mons(props: Dictionary = {
 	"count": 1,

@@ -40,7 +40,7 @@ var defeated_mon_names: Array[String] = []
 var caught_mon_names: Array[String] = []
 # Im Kampf durch Treffer aufgedeckte Einzelwerte pro Art: name -> Array der Stat-Keys (siehe Skills.reveal_stats_by_hit)
 var revealed_mon_stats: Dictionary = {}
-# Boss-Relikte, die in diesem Run schon zerbrochen sind: sie kommen nicht noch einmal vor (BossRelics.random_relics)
+# Boss-Relikte, die in diesem Biom schon zerbrochen sind: sie kommen erst wieder, wenn keine anderen frei sind (BossRelics.random_relics)
 var used_boss_relics: Array = []
 
 var is_boss_fight: bool = false
@@ -49,6 +49,8 @@ var is_final_boss: bool = false
 var is_map_boss: bool = false
 # Beute in die Tasche gezogen: beim nächsten Betreten der Karte nacheinander abhandeln (world_map.gd show_pending_rewards)
 var pending_relic_reward: bool = false
+# Seltenheit der Relikt-Kiste (Relics.Rarity): Biom-Boss selten, Boss-Feld gewöhnlich, -1 = alle (Debug)
+var relic_chest_rarity: int = -1
 var pending_skill_reward: bool = false
 var pending_gem_rewards: int = 0
 # Element-Tränke aus einer Schatzkiste (Elemente), fallen nach der Kiste aus der Tasche (potion_reward.gd)
@@ -157,6 +159,7 @@ func _ready() -> void:
 	boss_shards = SaveManager.save_data["boss_shards"]
 
 func reset() -> void:
+	BattleRetry.clear()
 	ep = 0
 	keys = 0
 	coupons = 0
@@ -182,6 +185,7 @@ func reset() -> void:
 	is_final_boss = false
 	is_map_boss = false
 	pending_relic_reward = false
+	relic_chest_rarity = -1
 	pending_skill_reward = false
 	pending_gem_rewards = 0
 	pending_potions = []

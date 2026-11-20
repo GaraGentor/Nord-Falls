@@ -37,6 +37,15 @@ func _ready() -> void:
 		Monmap.show_on(texture_rect, mon._name, Monmap.SMALL, home_mons and not show_front)
 		printStuff()
 
+## Ein Monster betritt mitten im Kampf diesen Platz (Endboss-Relikt Buddy, battle.gd _spawn_buddy)
+func show_mon(new_mon: Monster) -> void:
+	mon = new_mon
+	visible = true
+	texture_rect.material = Monmap.MONSTER_MATERIAL
+	Monmap.show_on(texture_rect, mon._name, Monmap.SMALL, home_mons and not show_front)
+	_refresh_intent()
+	printStuff()
+
 func _deal_damage(_mon: Monster) -> void:
 	if mon == _mon:
 		printStuff()
@@ -209,7 +218,7 @@ func _on_status_changed(_mon: Monster) -> void:
 
 func _refresh_status() -> void:
 	_clear_box(status_box)
-	if not home_mons:
+	if not home_mons and not mon._minion:
 		var chance := "%d%%" % roundi(Helper.catch_chance(mon) * 100)
 		status_box.add_child(_icon_row([ICON_CATCH, chance], CATCH_COLOR, STATUS_FONT_SIZE))
 	if mon.shield() > 0:

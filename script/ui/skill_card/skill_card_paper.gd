@@ -212,6 +212,10 @@ func _sync_button() -> void:
 			glow = SELECTED_GLOW
 	set_glow(glow)
 
+## Papier abgedunkelt wie bei gesperrten Karten (attach muted, 1.0) oder normal (0.0), dazwischen für Übergänge
+func set_muted(amount: float) -> void:
+	_shader_material.set_shader_parameter("muted", amount)
+
 ## Rahmen golden leuchten lassen, 0 = normaler Rahmen
 func set_glow(glow: float) -> void:
 	_shader_material.set_shader_parameter("frame_glow", glow)

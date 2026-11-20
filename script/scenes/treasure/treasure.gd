@@ -58,6 +58,8 @@ func _ready() -> void:
 	for i in ITEM_ROLLS:
 		if randf() < POTION_CHANCE:
 			_add_item_card(Items.roll_item(false, Items.TREASURE_RARITY_WEIGHTS))
+	if Relics.works("treasure_hunter"):
+		_add_treasure_hunter_cards()
 	_build_buttons()
 	play_chest_intro()
 	_buttons.add_to_group("tut_treasure_buttons")
@@ -97,6 +99,14 @@ func _add_item_card(item: Dictionary) -> void:
 	var name_label: Label = card.info.get_child(0)
 	name_label.add_theme_color_override("font_color", Items.rarity_color(item))
 	card.tooltip_text = "%s\n%s" % [Items.description(item), Items.use_hint(item)]
+
+## Schatzjäger (Relikt): je ein eigener Wurf mit der Schlüssel-Chance auf ein Fähigkeiten-Couvert und eine Trophäe.
+## Beide werden wie nach einem Kampf beim nächsten Betreten der Karte abgehandelt (world_map.gd show_pending_rewards).
+func _add_treasure_hunter_cards() -> void:
+	if randf() < Relics.TREASURE_HUNTER_CHANCE and not Skills.reward_offers().is_empty():
+		add_bag_card(tr("SKILL_ENVELOPE_LOOT"), "", texture_icon(ENVELOPE_TEXTURE), func(): State.pending_skill_reward = true)
+	if randf() < Relics.TREASURE_HUNTER_CHANCE:
+		add_bag_card(tr("GEM_LOOT_AMOUNT").format({"amount": 1}), "", texture_icon(BAG_TEXTURE), func(): State.pending_gem_rewards += 1)
 
 func _on_gold_taken(gold: int) -> void:
 	State.ep += gold

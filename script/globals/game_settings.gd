@@ -19,6 +19,11 @@ var card_watermark := true
 var easy_mode := false
 ## Das Relikt Relics.ENEMY_HP_RELIC (genaue HP der Gegner) gilt in jedem Run als gesammelt, unabhängig vom Easy Mode
 var show_enemy_hp := false
+## Das Relikt Relics.CARPET_RELIC (jede Lane der nächsten Reihe) gilt in jedem Run als gesammelt. Es ist für normale
+## Runs zu stark und kommt deshalb nur noch über diese Einstellung ins Spiel (Relics.SETTINGS_ONLY_RELICS).
+var flying_carpet := false
+## Kampf wiederholen: nach einer Niederlage bietet der End-Screen an, den letzten Kampf neu zu starten (BattleRetry)
+var retry_battle := false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -69,6 +74,21 @@ func set_show_enemy_hp(on: bool) -> void:
 	changed.emit()
 	Relics.relics_changed.emit()
 
+func set_flying_carpet(on: bool) -> void:
+	if flying_carpet == on:
+		return
+	flying_carpet = on
+	_save()
+	changed.emit()
+	Relics.relics_changed.emit()
+
+func set_retry_battle(on: bool) -> void:
+	if retry_battle == on:
+		return
+	retry_battle = on
+	_save()
+	changed.emit()
+
 func toggle_fullscreen() -> void:
 	set_fullscreen(not fullscreen)
 
@@ -103,6 +123,8 @@ func _load() -> void:
 	card_watermark = config.get_value("display", "card_watermark", true)
 	easy_mode = config.get_value("gameplay", "easy_mode", false)
 	show_enemy_hp = config.get_value("gameplay", "show_enemy_hp", false)
+	flying_carpet = config.get_value("gameplay", "flying_carpet", false)
+	retry_battle = config.get_value("gameplay", "retry_battle", false)
 
 func _save() -> void:
 	var config := ConfigFile.new()
@@ -111,4 +133,6 @@ func _save() -> void:
 	config.set_value("display", "card_watermark", card_watermark)
 	config.set_value("gameplay", "easy_mode", easy_mode)
 	config.set_value("gameplay", "show_enemy_hp", show_enemy_hp)
+	config.set_value("gameplay", "flying_carpet", flying_carpet)
+	config.set_value("gameplay", "retry_battle", retry_battle)
 	config.save(PATH)

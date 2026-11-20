@@ -109,7 +109,10 @@ func damage_factor(from: Monster, to: Monster, skill: Dictionary) -> float:
 ## Schaden = (fester Schaden + scaling x Angriff) x factor (Element, Boni).
 ## Getrennt von calc_damage, damit das Debug-Menü Beispiele ohne echte Monster rechnen kann.
 ## Aufrunden, damit angezeigter und abgezogener Schaden gleich sind (jeder Treffer macht mind. 1).
+## Nur ein Faktor von 0 (Brutaler Schlag gegen ein starkes Element) macht gar keinen Schaden.
 func stat_damage(atk: float, value: float, scaling: float, factor: float) -> float:
+	if factor <= 0.0:
+		return 0.0
 	return maxf(ceilf((value + scaling * atk) * factor), 1.0)
 
 # ─────────────────────────
@@ -179,7 +182,9 @@ func element_multiplier(skill_nature: int, target_type: int) -> float:
 func skill_element_multiplier(skill: Dictionary, target_type: int) -> float:
 	if is_physical(skill):
 		return 1.0
-	return element_multiplier(skill.get("nature", 0), target_type)
+	var nature: int = skill.get("nature", 0)
+	# Brutaler Schlag (Relikt): starke Treffer noch stärker, schwache noch schwächer
+	return Relics.modify("element_multiplier", element_multiplier(nature, target_type), element_score(nature, target_type))
 
 # ─────────────────────────
 # Schilde halten, bis der Wirker wieder am Zug ist, oder bis sie aufgebraucht sind (siehe Monster.expire_from, Monster.absorb_damage).

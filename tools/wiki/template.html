@@ -216,7 +216,7 @@ const DATA = /*__WIKI_DATA__*/null;
 const UI = {
 	de: {
 		search: "Suchen…", monsters: "Monster", skills: "Skills", elements: "Elemente", gems: "Trophäen",
-		relics: "Relikte", unlocks: "Freischaltungen", map: "Karte", rarity: "Seltenheit", element: "Element",
+		relics: "Relikte", unlocks: "Meilensteine & Kopfgelder", map: "Karte", rarity: "Seltenheit", element: "Element",
 		bst: "Basiswerte (BST)", preferredStats: "Bevorzugte Werteverteilung", preferredHint: "Summe 100 %, schwankt pro Run um bis zu ±15 %", maxUpgrades: "Max. Upgrades", catchBase: "Grund-Fangchance",
 		defaultSkills: "Start-Ei-Attacken", unlockable: "Durch Fangen & Opfern", milestone: "Meilensteine", bounty: "Kopfgelder",
 		name: "Name", tier: "Stufe", power: "Stärke", type: "Art", cost: "Kosten", cd: "CD", shop: "Shop-Preis",
@@ -230,7 +230,7 @@ const UI = {
 		components: "Besteht aus", weight: "Spawn-Gewicht", noResults: "Keine Treffer.", warnings: "Warnungen beim Generieren",
 		strongVs: "stark gegen", maxSkills: "Max. Skills pro Monster", tierWeights: "Stufen-Gewichte (Spawn-Häufigkeit)",
 		onlyBase: "Nur Grund-Elemente", allCombos: "Alle Kombinationen", catchHint: "bei 0 HP und gleicher Stufe",
-		bossRelics: "Boss-Relikte", relicsPerBattle: "Relikte pro Boss-Kampf", bossRarity: "Seltenheit der Bosse (Gewicht, in Klammern normales Feld)", rarityUnlocks: "Freischaltung (wild und Boss)", fromBiome: "ab Biom", needs: "braucht", mythicBossChance: "Chance auf einen mythischen Boss pro Boss-Kampf",
+		bossRelics: "Boss-Relikte", relicsPerBattle: "Relikte pro Boss-Kampf", finalRelicsPerBattle: "Endboss-Relikte im Endboss-Kampf", finalRelic: "Endboss-Relikt", bossRarity: "Seltenheit der Bosse (Gewicht, in Klammern normales Feld)", rarityUnlocks: "Freischaltung (wild und Boss)", fromBiome: "ab Biom", needs: "braucht", mythicBossChance: "Chance auf einen mythischen Boss pro Boss-Kampf",
 		items: "Items", itemUse: "Einsatz", oncePerRun: "einmal pro Run", itemDrops: "Beute-Seltenheit (normal / Boss / Schatz)", maxDrops: "Höchstens Items pro Kampf", slotsPerMon: "Plätze pro Monster", shopItems: "Im Shop (nur gewöhnliche)", price: "Preis",
 		starter: "Start-Monster", onlyStarters: "Nur Start-Monster", noStarters: "Ohne Start-Monster", close: "Schließen",
 		clickHint: "Klick auf ein Monster zeigt alle Details.", weakTo: "Verwundbar gegen (Magie)", resists: "Resistent gegen (Magie)",
@@ -258,15 +258,15 @@ const UI = {
 			elements: "Element-Kreis und alle Kombinationen aus <code>ColorMap</code>. Jedes Skill-Element wird gegen jedes Ziel-Element verglichen; Kombi-Monster erben alle Schwächen und Resistenzen. Der Element-Faktor gilt nur für magische Angriffe, physische treffen immer neutral.",
 			gems: "Trophäen erhöhen einen Wert eines eigenen Monsters um feste Punkte für den restlichen Run.",
 			relics: "Relikte sind passive Run-Boni. Es gibt sie zur Auswahl in der Kiste nach Biom-Bossen und im Laden, unabhängig von ihrer Seltenheit.",
-			bossRelics: "Boss-Relikte aus <code>BossRelics.RELICS</code> gehören zum Boss-Kampf, nicht zu einem Boss: Jeder Boss-Kampf würfelt sie einmal, und sie stärken alle Gegner gleich. Ist der letzte Gegner besiegt oder gefangen, zerbrechen sie; ein gefangener Boss behält nur Werte, Fähigkeiten und Trophäen.",
+			bossRelics: "Boss-Relikte aus <code>BossRelics.RELICS</code> gehören zum Boss-Kampf, nicht zu einem Boss: Jeder Boss-Kampf würfelt sie einmal, und sie stärken alle Gegner gleich. Ist der letzte Gegner besiegt oder gefangen, zerbrechen sie; ein gefangener Boss behält nur Werte, Fähigkeiten und Trophäen. <b>Endboss-Relikte</b> (markiert) gibt es nur im Endboss-Kampf des letzten Bioms, dort zieht der Endboss eins aus ihrem eigenen Pool; in allen anderen Boss-Kämpfen kommen sie nie vor.",
 			items: "One-Way-Items aus <code>Items.ITEMS</code>: einmal im Kampf einsetzbar, nur im Zug des Monsters, das sie trägt, ohne eine Aktion zu kosten. Es gibt sie als Beute nach Kämpfen, in Schätzen und (gewöhnliche) im Shop.",
-			unlocks: "Meilenstein-Ei-Attacken (mit der Art als Start-Monster) und Kopfgeld-Ei-Attacken (letzter Treffer gegen ein Kopfgeld-Monster).",
+			unlocks: "Hier steht, wie man zusätzliche Ei-Attacken einer Art dauerhaft freischaltet (unabhängig von der Karte): <b>Meilensteine</b> erfüllt man mit der Art als Start-Monster (z. B. eine Anzahl K.O.s in einem Run), <b>Kopfgelder</b> mit dem letzten Treffer gegen ein Kopfgeld-Monster. Unter Belohnung steht, welche Art dafür welche Ei-Attacke bekommt.",
 			map: "Aufbau der Weltkarte pro Biom-Tiefe aus <code>Map.map_settings</code>. Zahlen in den Spalten sind die Zeilen, in denen das Feld fest liegt.",
 		},
 	},
 	en: {
 		search: "Search…", monsters: "Monsters", skills: "Skills", elements: "Elements", gems: "Trophies",
-		relics: "Relics", unlocks: "Unlocks", map: "Map", rarity: "Rarity", element: "Element",
+		relics: "Relics", unlocks: "Milestones & Bounties", map: "Map", rarity: "Rarity", element: "Element",
 		bst: "Base stats (BST)", preferredStats: "Preferred stat spread", preferredHint: "Sums to 100 %, varies by up to ±15 % per run", maxUpgrades: "Max upgrades", catchBase: "Base catch chance",
 		defaultSkills: "Starting egg moves", unlockable: "Catch & sacrifice", milestone: "Milestones", bounty: "Bounties",
 		name: "Name", tier: "Tier", power: "Power", type: "Type", cost: "Cost", cd: "CD", shop: "Shop price",
@@ -280,7 +280,7 @@ const UI = {
 		components: "Made of", weight: "Spawn weight", noResults: "No results.", warnings: "Warnings during generation",
 		strongVs: "strong against", maxSkills: "Max skills per monster", tierWeights: "Tier weights (spawn frequency)",
 		onlyBase: "Base elements only", allCombos: "All combinations", catchHint: "at 0 HP and same level",
-		bossRelics: "Boss relics", relicsPerBattle: "Relics per boss battle", bossRarity: "Boss rarity (weight, normal node in brackets)", rarityUnlocks: "Unlocks (wild and boss)", fromBiome: "from biome", needs: "needs", mythicBossChance: "Chance for one mythic boss per boss battle",
+		bossRelics: "Boss relics", relicsPerBattle: "Relics per boss battle", finalRelicsPerBattle: "Final boss relics in the final boss battle", finalRelic: "Final boss relic", bossRarity: "Boss rarity (weight, normal node in brackets)", rarityUnlocks: "Unlocks (wild and boss)", fromBiome: "from biome", needs: "needs", mythicBossChance: "Chance for one mythic boss per boss battle",
 		items: "Items", itemUse: "Use", oncePerRun: "once per run", itemDrops: "Loot rarity (normal / boss / treasure)", maxDrops: "Max items per battle", slotsPerMon: "Slots per monster", shopItems: "In the shop (common only)", price: "price",
 		starter: "Starter", onlyStarters: "Starters only", noStarters: "No starters", close: "Close",
 		clickHint: "Click a monster to see all details.", weakTo: "Weak to (magic)", resists: "Resists (magic)",
@@ -308,9 +308,9 @@ const UI = {
 			elements: "Element cycle and all combinations from <code>ColorMap</code>. Every skill element is compared with every target element; combined monsters inherit all weaknesses and resistances. The element multiplier only applies to magic attacks, physical ones always hit neutral.",
 			gems: "Trophies raise one stat of your own monster by fixed points for the rest of the run.",
 			relics: "Relics are passive run bonuses. You can pick them from the chest after biome bosses and buy them in the shop, regardless of rarity.",
-			bossRelics: "Boss relics from <code>BossRelics.RELICS</code> belong to the boss battle, not to a boss: each boss battle rolls them once and they empower all enemies alike. When the last enemy is defeated or caught they break; a caught boss keeps only its stats, skills and trophies.",
+			bossRelics: "Boss relics from <code>BossRelics.RELICS</code> belong to the boss battle, not to a boss: each boss battle rolls them once and they empower all enemies alike. When the last enemy is defeated or caught they break; a caught boss keeps only its stats, skills and trophies. <b>Final boss relics</b> (marked) only appear in the final boss battle of the last biome, where the final boss draws one from their own pool; they never show up in other boss battles.",
 			items: "One-way items from <code>Items.ITEMS</code>: usable once in battle, only on the turn of the monster carrying them, without costing an action. They drop after battles, lie in treasures and (common ones) are sold in the shop.",
-			unlocks: "Milestone egg moves (with the species as starter) and bounty egg moves (last hit against a bounty monster).",
+			unlocks: "How to permanently unlock extra egg moves of a species (unrelated to the map): <b>milestones</b> are met with the species as starter (e.g. a number of K.O.s in one run), <b>bounties</b> with the last hit against a bounty monster. Reward lists which species gets which egg move.",
 			map: "World map layout per biome depth from <code>Map.map_settings</code>. Numbers are the rows where that node is fixed.",
 		},
 	},
@@ -882,19 +882,25 @@ function renderRelics() {
 	return header("relics") + (cards.length ? `<div class="grid">${cards.join("")}${hooks}</div>` : `<div class="empty">${ui("noResults")}</div>`);
 }
 
+function relicVars(r) {
+	const lv = DATA.bossRelicSettings?.buddyLevel || [];
+	return { value: r.value, min: lv[0] ?? "?", max: lv[1] ?? "?" };
+}
+
 function renderBossRelics() {
 	const cards = Object.entries(DATA.bossRelics || {})
-		.filter(([id, r]) => matches(id, tr(r.name), tr(r.description, { value: r.value })))
+		.filter(([id, r]) => matches(id, tr(r.name), tr(r.description, relicVars(r))))
 		.map(([id, r]) => `<article class="card"><div class="row" style="align-items:flex-start">
 			<img class="icon" src="${esc(res(r.icon))}" alt="" onerror="this.style.visibility='hidden'">
 			<div style="min-width:0"><h3>${hl(tr(r.name))}</h3>
-				<div class="row small" style="margin-top:2px"><code>${esc(id)}</code></div>
-				<p style="margin:8px 0 0">${hl(tr(r.description, { value: r.value }))}</p>
+				<div class="row small" style="margin-top:2px">${r.final ? `<span class="tag" style="${RARITY_STYLE.LEGENDARY || ""}">${ui("finalRelic")}</span>` : ""}<code>${esc(id)}</code></div>
+				<p style="margin:8px 0 0">${hl(tr(r.description, relicVars(r)))}</p>
 			</div></div>
 		</article>`);
 	const s = DATA.bossRelicSettings || {};
 	const settings = `<div class="card wide"><dl class="kv">
 		<dt>${ui("relicsPerBattle")}</dt><dd>${s.perBattle ?? "?"}</dd>
+		<dt>${ui("finalRelicsPerBattle")}</dt><dd>${s.finalPerBattle ?? "?"}</dd>
 		<dt>${ui("bossRarity")}</dt><dd>${Object.entries(s.rarityWeights || {}).map(([r, w]) => `<span style="${RARITY_STYLE[r] || ""}">${esc(rarityName(r))}</span> ${fmtNum(w)} (${fmtNum(s.wildWeights?.[r] ?? 0)})`).join(" · ") || ui("none")}</dd>
 		<dt>${ui("rarityUnlocks")}</dt><dd>${Object.entries(s.unlocks || {}).map(([r, u]) => `<span style="${RARITY_STYLE[r] || ""}">${esc(rarityName(r))}</span>: ${ui("fromBiome")} ${u.depth + 1}, ${ui("needs")} ${Object.entries(u.owned || {}).map(([o, n]) => `${n}× ${esc(rarityName(o))}`).join(", ")}`).join("<br>") || ui("none")}</dd>
 		<dt>${ui("mythicBossChance")}</dt><dd>${(s.mythicChance || []).map((c, i) => `${ui("depth")} ${i + 1}: ${pct(c)}`).join(" · ") || ui("none")}</dd>

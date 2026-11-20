@@ -45,6 +45,13 @@ func build_mon_cards() -> void:
 			side[0].add_child(card)
 			card.setup(mon)
 
+## Karte für einen Gegner, der erst mitten im Kampf dazukommt (Endboss-Relikt Buddy)
+func add_mon_card(mon: Monster) -> void:
+	var card: BattleMonCard = MON_CARD.instantiate()
+	enemy_cards.add_child(card)
+	card.setup(mon)
+	_highlight_card()
+
 func _highlight_card() -> void:
 	if enemy_cards == null or own_cards == null:
 		return
@@ -249,7 +256,7 @@ func _build_skill_list() -> void:
 			icon.tooltip_text = tr("EGG_SKILL_HINT")
 		elif known:
 			icon.texture = Skills.kind_icon(skill)
-			icon.modulate = SkillCardPaper.kind_color(skill)
+			icon.modulate = Helper.color_by_type(skill.nature)
 		skill_grid.add_child(icon)
 
 		# unbekannte Skills verraten Element (Farbe) und Stufe, damit man gezielt Monster jagen kann

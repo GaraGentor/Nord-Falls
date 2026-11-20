@@ -18,6 +18,8 @@ var _upgrades: int = 0
 var _bounty: String = ""
 # Gegner aus einem Boss-Kampf (Biom-Boss oder Boss-Feld)
 var _is_boss: bool = false
+# Helfer des Endboss-Relikts Buddy: nur für einen Kampf, nicht fangbar, keine Beute
+var _minion: bool = false
 # Monster, das zuletzt Schaden verursacht hat (entscheidet, wer ein Kopfgeld bekommt)
 var _last_hit_by: Monster
 var _lost_hp: float = 0:

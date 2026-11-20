@@ -21,7 +21,9 @@ const LOSE_COLOR := Color(0.75, 0.22, 0.2, 1)
 @export var detail_box: VBoxContainer
 @export var biome_tabs: HBoxContainer
 
-const FLAT_BUTTON_THEME := preload("res://script/scenes/battle/flat_button_theme.tres")
+## Abstand des Wiederholen-Buttons zum Rand unten links
+const RETRY_MARGIN := 24.0
+const FLAT_BUTTON_THEME :=preload("res://script/scenes/battle/flat_button_theme.tres")
 
 # Basiswerte für die Monster-Suche: Anteil am Wachstum * BST, wie die Base Stats in Ironmon
 const SEARCH_STATS := [
@@ -72,6 +74,29 @@ func _ready() -> void:
 	_init_search()
 
 	_show_unlocks(State.run_milestone_unlocks)
+	_add_retry_button()
+
+## Einstellung "Kampf wiederholen": nach einer Niederlage unten links, startet den verlorenen Kampf neu (BattleRetry)
+func _add_retry_button() -> void:
+	if State.run_won or not BattleRetry.available():
+		return
+	var button := RewardDialog.plate_button(tr("RUN_END_RETRY"))
+	button.tooltip_text = tr("RUN_END_RETRY_TOOLTIP")
+	button.focus_mode = Control.FOCUS_NONE
+	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	add_child(button)
+	button.anchor_left = 0.0
+	button.anchor_right = 0.0
+	button.anchor_top = 1.0
+	button.anchor_bottom = 1.0
+	button.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	button.offset_left = RETRY_MARGIN
+	button.offset_right = RETRY_MARGIN
+	button.offset_bottom = -RETRY_MARGIN
+	button.offset_top = -RETRY_MARGIN
+	button.pressed.connect(func():
+		button.disabled = true
+		BattleRetry.retry())
 
 # ─────────────────────────
 # K.O.s eigener Monster (State.run_deaths), bei einer Niederlage ist der letzte der Run-beendende Treffer

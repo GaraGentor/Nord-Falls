@@ -12,7 +12,9 @@ func _ready() -> void:
 	set_title(tr("RELIC_REWARD_CHOOSE"))
 	set_drag_hint("RELIC_REWARD_HINT")
 	show_fixed_targets([], true)
-	var offered = Relics.chest_offers()
+	# Biom-Boss: seltene, Boss-Feld: gewöhnliche Relikte (State.relic_chest_rarity, battle.gd _add_boss_loot)
+	var offered = Relics.chest_offers(State.relic_chest_rarity)
+	State.relic_chest_rarity = -1
 	offered.shuffle()
 	for id in offered.slice(0, RELIC_CHOICES):
 		add_relic_card(self, id)
