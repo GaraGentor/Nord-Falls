@@ -15,6 +15,7 @@ Tasks:
 	> Wieder auf minimap verstecken?
 	> Mehr hinzufügen?
 > Endless Run nach Finishen des Games 1x.?
+> Randomizer Mod?
 > Pokal bei Sammlung hinzufügen, damit man sieht mit wem man den Run geschafft hat
 > Nur die Attacken in der Sammlung sehen bei den Monstern die man besitzt
 > Die noch zu freischalten, wäre es gut drunter zu sehen? Bei klick könnten Die ketten und die bedingung weg gehen, bis man was anderen anklickt, wenn der fokus weg ist, gehen die ketten und die beschreibung wieder rein. (Aussließlich nur für die Sammlung gedacht)
@@ -23,15 +24,27 @@ Tasks:
 	> Schwarze Tür dropped beim Endboss als loot, beim aufheben wird direkt ein neuer Endboss kampf getriggert mit dem Clue, dass dort der Endboss gefangen werden kann und der Run beendet wird ohne loot.?
 > Relikt Bilder generieren
 
+	 
+
+> Items Rarität Switchen
+	> Einen Zug Stunnen zu Selten
+	> Neue Initiativen Würfeln normal
+
+> Neue Passive für Magier?
+	> Wenn 2 Magier (Höchste S_ATK da ist), haben diese Lebenraus
+	> 
+
 > Endboss
 	> Hier ist das Relikt ziemlich cool, dass die immer als erstes und letzteres dran sind. Hat mir sehr gefallen
-	> Endboss Kampf im Debug Modus. Auswahl zwischen zwei Monster, Random Karten Deck, Chaos Stufe Freie Level Auswahl.
+	> Endboss Kampf im Debug Modus. Auswahl zwischen zwei Monster, Random Karten Deck, Chaos Stufe, Freie Level Auswahl, Freie Trophäen Wahl Pro Monster
+	> Zweites Endboss Relikt
+		> Mini Monster Spawnerm, halbe level, nicht catchable und immer 1 aktion. Spawnt immer alle 2 Runden ein neues Monster sobald noch keins da ist oder eins gestorben ist
 
 Konzept durchgehen:
 	- Attacke vill nochmal auf nur einen typ Beschränken?
 	- Attacken weaker machen als fähigkeiten skills!
 	- Bisschen neu Balancen
-	- Neue Fähigkeiten mit 0 SP aber CD
+	- Neue Fähigkeiten mit 0 SP aber CD (eher für schwachte buffs)
 
 Ideen:
 Shop mit Flohmarkt kiste ersetzen wo man sich durchsuchen muss? xD
