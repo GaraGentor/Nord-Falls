@@ -1,11 +1,37 @@
 Tasks:
 	
-> Konkretes Balancing der ELemente und Karten sowie mehr Mobs...
 > Vill noch eins zwei mehr Relics
-> Schwarze Tür dropped beim Endboss als loot, beim aufheben wird direkt ein neuer Endboss kampf getriggert mit dem Clue, dass dort der Endboss gefangen werden kann und der Run beendet wird ohne loot.
+	> Direkt 3 Items bekommen als Relikt
+	> Item Wahrscheinlichkeit erhöhen?
+	> Relikte auch nach seltenheit einstufen?
+	> Magie Schaden wird um 0.5x erhöht und um 0.5x verringert
+	> 
+> Relikte Balancen (Fliegender Teppich ist zu OP)
+> Am Ende hab ich Viel Geld gehabt
+	> Lösung: Alles an Loot im Shop pro Biom immer Teurer machen?
+		> Oder Items etc. immer nach Kauf teurer machen?
+	> Lösung: Starke skills beim Trainer vieeeel teurer machen?
+> Boss Relikte gehen aus...
+	> Wieder auf minimap verstecken?
+	> Mehr hinzufügen?
+> Endless Run nach Finishen des Games 1x.?
+> Pokal bei Sammlung hinzufügen, damit man sieht mit wem man den Run geschafft hat
+> Nur die Attacken in der Sammlung sehen bei den Monstern die man besitzt
+> Die noch zu freischalten, wäre es gut drunter zu sehen? Bei klick könnten Die ketten und die bedingung weg gehen, bis man was anderen anklickt, wenn der fokus weg ist, gehen die ketten und die beschreibung wieder rein. (Aussließlich nur für die Sammlung gedacht)
+> Run Speichern und am nächsten Tag weiter machen?
+> Wenn man Easy Mode ausschaltet, kann man den letzten Endboss fangen
+	> Schwarze Tür dropped beim Endboss als loot, beim aufheben wird direkt ein neuer Endboss kampf getriggert mit dem Clue, dass dort der Endboss gefangen werden kann und der Run beendet wird ohne loot.?
+> Relikt Bilder generieren
+
+> Endboss
+	> Hier ist das Relikt ziemlich cool, dass die immer als erstes und letzteres dran sind. Hat mir sehr gefallen
+	> Endboss Kampf im Debug Modus. Auswahl zwischen zwei Monster, Random Karten Deck, Chaos Stufe Freie Level Auswahl.
 
 Konzept durchgehen:
 	- Attacke vill nochmal auf nur einen typ Beschränken?
+	- Attacken weaker machen als fähigkeiten skills!
+	- Bisschen neu Balancen
+	- Neue Fähigkeiten mit 0 SP aber CD
 
 Ideen:
 Shop mit Flohmarkt kiste ersetzen wo man sich durchsuchen muss? xD

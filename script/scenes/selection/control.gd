@@ -252,10 +252,13 @@ func _build_side() -> void:
 	_throw_button = _menu_button(tr("SELECTION_DRAW_EGG"), _on_throw_pressed, ACTION_FONT_SIZE)
 	actions.add_child(_throw_button)
 
-## Verlorene Runs bisher, unten mittig auf dem Bild (bis zum ersten Wurf)
+## Gewonnene und verlorene Runs bisher, unten mittig auf dem Bild (bis zum ersten Wurf)
 func _add_failures() -> void:
 	_failures = Label.new()
-	_failures.text = tr("SELECTION_FAILURES").format({"count": int(SaveManager.save_data["failed_runs"])})
+	var failed := int(SaveManager.save_data["failed_runs"])
+	# gewonnen ist jeder beendete Run, der kein Fehlschlag war (SaveManager.add_finished_run)
+	var won := maxi(int(SaveManager.save_data["runs"]) - failed, 0)
+	_failures.text = tr("SELECTION_RECORD").format({"wins": won, "count": failed})
 	_failures.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_failures.add_theme_font_size_override("font_size", FAILURES_FONT_SIZE)
 	_failures.add_theme_color_override("font_color", MUTED)

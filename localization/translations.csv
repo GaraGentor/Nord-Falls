@@ -898,11 +898,15 @@ SETTINGS_TUTORIAL_HINT,"When switched on, the trainer explains everything from t
 SELECTION_GUIDE,How to play,Anleitung
 SELECTION_COLLECTION,Collection,Sammlung
 SELECTION_FAILURES,Failures: {count},Fehlschläge: {count}
+SELECTION_RECORD,Wins: {wins}   ·   Failures: {count},Siege: {wins}   ·   Fehlschläge: {count}
 COLLECTION_TITLE,Collection,Sammlung
 COLLECTION_PROGRESS,{seen} of {total} species discovered,{seen} von {total} Arten entdeckt
 COLLECTION_FROM_BIOME,Common from biome {biome},Häufig ab Biom {biome}
 COLLECTION_BOSS_ONLY,Bosses only from biome {biome},Nur bei Bossen ab Biom {biome}
 COLLECTION_REQUIRES,Needs {list} in your collection,Braucht {list} in der Sammlung
+COLLECTION_SKILLS_OPEN,Click to see all egg moves,Klicken für alle Ei-Attacken
+COLLECTION_SKILLS_UNLOCKED,Unlocked,Freigeschaltet
+COLLECTION_SKILLS_LOCKED,Still locked,Noch gesperrt
 STAT_INFO_HINT,Click for an explanation of the stats,Klicken für eine Erklärung der Werte
 STAT_INFO_TITLE,Stats,Werte
 STAT_INFO_HP_NAME,Hit Points (HP),Kraftpunkte (KP)

@@ -1,0 +1,4 @@
+1. Ich würde gern in der Monster Detail ansicht meine Fähigkeiten per Drag and Drop sortieren können. Die stehen immer wild durcheinander.
+2. Wenn ich etwas Freischalte (EI Attacke) dann ist die Schrift kaum Lesbar, darum muss ein Container. (Das gleiche beim End Screen wenn ich Sterbe und dort eine Ei Attacke Freigeschaltet hab) Check, ob das sonst noch irgendwo vorkommt
+3. Nach einiger Zeit spielen und als ich viel Loot aufgehoben hat, hat die Relikt Kiste bisschen geladen, ich dachte das Läd nicht mehr :<
+4. 

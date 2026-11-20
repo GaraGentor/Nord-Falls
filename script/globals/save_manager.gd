@@ -30,7 +30,7 @@ const DEFAULT_DATA := {
 	# interaktives Tutorial (siehe Tutorial): gesehene Sequenzen, done = ausgeschaltet, abgeschlossen oder übersprungen (neue Spielstände starten mit Tutorial)
 	"tutorial_seen": [],
 	"tutorial_done": false,
-	# beendete Runs insgesamt und davon verlorene (Fehlschläge, stehen in der Ei-Auswahl unter Anleitung und Sammlung)
+	# beendete Runs insgesamt und davon verlorene (Fehlschläge); Siege = runs - failed_runs, beides steht in der Ei-Auswahl unter Anleitung und Sammlung
 	"runs": 0,
 	"failed_runs": 0,
 	# Runs mit mehr als einer Boss Träne bis zum nächsten Kerkermeister im ersten Biom (Map.generate_run_jailer), 0 = noch nicht gewürfelt
