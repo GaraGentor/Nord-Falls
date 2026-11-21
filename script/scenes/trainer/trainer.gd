@@ -54,7 +54,7 @@ class TrainerStamp extends Control:
 	const TILT := -0.26
 	## Außenradius als Anteil der Kartenbreite
 	const RADIUS_SHARE := 0.42
-	const FONT_SIZE := 26
+	const FONT_SIZE := 24
 	const RING_GAP := 5.0
 	const TEXT_BAND := 22.0
 
@@ -115,7 +115,7 @@ class TrainerStamp extends Control:
 ## Tasche oben links, zeigt die Essenz (wie die Boss Tränen beim Kerkermeister), nur zur Anzeige
 const BAG_SIZE := Vector2(104, 98)
 const ESSENCE_SIZE := Vector2(34, 34)
-const BAG_FONT_SIZE := 27
+const BAG_FONT_SIZE := 24
 ## so viel Essenz steht für ein sichtbares Stück in der Tasche
 const ESSENCE_PER_ITEM := 25
 const TRAINER_CARD_SIZE := Vector2(210, 0)

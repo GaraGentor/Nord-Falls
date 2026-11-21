@@ -116,7 +116,7 @@ func _show_hit_text(_mon: Monster, damage: float, multiplier: float, blocked: fl
 	if mon != _mon:
 		return
 	var color = Color.WHITE
-	var font_size = 54 if multiplier > 1.0 else 42
+	var font_size = 56 if multiplier > 1.0 else 40
 	var box := _new_row_box(true)
 	if multiplier > 1.0:
 		color = SUPER_EFFECTIVE_COLOR
@@ -127,7 +127,7 @@ func _show_hit_text(_mon: Monster, damage: float, multiplier: float, blocked: fl
 	box.add_child(_icon_row(["-%d" % roundi(damage)], color, font_size))
 	# eigene Monster: nur der Schaden, keine Rechnung mit dem Schild (den Schildtreffer zeigt der Effekt)
 	if blocked > 0 and not home_mons:
-		box.add_child(_icon_row([ICON_SHIELD, "-%d" % roundi(blocked)], STATUS_COLOR, 36))
+		box.add_child(_icon_row([ICON_SHIELD, "-%d" % roundi(blocked)], STATUS_COLOR, 40))
 	box.z_index = 10
 	add_child(box)
 	box.size = box.get_combined_minimum_size()
@@ -143,7 +143,7 @@ func _show_hit_text(_mon: Monster, damage: float, multiplier: float, blocked: fl
 func _show_effect_text(_mon: Monster, text: String, color: Color) -> void:
 	if mon != _mon or not is_inside_tree():
 		return
-	var row := _icon_row([text], color, 36)
+	var row := _icon_row([text], color, 40)
 	row.z_index = 10
 	add_child(row)
 	row.size = row.get_combined_minimum_size()
@@ -207,7 +207,7 @@ func _format_multiplier(multiplier: float) -> String:
 
 # Status über dem Monster: bei Gegnern die Fangchance (Hypnose-Spirale),
 # Schild-Symbole mit ihrem Wert, Buffs als Pfeil.
-const STATUS_FONT_SIZE := 27
+const STATUS_FONT_SIZE := 24
 const CATCH_COLOR := Color(1.0, 0.85, 0.4)
 
 func _on_status_changed(_mon: Monster) -> void:
@@ -368,7 +368,7 @@ func _update_drag_preview(drag_data) -> void:
 	if _preview_label == null:
 		_preview_label = Label.new()
 		_preview_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		_preview_label.add_theme_font_size_override("font_size", 39)
+		_preview_label.add_theme_font_size_override("font_size", 40)
 		_preview_label.add_theme_color_override("font_outline_color", Color.BLACK)
 		_preview_label.add_theme_constant_override("outline_size", 8)
 		_preview_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -390,7 +390,7 @@ func _update_drag_preview(drag_data) -> void:
 const INTENT_COLOR := Color(1.0, 0.45, 0.4)
 const INTENT_BLOCKED_COLOR := Color(0.55, 0.8, 1.0)
 const BUFF_COLOR := Color(0.55, 1.0, 0.55)
-const INTENT_FONT_SIZE := 27
+const INTENT_FONT_SIZE := 24
 
 func _refresh_intent() -> void:
 	if mon == null or not is_inside_tree():

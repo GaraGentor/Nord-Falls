@@ -103,7 +103,7 @@ class ItemInfoDialog extends InfoDialog:
 		var description := _note(Items.description(item), IronPlate.TEXT_COLOR)
 		description.modulate.a = 1.0
 		description.custom_minimum_size.x = SkillDetailPopup.WIDTH + 100
-		description.add_theme_font_size_override("font_size", ROW_FONT_SIZE + 3)
+		description.add_theme_font_size_override("font_size", ROW_FONT_SIZE)
 		content.add_child(description)
 		content.add_child(_text(Items.use_hint(item), SkillDetailPopup.GOLD, ROW_FONT_SIZE))
 		if not usable_now and Items.use_of(item) != Items.USE_AUTO:

@@ -4,7 +4,7 @@ extends PanelContainer
 ## Sprechblase eines NPCs: eine Eisenplatte im Pixel-Look, say() blendet den Text ein.
 ## Der Zipfel zeigt zum NPC, standardmäßig nach rechts: der Host legt die Blase dann links neben dessen Kopf.
 
-const FONT_SIZE := 33
+const FONT_SIZE := 32
 const MARGIN := 16
 const TAIL_TEXTURE = preload("res://assets/ui/jailer/bubble_tail.svg")
 const TAIL_MATERIAL = preload("res://script/scenes/jailer/jailer_props_material.tres")

@@ -161,7 +161,7 @@ visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_fonts/font = ExtResource("5_4s83u")
-theme_override_font_sizes/font_size = 21
+theme_override_font_sizes/font_size = 24
 text = "ATK"
 
 [node name="Panel2" type="Panel" parent="MarginContainer/VBoxContainer" unique_id=61333713]

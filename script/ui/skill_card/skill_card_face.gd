@@ -23,12 +23,12 @@ const TEXT_COLOR := Color(1.0, 0.95, 0.85)
 const COOLDOWN_COLOR := Color(1, 0.45, 0.45)
 const STAR_SIZE := 14.0
 const ICON_SIZE := 20.0
-const FONT_SIZE := 23
-const ELEMENT_FONT_SIZE := 20
+const FONT_SIZE := 24
+const ELEMENT_FONT_SIZE := 24
 ## Schrift des Werts, bis die Karte die Größe ihres Namens setzt (BottomRow.set_value_size)
-const VALUE_FONT_SIZE := 30
+const VALUE_FONT_SIZE := 32
 ## so viel größer als der Name der Karte steht der Wert
-const VALUE_SIZE_BONUS := 3
+const VALUE_SIZE_BONUS := 8
 ## Art-Symbol neben dem Wert bzw. allein (Passiv, Buff, Debuff), als Vielfaches der Wert-Schriftgröße
 const VALUE_ICON_SCALE := 1.3
 const ICON_ONLY_SCALE := 1.8
@@ -194,7 +194,7 @@ class BottomRow extends VBoxContainer:
 		_kind.custom_minimum_size = Vector2(icon_size, icon_size)
 
 ## Kleinste Schrift für den Skill-Namen, falls er selbst so nicht in TITLE_MAX_LINES Zeilen passt
-const MIN_TITLE_FONT_SIZE := 14
+const MIN_TITLE_FONT_SIZE := 16
 const TITLE_MAX_LINES := 2
 
 ## Skill-Name höchstens TITLE_MAX_LINES Zeilen: passt er bei base_size nicht, wird die Schrift kleiner.
@@ -218,7 +218,7 @@ static func _refit_title(title: Label) -> void:
 	var font_size := base
 	if font != null and width > 1.0:
 		while font_size > MIN_TITLE_FONT_SIZE and _line_count(title.text, font, font_size, width) > TITLE_MAX_LINES:
-			font_size -= 1
+			font_size -= 8
 	if title.get_theme_font_size("font_size") != font_size:
 		title.add_theme_font_size_override("font_size", font_size)
 

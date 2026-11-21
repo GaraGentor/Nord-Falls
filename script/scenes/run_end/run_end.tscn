@@ -165,7 +165,7 @@ columns = 2
 custom_minimum_size = Vector2(360, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.86, 0.83, 0.72, 1)
-theme_override_font_sizes/font_size = 27
+theme_override_font_sizes/font_size = 24
 autowrap_mode = 2
 
 [node name="DeathScroll" type="ScrollContainer" parent="MarginContainer/VBoxContainer/Panels/StatsPanel/MarginContainer/VBoxContainer"]
@@ -189,7 +189,7 @@ autowrap_mode = 2
 visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(0.86, 0.83, 0.72, 1)
-theme_override_font_sizes/font_size = 21
+theme_override_font_sizes/font_size = 24
 autowrap_mode = 2
 
 [node name="SearchPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer/Panels"]
@@ -284,7 +284,7 @@ theme = ExtResource("5_btn")
 theme_override_colors/font_color = Color(0.86, 0.83, 0.72, 1)
 theme_override_colors/font_hover_color = Color(0.858824, 0.717647, 0.45098, 1)
 theme_override_colors/font_pressed_color = Color(0.858824, 0.717647, 0.45098, 1)
-theme_override_font_sizes/font_size = 33
+theme_override_font_sizes/font_size = 32
 theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")

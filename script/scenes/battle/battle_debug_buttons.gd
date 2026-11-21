@@ -82,7 +82,7 @@ func _slot(tooltip: String, icon: Texture2D, text: String, on_input: Callable) -
 	label.text = text
 	label.visible = text != ""
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 21)
+	label.add_theme_font_size_override("font_size", 24)
 	label.add_theme_color_override("font_color", BattleControls.TEXT_COLOR)
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(label)

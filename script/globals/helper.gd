@@ -217,7 +217,7 @@ func show_unlock_message(text: String) -> void:
 	label.text = text
 	label.theme = preload("res://script/ui/materials/pixel_font_theme.tres")
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 42)
+	label.add_theme_font_size_override("font_size", 40)
 	label.add_theme_color_override("font_color", Color(0.858824, 0.717647, 0.45098, 1))
 	label.add_theme_color_override("font_outline_color", Color.BLACK)
 	label.add_theme_constant_override("outline_size", 8)

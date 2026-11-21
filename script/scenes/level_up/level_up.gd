@@ -12,7 +12,7 @@ const COUPON_ICON = preload("res://assets/ui/icons/coupon.svg")
 const BOSS_SHARD_ICON = preload("res://assets/ui/jailer/boss_tear.svg")
 const EGG_ICON = preload("res://assets/ui/eggs/common_1.png")
 const BAG_SIZE := Vector2(208, 196)
-const BAG_FONT_SIZE := 29
+const BAG_FONT_SIZE := 32
 const FIELD_MARGIN := 16
 ## so weit bleibt die Beute vom Bildrand weg, dort liegt der Wolkenrand
 const LOOT_EDGE_MARGIN := 60.0
@@ -22,7 +22,7 @@ const LOOT_GAP := 16.0
 ## Stück Beute auf dem Schlachtfeld, lässt sich in die Tasche ziehen
 class LootIcon extends VBoxContainer:
 	const ICON_SIZE := Vector2(84, 84)
-	const FONT_SIZE := 30
+	const FONT_SIZE := 32
 
 	signal drag_started
 
@@ -184,7 +184,7 @@ func _build_battlefield() -> void:
 	_hint_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var hint := Label.new()
 	hint.text = tr("LEVEL_UP_LOOT_HINT")
-	hint.add_theme_font_size_override("font_size", 27)
+	hint.add_theme_font_size_override("font_size", 24)
 	hint.add_theme_color_override("font_color", IronPlate.TEXT_COLOR)
 	IronPlate.frame(_hint_panel, hint, 12, 8)
 	column.add_child(_hint_panel)

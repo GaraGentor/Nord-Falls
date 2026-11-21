@@ -110,7 +110,7 @@ class ShelfItem extends RewardDialog.RewardCard:
 	## das Bild hat etwas Rand, so steht die Ware sichtbar auf dem Brett
 	const ART_SINK := 6.0
 	const TITLE_FONT_SIZE := 24
-	const PRICE_FONT_SIZE := 26
+	const PRICE_FONT_SIZE := 24
 	const TAG_MARGIN := 7
 	## Blätter-Pfeile: zwei quadratische Eisenplatten nebeneinander mittig über dem Bild
 	const SWITCH_SIZE := Vector2(40, 40)
@@ -284,7 +284,7 @@ class MonField extends RewardDialog.DropTarget:
 	const IMAGE_SIZE := 250.0
 	const CHIPS_HEIGHT := 32.0
 	const FIELD_SIZE := Vector2(250, IMAGE_SIZE + CHIPS_HEIGHT)
-	const BOOST_FONT_SIZE := 27
+	const BOOST_FONT_SIZE := 24
 	const STAT_GETTERS := {"hp": "hp", "atk": "attack", "def": "defense", "s_atk": "s_attack", "speed": "speed"}
 	const SELECTED_SCALE := Vector2(1.08, 1.08)
 	const SELECT_SECONDS := 0.2
@@ -392,7 +392,7 @@ class MonField extends RewardDialog.DropTarget:
 ## Offene Tasche neben den Monstern, auf der Plakette steht das Geld. Ablegeziel für Relikte und Schlüssel.
 class ShopBag extends RewardDialog.DropTarget:
 	const BAG_SIZE := Vector2(208, 196)
-	const FONT_SIZE := 29
+	const FONT_SIZE := 32
 
 	var money: Label
 	var _art: OpenBag
@@ -456,9 +456,9 @@ class ItemPopup extends PanelContainer:
 		IronPlate.frame(self, box, 16, 14)
 		_art_holder = CenterContainer.new()
 		box.add_child(_art_holder)
-		_title = _label(box, 36, GOLD)
-		_price = _label(box, 30, IronPlate.TEXT_COLOR)
-		_description = _label(box, 29, IronPlate.TEXT_COLOR)
+		_title = _label(box, 40, GOLD)
+		_price = _label(box, 32, IronPlate.TEXT_COLOR)
+		_description = _label(box, 32, IronPlate.TEXT_COLOR)
 		_hint = _label(box, 24, GOLD)
 		var close := RewardDialog.plate_button(tr("MONSTER_CLOSE_INFO"))
 		close.size_flags_horizontal = Control.SIZE_SHRINK_CENTER

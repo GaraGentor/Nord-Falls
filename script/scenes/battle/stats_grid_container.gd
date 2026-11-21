@@ -37,7 +37,7 @@ var plabels: Array[Label] = []
 var _value_labels := {}
 
 ## Werte-Tabelle ohne eigene Szene, mit stacked-Layout (trophies: Trophäen-Anteil und Trophäen unter den Werten)
-static func stacked_for(monster: Monster, font_size := 23, trophies := false) -> StatsGrid:
+static func stacked_for(monster: Monster, font_size := 24, trophies := false) -> StatsGrid:
 	var grid := StatsGrid.new()
 	grid.stacked = true
 	grid.show_trophies = trophies
@@ -243,7 +243,7 @@ func _with_trophy_bonus(value_label: Label, key: String, monster, hidden: Array)
 	bonus_label.text = "(%d)" % bonus
 	bonus_label.add_theme_color_override("font_color", GAIN_COLOR)
 	var font_size := value_label.get_theme_font_size("font_size")
-	bonus_label.add_theme_font_size_override("font_size", roundi((font_size if font_size > 0 else DEFAULT_FONT_SIZE) * TROPHY_BONUS_FONT_SCALE))
+	bonus_label.add_theme_font_size_override("font_size", maxi(16, snappedi((font_size if font_size > 0 else DEFAULT_FONT_SIZE) * TROPHY_BONUS_FONT_SCALE, 8)))
 	bonus_label.tooltip_text = tr("STAT_TROPHY_BONUS_HINT").format({"bonus": bonus})
 	bonus_label.mouse_filter = Control.MOUSE_FILTER_PASS
 	cell.add_child(bonus_label)
@@ -269,7 +269,7 @@ func _trophy_cell(key: String, monster, hidden: Array) -> Control:
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	cell.add_child(icon)
 	var count_label := _horizontal_label("%dx" % count, GAIN_COLOR)
-	count_label.add_theme_font_size_override("font_size", roundi(font_size * TROPHY_BONUS_FONT_SCALE))
+	count_label.add_theme_font_size_override("font_size", maxi(16, snappedi(font_size * TROPHY_BONUS_FONT_SCALE, 8)))
 	count_label.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	cell.add_child(count_label)
 	cell.tooltip_text = TranslationServer.translate(gem_field.STATS[key].name)

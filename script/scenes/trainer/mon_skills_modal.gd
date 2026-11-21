@@ -31,10 +31,10 @@ const MIN_CARD_HEIGHT := 130.0
 const FRAME_PADDING := 16
 const BOX_SEPARATION := 12
 const DESCRIPTION_FONT_SIZE := 24
-const SKILL_TITLE_FONT_SIZE := 33
+const SKILL_TITLE_FONT_SIZE := 32
 const OPEN_SECONDS := 0.15
 const PIXEL_FONT = preload("res://script/ui/fonts/m5x7/m5x7.ttf")
-const STAT_FONT_SIZE := 26
+const STAT_FONT_SIZE := 24
 const STAT_COLUMNS := 3
 ## Anzeige -> Getter am Monster
 const STATS := {

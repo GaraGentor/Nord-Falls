@@ -10,7 +10,7 @@ const TRAINER_SCENE = preload("res://script/scenes/trainer/trainer.tscn")
 
 const ACCENT := Color(0.35, 0.65, 0.3)
 const STATION_ICON_SIZE := 220
-const STATION_FONT_SIZE := 33
+const STATION_FONT_SIZE := 32
 const DONE_MODULATE := Color(0.5, 0.5, 0.5)
 
 func _ready() -> void:

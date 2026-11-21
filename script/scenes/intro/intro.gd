@@ -9,7 +9,7 @@ extends Control
 const NEXT_SCENE := "res://script/scenes/selection/selection.tscn"
 const TITLE := "To the North"
 const PIXEL_FONT := preload("res://script/ui/fonts/m5x7/m5x7.ttf")
-const FONT_SIZE := 108
+const FONT_SIZE := 112
 const FADE_IN_SECONDS := 1.2
 const FADE_OUT_SECONDS := 0.6
 ## so lange steht der Schriftzug nach dem Einblenden mindestens, auch wenn das Vorladen schneller fertig ist

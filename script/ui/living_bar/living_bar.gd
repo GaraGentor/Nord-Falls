@@ -24,7 +24,7 @@ const IDLE_SHADE := 0.82
 const FLASH_COLOR := Color(2.2, 2.2, 2.2)
 const FLASH_SECONDS := 0.45
 const TWEEN_SECONDS := 0.5
-const FONT_SIZE := 20
+const FONT_SIZE := 24
 
 ## Farbe der Füllung, Standard gold wie die Level-Up-Balken
 var color := SkillDetailPopup.GOLD:

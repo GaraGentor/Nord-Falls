@@ -332,7 +332,7 @@ func make_enemy_badge() -> Label:
 	var badge := Label.new()
 	badge.name = ENEMY_BADGE_NAME
 	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	badge.add_theme_font_size_override("font_size", 42)
+	badge.add_theme_font_size_override("font_size", 40)
 	badge.add_theme_color_override("font_color", SkillDetailPopup.GOLD)
 	badge.add_theme_color_override("font_outline_color", Color.BLACK)
 	badge.add_theme_constant_override("outline_size", 8)

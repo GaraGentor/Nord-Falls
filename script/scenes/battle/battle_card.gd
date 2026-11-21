@@ -8,7 +8,7 @@ const DRAG_THRESHOLD := 12.0
 ## damit ein seitliches Zucken am Anfang den Drag nicht verhindert
 const SWIPE_TO_DRAG := 40.0
 ## Schriftgröße des Namens, lange Namen werden kleiner statt dreizeilig (SkillCardFace.fit_title)
-const TITLE_FONT_SIZE := 27
+const TITLE_FONT_SIZE := 24
 
 @export var name_label: Label
 ## Beschreibung mit gelb hervorgehobenen Werten (Helper.skill_description rich)

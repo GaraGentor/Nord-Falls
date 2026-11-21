@@ -124,7 +124,7 @@ is_leveling = true
 visible = false
 layout_mode = 2
 theme_override_fonts/font = ExtResource("5_u1j1l")
-theme_override_font_sizes/font_size = 27
+theme_override_font_sizes/font_size = 24
 text = "ATK"
 
 [node name="MarginContainer" type="MarginContainer" parent="MarginContainer/Panel/VBoxContainer"]
@@ -187,5 +187,5 @@ theme = ExtResource("1_08c52")
 theme_override_colors/font_color = Color(0.858824, 0.717647, 0.45098, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 8
-theme_override_font_sizes/font_size = 75
+theme_override_font_sizes/font_size = 72
 text = "LEVEL_UP_TITLE"

@@ -11,7 +11,7 @@ const GOLD := Color(0.858824, 0.717647, 0.45098, 1)
 const MISSING_COLOR := Color(1, 0.45, 0.45)
 const WIDTH := 300.0
 const GAP := 16.0
-const FONT_SIZE := 27
+const FONT_SIZE := 24
 
 var _card: Control
 var _missing: Label
@@ -38,7 +38,7 @@ func _init() -> void:
 	box.add_child(_card)
 	_missing = _label(MISSING_COLOR)
 	_lock = _label(GOLD)
-	_lock.add_theme_font_size_override("font_size", 23)
+	_lock.add_theme_font_size_override("font_size", 24)
 	for label in [_missing, _lock]:
 		box.add_child(label)
 

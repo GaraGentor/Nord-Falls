@@ -13,8 +13,8 @@ extends Control
 const UNREACHED_MODULATE := Color(0.55, 0.55, 0.55, 0.85)
 const HOVER_MODULATE := Color(1.25, 1.25, 1.15)
 const GOLD := SkillDetailPopup.GOLD
-const DEPTH_FONT_SIZE := 21
-const NAME_FONT_SIZE := 27
+const DEPTH_FONT_SIZE := 24
+const NAME_FONT_SIZE := 24
 const PLATE_MARGIN := 8
 const FLY_IN := 30.0
 const CHAIN_PIXELS := 3

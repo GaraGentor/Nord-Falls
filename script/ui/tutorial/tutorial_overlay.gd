@@ -39,7 +39,7 @@ const DIM := Color(0, 0, 0, 0.65)
 ## bei offenen Schritten muss der Rest gut sichtbar bleiben
 const OPEN_DIM := Color(0, 0, 0, 0.25)
 const SKIP_FONT_SIZE := 24
-const NEXT_FONT_SIZE := 30
+const NEXT_FONT_SIZE := 32
 
 ## Fläche über allem, schluckt Klicks außerhalb der Löcher
 class Blocker extends Control:

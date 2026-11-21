@@ -50,10 +50,10 @@ func _ready() -> void:
 	box.add_theme_constant_override("separation", 14)
 	IronPlate.frame(_panel, box, 20, 20)
 
-	_title = _label(33, GOLD)
+	_title = _label(32, GOLD)
 	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(_title)
-	_warning = _label(21, GOLD)
+	_warning = _label(24, GOLD)
 	box.add_child(_warning)
 	# viele Karten (z. B. Erbstücke) scrollen, statt den Dialog über den Bildschirm wachsen zu lassen
 	_scroll = ScrollContainer.new()
@@ -220,15 +220,15 @@ func _gift_card(gift: Dictionary, heirs: Array) -> Button:
 	else:
 		card = _card(Vector2(270, SKILL_CARD_HEIGHT))
 		var lines := _card_lines(card)
-		var name_label := _label(29, GOLD if gift.kind == "gems" else Helper.color_by_type(gift.element))
+		var name_label := _label(32, GOLD if gift.kind == "gems" else Helper.color_by_type(gift.element))
 		name_label.text = gift_name(gift)
 		lines.add_child(name_label)
 		lines.add_child(_gift_art(gift))
-		var desc := _label(21, TEXT_COLOR)
+		var desc := _label(24, TEXT_COLOR)
 		desc.text = _gems_text(gift.gems) if gift.kind == "gems" else tr("LAST_WILL_ELEMENT_DESC")
 		lines.add_child(desc)
 		if not possible:
-			var note := _label(20, GOLD)
+			var note := _label(24, GOLD)
 			note.text = tr("LAST_WILL_ALL_HAVE_ELEMENT")
 			lines.add_child(note)
 	if not possible:
@@ -315,19 +315,19 @@ func _skill_card(skill: Dictionary, note: String, mon: Monster = null) -> Button
 	var top_row := SkillCardFace.TopRow.new()
 	lines.add_child(top_row)
 	top_row.show_skill(skill, scouted)
-	var name_label := _label(29, SkillCardPaper.readable_color(Helper.color_by_type(skill.nature)))
+	var name_label := _label(32, SkillCardPaper.readable_color(Helper.color_by_type(skill.nature)))
 	name_label.text = _skill_name(skill)
 	top_row.set_title(name_label)
 	lines.add_child(name_label)
 	# höchstens zwei Zeilen, lange Namen werden kleiner
 	SkillCardFace.fit_title(name_label, 19)
-	var desc := _label(20, MUTED)
+	var desc := _label(24, MUTED)
 	desc.max_lines_visible = 3
 	desc.size_flags_vertical = SIZE_EXPAND_FILL
 	desc.text = Helper.skill_description(skill) if scouted else tr("BATTLE_UNKNOWN_SKILL_HINT")
 	lines.add_child(desc)
 	if note != "":
-		var note_label := _label(20, GOLD)
+		var note_label := _label(24, GOLD)
 		note_label.text = note
 		lines.add_child(note_label)
 	var bottom_row := SkillCardFace.BottomRow.new()
@@ -363,13 +363,13 @@ func _mon_card(mon: Monster, note_text: String, blocked: bool) -> Button:
 	lines.mouse_filter = MOUSE_FILTER_IGNORE
 	lines.size_flags_horizontal = SIZE_EXPAND_FILL
 	row.add_child(lines)
-	var name_label := _label(29, GOLD)
+	var name_label := _label(32, GOLD)
 	name_label.text = Helper.mon_battle_name(mon)
 	lines.add_child(name_label)
-	var count := _label(21, MUTED)
+	var count := _label(24, MUTED)
 	count.text = tr("JUDGEMENT_TEACH_SKILL_COUNT").format({"count": mon._skills.size(), "max": Skills.MAX_SKILLS})
 	lines.add_child(count)
-	var note := _label(20, GOLD)
+	var note := _label(24, GOLD)
 	note.text = note_text
 	if blocked:
 		_disable(card)
@@ -408,7 +408,7 @@ func _card_lines(card: Button) -> VBoxContainer:
 func _action_button(text_key: String, result: Dictionary) -> Button:
 	var button := RewardDialog.plate_button(text_key)
 	button.custom_minimum_size = Vector2(180, 44)
-	button.add_theme_font_size_override("font_size", 27)
+	button.add_theme_font_size_override("font_size", 24)
 	button.pressed.connect(_choice.emit.bind(result))
 	return button
 

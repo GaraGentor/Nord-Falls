@@ -6,7 +6,7 @@ extends PopupPanel
 ## Schließt sich beim Klick daneben von selbst (PopupPanel).
 
 const THEME := preload("res://script/ui/materials/pixel_font_theme.tres")
-const FONT_SIZE := 27
+const FONT_SIZE := 24
 const BUFF_COLOR := Color(0.55, 1.0, 0.55)
 const TEXT_COLOR := Color(0.92, 0.9, 0.85)
 const BACKGROUND := Color(0.08, 0.07, 0.1, 0.94)

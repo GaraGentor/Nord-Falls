@@ -221,7 +221,7 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
 theme = ExtResource("7_uo6ii")
-theme_override_font_sizes/font_size = 39
+theme_override_font_sizes/font_size = 40
 text = "BATTLE_HYPNOSIS"
 icon = SubResource("ImageTexture_quuqv")
 flat = true
@@ -243,7 +243,7 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
 theme = ExtResource("7_uo6ii")
-theme_override_font_sizes/font_size = 39
+theme_override_font_sizes/font_size = 40
 text = "BATTLE_END_TURN"
 flat = true
 
