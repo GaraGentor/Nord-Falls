@@ -64,7 +64,7 @@ func _build(skill: Dictionary, mon: Monster, locked_label: String, locked_hint: 
 	lines.add_child(top_row)
 	top_row.show_skill(skill)
 
-	var name_label := _label(tr(skill.name), 18, SkillCardPaper.readable_color(Helper.color_by_type(skill.nature)))
+	var name_label := _label(tr(skill.name), 27, SkillCardPaper.readable_color(Helper.color_by_type(skill.nature)))
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	top_row.set_title(name_label)
 	lines.add_child(name_label)
@@ -87,7 +87,7 @@ func _build(skill: Dictionary, mon: Monster, locked_label: String, locked_hint: 
 	description.scroll_active = false
 	description.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	description.add_theme_font_override("normal_font", THEME.get_font("font", "Label"))
-	description.add_theme_font_size_override("normal_font_size", 13)
+	description.add_theme_font_size_override("normal_font_size", 20)
 	description.add_theme_color_override("default_color", TEXT_COLOR)
 	# schlummernd: abgeschwächte Werte, Element-Effekt durchgestrichen, darunter was die Attacke weckt
 	description.text = Helper.skill_description(skill, true, null if locked else mon)
@@ -98,7 +98,7 @@ func _build(skill: Dictionary, mon: Monster, locked_label: String, locked_hint: 
 
 	if not locked and not Skills.can_use(mon, skill):
 		# wählbar, aber erst spielbar, wenn das Monster die fehlenden Elemente bekommt (z. B. im Shop)
-		var missing := _label(Skills.missing_elements_text(mon, skill), 12, MISSING_COLOR)
+		var missing := _label(Skills.missing_elements_text(mon, skill), 18, MISSING_COLOR)
 		missing.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		missing.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		missing.custom_minimum_size.x = 1
@@ -179,12 +179,12 @@ func _build_lock(locked_label: String, locked_hint: String) -> ChainOverlay:
 	texts.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	texts.add_theme_constant_override("separation", 4)
 	plate.add_child(texts)
-	var title := _label(tr(locked_label), 14, GOLD)
+	var title := _label(tr(locked_label), 21, GOLD)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	title.custom_minimum_size.x = 1
 	texts.add_child(title)
-	var hint := _label(tr(locked_hint), 12, TEXT_COLOR)
+	var hint := _label(tr(locked_hint), 18, TEXT_COLOR)
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint.custom_minimum_size.x = 1

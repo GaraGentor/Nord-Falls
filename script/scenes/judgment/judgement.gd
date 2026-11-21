@@ -430,7 +430,7 @@ func _refresh_catch() -> void:
 	_prev_button.disabled = _pool.size() <= 1
 	_next_button.disabled = _pool.size() <= 1
 	if not has_catch:
-		var empty := _label(16, MUTED)
+		var empty := _label(24, MUTED)
 		empty.text = tr("JUDGEMENT_NO_CATCHES_LEFT")
 		_outline(empty)
 		empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -450,7 +450,7 @@ func _refresh_team() -> void:
 			_slot_entries[slot] = _mon_entry(State.mons[slot], SLOT_COLORS[slot], true)
 			box.add_child(_slot_entries[slot])
 		else:
-			var missing := _label(17, MUTED)
+			var missing := _label(26, MUTED)
 			missing.text = tr("JUDGEMENT_MISSING_MEMBER")
 			missing.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			missing.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -501,7 +501,7 @@ func _refresh_radar() -> void:
 		dot.size_flags_vertical = SIZE_SHRINK_CENTER
 		dot.mouse_filter = MOUSE_FILTER_IGNORE
 		row.add_child(dot)
-		var name_label := _label(13, MUTED)
+		var name_label := _label(20, MUTED)
 		name_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 		name_label.text = Helper.mon_battle_name(entry.mon)
 		row.add_child(name_label)
@@ -533,14 +533,14 @@ func _mon_entry(mon: Monster, color: Color, fill: bool) -> VBoxContainer:
 	var header := HBoxContainer.new()
 	header.mouse_filter = MOUSE_FILTER_IGNORE
 	entry.add_child(header)
-	var name_label := _label(20, Helper.color_by_mon(mon))
+	var name_label := _label(30, Helper.color_by_mon(mon))
 	name_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	name_label.size_flags_horizontal = SIZE_EXPAND_FILL
 	name_label.text = Helper.mon_battle_name(mon)
 	_outline(name_label)
 	header.add_child(name_label)
-	var level := _label(20, MUTED)
+	var level := _label(30, MUTED)
 	level.autowrap_mode = TextServer.AUTOWRAP_OFF
 	level.text = tr("BATTLE_MON_LEVEL") + " " + str(mon._level)
 	_outline(level)
@@ -637,7 +637,7 @@ func _badge(text: String, background: Color, color: Color) -> PanelContainer:
 	row.add_theme_constant_override("separation", 4)
 	row.mouse_filter = MOUSE_FILTER_IGNORE
 	IronPlate.frame(badge, row, 8, 3).tint(background)
-	var label := _label(14, color)
+	var label := _label(21, color)
 	label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	label.text = text
 	row.add_child(label)
@@ -673,7 +673,7 @@ func _stats_box(mon: Monster, color: Color) -> PanelContainer:
 		cell.mouse_filter = MOUSE_FILTER_PASS
 		cell.tooltip_text = tr(STAT_LABELS[key]).trim_suffix(":")
 		cell.add_child(StatsGrid.stat_icon(key, 16))
-		var value := _label(14, MUTED)
+		var value := _label(21, MUTED)
 		value.autowrap_mode = TextServer.AUTOWRAP_OFF
 		value.text = str(int(values[key]))
 		cell.add_child(value)
@@ -807,7 +807,7 @@ func _build_left() -> Control:
 	var page_panel := PanelContainer.new()
 	page_panel.mouse_filter = MOUSE_FILTER_IGNORE
 	page_panel.size_flags_horizontal = SIZE_EXPAND_FILL
-	_page_label = _label(20, GOLD)
+	_page_label = _label(30, GOLD)
 	_page_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	IronPlate.frame(page_panel, _page_label, 10, 4)
 	nav.add_child(page_panel)
@@ -829,7 +829,7 @@ func _build_left() -> Control:
 	radar_box.mouse_filter = MOUSE_FILTER_IGNORE
 	IronPlate.frame(radar_panel, radar_box, 10, 8)
 	box.add_child(radar_panel)
-	var heading := _label(17, GOLD)
+	var heading := _label(26, GOLD)
 	heading.text = tr("JUDGEMENT_GROWTH")
 	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	radar_box.add_child(heading)
@@ -921,7 +921,7 @@ func _build_team() -> Control:
 		_slot_boxes.append(box)
 	var legend := PanelContainer.new()
 	legend.mouse_filter = MOUSE_FILTER_IGNORE
-	var title := _label(20, GOLD)
+	var title := _label(30, GOLD)
 	title.autowrap_mode = TextServer.AUTOWRAP_OFF
 	title.text = tr("JUDGEMENT_TEAM")
 	IronPlate.frame(legend, title, 22, 5).set_rim(GOLD)
@@ -968,7 +968,7 @@ func _drop_frame(zone: Control) -> Panel:
 func _nav_button(text: String, direction: int) -> Button:
 	var button := RewardDialog.plate_button(text)
 	button.custom_minimum_size = Vector2(48, 36)
-	button.add_theme_font_size_override("font_size", 20)
+	button.add_theme_font_size_override("font_size", 30)
 	button.pressed.connect(_step.bind(direction))
 	return button
 

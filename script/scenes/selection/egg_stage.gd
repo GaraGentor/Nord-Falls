@@ -46,7 +46,7 @@ const BADGE_GAP := 6.0
 
 ## Ei-Attacken unten
 const CARD_SIZE := Vector2(178, 204)
-const CARD_TITLE_SIZE := 15
+const CARD_TITLE_SIZE := 23
 ## links unten stehen die Symbol-Knöpfe (Einstellungen, Sammlung, Anleitung)
 const CARDS_LEFT := 88.0
 const CARD_GAP := 12

@@ -30,11 +30,11 @@ const SKILL_CARD_SIZE := Vector2(170, 200)
 const MIN_CARD_HEIGHT := 130.0
 const FRAME_PADDING := 16
 const BOX_SEPARATION := 12
-const DESCRIPTION_FONT_SIZE := 16
-const SKILL_TITLE_FONT_SIZE := 22
+const DESCRIPTION_FONT_SIZE := 24
+const SKILL_TITLE_FONT_SIZE := 33
 const OPEN_SECONDS := 0.15
-const PIXEL_FONT = preload("res://script/ui/fonts/pxelfont/PixelifySans-VariableFont_wght.ttf")
-const STAT_FONT_SIZE := 17
+const PIXEL_FONT = preload("res://script/ui/fonts/m5x7/m5x7.ttf")
+const STAT_FONT_SIZE := 26
 const STAT_COLUMNS := 3
 ## Anzeige -> Getter am Monster
 const STATS := {

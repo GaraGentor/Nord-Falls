@@ -199,7 +199,7 @@ stretch_mode = 5
 custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.858824, 0.717647, 0.45098, 1)
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 33
 text = "0"
 
 [node name="ShardIcon" type="TextureRect" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow"]
@@ -215,7 +215,7 @@ stretch_mode = 5
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.858824, 0.717647, 0.45098, 1)
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 33
 text = "0"
 
 [node name="KeyIcon" type="TextureRect" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow"]
@@ -231,7 +231,7 @@ stretch_mode = 5
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.858824, 0.717647, 0.45098, 1)
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 33
 text = "0"
 
 [node name="CouponIcon" type="TextureRect" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow"]
@@ -247,7 +247,7 @@ stretch_mode = 5
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.858824, 0.717647, 0.45098, 1)
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 33
 text = "0"
 
 [node name="DepthLevel" type="Label" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow"]
@@ -255,15 +255,15 @@ layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 0
 mouse_default_cursor_shape = 2
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 33
 text = "Biom"
 
 [node name="BiomePath" type="RichTextLabel" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
-theme_override_font_sizes/normal_font_size = 16
-theme_override_font_sizes/bold_font_size = 18
+theme_override_font_sizes/normal_font_size = 24
+theme_override_font_sizes/bold_font_size = 27
 bbcode_enabled = true
 fit_content = true
 autowrap_mode = 0
@@ -445,7 +445,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 theme = ExtResource("5_pvajd")
 theme_override_constants/icon_max_width = 64
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 36
 flat = true
 icon_alignment = 1
 expand_icon = true

@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://drp8xp2csh7wy" path="res://script/scenes/selection/control.gd" id="1_7et7b"]
 [ext_resource type="Material" path="res://script/ui/shader/background_living_material.tres" id="2_bgmat"]
 [ext_resource type="Texture2D" uid="uid://dg1hlr48dxc8e" path="res://assets/sczene_backgrounds/egg_auswahl.jpg" id="3_bg"]
-[ext_resource type="FontFile" uid="uid://cbavibkhidesl" path="res://script/ui/fonts/pxelfont/PixelifySans-VariableFont_wght.ttf" id="4_tpsnj"]
+[ext_resource type="FontFile" uid="uid://ywpbdhg1g3f3" path="res://script/ui/fonts/m5x7/m5x7.ttf" id="4_tpsnj"]
 [ext_resource type="Script" uid="uid://c0ma7y4e244th" path="res://script/scenes/selection/egg_stage.gd" id="5_stage"]
 [ext_resource type="Script" uid="uid://bsftl68bgh2n1" path="res://script/scenes/selection/biome_path.gd" id="8_biome"]
 [ext_resource type="Theme" uid="uid://s3xpo0m4ka8" path="res://script/ui/materials/pixel_font_theme.tres" id="99_font_theme"]

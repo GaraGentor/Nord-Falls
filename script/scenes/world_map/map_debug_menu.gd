@@ -7,8 +7,8 @@ extends RewardDialog
 const ACCENT := Color(0.85, 0.3, 0.3)
 const COLUMNS := 6
 const BUTTON_SIZE := Vector2(170, 44)
-const BUTTON_FONT_SIZE := 16
-const HEADER_FONT_SIZE := 18
+const BUTTON_FONT_SIZE := 24
+const HEADER_FONT_SIZE := 27
 const MON_COLUMNS := 8
 const MON_BUTTON_SIZE := Vector2(130, 120)
 const MON_ICON_SIZE := 72
@@ -1073,7 +1073,7 @@ const DAMAGE_ROWS := [
 ]
 ## Höhe der scrollbaren Liste, passt samt Titel und Buttons in die 720 px hohe Ansicht
 const DAMAGE_LIST_HEIGHT := 480
-const DAMAGE_SIM_FONT_SIZE := 15
+const DAMAGE_SIM_FONT_SIZE := 23
 
 ## Regler rund um den Schaden, darunter eine Live-Übersicht der Treffer bis K.O.
 func _build_damage_page() -> void:

@@ -159,7 +159,7 @@ func _build_biome_tabs() -> void:
 		button.toggle_mode = true
 		button.button_group = group
 		_style_toggle(button)
-		button.add_theme_font_size_override("font_size", 14)
+		button.add_theme_font_size_override("font_size", 21)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		if depth == -1:
 			button.text = tr("RUN_END_SEARCH_ALL")
@@ -241,7 +241,7 @@ func _clear_detail() -> void:
 
 func _show_locked() -> void:
 	_clear_detail()
-	var hint = _label(tr("RUN_END_SEARCH_LOCKED"), 14)
+	var hint = _label(tr("RUN_END_SEARCH_LOCKED"), 21)
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint.add_theme_color_override("font_color", Color(TEXT_COLOR, 0.6))
 	detail_box.add_child(hint)
@@ -262,15 +262,15 @@ func _show_mon(mon_name: String) -> void:
 	header.add_child(portrait)
 	var info = VBoxContainer.new()
 	info.add_theme_constant_override("separation", 0)
-	var mon_title = _label(Helper.mon_display_name(mon_name), 20)
+	var mon_title = _label(Helper.mon_display_name(mon_name), 30)
 	mon_title.add_theme_color_override("font_color", GOLD)
 	info.add_child(mon_title)
 	# gesehene Monster hatten zusätzlich Elemente des Bioms
 	var type = sighting.get("type", meta_data.initial_type)
-	var element = _label(tr(ColorMap.get_combo(type).label), 14)
+	var element = _label(tr(ColorMap.get_combo(type).label), 21)
 	element.add_theme_color_override("font_color", Helper.color_by_type(type).lightened(0.25))
 	info.add_child(element)
-	info.add_child(_label("%s %d" % [tr("STAT_BST"), State.get_mon_stats(mon_name).best_points], 14))
+	info.add_child(_label("%s %d" % [tr("STAT_BST"), State.get_mon_stats(mon_name).best_points], 21))
 	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(info)
 	header.add_child(_view_toggle())
@@ -292,7 +292,7 @@ func _view_toggle() -> VBoxContainer:
 		button.button_group = group
 		_style_toggle(button)
 		button.text = tr(view[1])
-		button.add_theme_font_size_override("font_size", 12)
+		button.add_theme_font_size_override("font_size", 18)
 		button.button_pressed = _detail_view == view[0]
 		button.pressed.connect(func():
 			_detail_view = view[0]
@@ -308,21 +308,21 @@ func _show_stats(mon_name: String, sighting: Dictionary) -> void:
 	grid.add_theme_constant_override("h_separation", 8)
 	grid.add_theme_constant_override("v_separation", 2)
 	for text in ["", "", tr("RUN_END_SEARCH_BASE"), "Lv. %d" % sighting.level if not sighting.is_empty() else ""]:
-		var head = _label(text, 12)
+		var head = _label(text, 18)
 		head.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		head.add_theme_color_override("font_color", GOLD)
 		grid.add_child(head)
 	for stat in SEARCH_STATS:
 		var share: float = stats.growth[stat[1]]
 		var value = share * stats.best_points
-		var stat_name = _label(tr(stat[0]), 14)
+		var stat_name = _label(tr(stat[0]), 21)
 		stat_name.add_theme_color_override("font_color", GOLD)
 		grid.add_child(stat_name)
 		grid.add_child(_stat_bar(value))
-		var value_label = _label("%d (%d%%)" % [roundi(value), roundi(share * 100)], 14)
+		var value_label = _label("%d (%d%%)" % [roundi(value), roundi(share * 100)], 21)
 		value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		grid.add_child(value_label)
-		var seen_label = _label(str(roundi(sighting.stats[stat[1]])) if not sighting.is_empty() else "", 14)
+		var seen_label = _label(str(roundi(sighting.stats[stat[1]])) if not sighting.is_empty() else "", 21)
 		seen_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		grid.add_child(seen_label)
 	detail_box.add_child(grid)
@@ -339,7 +339,7 @@ func _show_stats(mon_name: String, sighting: Dictionary) -> void:
 	if not kills.is_empty():
 		var hardest = kills.reduce(func(a, b): return a if a.damage >= b.damage else b)
 		notes.append(tr("RUN_END_SEARCH_KILLS").format({"count": kills.size(), "skill": tr(hardest.skill), "damage": roundi(hardest.damage)}))
-	var note = _label("\n".join(PackedStringArray(notes)), 13)
+	var note = _label("\n".join(PackedStringArray(notes)), 20)
 	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	note.add_theme_color_override("font_color", Color(1, 0.55, 0.5, 1) if not kills.is_empty() else TEXT_COLOR)
 	detail_box.add_child(note)
@@ -376,7 +376,7 @@ func _show_skills(mon_name: String, sighting: Dictionary) -> void:
 	text.bbcode_enabled = true
 	text.fit_content = true
 	text.scroll_active = false
-	text.add_theme_font_size_override("normal_font_size", 13)
+	text.add_theme_font_size_override("normal_font_size", 20)
 	text.add_theme_color_override("default_color", TEXT_COLOR)
 	text.text = "\n".join(PackedStringArray(lines))
 	detail_box.add_child(text)
@@ -420,11 +420,11 @@ func _add_stat(key: String, value: String) -> void:
 	var name_label = Label.new()
 	name_label.text = tr(key)
 	name_label.add_theme_color_override("font_color", GOLD)
-	name_label.add_theme_font_size_override("font_size", 18)
+	name_label.add_theme_font_size_override("font_size", 27)
 	stats_grid.add_child(name_label)
 	var value_label = Label.new()
 	value_label.text = value
-	value_label.add_theme_font_size_override("font_size", 18)
+	value_label.add_theme_font_size_override("font_size", 27)
 	value_label.add_theme_color_override("font_color", TEXT_COLOR)
 	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	stats_grid.add_child(value_label)

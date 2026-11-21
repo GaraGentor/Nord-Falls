@@ -8,7 +8,7 @@ extends Control
 const BACK_TEXTURE = preload("res://assets/ui/jailer/bag_back.svg")
 const FRONT_TEXTURE = preload("res://assets/ui/jailer/bag_front.svg")
 const PROPS_MATERIAL = preload("res://script/scenes/jailer/jailer_props_material.tres")
-const PIXEL_FONT = preload("res://script/ui/fonts/pxelfont/PixelifySans-VariableFont_wght.ttf")
+const PIXEL_FONT = preload("res://script/ui/fonts/m5x7/m5x7.ttf")
 ## sichtbare Gegenstände: Mitte als Anteil der Taschengröße und Neigung in Grad, hinten zuerst
 const SPOTS := [[0.5, 0.2, 0.0], [0.27, 0.25, -18.0], [0.73, 0.25, 18.0], [0.38, 0.32, -7.0], [0.63, 0.32, 8.0]]
 const PLAQUE_CENTER := Vector2(0.5, 0.73)

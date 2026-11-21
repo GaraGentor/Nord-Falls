@@ -14,7 +14,7 @@ const CARD_SIZE := Vector2(340, 110)
 const ICON_SIZE := Vector2(90, 90)
 ## vertikale Karten: kleineres Bild und Titel, damit zwei Reihen auf den Bildschirm passen
 const VERTICAL_ICON_SIZE := Vector2(72, 72)
-const VERTICAL_TITLE_FONT_SIZE := 22
+const VERTICAL_TITLE_FONT_SIZE := 33
 const TARGET_SIZE := Vector2(120, 150)
 ## Höhe des Karten-Headers (world_map.tscn): darunter beginnt die Kartenfläche
 const MAP_HEADER_HEIGHT := 184.0
@@ -447,7 +447,7 @@ static func icon_button(texture: Texture2D) -> Button:
 static func plate_button(text: String) -> Button:
 	var button := Button.new()
 	button.theme = BUTTON_THEME
-	button.add_theme_font_size_override("font_size", 22)
+	button.add_theme_font_size_override("font_size", 33)
 	button.text = text
 	var margins := StyleBoxEmpty.new()
 	margins.content_margin_left = 16

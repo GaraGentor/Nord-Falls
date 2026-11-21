@@ -11,8 +11,8 @@ const SLOT_SIZE := Vector2(84, 84)
 const PORTRAIT_SIZE := Vector2(96, 96)
 const DETAIL_WIDTH := 300.0
 const DETAIL_ART_SIZE := Vector2(110, 110)
-const TITLE_FONT_SIZE := 24
-const TEXT_FONT_SIZE := 18
+const TITLE_FONT_SIZE := 36
+const TEXT_FONT_SIZE := 27
 const BACK_ICON := preload("res://assets/ui/icons/icon_back.svg")
 const HOVER_RIM := Color(0.5, 0.62, 0.63)
 ## so viele Zeilen teilen sich die Höhe der Team-Spalte (ein einzelnes Monster nimmt die Hälfte)
@@ -202,7 +202,7 @@ func _mon_entry(mon: Monster) -> Control:
 	var name_label := Label.new()
 	name_label.text = Helper.mon_battle_name(mon)
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", 16)
+	name_label.add_theme_font_size_override("font_size", 24)
 	name_label.add_theme_color_override("font_color", Helper.color_by_mon(mon).lightened(0.4))
 	info.add_child(name_label)
 	row.add_child(info)
@@ -240,17 +240,17 @@ func _show_selection() -> void:
 	art_holder.add_child(art)
 	_detail.add_child(art_holder)
 	_detail.add_child(_text(Items.title(item), TITLE_FONT_SIZE, SkillDetailPopup.GOLD))
-	_detail.add_child(_text(tr(Items.RARITY_LABELS[Items.rarity_of(item)]), TEXT_FONT_SIZE - 2, Items.rarity_color(item)))
+	_detail.add_child(_text(tr(Items.RARITY_LABELS[Items.rarity_of(item)]), TEXT_FONT_SIZE - 3, Items.rarity_color(item)))
 	_detail.add_child(_text(Items.description(item), TEXT_FONT_SIZE, IronPlate.TEXT_COLOR))
-	_detail.add_child(_text(Items.use_hint(item), TEXT_FONT_SIZE - 2, SkillDetailPopup.GOLD))
+	_detail.add_child(_text(Items.use_hint(item), TEXT_FONT_SIZE - 3, SkillDetailPopup.GOLD))
 	if _selected.mon == null:
-		_detail.add_child(_text(tr("INVENTORY_EQUIP_HINT"), TEXT_FONT_SIZE - 3, IronPlate.TEXT_COLOR))
+		_detail.add_child(_text(tr("INVENTORY_EQUIP_HINT"), TEXT_FONT_SIZE - 4, IronPlate.TEXT_COLOR))
 
 func _any_equipped() -> bool:
 	return State.mons.any(Items.has_items)
 
 func _heading(text: String) -> Label:
-	return _text(text, 20, SkillDetailPopup.GOLD)
+	return _text(text, 30, SkillDetailPopup.GOLD)
 
 func _text(text: String, font_size: int, color: Color) -> Label:
 	var label := Label.new()

@@ -7,9 +7,9 @@ extends Control
 ## Unterklassen füllen _build(content) und geben über _accent() die Randfarbe an.
 
 const LAYER := 50
-const SECTION_FONT_SIZE := 22
-const ROW_FONT_SIZE := 16
-const NOTE_FONT_SIZE := 15
+const SECTION_FONT_SIZE := 33
+const ROW_FONT_SIZE := 24
+const NOTE_FONT_SIZE := 23
 const NOTE_WIDTH := 640.0
 const STRONG_COLOR := Color(0.55, 0.9, 0.45)
 const WEAK_COLOR := SkillDetailPopup.MISSING_COLOR

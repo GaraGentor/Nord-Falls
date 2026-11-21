@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://m3rvs4wik3f2" path="res://script/scenes/battle/monster_switcher.tscn" id="3_xmagv"]
 [ext_resource type="Script" uid="uid://ci4eknn4ye3v3" path="res://script/scenes/battle/stats_grid_container.gd" id="4_jq4j5"]
 [ext_resource type="PackedScene" uid="uid://owmyxu3qq3so" path="res://script/ui/element_chip/element_chip.tscn" id="4_wkgyw"]
-[ext_resource type="FontFile" uid="uid://cbavibkhidesl" path="res://script/ui/fonts/pxelfont/PixelifySans-VariableFont_wght.ttf" id="5_4s83u"]
+[ext_resource type="FontFile" uid="uid://ywpbdhg1g3f3" path="res://script/ui/fonts/m5x7/m5x7.ttf" id="5_4s83u"]
 [ext_resource type="Texture2D" uid="uid://yg6oxnmiu0pd" path="res://assets/ui/icons/fist.svg" id="8_8nd3e"]
 [ext_resource type="Texture2D" uid="uid://djt3q5aymms0i" path="res://assets/ui/icons/sparkle.svg" id="9_7me2p"]
 [ext_resource type="Texture2D" uid="uid://cfrcn60nkchoe" path="res://assets/ui/icons/sword.svg" id="9_vmias"]
@@ -161,7 +161,7 @@ visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_fonts/font = ExtResource("5_4s83u")
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 21
 text = "ATK"
 
 [node name="Panel2" type="Panel" parent="MarginContainer/VBoxContainer" unique_id=61333713]

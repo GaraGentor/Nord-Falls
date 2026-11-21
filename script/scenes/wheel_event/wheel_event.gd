@@ -19,7 +19,7 @@ const SPIN_TURNS := 5
 
 ## Rad mit Gewinn-Hälfte (lokal 0..PI) und Verlust-Hälfte (PI..2PI), Zeiger oben
 class Wheel extends Control:
-	const TEXT_SIZE := 26
+	const TEXT_SIZE := 39
 
 	var win_text := ""
 	var lose_text := ""

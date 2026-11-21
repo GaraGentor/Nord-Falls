@@ -29,7 +29,7 @@ theme_override_constants/separation = 6
 
 [node name="NameLabel" type="Label" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 27
 text = "SKILL"
 horizontal_alignment = 1
 autowrap_mode = 3
@@ -47,7 +47,7 @@ custom_minimum_size = Vector2(1, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
-theme_override_font_sizes/normal_font_size = 12
+theme_override_font_sizes/normal_font_size = 18
 bbcode_enabled = true
 text = "Description"
 fit_content = true

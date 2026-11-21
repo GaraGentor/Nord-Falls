@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://script/ui/element_chip/element_chip.gd" id="1_4i3xj"]
 [ext_resource type="Script" path="res://script/ui/shader/iron_plate.gd" id="2_plate"]
-[ext_resource type="FontFile" path="res://script/ui/fonts/pxelfont/PixelifySans-VariableFont_wght.ttf" id="3_font"]
+[ext_resource type="FontFile" path="res://script/ui/fonts/m5x7/m5x7.ttf" id="3_font"]
 
 [node name="ElementChip" type="Control" node_paths=PackedStringArray("label", "plate")]
 layout_mode = 3
@@ -33,7 +33,7 @@ offset_bottom = 13.5
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_fonts/font = ExtResource("3_font")
-theme_override_font_sizes/font_size = 17
+theme_override_font_sizes/font_size = 26
 text = "FIRE"
 horizontal_alignment = 1
 vertical_alignment = 1

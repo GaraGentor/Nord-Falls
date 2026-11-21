@@ -9,7 +9,7 @@ const ENTRIES_WIDTH := 420.0
 const GLYPH_DOT_RADIUS := 12.0
 const GLYPH_SPAN := 56.0
 const GLYPH_LINE_WIDTH := 2.0
-const OPERATOR_FONT_SIZE := 26
+const OPERATOR_FONT_SIZE := 39
 
 var _mask: int
 

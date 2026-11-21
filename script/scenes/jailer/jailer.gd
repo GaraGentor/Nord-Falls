@@ -16,7 +16,7 @@ const REROLL_TEXTURE = preload("res://assets/ui/jailer/icon_reroll.svg")
 const EXIT_TEXTURE = preload("res://assets/ui/jailer/icon_exit.svg")
 ## Pixel-Look für Käfig, Beutel, Kristalle, Podest und Buttons, passend zum Hintergrund
 const PROPS_MATERIAL = preload("res://script/scenes/jailer/jailer_props_material.tres")
-const PIXEL_FONT = preload("res://script/ui/fonts/pxelfont/PixelifySans-VariableFont_wght.ttf")
+const PIXEL_FONT = preload("res://script/ui/fonts/m5x7/m5x7.ttf")
 const RARITY_STAR = preload("res://assets/ui/icons/rarity_star.svg")
 const LIVING_MATERIAL = preload("res://script/ui/shader/living_pixels_material.tres")
 const MOVES_BADGE = preload("res://script/ui/moves_badge/moves_badge.tscn")
@@ -50,7 +50,7 @@ const INTRO_SECONDS_PER_CHAR := 0.035
 class ShardBag extends RewardDialog.RewardCard:
 	const BAG_SIZE := Vector2(150, 142)
 	const SHARD_SIZE := Vector2(40, 60)
-	const FONT_SIZE := 22
+	const FONT_SIZE := 33
 
 	var _bag: OpenBag
 
@@ -96,8 +96,8 @@ class CageSlot extends VBoxContainer:
 	const STAR_CENTER := Vector2(140, 50)
 	const STAR_SIZE := 34.0
 	const PEDESTAL_HEIGHT := 44.0
-	const SIGN_FONT_SIZE := 22
-	const SIGN_TITLE_SIZE := 24
+	const SIGN_FONT_SIZE := 33
+	const SIGN_TITLE_SIZE := 36
 	const SIGN_MARGIN_X := 11
 	const SIGN_MARGIN_Y := 10
 	## Zeile "1x [Träne] = [Aktionen] -> [Aktionen]"
@@ -380,7 +380,7 @@ func _build_stage() -> void:
 	_reroll_button.pressed.connect(_reroll)
 	_reroll_price = Label.new()
 	_reroll_price.theme = LABEL_THEME
-	_reroll_price.add_theme_font_size_override("font_size", 20)
+	_reroll_price.add_theme_font_size_override("font_size", 30)
 	_reroll_price.text = Helper.me_text(REROLL_COST)
 	_reroll_price.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_reroll_price.vertical_alignment = VERTICAL_ALIGNMENT_CENTER

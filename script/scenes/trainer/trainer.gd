@@ -54,7 +54,7 @@ class TrainerStamp extends Control:
 	const TILT := -0.26
 	## Außenradius als Anteil der Kartenbreite
 	const RADIUS_SHARE := 0.42
-	const FONT_SIZE := 17
+	const FONT_SIZE := 26
 	const RING_GAP := 5.0
 	const TEXT_BAND := 22.0
 
@@ -115,13 +115,13 @@ class TrainerStamp extends Control:
 ## Tasche oben links, zeigt die Essenz (wie die Boss Tränen beim Kerkermeister), nur zur Anzeige
 const BAG_SIZE := Vector2(104, 98)
 const ESSENCE_SIZE := Vector2(34, 34)
-const BAG_FONT_SIZE := 18
+const BAG_FONT_SIZE := 27
 ## so viel Essenz steht für ein sichtbares Stück in der Tasche
 const ESSENCE_PER_ITEM := 25
 const TRAINER_CARD_SIZE := Vector2(210, 0)
 ## Höhe der Beschreibung auf der Karte, längere Texte scrollen von selbst (RewardDialog.scroll_description)
 const DESCRIPTION_HEIGHT := 104.0
-const TRAINER_TEXT_FONT_SIZE := 16
+const TRAINER_TEXT_FONT_SIZE := 24
 ## obere und untere Kartenzeile (Kosten, Sterne, Abklingzeit, Wert, Element) vergrößert
 const FACE_ROW_ZOOM := 1.3
 ## Chips unter den Monstern: Abstand zum Monster, Zeilenhöhe
@@ -139,7 +139,7 @@ const RECOMMENDED_OFFERS := 2
 
 ## Preis über jeder Karte: Höhe der Zeile (Kartenpixel), Schrift und ME-Icon
 const PRICE_HEIGHT := 46.0
-const PRICE_FONT_SIZE := 32
+const PRICE_FONT_SIZE := 48
 const PRICE_ICON_SIZE := Vector2(36, 36)
 
 ## Karten so groß wie die Ei-Attacken auf dem Tisch im Ei-Konfigurator (dort CARD_SIZE.x * TABLE_SCALE,

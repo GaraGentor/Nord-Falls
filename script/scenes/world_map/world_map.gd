@@ -219,7 +219,7 @@ func add_settings_button() -> void:
 # Nur in Debug-Builds: links neben dem Einstellungen-Button im Header
 func add_debug_button() -> void:
 	var button := RewardDialog.plate_button("DEBUG")
-	button.add_theme_font_size_override("font_size", 16)
+	button.add_theme_font_size_override("font_size", 24)
 	button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
 	button.offset_left = -236.0
 	button.offset_top = -60.0
@@ -332,7 +332,7 @@ func make_enemy_badge() -> Label:
 	var badge := Label.new()
 	badge.name = ENEMY_BADGE_NAME
 	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	badge.add_theme_font_size_override("font_size", 28)
+	badge.add_theme_font_size_override("font_size", 42)
 	badge.add_theme_color_override("font_color", SkillDetailPopup.GOLD)
 	badge.add_theme_color_override("font_outline_color", Color.BLACK)
 	badge.add_theme_constant_override("outline_size", 8)

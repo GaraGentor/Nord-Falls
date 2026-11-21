@@ -63,14 +63,14 @@ theme_override_constants/separation = 8
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 30
 text = "[NAME]"
 text_overrun_behavior = 3
 
 [node name="Level" type="Label" parent="Info/Margin/Content/Header"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.86, 0.83, 0.72, 1)
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 30
 text = "Lv 1"
 
 [node name="HpBar" type="ProgressBar" parent="Info/Margin/Content"]
@@ -90,7 +90,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 21
 horizontal_alignment = 1
 vertical_alignment = 1
 

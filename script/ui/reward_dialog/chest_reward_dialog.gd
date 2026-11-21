@@ -18,8 +18,8 @@ const RUG_TINT := Color(0.55, 0.55, 0.55)
 const STAGE_WIDTH := 400.0
 const LOOT_WIDTH := 140.0
 const LOOT_ICON_SIZE := Vector2(64, 64)
-const LOOT_TITLE_FONT_SIZE := 16
-const LOOT_TEXT_FONT_SIZE := 13
+const LOOT_TITLE_FONT_SIZE := 24
+const LOOT_TEXT_FONT_SIZE := 20
 ## Anzahl Preise -> Liegeplätze auf dem Teppich, Mitte des Preises als Anteil der Bühne
 const LOOT_SPOTS := {
 	1: [Vector2(0.5, 0.5)],

@@ -11,8 +11,8 @@ const LIST_SIZE := Vector2(700, 470)
 const COLUMNS := 4
 const ENTRY_WIDTH := 150.0
 const IMAGE_SIZE := Vector2(110, 110)
-const NAME_FONT_SIZE := 17
-const INFO_FONT_SIZE := 14
+const NAME_FONT_SIZE := 26
+const INFO_FONT_SIZE := 21
 const SILHOUETTE := Color(0.04, 0.04, 0.05)
 const UNKNOWN_COLOR := Color(0.5, 0.5, 0.48)
 ## Ei hinter besessenen Arten: füllt die Kachel bis auf den Rand, abgedunkelt, damit der Inhalt lesbar bleibt
@@ -160,8 +160,8 @@ class SpeciesSkillsDialog extends InfoDialog:
 	const LIST_SIZE := Vector2(760, 420)
 	const COLUMNS := 3
 	const CARD_SIZE := Vector2(200, 210)
-	const CARD_TITLE_SIZE := 16
-	const SOURCE_FONT_SIZE := 13
+	const CARD_TITLE_SIZE := 24
+	const SOURCE_FONT_SIZE := 20
 
 	var _mon_name: String
 	var _locked_cards: Array[EggSkillCard] = []

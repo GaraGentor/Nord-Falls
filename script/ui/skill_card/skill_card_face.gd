@@ -15,7 +15,7 @@ extends RefCounted
 const MOVES_BADGE := preload("res://script/ui/moves_badge/moves_badge.tscn")
 const STAR_TEXTURE := preload("res://assets/ui/icons/rarity_star.svg")
 const CLOCK_TEXTURE := preload("res://assets/ui/icons/clock.svg")
-const PIXEL_FONT := preload("res://script/ui/fonts/pxelfont/PixelifySans-VariableFont_wght.ttf")
+const PIXEL_FONT := preload("res://script/ui/fonts/m5x7/m5x7.ttf")
 const STAR_COLOR := Color(0.858824, 0.717647, 0.45098, 1)
 const TEXT_COLOR := Color(1.0, 0.95, 0.85)
 ## Hinweis in der Beschreibung der Kampfkarte, wenn Elemente fehlen oder die Abklingzeit läuft (battle_card).
@@ -23,12 +23,12 @@ const TEXT_COLOR := Color(1.0, 0.95, 0.85)
 const COOLDOWN_COLOR := Color(1, 0.45, 0.45)
 const STAR_SIZE := 14.0
 const ICON_SIZE := 20.0
-const FONT_SIZE := 15
-const ELEMENT_FONT_SIZE := 13
+const FONT_SIZE := 23
+const ELEMENT_FONT_SIZE := 20
 ## Schrift des Werts, bis die Karte die Größe ihres Namens setzt (BottomRow.set_value_size)
-const VALUE_FONT_SIZE := 20
+const VALUE_FONT_SIZE := 30
 ## so viel größer als der Name der Karte steht der Wert
-const VALUE_SIZE_BONUS := 2
+const VALUE_SIZE_BONUS := 3
 ## Art-Symbol neben dem Wert bzw. allein (Passiv, Buff, Debuff), als Vielfaches der Wert-Schriftgröße
 const VALUE_ICON_SCALE := 1.3
 const ICON_ONLY_SCALE := 1.8
@@ -62,7 +62,7 @@ class TopRow extends Control:
 		cost_badge.custom_minimum_size = SkillCardFace.BADGE_SIZE
 		cost_badge.size = SkillCardFace.BADGE_SIZE
 		cost_badge.position = SkillCardFace.BADGE_OFFSET
-		cost_badge.label.add_theme_font_size_override("font_size", 16)
+		cost_badge.label.add_theme_font_size_override("font_size", 24)
 		cost_badge.label.add_theme_constant_override("outline_size", 4)
 		SkillCardFace.ignore_mouse(cost_badge)
 		add_child(cost_badge)
@@ -194,7 +194,7 @@ class BottomRow extends VBoxContainer:
 		_kind.custom_minimum_size = Vector2(icon_size, icon_size)
 
 ## Kleinste Schrift für den Skill-Namen, falls er selbst so nicht in TITLE_MAX_LINES Zeilen passt
-const MIN_TITLE_FONT_SIZE := 9
+const MIN_TITLE_FONT_SIZE := 14
 const TITLE_MAX_LINES := 2
 
 ## Skill-Name höchstens TITLE_MAX_LINES Zeilen: passt er bei base_size nicht, wird die Schrift kleiner.

@@ -19,7 +19,7 @@ const BORDER := Color(0.858824, 0.717647, 0.45098)
 const BORDER_HOVER := Color(1.0, 0.92, 0.65)
 const TEXT_COLOR := Color(0.858824, 0.717647, 0.45098)
 const TEXT_OFF := Color(0.55, 0.5, 0.4)
-const FONT_SIZE := 18
+const FONT_SIZE := 27
 const MARGIN := 8
 
 ## gewählte Stufe (Index in SPEEDS), gilt für alle Kämpfe des Spiels

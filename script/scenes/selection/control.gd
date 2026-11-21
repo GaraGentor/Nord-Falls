@@ -9,7 +9,7 @@ const ELEMENT_CHIP := preload("res://script/ui/element_chip/element_chip.tscn")
 const GOLD := SkillDetailPopup.GOLD
 const MUTED := IronPlate.TEXT_COLOR
 ## Werte unter dem Netzdiagramm (StatsGrid wie im Kampf)
-const STATS_FONT_SIZE := 14
+const STATS_FONT_SIZE := 21
 ## Faule Eier fliegen doppelt so schnell herein
 const REROLL_SPEED := 2.0
 const EGG_COUNT := 3
@@ -23,12 +23,12 @@ const CORNER_BUTTON_GAP := 10.0
 const GUIDE_ICON := preload("res://assets/ui/icons/guide_book.svg")
 const COLLECTION_ICON := preload("res://assets/ui/icons/collection_eggs.svg")
 const MENU_BUTTON_WIDTH := 280.0
-const MENU_FONT_SIZE := 24
-const ACTION_FONT_SIZE := 28
-const FAILURES_FONT_SIZE := 20
+const MENU_FONT_SIZE := 36
+const ACTION_FONT_SIZE := 42
+const FAILURES_FONT_SIZE := 30
 ## Abstand der Fehlschläge zum unteren Rand des Bildes
 const FAILURES_BOTTOM := 24
-const NAME_FONT_SIZE := 30
+const NAME_FONT_SIZE := 45
 const RADAR_MIN_HEIGHT := 250.0
 const FADE_SECONDS := 0.3
 
@@ -301,7 +301,7 @@ func _build_details() -> void:
 	radar_box.mouse_filter = MOUSE_FILTER_IGNORE
 	IronPlate.frame(radar_panel, radar_box, 10, 8)
 	_details.add_child(radar_panel)
-	var heading := _label(17, GOLD)
+	var heading := _label(26, GOLD)
 	heading.text = tr("JUDGEMENT_GROWTH")
 	radar_box.add_child(heading)
 	_radar = GrowthRadar.new()

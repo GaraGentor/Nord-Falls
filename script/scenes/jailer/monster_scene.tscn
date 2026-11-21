@@ -88,7 +88,7 @@ offset_bottom = 11.5
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("4_lnwu2")
-theme_override_font_sizes/font_size = 40
+theme_override_font_sizes/font_size = 60
 text = "JAILER_SOLD"
 
 [node name="MaxUpgrade" type="Panel" parent="Panel/MarginContainer" unique_id=1016260237]
@@ -109,7 +109,7 @@ offset_bottom = 11.5
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("4_lnwu2")
-theme_override_font_sizes/font_size = 40
+theme_override_font_sizes/font_size = 60
 text = "JAILER_MAX_UPGRADE"
 
 [connection signal="pressed" from="Panel/MarginContainer/VBoxContainer/Button" to="." method="_on_buy_pressed"]

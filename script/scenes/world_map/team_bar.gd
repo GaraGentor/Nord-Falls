@@ -9,7 +9,7 @@ const BAR_SIZE := Vector2(150, 10)
 const RARITY_STAR := preload("res://assets/ui/icons/rarity_star.svg")
 const LIVING_MATERIAL := preload("res://script/ui/shader/living_pixels_material.tres")
 const STAR_SIZE := Vector2(14, 14)
-const FONT_SIZE := 16
+const FONT_SIZE := 24
 
 ## refresh ist schon für das Ende des Frames vorgemerkt (beim Heilen ändern sich die KP jeden Frame)
 var _refresh_queued := false
@@ -82,7 +82,7 @@ func _entry(mon: Monster) -> Control:
 
 	var hp_label := Label.new()
 	hp_label.text = tr("MAP_TEAM_HP").format({"hp": roundi(hp), "max": roundi(max_hp)})
-	hp_label.add_theme_font_size_override("font_size", FONT_SIZE - 3)
+	hp_label.add_theme_font_size_override("font_size", FONT_SIZE - 4)
 	hp_label.add_theme_color_override("font_color", IronPlate.TEXT_COLOR)
 	# daneben der Seltenheits-Stern wie auf der Kampf-Karte (BattleMonCard)
 	var hp_row := HBoxContainer.new()

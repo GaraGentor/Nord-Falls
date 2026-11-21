@@ -26,7 +26,7 @@ const ICONS := {
 const ICON_ALPHA := 0.8
 ## Symbolgröße relativ zur Schriftgröße der Beschriftung
 const ICON_SCALE := 1.15
-const DEFAULT_FONT_SIZE := 16
+const DEFAULT_FONT_SIZE := 24
 ## Trophäen-Bonus hinter der Zahl ("+6" in Grün), etwas kleiner als die Zahl
 const TROPHY_BONUS_FONT_SCALE := 0.8
 const TROPHY_ICON_SCALE := 1.1
@@ -37,7 +37,7 @@ var plabels: Array[Label] = []
 var _value_labels := {}
 
 ## Werte-Tabelle ohne eigene Szene, mit stacked-Layout (trophies: Trophäen-Anteil und Trophäen unter den Werten)
-static func stacked_for(monster: Monster, font_size := 15, trophies := false) -> StatsGrid:
+static func stacked_for(monster: Monster, font_size := 23, trophies := false) -> StatsGrid:
 	var grid := StatsGrid.new()
 	grid.stacked = true
 	grid.show_trophies = trophies

@@ -177,7 +177,7 @@ func _show_egg_category_info(category: Dictionary, entry: Dictionary) -> void:
 		group_box.add_child(divider)
 		var group_label := _label(tr(group[0]), EGG_SKILL_COLOR)
 		group_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-		group_label.add_theme_font_size_override("font_size", 15)
+		group_label.add_theme_font_size_override("font_size", 23)
 		group_box.add_child(group_label)
 		for skill_name in group[1]:
 			var skill := Skills.get_skill(skill_name)
@@ -214,10 +214,10 @@ func _show_egg_category_info(category: Dictionary, entry: Dictionary) -> void:
 # ─────────────────────────
 # Details eines Skills im Popup neben dem Panel (SkillDetailPopup): Ei-Attacken der Auswahl und Skills im Kampf.
 
-const EGG_CATEGORY_FONT_SIZE := 20
+const EGG_CATEGORY_FONT_SIZE := 30
 const EGG_GROUP_SEPARATION := 20
 const EGG_DIVIDER_HEIGHT := 2.0
-const SKILL_FONT_SIZE := 18
+const SKILL_FONT_SIZE := 27
 
 var _egg_skill_list: VBoxContainer
 var _detail_popup: SkillDetailPopup

@@ -9,10 +9,10 @@ extends Control
 const BATTLE_CARD := preload("res://script/scenes/battle/battle_card.tscn")
 const ELEMENT_CHIP := preload("res://script/ui/element_chip/element_chip.tscn")
 const PORTRAIT_SIZE := Vector2(160, 160)
-const NAME_FONT_SIZE := 26
+const NAME_FONT_SIZE := 39
 const CHIP_HEIGHT := 32.0
 ## Werte wie im Kampf: Schriftgröße und Breite der Platte im BattleInfoPanel (580 breit, je 12 Rand)
-const STATS_FONT_SIZE := 15
+const STATS_FONT_SIZE := 23
 const STATS_WIDTH := 556.0
 const RADAR_MIN_SIZE := Vector2(190, 150)
 ## Höhe so, dass die Karten samt Rand-Effekten (SkillCardPaper.FLAME_PAD) unter dem Map-Header auf den Bildschirm passen
@@ -113,7 +113,7 @@ func _radar() -> Control:
 	var heading := Label.new()
 	heading.text = tr("JUDGEMENT_GROWTH")
 	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	heading.add_theme_font_size_override("font_size", 17)
+	heading.add_theme_font_size_override("font_size", 26)
 	heading.add_theme_color_override("font_color", SkillDetailPopup.GOLD)
 	box.add_child(heading)
 	var radar := GrowthRadar.new()

@@ -70,7 +70,7 @@ const ARC_AREA := Rect2(120, 30, 1136, 460)
 ## Mitte der Zähler auf der Vorderseite der Truhen (Bildpixel): so viele Karten liegen noch darin
 const CHEST_COUNT_LEFT := Vector2(222, 600)
 const CHEST_COUNT_RIGHT := Vector2(1154, 600)
-const CHEST_COUNT_FONT_SIZE := 22
+const CHEST_COUNT_FONT_SIZE := 33
 ## leere Truhe: Zähler gedimmt
 const CHEST_EMPTY_ALPHA := 0.45
 
@@ -222,7 +222,7 @@ func _build() -> void:
 
 	_bottom_row = HBoxContainer.new()
 	_bottom_row.add_theme_constant_override("separation", 16)
-	_counter_label = _label("", 22, TEXT_COLOR)
+	_counter_label = _label("", 33, TEXT_COLOR)
 	var counter_panel := PanelContainer.new()
 	counter_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	IronPlate.frame(counter_panel, _counter_label, 16, 10)
