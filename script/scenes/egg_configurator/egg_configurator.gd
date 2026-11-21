@@ -208,7 +208,7 @@ func _build() -> void:
 	_card_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(_card_layer)
 	for skill_name in Skills.get_available_egg_skills(_mon._name):
-		var entry := _add_entry(Skills.get_skill(skill_name), "", "")
+		var entry := _add_entry(Skills.carried_egg_skill(skill_name), "", "")
 		# wie die Attacke freigeschaltet wurde
 		var source := Skills.get_egg_skill_source(_mon._name, skill_name)
 		if not source.is_empty():
@@ -718,7 +718,7 @@ func _on_go_pressed() -> void:
 	SaveManager.set_egg_loadout(_mon._name, _selected())
 	_mon._skills = []
 	for skill_name in _selected():
-		var skill = Skills.get_skill(skill_name)
+		var skill = Skills.carried_egg_skill(skill_name)
 		if skill.is_empty():
 			continue
 		skill.scouted = true

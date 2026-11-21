@@ -209,7 +209,7 @@ class SpeciesSkillsDialog extends InfoDialog:
 			list.add_child(_section(tr("COLLECTION_SKILLS_UNLOCKED")))
 			var grid := _grid(list)
 			for skill_name in egg_skills.available:
-				var skill := Skills.get_skill(skill_name)
+				var skill := Skills.carried_egg_skill(skill_name)
 				if skill.is_empty():
 					continue
 				var source := Skills.get_egg_skill_source(_mon_name, skill_name)

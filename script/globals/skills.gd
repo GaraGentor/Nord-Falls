@@ -561,12 +561,13 @@ func knows_skill(mon: Monster, skill_name: String) -> bool:
 	return mon._skills.any(func(skill): return skill.name == skill_name)
 
 # ─────────────────────────
-# Element-Regel: Ein Monster kann einen Skill einsetzen, sobald es mindestens ein Element des Skills hat
-# (ein Luft-Monster kann keine Magma-Attacke spielen, ein Erde-Monster schon).
-# Hat es alle Elemente, ist der Skill wach: volle Stärke und Element-Effekt
+# Element-Regel: Hat ein Monster alle Elemente des Skills, ist der Skill wach: volle Stärke und Element-Effekt
 # (Vulkan = Erde+Feuer+Wasser spielt z. B. Erde, Feuer, Wasser, Magma, Schlamm, Dampf und Vulkan wach).
-# Fehlen ihm welche, schlummert der Skill (effective_skill): weniger Wert, kein Element-Effekt, und er trifft nur mit
-# den Elementen, die das Monster hat. Jeder Trank mit einem fehlenden Element macht ihn stärker, mit dem letzten erwacht er.
+# Sonst ist der Skill gesperrt. Ausnahme (may_slumber): mitgenommene Ei-Attacken ("carried", siehe carried_egg_skill)
+# und alle Skills, wenn GameSettings.dormant_skills an ist. Die schlummern schon, sobald das Monster mindestens ein
+# Element des Skills hat (ein Luft-Monster kann keine Magma-Attacke spielen, ein Erde-Monster schon): weniger Wert,
+# kein Element-Effekt (effective_skill), und sie treffen nur mit den Elementen, die das Monster hat.
+# Jeder Trank mit einem fehlenden Element macht sie stärker, mit dem letzten erwachen sie.
 
 ## Stärke eines schlummernden Skills: DORMANT_BASE_POWER + Rest anteilig nach vorhandenen Elementen
 ## (Magma-Attacke mit Erde: 1 von 2 -> 70 %, Vulkan-Attacke mit Erde: 1 von 3 -> 60 %, mit Magma: 2 von 3 -> 80 %)
@@ -579,12 +580,26 @@ func shares_element(type_mask: int, nature: int) -> bool:
 	return nature == 0 or nature & type_mask != 0
 
 func can_use(mon: Monster, skill: Dictionary) -> bool:
-	return shares_element(mon._type, skill.nature)
+	if covers(mon._type, skill.nature):
+		return true
+	return may_slumber(skill) and shares_element(mon._type, skill.nature)
 
+## Darf der Skill schlummern, also mit nur einem Teil seiner Elemente eingesetzt werden? Siehe Element-Regel oben.
+func may_slumber(skill: Dictionary) -> bool:
+	return skill.get("carried", false) or GameSettings.dormant_skills
+
+## Für die Ei-Auswahl: der Skill gilt als mitgenommene Ei-Attacke.
 ## Unbekannte Skill-Namen (z. B. gelöschte Skills) gelten als nicht einsetzbar statt abzustürzen.
 func can_use_name(mon: Monster, skill_name: String) -> bool:
+	var skill = carried_egg_skill(skill_name)
+	return not skill.is_empty() and can_use(mon, skill)
+
+## Ei-Attacke, wie das Monster sie aus dem Ei mit in den Run nimmt: darf schlummern (may_slumber)
+func carried_egg_skill(skill_name: String) -> Dictionary:
 	var skill = get_skill(skill_name)
-	return not skill.is_empty() and shares_element(mon._type, skill.nature)
+	if not skill.is_empty():
+		skill.carried = true
+	return skill
 
 ## Hat das Monster alle Elemente des Skills? (Gegner und wilde Monster bekommen nur solche Skills)
 func is_awake(mon: Monster, skill: Dictionary) -> bool:
@@ -633,13 +648,14 @@ func _element_list(elements: Array) -> String:
 	var labels = elements.map(func(element): return tr(ColorMap.get_combo(element).label))
 	return ", ".join(PackedStringArray(labels))
 
-# Warum das Monster den Skill nicht einsetzen kann: "Benötigt: Feuer" bzw. "Benötigt eins von: Erde, Feuer"
-# ("" wenn einsetzbar, auch schlummernd).
+# Warum das Monster den Skill nicht einsetzen kann: "Benötigt: Feuer, Wasser" bzw. (darf schlummern)
+# "Benötigt eins von: Erde, Feuer" ("" wenn einsetzbar, auch schlummernd).
 func missing_elements_text(mon: Monster, skill: Dictionary) -> String:
 	if can_use(mon, skill):
 		return ""
 	var missing = missing_elements(mon, skill)
-	var key := "SKILL_NEEDS_ELEMENTS" if missing.size() == 1 else "SKILL_NEEDS_ONE_ELEMENT"
+	# ohne Schlummern braucht der Skill alle fehlenden Elemente, sonst reicht eins davon
+	var key := "SKILL_NEEDS_ELEMENTS" if missing.size() == 1 or not may_slumber(skill) else "SKILL_NEEDS_ONE_ELEMENT"
 	return tr(key).format({"elements": _element_list(missing)})
 
 # Schlummernder Skill: "Schlummert: 70 % Stärke, trifft als Erde" und darunter "Erwacht mit: Feuer" ("" sonst).
@@ -677,6 +693,8 @@ func learnable_copy(skill: Dictionary) -> Dictionary:
 	var copy = skill.duplicate()
 	copy.id = Helper.generate_fake_uuid()
 	copy.erase("egg_skill")
+	# gelernt (vom Gegner, vererbt) ist es keine mitgenommene Ei-Attacke mehr
+	copy.erase("carried")
 	# gelernte Attacken sind dem eigenen Monster bekannt, auch wenn der Gegner sie nie eingesetzt hat
 	copy.scouted = true
 	return copy
@@ -963,79 +981,79 @@ const BOUNTIES = [
 	{"key": "alpha_1", "mon": "22", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_2", "mon": "4", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_3", "mon": "80", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_4", "mon": "18", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_5", "mon": "21", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_4", "mon": "16", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_5", "mon": "22", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_6", "mon": "13", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_7", "mon": "43", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_8", "mon": "2", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_7", "mon": "42", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_8", "mon": "1", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_9", "mon": "5", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_10", "mon": "3", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_11", "mon": "81", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_12", "mon": "75", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_13", "mon": "41", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_14", "mon": "17", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_14", "mon": "16", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_15", "mon": "15", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_16", "mon": "4", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_17", "mon": "59", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_18", "mon": "81", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_19", "mon": "46", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_18", "mon": "78", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_19", "mon": "43", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_20", "mon": "16", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_21", "mon": "64", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_22", "mon": "18", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_21", "mon": "67", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_22", "mon": "21", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_23", "mon": "82", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_24", "mon": "17", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_25", "mon": "7", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_26", "mon": "76", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_27", "mon": "10", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_28", "mon": "24", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_29", "mon": "22", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_29", "mon": "21", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_30", "mon": "68", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_31", "mon": "81", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_33", "mon": "46", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_36", "mon": "15", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_33", "mon": "45", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_36", "mon": "11", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_37", "mon": "46", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_38", "mon": "11", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_39", "mon": "19", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_40", "mon": "5", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_41", "mon": "41", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_42", "mon": "64", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_41", "mon": "46", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_42", "mon": "67", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_43", "mon": "11", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_45", "mon": "16", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_45", "mon": "15", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_46", "mon": "46", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_47", "mon": "17", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_48", "mon": "46", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_48", "mon": "46", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_49", "mon": "22", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_50", "mon": "64", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_51", "mon": "16", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_51", "mon": "15", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_52", "mon": "76", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_53", "mon": "40", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_53", "mon": "39", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_54", "mon": "15", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_55", "mon": "14", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_56", "mon": "67", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_57", "mon": "36", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_57", "mon": "27", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_59", "mon": "15", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_60", "mon": "6", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_60", "mon": "5", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_61", "mon": "21", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_62", "mon": "3", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_63", "mon": "18", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_63", "mon": "20", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_64", "mon": "81", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_66", "mon": "1", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_67", "mon": "11", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_67", "mon": "5", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_68", "mon": "9", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_69", "mon": "20", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_69", "mon": "19", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_70", "mon": "74", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_71", "mon": "57", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_72", "mon": "63", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_73", "mon": "15", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_74", "mon": "4", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_75", "mon": "21", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_76", "mon": "56", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_76", "mon": "50", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_77", "mon": "3", "level_bonus": 3, "min_depth": 3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_78", "mon": "24", "level_bonus": 3, "min_depth": 2, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 	{"key": "alpha_79", "mon": "64", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_80", "mon": "76", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_81", "mon": "11", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
-	{"key": "alpha_82", "mon": "11", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_85", "mon": "31", "level_bonus": 4, "min_depth": 4, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_80", "mon": "80", "level_bonus": 2, "min_depth": 1, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_81", "mon": "5", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
+	{"key": "alpha_82", "mon": "5", "level_bonus": 2, "min_depth": 0, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT", "source_hint": "BOUNTY_SOURCE"},
 ]
 
 # Chance pro normalem Kampf, dass ein Kopfgeld-Monster eingestreut wird (zusätzlich zu denen, die von selbst kommen).
@@ -1251,6 +1269,7 @@ var egg_skills = [
 	_attack_skill("SKILL_WATER_PHYS_TIDE_SLAP", WATER, 12.0, 0.3, PHYS, 2, 1, 1),
 	_attack_skill("SKILL_WATER_MAG_BUBBLE_BEAM", WATER, 12.0, 0.3, MAG, 2, 1, 1),
 	_attack_skill("SKILL_WATER_MAG_HYDRO_LANCE_SWIFT", WATER, 12.0, 0.3, MAG, 3, 0, 1),
+	_attack_skill("SKILL_WATER_PHYS_BREAKER_SWIFT", WATER, 12.0, 0.3, PHYS, 3, 0, 1),
 	_attack_skill("SKILL_WATER_PHYS_BREAKER", WATER, 15.0, 0.37, PHYS, 3, 2, 1),
 	_attack_skill("SKILL_WATER_MAG_HYDRO_LANCE", WATER, 15.0, 0.37, MAG, 3, 2, 1),
 	# Erde
@@ -1311,6 +1330,8 @@ var defensive_skills = [
 	# Luft
 	_shield_skill("SKILL_AIR_ARMOR_DRAFT_GUARD", AIR, 12.0, 0.3, 2, 1, 1),
 	_shield_skill("SKILL_AIR_ARMOR_GALE_WALL", AIR, 16.0, 0.37, 3, 2, 1),
+	# Dampf
+	_shield_skill("SKILL_STEAM_ARMOR_VAPOR_PLATE", STEAM, 25.0, 0.45, 3, 2, 1),
 	# Blitz
 	_shield_skill("SKILL_LIGHTNING_ARMOR_STATIC_PLATE", LIGHTNING, 25.0, 0.45, 3, 2, 1),
 	# Magma
@@ -1328,6 +1349,7 @@ var buff_skills = [
 	_buff_skill("SKILL_FIRE_BUFF_ATK", FIRE, "atk", 25.0, 2, 2, 2, 1),
 	_buff_skill("SKILL_FIRE_BUFF_S_ATK", FIRE, "s_atk", 25.0, 2, 2, 2, 1),
 	_team_buff_skill("SKILL_FIRE_BUFF_TEAM_S_ATK", FIRE, "s_atk", 12.0, 2, 3, 3, 1),
+	_boon_skill("SKILL_FIRE_BOON_FOCUS_FLAME", FIRE, "crit_next", 50.0, -1, SELF, "atk", 3, 2, 1, "SKILL_BOON_CRIT_NEXT_DESC"),
 	# Wasser
 	_buff_skill("SKILL_WATER_BUFF_ATK", WATER, "atk", 25.0, 2, 2, 2, 1),
 	_buff_skill("SKILL_WATER_BUFF_DEF", WATER, "def", 25.0, 2, 2, 2, 1),
@@ -1423,7 +1445,6 @@ var milestone_skills = [
 	_attack_skill("SKILL_ASH_STORM_PHYS_CINDER_CLAW", ASH_STORM, 60.0, 0.8, PHYS, 3, 3, 3),
 	_attack_skill("SKILL_ASH_STORM_MAG_ASH_CYCLONE", ASH_STORM, 60.0, 0.8, MAG, 3, 3, 3),
 	_attack_skill("SKILL_ASH_STORM_PHYS_SOOT_STRIKE", ASH_STORM, 22.0, 0.55, PHYS, 3, 1, 1),
-	_attack_skill("SKILL_ASH_STORM_MAG_EMBER_GUST", ASH_STORM, 22.0, 0.55, MAG, 3, 1, 1),
 	# Sumpf
 	_attack_skill("SKILL_SWAMP_PHYS_ROOT_LASH", SWAMP, 55.0, 0.75, PHYS, 3, 3, 3),
 	_attack_skill("SKILL_SWAMP_MAG_MIASMA_CLOUD", SWAMP, 60.0, 0.8, MAG, 3, 3, 3),
@@ -1444,10 +1465,6 @@ var bounty_skills = [
 ]
 # Nur im Couvert der Bosse: Skills ab Stufe 2, die keine Art benutzt
 var reward_skills = [
-	# Feuer
-	_boon_skill("SKILL_FIRE_BOON_FOCUS_FLAME", FIRE, "crit_next", 50.0, -1, SELF, "atk", 3, 2, 1, "SKILL_BOON_CRIT_NEXT_DESC"),
-	# Dampf
-	_shield_skill("SKILL_STEAM_ARMOR_VAPOR_PLATE", STEAM, 25.0, 0.45, 3, 2, 1),
 	# Magma
 	_attack_skill("SKILL_MAGMA_MAG_MAGMA_BURST", MAGMA, 30.0, 0.5, MAG, 3, 2, 2),
 	# Schlamm
@@ -1458,6 +1475,7 @@ var reward_skills = [
 	_attack_skill("SKILL_VOLCANO_MAG_FUME_BURST", VOLCANO, 20.0, 0.5, MAG, 3, 1, 1),
 	_attack_skill("SKILL_VOLCANO_PHYS_MAGMA_TITAN", VOLCANO, 80.0, 1.0, PHYS, 4, 4, 3),
 	# Aschesturm
+	_attack_skill("SKILL_ASH_STORM_MAG_EMBER_GUST", ASH_STORM, 22.0, 0.55, MAG, 3, 1, 1),
 	_shield_skill("SKILL_ASH_STORM_ARMOR_SLAG_ARMOR", ASH_STORM, 60.0, 0.8, 3, 3, 3),
 	# Sumpf
 	_shield_skill("SKILL_SWAMP_ARMOR_MANGROVE_WALL", SWAMP, 60.0, 0.8, 3, 3, 3),

@@ -324,7 +324,7 @@ func show_skills(mon: Monster) -> void:
 	if mon == null:
 		return
 	for skill_name in Skills.get_available_egg_skills(mon._name):
-		var skill := Skills.get_skill(skill_name)
+		var skill := Skills.carried_egg_skill(skill_name)
 		if skill.is_empty():
 			continue
 		var card := EggSkillCard.create(skill, mon)

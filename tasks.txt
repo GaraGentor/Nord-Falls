@@ -23,6 +23,9 @@ Tasks:
 > Wenn man Easy Mode ausschaltet, kann man den letzten Endboss fangen
 	> Schwarze Tür dropped beim Endboss als loot, beim aufheben wird direkt ein neuer Endboss kampf getriggert mit dem Clue, dass dort der Endboss gefangen werden kann und der Run beendet wird ohne loot.?
 > Relikt Bilder generieren
+> Kack Schrift ändern!
+> Bilder besser Freistellen Tranzparenz herstellen
+> Bei den Element Boni checken, ob die Darstellung davon ausreichen ist (poison, paralyziert etc.)
 
 	 
 

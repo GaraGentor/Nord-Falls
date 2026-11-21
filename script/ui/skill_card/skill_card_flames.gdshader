@@ -3,7 +3,7 @@ shader_type canvas_item;
 // Pixel-Effekt rund um eine Skill-Karte. Die Bewegung zeigt die Art der Karte, die Farbe (SkillCardPaper.KIND_COLORS)
 // unterscheidet innerhalb der Art (physisch / magisch):
 //   0 Angriff: lodernde Flammenzungen, die nach oben steigen
-//   1 Schild:  Wasserwellen mit Schaumkrone, die um die Karte laufen (Magie-Schild mit Lichtfunken)
+//   1 Schild:  ruhige Wasserwellen mit Schaumkrone, die von unten Mitte beidseitig nach oben fließen (Magie-Schild mit Lichtfunken)
 //   2 Buff:    Funken steigen nach oben
 //   3 Debuff:  Tropfen sinken nach unten
 // Passive haben keinen Effekt (SkillCardPaper blendet ihn aus).
@@ -91,25 +91,36 @@ float perimeter_pos(vec2 q, vec2 off, vec2 inner_min, vec2 inner_max, float r) {
 	return 2.0 * w + 2.0 * h + 3.0 * quarter + r * atan(-off.y, -off.x);
 }
 
-// Schild: Wasser, das in Wellen um die Karte läuft. Die Wellenhöhe schwankt entlang des Randes und wandert im
-// Uhrzeigersinn, oben auf jeder Welle heller Schaum, darunter ruhiges Wasser mit feinen Strömungslinien.
+// Schild: Wasser, das in ruhigen Wellen um die Karte fließt. Die Wellen entspringen unten in der Mitte, laufen auf
+// beiden Seiten gespiegelt nach oben und treffen sich oben in der Mitte. Oben auf jeder Welle heller Schaum,
+// darunter ruhiges Wasser mit einem feinen Strömungsstreifen.
 // magic: dazu einzelne Lichtfunken im Wasser (Magie-Schild)
 vec4 waves(vec2 sp, vec2 q, vec2 off, float d, float e, vec2 inner_min, vec2 inner_max, float t, bool magic) {
-	float s = perimeter_pos(q, off, inner_min, inner_max, d);
-	// gleichmäßige, runde Wellenbögen (Wellenlänge 26 Pixel), die im Uhrzeigersinn laufen; eine lange Dünung
-	// hebt und senkt sie leicht
-	float phase = fract(s / 26.0 - t * 0.7 + seed * 0.1);
+	// fester Eckradius für die Weglänge, damit die Wellen in den Ecken nicht mit dem Abstand verzerren
+	const float corner_r = 8.0;
+	float w = inner_max.x - inner_min.x;
+	float h = inner_max.y - inner_min.y;
+	float quarter = corner_r * 1.5707963;
+	float total = 2.0 * (w + h) + 4.0 * quarter;
+	float s = perimeter_pos(q, off, inner_min, inner_max, corner_r);
+	// Strecke von der Mitte der Unterkante aus, auf beiden Seiten gleich (0 unten Mitte, total / 2 oben Mitte)
+	float bottom_mid = w + h + 2.0 * quarter + w * 0.5;
+	float u = abs(s - bottom_mid);
+	u = min(u, total - u);
+	// gleichmäßige, flache Wellenbögen (Wellenlänge 36 Pixel), die langsam nach oben wandern; eine lange,
+	// sanfte Dünung hebt und senkt sie kaum merklich
+	float phase = fract(u / 36.0 - t * 0.35 + seed * 0.1);
 	float arc = sin(phase * 3.1415927);
-	float swell = sin(s * 0.05 - t * 0.9 + seed);
-	float height = 3.0 + arc * arc * 6.0 + swell * 1.5;
+	float swell = sin(u * 0.03 - t * 0.4 + seed);
+	float height = 3.5 + arc * arc * 3.5 + swell * 0.6;
 	if (e > height) {
 		return vec4(0.0);
 	}
 	vec3 water = flame_color.rgb;
 	vec3 deep = flame_color.rgb * 0.5;
 	vec3 foam = mix(flame_color.rgb, vec3(1.0), 0.7);
-	// Schaumkrone: die oberste Pixelreihe jeder Welle, auf den Kämmen dicker
-	if (e > height - 2.0 - arc * 1.5) {
+	// Schaumkrone: die oberste Pixelreihe jeder Welle, auf den Kämmen etwas dicker
+	if (e > height - 1.5 - arc * 0.8) {
 		return vec4(foam, 1.0);
 	}
 	// zur Karte hin dunkler, dazu ein heller Streifen im Wellenkörper
@@ -117,7 +128,7 @@ vec4 waves(vec2 sp, vec2 q, vec2 off, float d, float e, vec2 inner_min, vec2 inn
 	if (abs(e - height * 0.55) < 1.0 && arc > 0.5) {
 		col = mix(water, foam, 0.4);
 	}
-	if (magic && hash(vec2(floor(sp.x / 2.0) + floor(sp.y / 2.0) * 37.0, floor(t * 3.0))) > 0.97) {
+	if (magic && hash(vec2(floor(sp.x / 2.0) + floor(sp.y / 2.0) * 37.0, floor(t * 1.5))) > 0.98) {
 		col = vec3(1.0);
 	}
 	return vec4(col, 0.9);

@@ -17,9 +17,9 @@ const COUPON_LOOT_CHANCE := 0.05
 const GOLD_LOOT_MIN := 5
 const GOLD_LOOT_MAX := 15
 const GOLD_LOOT_PER_DEPTH := 5
-## Boss Tränen als Beute: Biom-Boss und finaler Boss, Boss-Felder auf der Karte lassen keine fallen
-const BIOME_BOSS_SHARDS := 1
-const FINAL_BOSS_SHARDS := 3
+## Boss Tränen als Beute pro Biom (Index = State.map_level), der letzte Eintrag gilt für den finalen Boss.
+## Boss-Felder auf der Karte lassen keine fallen.
+const BOSS_SHARDS_BY_BIOME := [1, 1, 2, 2, 4]
 const NOISE_SHADER := preload("res://script/scenes/world_map/map_noise.gdshader")
 const BossRelicOverlayScript := preload("res://script/scenes/battle/boss_relic_overlay.gd")
 
@@ -793,7 +793,8 @@ func _roll_kill_loot() -> void:
 ## In der Kiste: beim Biom-Boss seltene Relikte, beim Boss-Feld gewöhnliche (Relics.chest_rarity).
 func _add_boss_loot() -> void:
 	if State.is_boss_fight:
-		State.pending_boss_shards = FINAL_BOSS_SHARDS if State.is_final_boss else BIOME_BOSS_SHARDS
+		var biome := BOSS_SHARDS_BY_BIOME.size() - 1 if State.is_final_boss else mini(State.map_level, BOSS_SHARDS_BY_BIOME.size() - 1)
+		State.pending_boss_shards = BOSS_SHARDS_BY_BIOME[biome]
 	if not is_boss_battle or State.is_final_boss:
 		return
 	State.relic_chest_rarity = Relics.chest_rarity(State.is_boss_fight)

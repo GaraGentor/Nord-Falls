@@ -26,4 +26,6 @@ static func add_relic_card(dialog: RewardDialog, id: String) -> RewardDialog.Rew
 	var relic = Relics.get_relic(id)
 	var take := func():
 		Relics.add_relic(id)
-	return dialog.add_bag_card(dialog.tr(relic.name), dialog.tr(relic.description), texture_icon(load(relic.icon)), take)
+	var icon := texture_icon(load(relic.icon))
+	icon.material = BossRelics.RELIC_MATERIAL
+	return dialog.add_bag_card(dialog.tr(relic.name), dialog.tr(relic.description), icon, take)

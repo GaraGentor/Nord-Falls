@@ -99,6 +99,10 @@ func _build(content: VBoxContainer) -> void:
 	easy_check.size_flags_horizontal = SIZE_SHRINK_BEGIN
 	content.add_child(easy_check)
 	content.add_child(_note(tr("SETTINGS_EASY_MODE_HINT"), IronPlate.TEXT_COLOR))
+	var dormant_check := make_check(tr("SETTINGS_DORMANT_SKILLS"), GameSettings.dormant_skills, GameSettings.set_dormant_skills)
+	dormant_check.size_flags_horizontal = SIZE_SHRINK_BEGIN
+	content.add_child(dormant_check)
+	content.add_child(_note(tr("SETTINGS_DORMANT_SKILLS_HINT"), IronPlate.TEXT_COLOR))
 	var enemy_hp_check := make_check(tr("SETTINGS_ENEMY_HP"), GameSettings.show_enemy_hp, GameSettings.set_show_enemy_hp)
 	enemy_hp_check.size_flags_horizontal = SIZE_SHRINK_BEGIN
 	content.add_child(enemy_hp_check)

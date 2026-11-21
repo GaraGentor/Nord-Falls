@@ -375,7 +375,6 @@ MONSTER_52,Whirlwyrm,Strudeldrache
 MONSTER_53,Rime Drake,Reifdrache
 MONSTER_54,Shardhulk,Splitterkoloss
 MONSTER_55,Steelshark,Stahlhai
-MONSTER_56,Hauntshack,Spukhütte
 MONSTER_57,Mantablade,Rochenklinge
 MONSTER_59,Sandsouls,Sandseelen
 MONSTER_60,Bogwraith,Moorgeist
@@ -401,6 +400,7 @@ MONSTER_80,Swirlsoul,Strudelseele
 MONSTER_81,Ironspider,Panzerspinne
 MONSTER_82,Mosscube,Mooswürfel
 MONSTER_84,Worldeater,Weltenfresser
+MONSTER_85,Tideknight,Gezeitenritter
 TURN_WHEEL_ROUND,Round {round},Runde {round}
 SKILL_RAPTOR_DIVE,Raptor Dive,Raubvogelsturz
 SKILL_HUNTERS_GALE,Hunter's Gale,Jägerböe
@@ -906,6 +906,8 @@ SETTINGS_ENEMY_HP,Show enemy HP,Gegner-HP anzeigen
 SETTINGS_ENEMY_HP_HINT,"Every run starts with the Stethoscope: the HP bars in battle show the exact HP of enemies too. It is then no longer offered in the shop.","Jeder Run beginnt mit dem Stethoskop: die HP-Balken im Kampf zeigen auch bei Gegnern die genauen HP. Im Shop wird es dann nicht mehr angeboten."
 SETTINGS_FLYING_CARPET,Flying Carpet,Fliegender Teppich
 SETTINGS_FLYING_CARPET_HINT,"Every run starts with the Flying Carpet: on the map you can move to any field in the next row. Without this setting it can no longer be found.","Jeder Run beginnt mit dem Fliegenden Teppich: auf der Karte kannst du zu jedem Feld der nächsten Reihe. Ohne diese Einstellung lässt er sich nicht mehr finden."
+SETTINGS_DORMANT_SKILLS,Slumbering Skills,Schlummernde Skills
+SETTINGS_DORMANT_SKILLS_HINT,"Every skill can be used in a weakened form as soon as the monster has one of its elements. Off: only attacks brought from the egg slumber, all other skills need all of their elements.","Jeder Skill ist abgeschwächt einsetzbar, sobald das Monster eins seiner Elemente hat. Aus: nur aus dem Ei mitgenommene Attacken schlummern, alle anderen Skills brauchen alle ihre Elemente."
 SETTINGS_RETRY_BATTLE,Retry Battle,Kampf wiederholen
 SETTINGS_RETRY_BATTLE_HINT,"After a defeat, the end screen offers to restart the lost battle with the state from before it.","Nach einer Niederlage bietet der End-Screen an, den verlorenen Kampf mit dem Stand von davor neu zu starten."
 SETTINGS_TUTORIAL,Tutorial,Tutorial
@@ -1198,6 +1200,7 @@ SKILL_SWAMP_ARMOR_MOSS_HIDE,Moss Hide,Moospanzer
 SKILL_FIRE_PHYS_BLAZE_RUSH_SWIFT,Swift Blaze Rush,Flinker Glutansturm
 SKILL_FIRE_MAG_FIREBALL_SWIFT,Quick Fireball,Schnellfeuerball
 SKILL_WATER_MAG_HYDRO_LANCE_SWIFT,Swift Hydro Lance,Flinke Hydrolanze
+SKILL_WATER_PHYS_BREAKER_SWIFT,Swift Breaker Wave,Flinke Brecherwelle
 SKILL_EARTH_PHYS_QUAKE_STOMP_SWIFT,Swift Quake Stomp,Flinker Bebenstampfer
 SKILL_EARTH_MAG_GEO_PULSE_SWIFT,Quick Geo Pulse,Schneller Geopuls
 SKILL_AIR_PHYS_CYCLONE_CLAW_SWIFT,Swift Cyclone Claw,Flinke Zyklonklaue

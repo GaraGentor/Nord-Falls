@@ -46,6 +46,8 @@ func refresh() -> void:
 		button.custom_minimum_size = ICON_SIZE
 		button.icon = load(relic.icon)
 		button.expand_icon = true
+		# "Lebende Pixel" wie bei den Boss-Relikten, wirkt nur auf das Icon (die IronPlate hat ihr eigenes Material)
+		button.material = BossRelics.RELIC_MATERIAL
 		RewardDialog.clear_button_styles(button, _button_style)
 		# derselbe Rahmen wie überall, wird beim Drüberfahren golden
 		var plate := IronPlate.back(button)

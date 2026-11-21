@@ -24,6 +24,9 @@ var show_enemy_hp := false
 var flying_carpet := false
 ## Kampf wiederholen: nach einer Niederlage bietet der End-Screen an, den letzten Kampf neu zu starten (BattleRetry)
 var retry_battle := false
+## Schlummernde Skills: jeder Skill ist schon mit einem seiner Elemente abgeschwächt einsetzbar (Skills.may_slumber).
+## Aus: nur mitgenommene Ei-Attacken schlummern, alle anderen brauchen alle ihre Elemente.
+var dormant_skills := false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -89,6 +92,13 @@ func set_retry_battle(on: bool) -> void:
 	_save()
 	changed.emit()
 
+func set_dormant_skills(on: bool) -> void:
+	if dormant_skills == on:
+		return
+	dormant_skills = on
+	_save()
+	changed.emit()
+
 func toggle_fullscreen() -> void:
 	set_fullscreen(not fullscreen)
 
@@ -125,6 +135,7 @@ func _load() -> void:
 	show_enemy_hp = config.get_value("gameplay", "show_enemy_hp", false)
 	flying_carpet = config.get_value("gameplay", "flying_carpet", false)
 	retry_battle = config.get_value("gameplay", "retry_battle", false)
+	dormant_skills = config.get_value("gameplay", "dormant_skills", false)
 
 func _save() -> void:
 	var config := ConfigFile.new()
@@ -135,4 +146,5 @@ func _save() -> void:
 	config.set_value("gameplay", "show_enemy_hp", show_enemy_hp)
 	config.set_value("gameplay", "flying_carpet", flying_carpet)
 	config.set_value("gameplay", "retry_battle", retry_battle)
+	config.set_value("gameplay", "dormant_skills", dormant_skills)
 	config.save(PATH)

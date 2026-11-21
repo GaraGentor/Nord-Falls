@@ -105,7 +105,7 @@ func generate_mons(props: Dictionary = {
 			var proposal = Skills.pick_weighted_unique(usable, 3)
 			proposal.append_array(Skills.pick_weighted_unique(available.filter(func(skill_name): return not proposal.has(skill_name)), 3 - proposal.size()))
 			for skill_name in proposal:
-				var skill = Skills.get_skill(skill_name)
+				var skill = Skills.carried_egg_skill(skill_name)
 				if skill.is_empty():
 					continue
 				skill.scouted = true
@@ -329,7 +329,7 @@ func mon_from_egg(egg: Dictionary) -> Monster:
 		if not names.has(skill_name):
 			names.append(skill_name)
 	for skill_name in names:
-		var skill = Skills.get_skill(skill_name)
+		var skill = Skills.carried_egg_skill(skill_name)
 		if skill.is_empty():
 			continue
 		skill.scouted = true
