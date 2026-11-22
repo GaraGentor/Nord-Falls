@@ -77,7 +77,6 @@ custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 size_flags_vertical = 0
 theme_override_constants/separation = 16
-alignment = 1
 
 [node name="NameLabel" type="Label" parent="MarginContainer/VBoxContainer/TypeRow"]
 layout_mode = 2
@@ -88,9 +87,11 @@ vertical_alignment = 1
 
 [node name="ElementChip" parent="MarginContainer/VBoxContainer/TypeRow" instance=ExtResource("9_chip")]
 layout_mode = 2
+size_flags_horizontal = 0
 
 [node name="RarityChip" parent="MarginContainer/VBoxContainer/TypeRow" instance=ExtResource("9_chip")]
 layout_mode = 2
+size_flags_horizontal = 0
 
 [node name="StatsPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2

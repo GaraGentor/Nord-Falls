@@ -59,6 +59,10 @@ const KIND_EFFECTS := {
 	"passive": -1,
 }
 
+## Der Rand-Effekt läuft nicht mehr um das Papier, sondern um die Kosten-Plakette (SkillCardFace.TopRow).
+## Das Papier rechnet weiter aus, welcher Effekt passt, und meldet Änderungen; die Plakette zeichnet ihn.
+signal flames_changed
+
 var _shader_material: ShaderMaterial
 var _button: BaseButton
 var _watermark: TextureRect
@@ -178,8 +182,18 @@ func _init() -> void:
 	GameSettings.changed.connect(_apply_settings)
 
 func _apply_settings() -> void:
-	_flames.visible = _flames_wanted and GameSettings.card_effects
+	# um die Karte selbst kein Effekt mehr, die Plakette übernimmt ihn (flame_settings)
+	_flames.visible = false
 	_watermark.visible = GameSettings.card_watermark
+	flames_changed.emit()
+
+## Rand-Effekt für die Kosten-Plakette: sichtbar (bekannt, nicht gesperrt, nicht passiv, Einstellung an),
+## Shader-Werte mode, variant, flame_color und seed
+func flame_settings() -> Dictionary:
+	var settings := {"visible": _flames_wanted and GameSettings.card_effects}
+	for key in ["mode", "variant", "flame_color", "seed"]:
+		settings[key] = _flames_material.get_shader_parameter(key)
+	return settings
 
 ## known = false: unbekannter Skill eines Gegners, kein Wasserzeichen und keine Flammen (das "scouted" der
 ## Skill-Vorlagen ist meist false und taugt dafür nicht, die Stelle mit der Karte weiß, ob der Skill bekannt ist)

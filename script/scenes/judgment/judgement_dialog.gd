@@ -315,24 +315,22 @@ func _skill_card(skill: Dictionary, note: String, mon: Monster = null) -> Button
 	var top_row := SkillCardFace.TopRow.new()
 	lines.add_child(top_row)
 	top_row.show_skill(skill, scouted)
-	var name_label := _label(32, SkillCardPaper.readable_color(Helper.color_by_type(skill.nature)))
+	var name_label := _label(SkillCardFace.TITLE_SIZE, SkillCardPaper.readable_color(Helper.color_by_type(skill.nature)))
 	name_label.text = _skill_name(skill)
-	top_row.set_title(name_label)
 	lines.add_child(name_label)
-	# höchstens zwei Zeilen, lange Namen werden kleiner
-	SkillCardFace.fit_title(name_label, 19)
-	var desc := _label(24, MUTED)
+	# einheitliche Titelgröße, höchstens zwei Zeilen, lange Namen werden kleiner
+	top_row.set_title(name_label)
+	var desc := _label(SkillCardFace.TEXT_SIZE, MUTED)
 	desc.max_lines_visible = 3
 	desc.size_flags_vertical = SIZE_EXPAND_FILL
 	desc.text = Helper.skill_description(skill) if scouted else tr("BATTLE_UNKNOWN_SKILL_HINT")
 	lines.add_child(desc)
 	if note != "":
-		var note_label := _label(24, GOLD)
+		var note_label := _label(SkillCardFace.TEXT_SIZE, GOLD)
 		note_label.text = note
 		lines.add_child(note_label)
 	var bottom_row := SkillCardFace.BottomRow.new()
 	lines.add_child(bottom_row)
-	bottom_row.set_value_size(19)
 	bottom_row.show_skill(skill, mon, scouted)
 	SkillCardPaper.attach(card, skill, false, scouted)
 	SkillCardPaper.make_room_for_flames(_content)

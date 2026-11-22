@@ -1046,7 +1046,9 @@ func _hide_targets() -> void:
 	_update_previews()
 
 func _drop_targets() -> Array:
-	var targets: Array = _mon_fields.duplicate()
+	# untypisiert kopieren: _mon_fields ist Array[MonField], dort würde append(_bag) still scheitern
+	var targets: Array = []
+	targets.append_array(_mon_fields)
 	targets.append(_bag)
 	return targets
 

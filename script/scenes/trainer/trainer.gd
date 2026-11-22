@@ -5,9 +5,11 @@ extends ShopDialog
 ## wählt man, welcher Skill dafür vergessen wird. Bezahlt wird erst, wenn wirklich gelernt wurde.
 ## Auf jeder Karte zeigen kleine Bilder, welche Monster den Skill einsetzen können.
 ##
-## Links liegen die Karten mit etwas Abstand in zwei Reihen, über jeder ihr Preis mit dem ME-Icon. Ein Klick
-## vergrößert eine Karte und schiebt die anderen ihrer Reihe zur Seite. Empfohlene Skills tragen einen Stempel. Rechts hält der Trainer die eigenen Monster auf
-## seinen Platten; ein Klick auf ein Monster fährt die Kamera nach rechts, rechts neben dem Trainer erscheinen dessen Skills.
+## Links liegen die Karten (dieselben wie in der Monster-Auswahl) zu dritt nebeneinander in einer Liste, die nach
+## unten scrollt, über jeder ihr Preis mit dem ME-Icon. Ein Klick markiert eine Karte und zeigt unter den Monstern,
+## welche Elemente ihnen dafür fehlen. Empfohlene Skills tragen einen Stempel. Rechts hält der Trainer die eigenen
+## Monster auf seinen Platten; ein Klick auf ein Monster fährt die Kamera nach rechts, rechts neben dem Trainer
+## erscheinen dessen Skills.
 
 ## Monster auf der Platte: Ablegeziel für Karten, per Klick auswählbar
 class PlateMon extends RewardDialog.DropTarget:
@@ -118,46 +120,42 @@ const ESSENCE_SIZE := Vector2(34, 34)
 const BAG_FONT_SIZE := 24
 ## so viel Essenz steht für ein sichtbares Stück in der Tasche
 const ESSENCE_PER_ITEM := 25
-const TRAINER_CARD_SIZE := Vector2(210, 0)
-## Höhe der Beschreibung auf der Karte, längere Texte scrollen von selbst (RewardDialog.scroll_description)
-const DESCRIPTION_HEIGHT := 104.0
-const TRAINER_TEXT_FONT_SIZE := 24
-## obere und untere Kartenzeile (Kosten, Sterne, Abklingzeit, Wert, Element) vergrößert
-const FACE_ROW_ZOOM := 1.3
+## Breite einer Karte: die Skill-Karte aus der Monster-Auswahl (RewardDialog.SKILL_FACE_SIZE), unverkleinert
+const TRAINER_CARD_SIZE := Vector2(178, 0)
 ## Chips unter den Monstern: Abstand zum Monster, Zeilenhöhe
 const CHIPS_GAP := 8.0
 const CHIPS_HEIGHT := 36.0
-## vier pro Reihe: mit den Empfehlungen bleiben es zwei Reihen
-const CARD_COLUMNS := 4
+## drei pro Reihe, weitere Reihen erreicht man per Scrollen
+const CARD_COLUMNS := 3
 const MIN_TIER := 2
 const SINGLE_ELEMENT_OFFERS := 2
 const MULTI_ELEMENT_OFFERS := 2
-## zusätzliche Skills in der zweiten Reihe, müssen zu keinem Monster passen
-const EXTRA_OFFERS := 2
+## zusätzliche Skills, müssen zu keinem Monster passen (mit den Empfehlungen 9 Karten: drei volle Reihen)
+const EXTRA_OFFERS := 3
 ## Angriffe, die gegen das nächste Biom sehr effektiv sind, mit Stempel "Trainers Choice" (stehen vorn)
 const RECOMMENDED_OFFERS := 2
 
-## Preis über jeder Karte: Höhe der Zeile (Kartenpixel), Schrift und ME-Icon
-const PRICE_HEIGHT := 46.0
-const PRICE_FONT_SIZE := 48
-const PRICE_ICON_SIZE := Vector2(36, 36)
+## Preis unter jeder Karte: Höhe der Zeile (Kartenpixel), Schrift und ME-Icon
+const PRICE_HEIGHT := 36.0
+const PRICE_FONT_SIZE := 32
+const PRICE_ICON_SIZE := Vector2(28, 28)
 
-## Karten so groß wie die Ei-Attacken auf dem Tisch im Ei-Konfigurator (dort CARD_SIZE.x * TABLE_SCALE,
-## das Bild IMAGE_SIZE deckt den Bildschirm ab)
-const EGG_TABLE_CARD_WIDTH := 180.0 * 0.88
-const EGG_IMAGE_SIZE := Vector2(1376, 768)
+## Hülle hinter jeder Karte: hält oben die Monsterbilder und unten den Preis zusammen, die Karte liegt darüber
+## und ragt seitlich heraus. Immer gleich breit, egal wie viele Monster im Team sind.
+const BACKDROP_WIDTH := 150.0
+## so weit reicht sie über die Bilder nach oben und unter den Preis
+const BACKDROP_PAD := 8.0
+const BACKDROP_COLOR := Color(0.08, 0.07, 0.06, 0.85)
+const BACKDROP_BORDER_COLOR := Color(0.858824, 0.717647, 0.45098, 0.7)
+const BACKDROP_BORDER := 2
+const BACKDROP_CORNER := 6
+## Name des Halters, damit die Kopie beim Ziehen ihn wiederfindet und weglässt
+const BACKDROP_NODE := "Backdrop"
+const PRICE_NODE := "PriceTag"
+const PORTRAITS_NODE := "Portraits"
 
-## Abstand zwischen den Karten als Anteil der Kartenbreite bzw. der Höhe einer Reihe
-const CARD_GAP := 0.04
-const ROW_GAP := 0.05
-## Rand um den Kartentisch
-const TABLE_MARGIN := 20.0
 ## Breite des Kartentischs im Verhältnis zur Trainerseite
 const TABLE_WIDTH_RATIO := 1.15
-## aufgerichtete Karte: Vergrößerung und Abstand zu den weggedrückten Nachbarn
-const FOCUS_ZOOM := 1.2
-const PUSH_GAP := 8.0
-const CARD_MOVE_SECONDS := 0.25
 
 ## Bildausschnitt des Trainers, Anteile der Bildgröße: so viel muss über die Höhe der Karten passen
 ## (der Rest verschwindet nach unten), Mitte der Platten, Plattenbreite
@@ -188,10 +186,11 @@ const PARALLAX_FOLLOW := 6.0
 @export var trainer_image: TextureRect
 
 var _left_side: Control
-var _card_layer: Control
+## Liste der Karten: scrollt nach unten, darin das Raster mit CARD_COLUMNS Spalten
+var _card_list: ScrollContainer
+var _card_table: GridContainer
 var _cards: Array[RewardCard] = []
 var _focused_card: RewardCard
-var _card_tween: Tween
 var _stage: Control
 var _plates: Array[PlateMon] = []
 var _bubble: SpeechBubble
@@ -217,9 +216,8 @@ func _ready() -> void:
 	for skill in _pick_offers():
 		_add_skill_card(skill)
 	_build_top_bar()
-	_first_layout()
 	trainer_image.add_to_group("tut_npc")
-	_card_layer.add_to_group("tut_trn_cards")
+	_card_list.add_to_group("tut_trn_cards")
 	_bag.add_to_group("tut_trn_bag")
 	for plate in _plates:
 		plate.add_to_group("tut_trn_mons")
@@ -265,14 +263,30 @@ func _build_sides() -> void:
 
 	_left_side = Control.new()
 	_left_side.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	# etwas breiter als die Trainerseite, damit vier Karten in Ei-Attacken-Größe nebeneinander passen
+	# etwas breiter als die Trainerseite, damit drei Karten samt Rand-Effekten nebeneinander passen
 	_left_side.size_flags_stretch_ratio = TABLE_WIDTH_RATIO
 	_columns.add_child(_left_side)
-	_card_layer = Control.new()
-	_card_layer.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
-	_card_layer.gui_input.connect(_on_table_input)
-	_card_layer.resized.connect(_layout_cards)
-	_left_side.add_child(_card_layer)
+	_card_list = ScrollContainer.new()
+	_card_list.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	_card_list.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	# ohne sichtbare Leiste, gescrollt wird mit dem Mausrad bzw. Wischen
+	_card_list.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
+	_card_list.gui_input.connect(_on_table_input)
+	_left_side.add_child(_card_list)
+	# Platz für die Rand-Effekte, unten zusätzlich für den Preis unter der letzten Reihe
+	var margin := SkillCardPaper.flame_margin()
+	margin.add_theme_constant_override("margin_bottom", int(SkillCardPaper.FLAME_PAD.w + PRICE_HEIGHT))
+	margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_card_list.add_child(margin)
+	_card_table = GridContainer.new()
+	_card_table.columns = CARD_COLUMNS
+	_card_table.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_card_table.mouse_filter = Control.MOUSE_FILTER_PASS
+	SkillCardPaper.make_room_for_flames(_card_table)
+	# zwischen den Reihen: Preis der oberen Karte und ihre Flammen unten, die Bilder der unteren Karte
+	# stehen ohnehin über deren Flammen
+	_card_table.add_theme_constant_override("v_separation", int(maxf(SkillCardPaper.FLAME_GAP_Y, PRICE_HEIGHT + SkillCardPaper.FLAME_PAD.w)))
+	margin.add_child(_card_table)
 
 	_stage = Control.new()
 	_stage.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -309,16 +323,6 @@ func _add_plate_mon(mon: Monster) -> PlateMon:
 	_stage.add_child(plate.chips)
 	return plate
 
-## Umbrechende Karten kennen ihre Höhe erst nach dem Layout, solange bleibt der Tisch unsichtbar
-func _first_layout() -> void:
-	_card_layer.modulate.a = 0.0
-	for card in _cards:
-		card.size = TRAINER_CARD_SIZE
-	await get_tree().process_frame
-	await get_tree().process_frame
-	_layout_cards()
-	create_tween().tween_property(_card_layer, "modulate:a", 1.0, 0.15)
-
 func _layout_stage() -> void:
 	var texture_size := trainer_image.texture.get_size()
 	var image_scale := minf(_stage.size.x / texture_size.x, _stage.size.y / (texture_size.y * TRAINER_VISIBLE_HEIGHT))
@@ -346,97 +350,19 @@ func _place_bubble() -> void:
 	_bubble.position = _bubble_target - Vector2(_bubble.size.x / 2, _bubble.size.y + BUBBLE_TAIL)
 
 func _place_card(card: RewardCard) -> void:
-	_card_layer.add_child(card)
+	_card_table.add_child(card)
 	_cards.append(card)
 
-## Karten reihenweise anordnen: so groß, dass beide Reihen die linke Hälfte füllen
-func _layout_cards(animate := false) -> void:
-	var area := _card_layer.size
-	if _cards.is_empty() or area.x <= 0.0:
-		return
-	var card_size := TRAINER_CARD_SIZE
-	for card in _cards:
-		card_size.y = maxf(card_size.y, card.get_combined_minimum_size().y)
-	# Platz einer Karte: darüber steht noch ihr Preis
-	var slot := card_size + Vector2(0, PRICE_HEIGHT)
-	var rows := ceili(_cards.size() / float(_card_columns))
-	var fit_x := (area.x - TABLE_MARGIN) / (slot.x * (_card_columns + (_card_columns - 1) * CARD_GAP))
-	var fit_y := (area.y - TABLE_MARGIN) / (slot.y * (rows + (rows - 1) * ROW_GAP))
-	var viewport := get_viewport_rect().size
-	var egg_scale := EGG_TABLE_CARD_WIDTH * maxf(viewport.x / EGG_IMAGE_SIZE.x, viewport.y / EGG_IMAGE_SIZE.y) / card_size.x
-	var base_scale := minf(egg_scale, minf(fit_x, fit_y))
-	var focus_scale := minf(base_scale * FOCUS_ZOOM, area.y / slot.y)
-	var scaled := slot * base_scale
-	var row_step := scaled.y * (1.0 + ROW_GAP)
-	var first_y := (area.y - scaled.y - (rows - 1) * row_step) / 2 + scaled.y / 2
-
-	if _card_tween:
-		_card_tween.kill()
-	if animate:
-		_card_tween = create_tween().set_parallel().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	for row in rows:
-		var cards := _cards.slice(row * _card_columns, (row + 1) * _card_columns)
-		var focused: int = cards.find(_focused_card)
-		var centers := _row_centers(cards.size(), focused, scaled.x, card_size.x * focus_scale, area.x)
-		for i in cards.size():
-			var slot_center := Vector2(centers[i], first_y + row * row_step)
-			var card: RewardCard = cards[i]
-			card.size = card_size
-			card.pivot_offset = card_size / 2
-			var is_focused := i == focused
-			var card_scale := focus_scale if is_focused else base_scale
-			if is_focused:
-				# vergrößerte Karte bleibt samt Preis ganz auf dem Tisch
-				var half_height := slot.y * focus_scale / 2
-				slot_center.y = clampf(slot_center.y, half_height, area.y - half_height)
-			# die Karte füllt den unteren Teil ihres Platzes, darüber steht der Preis
-			var center := slot_center + Vector2(0, PRICE_HEIGHT * card_scale / 2)
-			var target_scale := Vector2.ONE * card_scale
-			var target_position := center - card.pivot_offset
-			if animate:
-				_card_tween.tween_property(card, "position", target_position, CARD_MOVE_SECONDS)
-				_card_tween.tween_property(card, "scale", target_scale, CARD_MOVE_SECONDS)
-			else:
-				card.position = target_position
-				card.scale = target_scale
-
-## Mittelpunkte der Karten einer Reihe. Mit vergrößerter Karte (focused >= 0) rücken die anderen
-## beiseite und überlappen sich untereinander nur so stark, wie es nötig ist, um auf dem Tisch zu bleiben.
-func _row_centers(count: int, focused: int, card_width: float, focus_width: float, width: float) -> Array[float]:
-	var centers: Array[float] = []
-	var step := card_width * (1.0 + CARD_GAP)
-	if focused < 0:
-		var x := (width - card_width - (count - 1) * step) / 2
-		for i in count:
-			centers.append(x + card_width / 2 + i * step)
-		return centers
-	var sides := int(focused > 0) + int(focused < count - 1)
-	var stacked := count - 1 - sides
-	var peek := 0.0
-	if stacked > 0:
-		peek = clampf((width - focus_width - sides * (card_width + PUSH_GAP)) / stacked, 0.0, step)
-	var x := (width - focus_width - sides * (card_width + PUSH_GAP) - stacked * peek) / 2
-	for i in count:
-		if i == focused:
-			centers.append(x + focus_width / 2)
-			x += focus_width + PUSH_GAP
-		else:
-			centers.append(x + card_width / 2)
-			x += card_width + PUSH_GAP if i == focused - 1 else peek
-	return centers
-
-## Klick auf eine Karte vergrößert sie, nochmal Klicken legt sie zurück
+## Klick auf eine Karte markiert sie (leuchtender Rahmen) und zeigt unter den Monstern die fehlenden Elemente,
+## nochmal Klicken hebt das auf
 func _toggle_focus(card: RewardCard) -> void:
 	_set_focus(null if card == _focused_card else card)
 
 func _set_focus(card: RewardCard) -> void:
 	_focused_card = card
-	for i in _cards.size():
-		_card_layer.move_child(_cards[i], i)
-	if _focused_card:
-		_focused_card.move_to_front()
+	for other in _cards:
+		(other.get_meta("skill_face") as EggSkillCard).set_selected(other == card)
 	_show_missing_elements(_focused_card)
-	_layout_cards(true)
 
 ## Fehlende Elemente unter den Monstern zeigen: für die gezogene oder aufgerichtete Karte, sonst keine
 func _show_missing_elements(card: RewardCard) -> void:
@@ -452,12 +378,12 @@ func _show_missing_elements(card: RewardCard) -> void:
 func _tooltip_anchor(target: DropTarget) -> Rect2:
 	return target.get_global_rect().merge((target as PlateMon).chips.get_global_rect())
 
-## Gekaufte Karte verschwindet, die übrigen rücken zusammen
+## Gekaufte Karte verschwindet, die übrigen rücken im Raster nach
 func pay(card: RewardCard) -> void:
 	super(card)
 	_price_labels.erase(card)
 	_cards.erase(card)
-	_card_layer.remove_child(card)
+	_card_table.remove_child(card)
 	card.queue_free()
 	_set_focus(null)
 
@@ -629,20 +555,21 @@ func _pick_recommended(taken: Array) -> Array:
 static func _learnable(skill: Dictionary) -> bool:
 	return State.mons.any(func(mon): return not Skills.knows_skill(mon, skill.name))
 
-## Stempel "Trainers Choice" als Wasserzeichen: liegt direkt auf dem Papier, hinter Text und Symbolen
+## Stempel "Trainers Choice" als Wasserzeichen: liegt direkt auf dem Papier der Skill-Karte, hinter Text und Symbolen
 func _add_recommended_stamp(card: RewardCard) -> void:
 	var stamp := TrainerStamp.new()
 	stamp.text = tr("TRAINER_CHOICE_STAMP")
 	stamp.font = LABEL_THEME.get_font("font", "Label")
-	card.add_child(stamp)
+	var face: Control = card.get_meta("skill_face")
+	face.add_child(stamp)
 	var paper_index := 0
-	for child in card.get_children():
+	for child in face.get_children():
 		if child is SkillCardPaper:
 			paper_index = child.get_index()
-	card.move_child(stamp, paper_index + 1)
+	face.move_child(stamp, paper_index + 1)
 	card.tooltip_text += "\n" + tr("TRAINER_RECOMMENDED_HINT").format({"biome": tr(ColorMap.get_combo(next_biome()).label)})
 
-## Preis aus der Karte nehmen und mit dem ME-Icon über die Karte stellen (wächst mit der Karte mit)
+## Preis aus der Karte nehmen und mit dem ME-Icon unter die Karte stellen
 func _add_price_tag(card: RewardCard) -> void:
 	var label: Label = _price_labels[card]
 	label.get_parent().remove_child(label)
@@ -652,6 +579,7 @@ func _add_price_tag(card: RewardCard) -> void:
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	# der Container der Karte zieht jedes Kind auf ihre Größe, der Preis braucht eine Hülle
 	var holder := Control.new()
+	holder.name = PRICE_NODE
 	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card.add_child(holder)
 	var tag := HBoxContainer.new()
@@ -664,9 +592,50 @@ func _add_price_tag(card: RewardCard) -> void:
 	tag.add_child(icon)
 	tag.add_child(label)
 	holder.add_child(tag)
-	tag.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	tag.offset_top = -PRICE_HEIGHT
-	tag.offset_bottom = -4.0
+	tag.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	tag.offset_top = 4.0
+	tag.offset_bottom = PRICE_HEIGHT
+
+## Hülle mit Hintergrund und Rahmen hinter Bildern, Karte und Preis (BACKDROP_WIDTH breit, mittig).
+## Liegt als erstes Kind der Karte, damit Bilder, Karte und Preis darüber gezeichnet werden.
+func _add_card_backdrop(card: RewardCard) -> void:
+	# der Container der Karte zieht jedes Kind auf ihre Größe, die Hülle hängt darum in einem Halter
+	var holder := Control.new()
+	holder.name = BACKDROP_NODE
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(holder)
+	card.move_child(holder, 0)
+	var backdrop := Panel.new()
+	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var style := StyleBoxFlat.new()
+	style.bg_color = BACKDROP_COLOR
+	style.border_color = BACKDROP_BORDER_COLOR
+	style.set_border_width_all(BACKDROP_BORDER)
+	style.set_corner_radius_all(BACKDROP_CORNER)
+	backdrop.add_theme_stylebox_override("panel", style)
+	holder.add_child(backdrop)
+	backdrop.anchor_left = 0.5
+	backdrop.anchor_right = 0.5
+	backdrop.anchor_top = 0.0
+	backdrop.anchor_bottom = 1.0
+	backdrop.offset_left = -BACKDROP_WIDTH / 2
+	backdrop.offset_right = BACKDROP_WIDTH / 2
+	backdrop.offset_top = -BACKDROP_PAD
+	backdrop.offset_bottom = PRICE_HEIGHT + BACKDROP_PAD
+
+## Beim Ziehen fliegt nur die Karte mit: ohne Hülle, Monsterbilder und Preis.
+## Bilder und Preis werden nur unsichtbar, damit die Karte an ihrer Stelle unter dem Mauszeiger bleibt.
+func _skill_card_preview(card: RewardCard) -> Control:
+	var holder := super(card)
+	var preview := holder.get_child(0)
+	var backdrop := preview.get_node_or_null(BACKDROP_NODE)
+	if backdrop:
+		backdrop.free()
+	for part_name in [PORTRAITS_NODE, PRICE_NODE]:
+		var part := preview.find_child(part_name, true, false) as CanvasItem
+		if part:
+			part.modulate.a = 0.0
+	return holder
 
 ## Neben dem Icon reicht die Zahl
 func _show_price(card: RewardCard) -> void:
@@ -676,33 +645,16 @@ func _show_price(card: RewardCard) -> void:
 func _add_skill_card(skill: Dictionary) -> void:
 	var card := add_skill_card(skill, func(mon: Monster): _learn(_dragged, mon))
 	card.on_click = _toggle_focus.bind(card)
-	# in der Pixel-Schrift passt die Beschreibung sonst nicht in die Kartenbreite
-	card.info.get_child(1).add_theme_font_size_override("font_size", TRAINER_TEXT_FONT_SIZE)
-	# lange Beschreibungen scrollen von selbst, alle Karten bleiben gleich hoch
-	scroll_description(card, DESCRIPTION_HEIGHT)
-	# Text nicht auf den Papierrahmen setzen (card.row liegt in der VBox mit Kopf- und Fußzeile, darüber der Rand)
-	card.row.get_parent().get_parent().add_theme_constant_override("margin_bottom", 14)
-	# Kosten, Abklingzeit, Wert und Element etwas größer, auf der verkleinerten Karte sonst kaum lesbar
-	var face := card.row.get_parent()
-	_enlarge(face.get_child(0), FACE_ROW_ZOOM)
-	_enlarge(face.get_child(face.get_child_count() - 1), FACE_ROW_ZOOM)
+	# das Mausrad scrollt die Liste auch über den Karten, Ziehen klappt trotzdem
+	card.mouse_filter = Control.MOUSE_FILTER_PASS
 	set_price(card, randi_range(skill.shop_cost.min, skill.shop_cost.max))
 	_add_price_tag(card)
+	_add_card_backdrop(card)
+	# fester Name, damit die Kopie beim Ziehen die Bilder sicher wiederfindet
+	card.icon.name = PORTRAITS_NODE
 	if _recommended.has(skill.name):
 		_add_recommended_stamp(card)
 	ignore_mouse_below(card)
-
-## Schriften, Icons und Mindestgrößen eines Kartenteils samt Kindern um factor vergrößern
-static func _enlarge(node: Node, factor: float) -> void:
-	# Wert und Art-Symbol hängen schon an der Größe des Namens (SkillCardFace.BottomRow)
-	if node.has_meta("keep_font_size"):
-		return
-	if node is Label:
-		node.add_theme_font_size_override("font_size", roundi(node.get_theme_font_size("font_size") * factor))
-	elif node is Control and node.custom_minimum_size != Vector2.ZERO:
-		node.custom_minimum_size *= factor
-	for child in node.get_children():
-		_enlarge(child, factor)
 
 func _learn(card: RewardCard, mon: Monster) -> void:
 	if await learn_skill(card.drag.skill, mon, _left_side):

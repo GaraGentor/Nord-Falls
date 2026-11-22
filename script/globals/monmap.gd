@@ -3,6 +3,10 @@ extends Node
 func mon_metainfos_by_name(name: String) -> Dictionary:
 	return mons.filter(func(mon): return mon.name == name)[0]
 
+## Gibt es diese Art (noch)?
+func has_mon(name: String) -> bool:
+	return mons.any(func(mon): return mon.name == name)
+
 ## Vorhandene Bildgrößen unter assets/mons/<name>/ (<name>_front.png ist 1024, kleinere heißen <name>_frontx512.png usw.)
 const FRONT_SIZES := [64, 128, 256, 512, 1024]
 const BACK_SIZES := [256, 512, 1024]

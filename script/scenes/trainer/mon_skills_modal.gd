@@ -30,8 +30,8 @@ const SKILL_CARD_SIZE := Vector2(170, 200)
 const MIN_CARD_HEIGHT := 130.0
 const FRAME_PADDING := 16
 const BOX_SEPARATION := 12
-const DESCRIPTION_FONT_SIZE := 24
-const SKILL_TITLE_FONT_SIZE := 32
+const DESCRIPTION_FONT_SIZE := SkillCardFace.TEXT_SIZE
+const SKILL_TITLE_FONT_SIZE := SkillCardFace.TITLE_SIZE
 const OPEN_SECONDS := 0.15
 const PIXEL_FONT = preload("res://script/ui/fonts/m5x7/m5x7.ttf")
 const STAT_FONT_SIZE := 24
@@ -40,14 +40,14 @@ const STAT_COLUMNS := 3
 const STATS := {
 	"STAT_HP": "hp",
 	"STAT_ATK": "attack",
-	"STAT_DEF": "defense",
 	"STAT_SPA": "s_attack",
+	"STAT_DEF": "defense",
 	"STAT_SPE": "speed",
 	"STAT_BST": "",
 }
 ## Anzeige -> Stat-Key (StatsGrid.ICONS)
 const STAT_KEYS := {
-	"STAT_HP": "hp", "STAT_ATK": "atk", "STAT_DEF": "def", "STAT_SPA": "s_atk", "STAT_SPE": "speed", "STAT_BST": "bst",
+	"STAT_HP": "hp", "STAT_ATK": "atk", "STAT_SPA": "s_atk", "STAT_DEF": "def", "STAT_SPE": "speed", "STAT_BST": "bst",
 }
 
 var _mon: Monster

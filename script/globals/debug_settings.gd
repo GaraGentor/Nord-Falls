@@ -4,7 +4,7 @@ extends Node
 ## Fertige Builds ignorieren die Datei und nutzen immer die Standardwerte.
 
 const PATH := "user://debug_settings.json"
-const STATS := ["hp", "atk", "def", "s_atk", "speed"]
+const STATS := ["hp", "atk", "s_atk", "def", "speed"]
 const MAX_RESERVED := 100
 ## Globales Wachstum pro Stufe (Mon._base_stat), skaliert den Zuwachs aller Werte aller Monster im gleichen Verhältnis:
 ## FULL_GROWTH = voller Zuwachs aus der BST, 0 = kein Wachstum, halber Wert = halber Zuwachs, doppelter = doppelter.

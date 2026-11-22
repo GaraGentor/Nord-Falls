@@ -15,8 +15,11 @@ const CHIP_HEIGHT := 32.0
 const STATS_FONT_SIZE := 24
 const STATS_WIDTH := 556.0
 const RADAR_MIN_SIZE := Vector2(190, 150)
-## Höhe so, dass die Karten samt Rand-Effekten (SkillCardPaper.FLAME_PAD) unter dem Map-Header auf den Bildschirm passen
+## Mindestgröße der Karten; nach unten nehmen sie den restlichen Platz unter den Infos ein (_fit_cards)
 const SKILL_CARD_SIZE := Vector2(210, 184)
+## Ränder der Platte und Abstand zwischen Infos und Karten
+const FRAME_MARGIN := Vector2i(24, 20)
+const BOX_SEPARATION := 16
 const BACK_ICON := preload("res://assets/ui/icons/icon_back.svg")
 ## Sortieren per Drag & Drop: Platz der gezogenen Karte blass, Vorschau leicht größer und schräg
 const DRAGGED_ALPHA := 0.3
@@ -29,6 +32,9 @@ const EDGE_SCROLL_SPEED := 700.0
 var _mon: Monster
 var _scroll: ScrollContainer
 var _row: HBoxContainer
+var _top: HBoxContainer
+## aktuelle Kartengröße, wächst in der Höhe mit dem freien Platz
+var _card_size := SKILL_CARD_SIZE
 
 func _init(mon: Monster) -> void:
 	_mon = mon
@@ -43,9 +49,10 @@ func _ready() -> void:
 	RewardDialog.fit_to_map_area(panel)
 	add_child(panel)
 	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 16)
-	IronPlate.frame(panel, box, 24, 20)
+	box.add_theme_constant_override("separation", BOX_SEPARATION)
+	IronPlate.frame(panel, box, FRAME_MARGIN.x, FRAME_MARGIN.y)
 	var top := HBoxContainer.new()
+	_top = top
 	top.add_theme_constant_override("separation", 24)
 	box.add_child(top)
 	top.add_child(_portrait_side())
@@ -57,6 +64,22 @@ func _ready() -> void:
 	back.pressed.connect(queue_free)
 	top.add_child(back)
 	box.add_child(_skill_cards())
+	resized.connect(_fit_cards)
+	_fit_cards.call_deferred()
+
+## Karten so hoch wie der Platz unter den Infos erlaubt (samt Rand-Effekten), mindestens SKILL_CARD_SIZE.
+## Gerechnet mit der eigenen Höhe (fest über die Anker), nicht mit der der Scrollview: die wächst mit den Karten.
+func _fit_cards() -> void:
+	var pad := SkillCardPaper.FLAME_PAD
+	var free := size.y - RewardDialog.MAP_DIALOG_MARGIN - 2 * FRAME_MARGIN.y - BOX_SEPARATION \
+			- _top.get_combined_minimum_size().y - pad.y - pad.w - _scroll.get_h_scroll_bar().get_combined_minimum_size().y
+	var card_size := Vector2(SKILL_CARD_SIZE.x, maxf(floorf(free), SKILL_CARD_SIZE.y))
+	if card_size == _card_size:
+		return
+	_card_size = card_size
+	for slot in _row.get_children():
+		if slot is SkillSlot:
+			slot.resize(card_size)
 
 ## Name über dem Bild, unten links am Bild die Züge
 func _portrait_side() -> Control:
@@ -173,8 +196,8 @@ func _card_for(skill: Dictionary) -> Control:
 	var card := BATTLE_CARD.instantiate()
 	card.mon = _mon
 	card.skill = skill
-	card.custom_minimum_size = SKILL_CARD_SIZE
-	card.size = SKILL_CARD_SIZE
+	card.custom_minimum_size = _card_size
+	card.size = _card_size
 	card.mouse_filter = MOUSE_FILTER_IGNORE
 	return card
 
@@ -188,7 +211,7 @@ class SkillSlot extends Control:
 	func _init(dialog: MonsterInfoDialog, skill_: Dictionary) -> void:
 		_dialog = dialog
 		skill = skill_
-		custom_minimum_size = SKILL_CARD_SIZE
+		custom_minimum_size = dialog._card_size
 		size_flags_vertical = SIZE_SHRINK_BEGIN
 		# PASS: Mausrad und Wischen gehen weiter an die Scrollview
 		mouse_filter = MOUSE_FILTER_PASS
@@ -196,14 +219,20 @@ class SkillSlot extends Control:
 		var card := dialog._card_for(skill)
 		add_child(card)
 
+	func resize(card_size: Vector2) -> void:
+		custom_minimum_size = card_size
+		var card: Control = get_child(0)
+		card.custom_minimum_size = card_size
+		card.size = card_size
+
 	func _get_drag_data(_at: Vector2) -> Variant:
 		_start_index = get_index()
 		modulate.a = DRAGGED_ALPHA
 		# Vorschau unter dem Finger zentriert, leicht vergrößert
 		var holder := Control.new()
 		var card := _dialog._card_for(skill)
-		card.position = -SKILL_CARD_SIZE / 2.0
-		card.pivot_offset = SKILL_CARD_SIZE / 2.0
+		card.position = -_dialog._card_size / 2.0
+		card.pivot_offset = _dialog._card_size / 2.0
 		card.scale = Vector2.ONE * DRAG_PREVIEW_SCALE
 		card.rotation_degrees = DRAG_PREVIEW_TILT
 		holder.add_child(card)

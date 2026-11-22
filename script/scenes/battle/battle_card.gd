@@ -7,9 +7,6 @@ const DRAG_THRESHOLD := 12.0
 ## so weit nach oben gezogen wird aus einem Wischen doch noch Drag & Drop,
 ## damit ein seitliches Zucken am Anfang den Drag nicht verhindert
 const SWIPE_TO_DRAG := 40.0
-## Schriftgröße des Namens, lange Namen werden kleiner statt dreizeilig (SkillCardFace.fit_title)
-const TITLE_FONT_SIZE := 24
-
 @export var name_label: Label
 ## Beschreibung mit gelb hervorgehobenen Werten (Helper.skill_description rich)
 @export var description_label: RichTextLabel
@@ -47,9 +44,9 @@ func _ready() -> void:
 	lines.move_child(_top_row, 0)
 	_top_row.set_title(name_label)
 	lines.add_child(_bottom_row)
-	_bottom_row.set_value_size(TITLE_FONT_SIZE)
 	# RichTextLabel nutzt sonst nicht die Label-Schrift aus dem Theme
 	description_label.add_theme_font_override("normal_font", name_label.get_theme_font("font"))
+	SkillCardFace.style_text(description_label)
 	# auf der ganzen Karte gedrückt halten hält den Text an
 	description_scroll.hold_area = self
 	_init_card()
@@ -62,7 +59,7 @@ func _init_card() -> void:
 	else:
 		_paper.set_skill(skill)
 	name_label.text = tr(skill.name)
-	SkillCardFace.fit_title(name_label, TITLE_FONT_SIZE)
+	SkillCardFace.style_title(name_label)
 	name_label.self_modulate = SkillCardPaper.readable_color(Helper.color_by_type(skill.nature))
 	# Kosten, wie das Monster sie zahlt (Bollwerkmeister verbilligt teure Schilde)
 	_top_row.show_skill(skill, true, Skills.skill_cost(mon, skill) if mon != null else -1)
@@ -78,22 +75,19 @@ func _set_description(text: String, color: Color) -> void:
 	description_label.text = text
 	description_scroll.restart()
 
-## Fehlen dem Monster Elemente für diesen Skill oder läuft die Abklingzeit noch,
-## steht das statt der Beschreibung auf der Karte. Während der Abklingzeit zeigt das Wertfeld die restlichen Züge.
+## Fehlen dem Monster Elemente für diesen Skill, liegt der Hinweis unten über Wert und Abklingzeit,
+## die Beschreibung bleibt stehen. Läuft sonst die Abklingzeit noch, steht das statt der Beschreibung auf der Karte
+## und das Wertfeld zeigt die restlichen Züge.
 func show_state(owner_mon: Monster) -> void:
 	mon = owner_mon
-	var text = Skills.missing_elements_text(mon, skill)
-	var cooling := not Skills.is_ready(skill)
-	if text.is_empty() and cooling:
-		text = cooldown_text(Skills.cooldown_left(skill))
-	if text.is_empty():
-		_init_card()
+	_init_card()
+	var missing := Skills.missing_elements_text(mon, skill)
+	if not missing.is_empty():
+		_bottom_row.show_missing(missing)
 		return
-	_set_description(text, SkillCardFace.COOLDOWN_COLOR)
-	if cooling:
+	if not Skills.is_ready(skill):
+		_set_description(cooldown_text(Skills.cooldown_left(skill)), SkillCardFace.COOLDOWN_COLOR)
 		_bottom_row.show_cooldown(Skills.cooldown_left(skill))
-	else:
-		_bottom_row.show_skill(skill, mon)
 
 ## Abklingzeit in eigenen Zügen (Skills.cooldown_left zählt den laufenden Zug mit):
 ## Direkt nach dem Einsatz eines Skills mit Abklingzeit 1 steht 2 da, also "nächsten Zug gesperrt, danach bereit".

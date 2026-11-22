@@ -160,7 +160,6 @@ class SpeciesSkillsDialog extends InfoDialog:
 	const LIST_SIZE := Vector2(760, 420)
 	const COLUMNS := 3
 	const CARD_SIZE := Vector2(200, 210)
-	const CARD_TITLE_SIZE := 24
 	const SOURCE_FONT_SIZE := 24
 
 	var _mon_name: String
@@ -268,7 +267,6 @@ class SpeciesSkillsDialog extends InfoDialog:
 		grid.add_child(box)
 		card.custom_minimum_size = CARD_SIZE
 		card.size_flags_horizontal = SIZE_SHRINK_CENTER
-		card.set_title_size(CARD_TITLE_SIZE)
 		box.add_child(card)
 		if note != "":
 			var label := _text(note, IronPlate.TEXT_COLOR, SOURCE_FONT_SIZE)

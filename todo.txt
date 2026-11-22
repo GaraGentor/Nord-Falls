@@ -1,1 +1,4 @@
-> 
+1. Tausche in allen Stats Tabellen und ansichten den Schild mit dem S-Angriff
+2. Wenn ich mit einem Item oder Relikt im Shop auf die Tasche gehe, dann wird diese nicht gold gelb gehighlighted.
+3. Im Kampf kann man das ELement und die Seltenheit links alignen neben dem Level auf der Rechten Seite. Also die Chips.
+4. 

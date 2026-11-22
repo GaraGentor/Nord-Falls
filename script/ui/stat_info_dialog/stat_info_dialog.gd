@@ -4,7 +4,7 @@ extends InfoDialog
 ## Was die Werte bedeuten (KP, ANG, VER, SAN, INI, GES) und worauf man beim Spielen der Karten achten sollte.
 ## Öffnet sich beim Klick auf eine Werte-Beschriftung (StatsGrid), der angeklickte Wert ist hervorgehoben.
 
-const ORDER := ["hp", "atk", "def", "s_atk", "speed", "bst"]
+const ORDER := ["hp", "atk", "s_atk", "def", "speed", "bst"]
 ## Übersetzungs-Präfix pro Wert: _NAME und _DESC hängen dran
 const KEYS := {
 	"hp": "STAT_INFO_HP", "atk": "STAT_INFO_ATK", "def": "STAT_INFO_DEF", "s_atk": "STAT_INFO_SPA",

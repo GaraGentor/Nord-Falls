@@ -9,8 +9,10 @@ shader_type canvas_item;
 // Passive haben keinen Effekt (SkillCardPaper blendet ihn aus).
 // Das Rechteck ragt um pad (links, oben, rechts, unten) über das Papier hinaus. Alles beginnt ein Stück auf dem
 // Papierrand (overlap), damit keine Lücke zur Karte bleibt, und ist auf ein grobes Pixelraster gerastert.
+// diamond: statt um ein Rechteck um eine Raute, die das Innere (Rechteck ohne pad) ausfüllt (Kosten-Plakette).
 
 uniform int mode = 0;
+uniform bool diamond = false;
 // 0 = physisch, 1 = magisch (Schild: Lichtfunken im Wasser)
 uniform int variant = 0;
 uniform vec4 flame_color : source_color = vec4(1.0, 0.3, 0.1, 1.0);
@@ -95,7 +97,9 @@ float perimeter_pos(vec2 q, vec2 off, vec2 inner_min, vec2 inner_max, float r) {
 // beiden Seiten gespiegelt nach oben und treffen sich oben in der Mitte. Oben auf jeder Welle heller Schaum,
 // darunter ruhiges Wasser mit einem feinen Strömungsstreifen.
 // magic: dazu einzelne Lichtfunken im Wasser (Magie-Schild)
-vec4 waves(vec2 sp, vec2 q, vec2 off, float d, float e, vec2 inner_min, vec2 inner_max, float t, bool magic) {
+// Strecke entlang des Rechtecks von der Mitte der Unterkante aus, auf beiden Seiten gleich
+// (0 unten Mitte, die Hälfte des Umfangs oben Mitte)
+float rect_wave_pos(vec2 q, vec2 off, vec2 inner_min, vec2 inner_max) {
 	// fester Eckradius für die Weglänge, damit die Wellen in den Ecken nicht mit dem Abstand verzerren
 	const float corner_r = 8.0;
 	float w = inner_max.x - inner_min.x;
@@ -103,10 +107,13 @@ vec4 waves(vec2 sp, vec2 q, vec2 off, float d, float e, vec2 inner_min, vec2 inn
 	float quarter = corner_r * 1.5707963;
 	float total = 2.0 * (w + h) + 4.0 * quarter;
 	float s = perimeter_pos(q, off, inner_min, inner_max, corner_r);
-	// Strecke von der Mitte der Unterkante aus, auf beiden Seiten gleich (0 unten Mitte, total / 2 oben Mitte)
 	float bottom_mid = w + h + 2.0 * quarter + w * 0.5;
 	float u = abs(s - bottom_mid);
-	u = min(u, total - u);
+	return min(u, total - u);
+}
+
+// u: Strecke entlang des Umrisses von unten Mitte (rect_wave_pos bzw. bei der Raute über den Winkel)
+vec4 waves(vec2 sp, float u, float e, float t, bool magic) {
 	// gleichmäßige, flache Wellenbögen (Wellenlänge 36 Pixel), die langsam nach oben wandern; eine lange,
 	// sanfte Dünung hebt und senkt sie kaum merklich
 	float phase = fract(u / 36.0 - t * 0.35 + seed * 0.1);
@@ -164,19 +171,36 @@ void fragment() {
 	vec2 p = (floor(UV * rect_size / pixel) + 0.5) * pixel;
 	vec2 inner_min = pad.xy + vec2(overlap);
 	vec2 inner_max = rect_size - pad.zw - vec2(overlap);
-	vec2 q = clamp(p, inner_min, inner_max);
-	vec2 off = p - q;
-	float d = length(off);
+	float d;
+	float dir_y;
+	float u;
+	if (diamond) {
+		// Abstand zur Raute (senkrecht auf ihre Kanten), die Raute selbst ist um overlap verkleinert
+		vec2 center = (pad.xy + rect_size - pad.zw) * 0.5;
+		vec2 half_size = (rect_size - pad.xy - pad.zw) * 0.5;
+		vec2 to_p = p - center;
+		float f = abs(to_p.x) / half_size.x + abs(to_p.y) / half_size.y;
+		d = (f - 1.0) * half_size.x * half_size.y / length(half_size) + overlap;
+		dir_y = to_p.y / max(length(to_p), 0.001);
+		// Umfang der Raute, vom unteren Eck aus über den Winkel
+		float angle = abs(atan(to_p.x, to_p.y));
+		u = angle / 3.1415927 * 2.0 * length(half_size);
+	} else {
+		vec2 q = clamp(p, inner_min, inner_max);
+		vec2 off = p - q;
+		d = length(off);
+		dir_y = off.y / max(d, 0.001);
+		u = rect_wave_pos(q, off, inner_min, inner_max);
+	}
 	if (d <= 0.0) {
 		COLOR = vec4(0.0);
 	} else {
-		float dir_y = off.y / d;
 		// Abstand zur Papierkante, der Überlapp gehört noch zum Rand
 		float e = max(d - overlap, 0.0);
 		float t = TIME * speed;
 		vec2 sp = p + vec2(seed * 3.0, seed * 5.0);
 		if (mode == 1) {
-			COLOR = waves(sp, q, off, d, e, inner_min, inner_max, t, variant == 1);
+			COLOR = waves(sp, u, e, t, variant == 1);
 		} else if (mode == 2) {
 			COLOR = drift(sp, e, dir_y, t, true);
 		} else if (mode == 3) {

@@ -29,8 +29,8 @@ const FLAT_BUTTON_THEME :=preload("res://script/scenes/battle/flat_button_theme.
 const SEARCH_STATS := [
 	["STAT_HP", "hp"],
 	["STAT_ATK", "atk"],
-	["STAT_DEF", "def"],
 	["STAT_SPA", "s_atk"],
+	["STAT_DEF", "def"],
 	["STAT_SPE", "speed"],
 ]
 

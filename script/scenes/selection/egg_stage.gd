@@ -46,7 +46,6 @@ const BADGE_GAP := 6.0
 
 ## Ei-Attacken unten
 const CARD_SIZE := Vector2(178, 204)
-const CARD_TITLE_SIZE := 24
 ## links unten stehen die Symbol-Knöpfe (Einstellungen, Sammlung, Anleitung)
 const CARDS_LEFT := 88.0
 const CARD_GAP := 12
@@ -329,7 +328,6 @@ func show_skills(mon: Monster) -> void:
 			continue
 		var card := EggSkillCard.create(skill, mon)
 		card.custom_minimum_size = CARD_SIZE
-		card.set_title_size(CARD_TITLE_SIZE)
 		card.size_flags_horizontal = SIZE_SHRINK_CENTER
 		card.modulate.a = 0.0
 		_cards.add_child(card)

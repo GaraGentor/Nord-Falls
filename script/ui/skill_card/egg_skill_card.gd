@@ -10,7 +10,6 @@ extends PanelContainer
 const HEIGHT := 210.0
 const THEME := preload("res://script/ui/materials/battle_labels.tres")
 const TEXT_COLOR := IronPlate.TEXT_COLOR
-const MISSING_COLOR := Color(1, 0.45, 0.45)
 const LOCKED_TINT := Color(0.5, 0.5, 0.5)
 const GOLD := SkillCardPaper.GOLD
 
@@ -29,6 +28,11 @@ var _reveal_tween: Tween
 const REVEAL_TEXT_TIME := 0.22
 const REVEAL_CHAIN_TIME := 0.38
 const REVEAL_CHAIN_STAGGER := 0.07
+
+## Plakette mit dem Freischalt-Hinweis: Abstand zum Kartenrand, Innenabstand, Schriftgröße des Hinweises
+const LOCK_MARGIN := 14
+const LOCK_PLATE_PADDING := 8
+const LOCK_HINT_SIZE := 19
 
 ## locked_label/locked_hint: gesperrte Attacke, Texte mittig auf den Ketten (leer = nicht gesperrt)
 static func create(skill: Dictionary, mon: Monster, locked_label := "", locked_hint := "") -> EggSkillCard:
@@ -64,17 +68,18 @@ func _build(skill: Dictionary, mon: Monster, locked_label: String, locked_hint: 
 	lines.add_child(top_row)
 	top_row.show_skill(skill)
 
-	var name_label := _label(tr(skill.name), 24, SkillCardPaper.readable_color(Helper.color_by_type(skill.nature)))
+	var name_label := _label(tr(skill.name), SkillCardFace.TITLE_SIZE, SkillCardPaper.readable_color(Helper.color_by_type(skill.nature)))
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	top_row.set_title(name_label)
 	lines.add_child(name_label)
-	# höchstens zwei Zeilen, lange Namen werden kleiner
-	SkillCardFace.fit_title(name_label, 18)
+	# einheitliche Titelgröße, höchstens zwei Zeilen, lange Namen werden kleiner
+	top_row.set_title(name_label)
 	_name_label = name_label
 
 	# Mitte: nur die Beschreibung scrollt
 	_scroll = AutoScrollContainer.new()
 	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	# ohne sichtbare Leiste: der Text scrollt von selbst, von Hand mit dem Mausrad
+	_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
 	# auf der ganzen Karte gedrückt halten hält den Text an
 	_scroll.hold_area = self
 	# PASS: Klick und Ziehen gehen weiter an die Karte (Drag & Drop), das Mausrad scrollt den Text
@@ -87,7 +92,7 @@ func _build(skill: Dictionary, mon: Monster, locked_label: String, locked_hint: 
 	description.scroll_active = false
 	description.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	description.add_theme_font_override("normal_font", THEME.get_font("font", "Label"))
-	description.add_theme_font_size_override("normal_font_size", 24)
+	SkillCardFace.style_text(description)
 	description.add_theme_color_override("default_color", TEXT_COLOR)
 	# schlummernd: abgeschwächte Werte, Element-Effekt durchgestrichen, darunter was die Attacke weckt
 	description.text = Helper.skill_description(skill, true, null if locked else mon)
@@ -96,19 +101,15 @@ func _build(skill: Dictionary, mon: Monster, locked_label: String, locked_hint: 
 	description.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_scroll.add_child(description)
 
-	if not locked and not Skills.can_use(mon, skill):
-		# wählbar, aber erst spielbar, wenn das Monster die fehlenden Elemente bekommt (z. B. im Shop)
-		var missing := _label(Skills.missing_elements_text(mon, skill), 16, MISSING_COLOR)
-		missing.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		missing.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		missing.custom_minimum_size.x = 1
-		lines.add_child(missing)
-
-	# unten: Wert und Art-Symbol (fett, etwas größer als der Name), Sterne (Stufe), Abklingzeit und Element
+	# unten: links Wert und Art-Symbol, rechts die Abklingzeit
 	var bottom_row := SkillCardFace.BottomRow.new()
 	lines.add_child(bottom_row)
-	bottom_row.set_value_size(18)
 	bottom_row.show_skill(skill, mon)
+	# ohne Monster (Trainer, Couvert) gibt es keine fehlenden Elemente
+	if not locked and mon != null and not Skills.can_use(mon, skill):
+		# wählbar, aber erst spielbar, wenn das Monster die fehlenden Elemente bekommt (z. B. im Shop):
+		# der Hinweis liegt über Wert und Abklingzeit, die Beschreibung behält ihren Platz
+		bottom_row.show_missing(Skills.missing_elements_text(mon, skill))
 	_bottom_row = bottom_row
 
 	if locked:
@@ -161,7 +162,7 @@ func _build_lock(locked_label: String, locked_hint: String) -> ChainOverlay:
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for side in ["left", "right", "top", "bottom"]:
-		center.add_theme_constant_override("margin_" + side, 14)
+		center.add_theme_constant_override("margin_" + side, LOCK_MARGIN)
 	chains.add_child(center)
 	_lock_text = center
 	var plate := PanelContainer.new()
@@ -172,7 +173,7 @@ func _build_lock(locked_label: String, locked_hint: String) -> ChainOverlay:
 	style.border_color = ChainOverlay.METAL
 	style.set_border_width_all(2)
 	style.set_corner_radius_all(4)
-	style.set_content_margin_all(8)
+	style.set_content_margin_all(LOCK_PLATE_PADDING)
 	plate.add_theme_stylebox_override("panel", style)
 	center.add_child(plate)
 	var texts := VBoxContainer.new()
@@ -184,17 +185,32 @@ func _build_lock(locked_label: String, locked_hint: String) -> ChainOverlay:
 	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	title.custom_minimum_size.x = 1
 	texts.add_child(title)
-	var hint := _label(tr(locked_hint), 16, TEXT_COLOR)
+	# langer Hinweis scrollt von selbst wie die Beschreibung, statt die Plakette über die Karte hinaus wachsen zu lassen
+	var hint_scroll := AutoScrollContainer.new()
+	hint_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
+	hint_scroll.hold_area = self
+	hint_scroll.mouse_filter = Control.MOUSE_FILTER_PASS
+	texts.add_child(hint_scroll)
+	var hint := _label(tr(locked_hint), LOCK_HINT_SIZE, TEXT_COLOR)
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint.custom_minimum_size.x = 1
-	texts.add_child(hint)
+	hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hint_scroll.add_child(hint)
+	# Höhe des Hinweises: so hoch wie sein Text, höchstens so viel, wie die Karte unter dem Titel noch Platz hat
+	var fit := func() -> void:
+		var room := center.size.y - LOCK_MARGIN * 2 - LOCK_PLATE_PADDING * 2 - texts.get_theme_constant("separation") - title.size.y
+		var wanted := hint.get_minimum_size().y
+		hint_scroll.custom_minimum_size.y = clampf(wanted, 0.0, maxf(room, 0.0))
+	center.resized.connect(fit, CONNECT_DEFERRED)
+	hint.resized.connect(fit, CONNECT_DEFERRED)
+	title.resized.connect(fit, CONNECT_DEFERRED)
 	return chains
 
-## Kleinerer Name für schmale Karten (z. B. Ei-Auswahl), lange Namen werden weiterhin noch kleiner
-func set_title_size(font_size: int) -> void:
-	SkillCardFace.fit_title(_name_label, font_size)
-	_bottom_row.set_value_size(font_size)
+## Steckt die Karte in einer anderen, die Klicks und Ziehen bekommt (Trainer, Couvert): dort gedrückt halten
+## hält den Text an
+func set_hold_area(area: Control) -> void:
+	_scroll.hold_area = area
 
 ## Angeklickte Karte leuchtet am Rahmen
 func set_selected(selected: bool) -> void:

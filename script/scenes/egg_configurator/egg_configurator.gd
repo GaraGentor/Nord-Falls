@@ -314,7 +314,6 @@ func _add_entry(skill: Dictionary, locked_label: String, hint: String) -> Entry:
 	entry.locked_label = locked_label
 	entry.hint = hint
 	entry.card = EggSkillCard.create(skill, _mon, locked_label, hint)
-	entry.card.set_title_size(15)
 	entry.card.custom_minimum_size = CARD_SIZE
 	entry.card.size = CARD_SIZE
 	entry.card.pivot_offset = CARD_SIZE / 2

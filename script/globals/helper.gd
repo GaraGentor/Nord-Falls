@@ -124,7 +124,7 @@ func generate_mons(props: Dictionary = {
 		var species_name: String = species[i] if i < species.size() else Map.pick_wild_species(mons_to_pick, max_rarity)
 		if i >= species.size() and i == 0:
 			max_rarity = Monmap.rarity_of(species_name)
-		var mon_meta_data = Monmap.mon_metainfos_by_name(bounty.mon if i == 0 and not bounty.is_empty() else species_name)
+		var mon_meta_data = Monmap.mon_metainfos_by_name(Skills.bounty_mon(bounty) if i == 0 and not bounty.is_empty() else species_name)
 		var newMon = Monster.new(default_props.level, mon_meta_data)
 		# eigene Kopfgeld-Arten (Monmap bounty_target) sind auch bei normalem Auftauchen das Kopfgeld-Monster
 		newMon._bounty = bounty.key if i == 0 and not bounty.is_empty() else mon_meta_data.get("bounty_target", "")

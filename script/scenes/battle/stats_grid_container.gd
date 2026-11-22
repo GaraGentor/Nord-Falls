@@ -64,14 +64,14 @@ var map = [
 		"value": func(monster:Monster): return monster.attack(),
 	},
 	{
-		"key": "def",
-		"label": "STAT_DEF",
-		"value": func(monster:Monster): return monster.defense(),
-	},
-	{
 		"key": "s_atk",
 		"label": "STAT_SPA",
 		"value": func(monster:Monster): return monster.s_attack(),
+	},
+	{
+		"key": "def",
+		"label": "STAT_DEF",
+		"value": func(monster:Monster): return monster.defense(),
 	},
 	{
 		"key": "speed",

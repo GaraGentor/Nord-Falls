@@ -1060,6 +1060,19 @@ const BOUNTIES = [
 # Ein ganzer Run hat rund 26 normale Kämpfe: 1 - 0.985^26 ≈ 33 %, also etwa jeder dritte Run.
 const BOUNTY_CHANCE := 0.015
 
+## Zielart eines Kopfgelds. Gibt es die eingetragene Art nicht mehr (aus Monmap.mons entfernt), springt eine
+## feste wilde Art ein (gleiche Wahl über den Key, also auch über Neustarts gleich): so stürzt der Kampf nicht ab,
+## der Hinweis nennt das richtige Monster und die Ei-Attacke bleibt freischaltbar.
+func bounty_mon(bounty: Dictionary) -> String:
+	if Monmap.has_mon(bounty.mon):
+		return bounty.mon
+	var wild: Array = Map.wild_species().map(func(meta): return meta.name)
+	if wild.is_empty():
+		return ""
+	var substitute: String = wild[absi(hash(bounty.key)) % wild.size()]
+	push_warning("Kopfgeld %s: Art %s gibt es nicht mehr, Ersatz %s (Skills.BOUNTIES anpassen)" % [bounty.key, bounty.mon, substitute])
+	return substitute
+
 func get_bounty(key: String) -> Dictionary:
 	for bounty in BOUNTIES:
 		if bounty.key == key:
@@ -1082,7 +1095,7 @@ func get_locked_bounties(mon_name: String) -> Array:
 # Hinweis- bzw. Quellen-Text eines Kopfgelds mit Zielname und Biom (tr() lässt fertige Texte unverändert).
 func bounty_text(bounty: Dictionary, key: String) -> String:
 	return tr(key).format({
-		"mon": tr(bounty.label).format({"mon": Helper.mon_display_name(bounty.mon)}),
+		"mon": tr(bounty.label).format({"mon": Helper.mon_display_name(bounty_mon(bounty))}),
 		"biome": bounty.min_depth + 1,
 	})
 

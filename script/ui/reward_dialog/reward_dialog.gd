@@ -16,6 +16,8 @@ const ICON_SIZE := Vector2(90, 90)
 const VERTICAL_ICON_SIZE := Vector2(72, 72)
 const VERTICAL_TITLE_FONT_SIZE := 32
 const TARGET_SIZE := Vector2(120, 150)
+## Name über dem Monster bzw. der Tasche, eine Stufe über der Standardschrift (24)
+const TOP_NAME_FONT_SIZE := 32
 ## Höhe des Karten-Headers (world_map.tscn): darunter beginnt die Kartenfläche
 const MAP_HEADER_HEIGHT := 184.0
 ## Abstand der Dialoge auf der Kartenfläche zum Bildschirmrand: links bis zur Tasche im Header, rechts und unten wie der Header
@@ -29,7 +31,9 @@ const DRAG_ICON_SIZE := Vector2(84, 84)
 const DRAG_PREVIEW_SCALE := 0.8
 const DRAG_PREVIEW_ALPHA := 0.8
 ## Bilder auf der Skill-Karte: Monster fehlen Elemente / kennt den Skill schon
-const PORTRAIT_SIZE := Vector2(48, 48)
+const PORTRAIT_SIZE := Vector2(64, 64)
+## Skill-Karte unter den Bildern (Trainer, Couvert): so groß wie die Ei-Attacken in der Monster-Auswahl (egg_stage)
+const SKILL_FACE_SIZE := Vector2(178, 204)
 const UNUSABLE_MODULATE := Color(0.3, 0.3, 0.3)
 const KNOWN_MODULATE := Color(1, 1, 1, 0.25)
 ## so weit darf sich die Maus bei einem Klick auf eine Karte bewegen, sonst ist es ein Ziehen
@@ -497,43 +501,48 @@ func add_mon_card(card_title: String, text: String, icon: Control, header: Strin
 	drag.merge(extra)
 	return _add_card(card_title, text, icon, drag)
 
-## Skill auf Kartenpapier (Trainer, Couvert), wird auf ein Monster gezogen, das ihn noch nicht kennt.
-## on_given(mon) bringt ihn bei, die Bilder auf der Karte zeigen, wer ihn einsetzen kann.
-## Aufbau wie die Kampfkarte (SkillCardFace): oben die Kosten schräg auf der Ecke, unten Wert mit Art-Symbol,
-## Sterne, Abklingzeit und Element, dazwischen Bilder, Name und Beschreibung. Der Name bleibt unter den Bildern.
-## card.row liegt dafür in einer VBox zwischen den beiden Zeilen.
+## Skill-Karte (Trainer, Couvert), wird auf ein Monster gezogen, das ihn noch nicht kennt.
+## on_given(mon) bringt ihn bei. Oben zeigen kleine Bilder, wer ihn einsetzen kann, darunter liegt dieselbe Karte
+## wie in der Monster-Auswahl (EggSkillCard, Größe SKILL_FACE_SIZE). Die RewardCard drumherum ist unsichtbar
+## und nimmt Klicks und Ziehen an; die Karte selbst steht in card.get_meta("skill_face").
 func add_skill_card(skill: Dictionary, on_given: Callable) -> RewardCard:
-	var text := Helper.skill_description(skill)
 	var learners := func(): return State.mons.filter(func(mon): return not Skills.knows_skill(mon, skill.name))
-	var card := add_mon_card(tr(skill.name), text, _skill_portraits(skill), tr("TRAINER_CHOOSE_MON"), learners,
+	var card := add_mon_card(tr(skill.name), "", _skill_portraits(skill), tr("TRAINER_CHOOSE_MON"), learners,
 		on_given, _skill_target_tooltip.bind(skill), {"no_target": tr("TRAINER_ALL_KNOW"), "skill": skill})
-	# Titel in der Farbe des Elements
-	card.info.get_child(0).add_theme_color_override("font_color", SkillCardPaper.readable_color(Helper.color_by_type(skill.nature)))
-	var holder := card.row.get_parent()
-	holder.remove_child(card.row)
-	var face := VBoxContainer.new()
+	# keine Eisenplatte und kein eigener Text: die Ei-Karte bringt Papier, Name und Beschreibung mit
+	card.info.visible = false
+	for child in card.get_children():
+		if child is IronPlate:
+			child.visible = false
+	card.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+	var margins := card.row.get_parent()
+	for side in ["left", "right", "top", "bottom"]:
+		margins.add_theme_constant_override("margin_" + side, 0)
+	# die Bildzeile nur so hoch wie die Bilder, wenig Abstand zur Karte
+	card.icon.custom_minimum_size = Vector2(0, PORTRAIT_SIZE.y)
+	card.row.add_theme_constant_override("separation", 2)
+	# vor den Rand-Effekten der Karte, die nach oben über die Bilder ragen
+	card.icon.z_index = 1
+	var face := EggSkillCard.create(skill, null)
+	face.custom_minimum_size = SKILL_FACE_SIZE
+	face.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	card.row.add_child(face)
+	# Klicks und Ziehen gehen an die RewardCard, gedrückt halten hält trotzdem den Text an
+	ignore_mouse_below(face)
 	face.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	face.add_theme_constant_override("separation", 6)
-	holder.add_child(face)
-	var top_row := SkillCardFace.TopRow.new()
-	face.add_child(top_row)
-	top_row.show_skill(skill)
-	card.row.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	face.add_child(card.row)
-	var bottom_row := SkillCardFace.BottomRow.new()
-	face.add_child(bottom_row)
-	# Wert etwas größer als der Titel der Karte
-	bottom_row.set_value_size(card.info.get_child(0).get_theme_font_size("font_size"))
-	bottom_row.show_skill(skill)
-	SkillCardPaper.attach(card, skill)
+	face.set_hold_area(card)
+	card.set_meta("skill_face", face)
 	# Nachbarkarten sollen die Rand-Effekte nicht verdecken
 	SkillCardPaper.make_room_for_flames(card.get_parent())
 	card.tooltip_text = _skill_fits_text(skill)
 	return card
 
-## Lange Beschreibungen sprengen sonst die Karte (Couvert, Trainer): der Text bekommt eine feste Höhe und scrollt
-## von selbst (wie auf der Kampfkarte), gedrückt halten auf der Karte hält ihn an. Ziehen bleibt bei der Karte.
+## Lange Beschreibungen sprengen sonst die Karte: der Text bekommt eine feste Höhe und scrollt von selbst
+## (wie auf der Kampfkarte), gedrückt halten auf der Karte hält ihn an. Ziehen bleibt bei der Karte.
+## Skill-Karten (add_skill_card) scrollen schon selbst.
 func scroll_description(card: RewardCard, height: float) -> void:
+	if card.has_meta("skill_face"):
+		return
 	var description: Label = card.info.get_child(1)
 	card.info.remove_child(description)
 	var scroll := AutoScrollContainer.new()
@@ -675,6 +684,9 @@ func _add_target(target_title: String, icon: Control, mon: Variant) -> void:
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD
 	target.box.add_child(label)
+	# Name groß über dem Monster bzw. der Tasche
+	label.add_theme_font_size_override("font_size", TOP_NAME_FONT_SIZE)
+	target.box.move_child(label, 0)
 
 	ignore_mouse_below(target)
 	_target_grid.add_child(target)
