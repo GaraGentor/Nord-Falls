@@ -202,7 +202,11 @@ func _select(mon: Monster) -> void:
 	_refresh()
 
 func _on_dropped(data: Dictionary, zone: int) -> void:
-	if _reason(zone, data) != "":
+	var reason := _reason(zone, data)
+	if reason != "":
+		# z. B. "kennt die Attacke schon": oben einblenden, warum das nicht geht
+		if reason != "-":
+			Helper.show_unlock_message(reason)
 		return
 	if data.has("judgement_mon"):
 		var mon: Monster = data.judgement_mon
@@ -236,7 +240,7 @@ func _on_confirm_pressed() -> void:
 # ─────────────────────────
 # Regeln & Aktionen
 
-# "" wenn data hier abgelegt werden darf, sonst "-"
+# "" wenn data hier abgelegt werden darf, sonst "-" oder ein Grund, der beim Ablegen angezeigt wird
 func _reason(zone: int, data: Dictionary) -> String:
 	if data.has("judgement_mon"):
 		var mon: Monster = data.judgement_mon
@@ -256,8 +260,11 @@ func _reason(zone: int, data: Dictionary) -> String:
 	match zone:
 		Zone.SLOT_1, Zone.SLOT_2:
 			var slot := zone - Zone.SLOT_1
-			if slot >= State.mons.size() or State.mons[slot] == owner or Skills.knows_skill(State.mons[slot], skill.name):
+			if slot >= State.mons.size() or State.mons[slot] == owner:
 				return "-"
+			# schon bekannt: beim Ablegen sagen, warum es nicht geht
+			if Skills.knows_skill(State.mons[slot], skill.name):
+				return tr("JUDGEMENT_ALREADY_HAS_SKILL").format({"mon": Helper.mon_battle_name(State.mons[slot]), "skill": tr(skill.name)})
 			return ""
 		Zone.BAG:
 			return "" if _is_unlockable_egg(owner, skill) else "-"

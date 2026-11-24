@@ -1145,11 +1145,6 @@ SKILL_SWAMP_PHYS_ROOT_LASH,Root Lash,Wurzelgeißel
 SKILL_SWAMP_MAG_MIASMA_CLOUD,Miasma Cloud,Miasmawolke
 SKILL_SWAMP_ARMOR_MANGROVE_WALL,Mangrove Wall,Mangrovenwall
 SKILL_SWAMP_MAG_BOG_MAW,Bog Maw,Moorschlund
-SKILL_FIRE_BOON_FOCUS_FLAME,Focus Flame,Fokusflamme
-SKILL_LIGHTNING_BOON_OVERCHARGE,Overcharge,Überladung
-SKILL_CHAOS_BOON_BATTLE_CRY,Battle Cry,Kampfschrei
-SKILL_AIR_BOON_TAILWIND,Tailwind,Rückenwind
-SKILL_WATER_BOON_BLOOD_TIDE,Blood Tide,Blutgezeiten
 SKILL_PASSIVE_BATTLE_FERVOR,Battle Fervor,Kampfeslust
 SKILL_PASSIVE_STORM_SPIRIT,Storm Spirit,Sturmgeist
 SKILL_PASSIVE_BULWARK_MASTER,Bulwark Master,Bollwerkmeister
@@ -1222,10 +1217,6 @@ SKILL_FIRE_BUFF_TEAM_S_ATK,Blaze Anthem,Flammenhymne
 SKILL_EARTH_BUFF_TEAM_ATK,War Stomp,Kriegsstampfen
 SKILL_EARTH_BUFF_TEAM_DEF,Mountain Chant,Berggesang
 SKILL_EARTH_BUFF_TEAM_S_ATK,Crystal Choir,Kristallchor
-SKILL_MAGMA_BUFF_T4,Forge Fury,Schmiedezorn
-SKILL_MUD_BUFF_T4,Mire Bulwark,Sumpfwall
-SKILL_DUST_BUFF_T4,Desert Mirage,Wüstenspiegelung
-SKILL_ICE_BUFF_T4,Prism Focus,Prismenfokus
 SKILL_PASSIVE_FIRE_POWER,Inner Blaze,Innere Glut
 SKILL_PASSIVE_AIR_POWER,Wind Mind,Windsinn
 SKILL_PASSIVE_EARTH_POWER,Stone Soul,Steinseele
@@ -1235,7 +1226,6 @@ SKILL_PASSIVE_MAGMA_T4,Molten Heart,Glutkern
 SKILL_PASSIVE_ICE_T4,Eternal Frost,Ewiger Frost
 SKILL_PASSIVE_DUST_T4,Eye of the Sandstorm,Auge des Sandsturms
 SKILL_PASSIVE_MUD_T4,Heart of the Mire,Herz des Moores
-SKILL_STEAM_BUFF_T4,Thermal Veil,Thermalschleier
 SKILL_PASSIVE_STEAM_T4,Pressure Core,Druckkern
 TUT_BAT_KINDS,"Look at the symbol on a card: the fist is a physical attack, the sparkling diamond a magical one. Only magical attacks use the element advantage, physical ones always hit neutral. A shield blocks both kinds, so check the enemy's plan and shield the target in time!","Schau auf das Symbol einer Karte: Die Faust ist eine physische Attacke, der funkelnde Diamant eine magische. Nur magische Attacken nutzen den Element-Vorteil, physische treffen immer neutral. Ein Schild blockt beide Arten. Schau also, was der Gegner vorhat, und schütze das Ziel rechtzeitig!"
 TUT_BAT_BUFFS,"Besides attacks and shields there are buffs: they raise a stat of your monster for a few turns. Passives can't be played, they work all by themselves as long as the monster knows them.","Neben Attacken und Schilden gibt es Buffs: Sie erhöhen für ein paar Züge einen Wert deines Monsters. Passive spielst du nicht aus, sie wirken ganz von selbst, solange das Monster sie kennt."
@@ -1306,3 +1296,69 @@ SETTINGS_ENEMY_LOANS,Enemies borrow elements (test),Gegner leihen Elemente (Test
 SETTINGS_ENEMY_LOANS_HINT,"Enemies use the element loan too: an attack borrows an element from a partner and gains its combo effect (guaranteed), the partner loses an action. Shown in the enemy's intent.","Gegner nutzen die Element-Leihgabe auch: Ein Angriff leiht sich ein Element vom Partner und bekommt den Kombi-Effekt (sicher), der Partner verliert eine Aktion. Steht in der Absicht des Gegners."
 LOAN_ACTION_LENT,-1 action,-1 Aktion
 LOAN_INTENT_TOOLTIP,"Borrows {element} from {lender}: {effect}","Leiht {element} von {lender}: {effect}"
+SKILL_FIRE_BUFF_DOUBLE_SHIELD,Double Shield,Doppelter Schild
+SKILL_FIRE_BUFF_EXTRA_SHIELD,Extra Shield,Extra Schild
+SKILL_FIRE_BUFF_FIGHTING_SPIRIT,Fighting Spirit,Kampfgeist
+SKILL_FIRE_BUFF_BATTLE_FRENZY,Battle Frenzy,Kampfrausch
+SKILL_WATER_BUFF_DOUBLE_SHIELD,Double Shield,Doppelter Schild
+SKILL_WATER_BUFF_EXTRA_SHIELD,Extra Shield,Extra Schild
+SKILL_WATER_BUFF_FIGHTING_SPIRIT,Fighting Spirit,Kampfgeist
+SKILL_WATER_BUFF_BATTLE_FRENZY,Battle Frenzy,Kampfrausch
+SKILL_EARTH_BUFF_DOUBLE_SHIELD,Double Shield,Doppelter Schild
+SKILL_EARTH_BUFF_EXTRA_SHIELD,Extra Shield,Extra Schild
+SKILL_EARTH_BUFF_FIGHTING_SPIRIT,Fighting Spirit,Kampfgeist
+SKILL_EARTH_BUFF_BATTLE_FRENZY,Battle Frenzy,Kampfrausch
+SKILL_AIR_BUFF_DOUBLE_SHIELD,Double Shield,Doppelter Schild
+SKILL_AIR_BUFF_EXTRA_SHIELD,Extra Shield,Extra Schild
+SKILL_AIR_BUFF_FIGHTING_SPIRIT,Fighting Spirit,Kampfgeist
+SKILL_AIR_BUFF_BATTLE_FRENZY,Battle Frenzy,Kampfrausch
+SKILL_AIR_BUFF_TAILWIND,Tailwind,Rückenwind
+SKILL_FIRE_BUFF_EMBER_HEAT,Ember Heat,Gluthitze
+SKILL_EARTH_BUFF_EXTRA_CLUB,Extra Club,Zusatzkeule
+SKILL_CHAOS_BUFF_STRONG_SHIELD,Strong Shield,Starker Schild
+SKILL_CHAOS_BUFF_GOLDEN_SHIELD,Golden Shield,Goldener Schild
+SKILL_CHAOS_BUFF_BUDDHA_FIST,Buddha's Fist,Buddhas Faust
+SKILL_CHAOS_BUFF_YIN_YANG,Yin & Yang,Jin & Jang
+SKILL_CHAOS_BOON_COURAGE,Courage & Will,Mut & Wille
+SKILL_CHAOS_BOON_RESPECT_SLAP,Respect Slap,Respektschelle
+SKILL_CHAOS_DEBUFF_PLAGUE,Plague,Plage
+SKILL_CHAOS_DEBUFF_QUICKSAND,Quicksand,Treibsand
+SKILL_THUNDERSTORM_DEBUFF_STORM_FRONT,Storm Front,Gewitterfront
+SKILL_SWAMP_DEBUFF_VENOM,Swamp Venom,Sumpfgift
+SKILL_SWAMP_DEBUFF_TOXIC_FOG,Toxic Fog,Giftnebel
+SKILL_ASH_STORM_PHYS_PUNCH_SERIES,Punch Series,Punch-Serie
+SKILL_VOLCANO_MAG_ERUPTION,Volcanic Eruption,Vulkanausbruch
+SKILL_PASSIVE_BIG_BROTHER,Big Brother,Großer Bruder
+SKILL_PASSIVE_TRUE_MAGI,True Magi,True Magi
+SKILL_PASSIVE_SWAMP_FIELD,Swamp Field,Sumpffeld
+SKILL_PASSIVE_DENSE_CLOUDS,Dense Clouds,Dichte Wolken
+SKILL_PASSIVE_AFTERBURN,Afterburn,Nachbrennen
+SKILL_FLAT_BUFF_DESC,[hl]+{value} {stat}[/hl] (fixed) for an ally for [hl]{buff_turns} of its turns[/hl],[hl]+{value} {stat}[/hl] (fester Wert) für ein eigenes Monster für [hl]{buff_turns} seiner Züge[/hl]
+SKILL_FLAT_BUFF_SHIELD_DESC,An ally's shields are [hl]{value} stronger[/hl] for [hl]{buff_turns} of its turns[/hl],Die Schilde eines eigenen Monsters sind für [hl]{buff_turns} seiner Züge[/hl] um [hl]{value}[/hl] stärker
+SKILL_FLAT_BUFF_DAMAGE_DESC,An ally's attacks (physical and magical) deal [hl]+{value} damage[/hl] for [hl]{buff_turns} of its turns[/hl],Die Angriffe eines eigenen Monsters (physisch und magisch) machen für [hl]{buff_turns} seiner Züge[/hl] [hl]+{value} Schaden[/hl]
+SKILL_BOON_EXTRA_ACTION_DESC,The user gets [hl]+{value} action[/hl] right away (never more than [hl]4 actions[/hl]),Der Wirker bekommt sofort [hl]+{value} Aktion[/hl] (nie mehr als [hl]4 Aktionen[/hl])
+SKILL_BOON_DOUBLE_HIT_DESC,An ally's [hl]physical attacks hit a second time[/hl] until the end of its [hl]next turn[/hl],"Die [hl]physischen Angriffe[/hl] eines eigenen Monsters [hl]treffen ein zweites Mal[/hl], bis zum Ende seines [hl]nächsten Zuges[/hl]"
+SKILL_DEBUFF_MOVES_DESC,The target has [hl]at most {value} action[/hl] per turn for [hl]{buff_turns} of its turns[/hl],Das Ziel hat für [hl]{buff_turns} seiner Züge[/hl] [hl]höchstens {value} Aktion[/hl] pro Zug
+SKILL_DEBUFF_FLAT_DESC,Target: [hl]-{value} {stat}[/hl] (fixed) for [hl]{buff_turns} of its turns[/hl],Ziel: [hl]-{value} {stat}[/hl] (fester Wert) für [hl]{buff_turns} seiner Züge[/hl]
+SKILL_STATUS_POISON_DESC,Deals no damage. [hl]{chance}% chance[/hl] to [hl]poison[/hl] each target hit with [hl]{value} stack(s)[/hl] (poison lasts until the battle ends),Macht keinen Schaden. Vergiftet jedes getroffene Ziel mit [hl]{chance}% Chance[/hl] um [hl]{value} Stapel[/hl] (Gift bis Kampfende)
+SKILL_STATUS_PARALYSIS_DESC,Deals no damage. [hl]{chance}% chance[/hl] to [hl]paralyze[/hl] each target hit (paralysis lasts until the battle ends),Macht keinen Schaden. [hl]Lähmt[/hl] jedes getroffene Ziel mit [hl]{chance}% Chance[/hl] (Paralyse bis Kampfende)
+SKILL_DAMAGE_PHYSICAL_MULTI_DESC,Hits [hl]{hits} times[/hl] with [hl]{value} damage + ({scaling}*ATK)[/hl] [hl]physical damage[/hl] each. Every hit triggers the element effect on its own,Trifft [hl]{hits}x[/hl] mit je [hl]{value} Schaden + ({scaling}*ANG)[/hl] als [hl]physischer Schaden[/hl]. Jeder Treffer löst den Element-Effekt einzeln aus
+SKILL_PASSIVE_BIG_BROTHER_DESC,"Passive: its [hl]partner[/hl] (the next monster in the team) uses this monster's [hl]ATK, SPA, DEF and SPE[/hl] wherever they are higher","Passiv: sein [hl]Partner[/hl] (das nächste Monster im Team) übernimmt [hl]ANG, SAN, VER und INI[/hl] dieses Monsters, wo sie höher sind"
+SKILL_PASSIVE_MAGIC_ERUPTION_DESC,Passive: its [hl]magical Volcano attacks[/hl] take effect twice with at least [hl]{value}% chance[/hl],Passiv: seine [hl]magischen Vulkan-Attacken[/hl] wirken mit mindestens [hl]{value}% Chance[/hl] doppelt
+SKILL_PASSIVE_POISON_POWER_DESC,Passive: poison it inflicts is [hl]{value}% stronger[/hl],"Passiv: Gift, das es verursacht, wirkt [hl]{value}% stärker[/hl]"
+SKILL_PASSIVE_PARALYSIS_CHANCE_DESC,Passive: monsters it paralyzes are stunned with [hl]{value}% chance[/hl] each turn,Passiv: von ihm gelähmte Monster sind jeden Zug mit [hl]{value}% Chance[/hl] betäubt
+SKILL_PASSIVE_EXTRA_HIT_DESC,Passive: its [hl]physical attacks[/hl] hit [hl]{value} extra time[/hl],Passiv: seine [hl]physischen Attacken[/hl] treffen [hl]{value}x zusätzlich[/hl]
+SKILL_NEEDS_MIN_ELEMENTS,Needs at least {count} elements,Benötigt mindestens {count} Elemente
+SKILL_KIND_DEBUFF,Debuff,Schwächung
+STAT_FLAT_SHIELD,Shield,Schild
+STAT_FLAT_DAMAGE,Damage,Schaden
+STAT_MOVES,Actions,Aktionen
+EFFECT_TEXT_MOVES_CAP,Max {value} action!,Max. {value} Aktion!
+EFFECT_TEXT_RESISTED,Resisted!,Widerstanden!
+EFFECT_TEXT_EXTRA_ACTION,+{value} action,+{value} Aktion
+STATUS_FLAT_BUFF_LINE,+{value} {stat} ({turns}),+{value} {stat} ({turns})
+STATUS_FLAT_DEBUFF_LINE,-{value} {stat} ({turns}),-{value} {stat} ({turns})
+STATUS_MOVES_CAP_LINE,At most {value} action per turn ({turns}),Höchstens {value} Aktion pro Zug ({turns})
+STATUS_BOON_DOUBLE_HIT,Physical attacks hit twice ({turns}),Physische Angriffe treffen doppelt ({turns})
+JUDGEMENT_ALREADY_HAS_SKILL,{mon} already has {skill} and therefore can't learn it again.,{mon} besitzt {skill} schon und kann die Attacke deshalb nicht mehr lernen.
+JUDGEMENT_LEARN_KNOWN_LONG,"Already has this move, so it can't learn it again",Besitzt die Attacke schon und kann sie deshalb nicht mehr lernen

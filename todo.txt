@@ -1,5 +1,6 @@
 1. Wenn beim Judgement jemand schon eine Attacke kennt und nicht mehr lernen kann soll das Textlich so mitgeteilt werden, dass das Mosnter die Attacke schon besitzt und deshalb nicht mehr lernen kann.
-2. 
+2. Fähigkeiten mit 2 oder 3 elementen müssten ein ticken teurer werden beim trainer.
+3. 
 
 Neue Fähigkeiten:
 Buff Fähigkeiten mit Festen Werte
@@ -27,7 +28,9 @@ Debuff
 	> Plage: Reduziert die Aktionen des anvisierten Monsters auf eine Aktion für 2 Runden. 3 SP, 3 Cooldown. Seltenheit 4 (mindestens 2 Elemente nötig)
 	> Schlamm Bad | Treibsand: nimmt 15 Stat ini einem gegnerischen Monster 0 SP, 1 Cooldown hält 1 Runde Seltenheit 2 (mindestens 2 Elemente nötig)
 
-Note: Die Alten Buffs und Debuffs dies bzgl. müssten hiermit ersetzt werden. Da die absolut nutzlos sind grad. Passiven können bleiben.
+Die kleinen Buffs 25% Ang und 25% mehr Defensive können erstmal noch drin bleiben. Die SP soll allerdings auf 0 gehen.
+auch die ei attacken mit 12% san und atk für jedes eigene mosnter könnte drin bleiben allerdings mit 0 SP.
+Note: Die anderen alten Buffs und Debuffs dies bzgl. müssten hiermit ersetzt werden. Da die absolut nutzlos sind grad. Passiven können bleiben.
 
 
 Neue Gewitter Fähigkeit:

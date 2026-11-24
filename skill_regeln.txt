@@ -67,15 +67,15 @@ Startmonster (State.INITIAL_MONS) behalten Start-Skills und Ei-Attacken, bekomme
 				Start (3)                          Ei-Attacken (Fangen & Opfern)                 Meilensteine leicht / mittel / schwer
   Gewöhnlich    Standard nach dem höchsten Wert     K4 schwache Form, K3 St.2, K1 St.2           K2 St.2 / K1 St.3 / K2 St.3
 													(keine Kombis, keine Buffs, höchstens 2x St.3)
-  Ungewöhnlich  K1 verstärkt (Punch/Kanone, nur     K4 schwache Form, K2 St.2, K1 St.3,          K3 St.2 / K1 St.2 / K2 St.3
+  Ungewöhnlich  K1 verstärkt (Punch/Kanone, nur     K4 schwache Form, K2 St.2, K1 St.3,          fester Buff St.1 / K1 St.2 / K2 St.3
 				wenn Angriff), Stoß CD 0, K2        Buff St.2 auf den K1-Wert
-  Selten        K1 St.2, K2 verstärkt, Kleiner      K1 St.3, K2 St.3, K3 St.2,                   K2 St.2 / Kombi leicht K2 / Kombi leicht K1
+  Selten        K1 St.2, K2 verstärkt, Kleiner      K1 St.3, K2 St.3, fester Buff St.2,          K2 St.2 / Kombi leicht K2 / Kombi leicht K1
 				Punch/Kanone (CD 0)                 Buff St.2 (Angreifer) oder Passiv St.3 (Tank)
-  Episch        K1 St.3, K2 St.2, Kleiner           K2 St.3, K1 St.3 schnell (CD 0), K3 St.3,    Kombi leicht K2 / Kombi leicht K1 / Passiv St.3
-				Punch/Kanone (CD 0)                 Buff St.3 (Team oder Sonder-Buff)
+  Episch        K1 St.3, K2 St.2, Kleiner           K2 St.3, K1 St.3 schnell (CD 0),             Kombi leicht K2 / Kombi leicht K1 / Passiv St.3
+				Punch/Kanone (CD 0)                 Element-Buff für Verbündete, Buff St.3
   Legendär      K1 St.3, K2 St.3, St.3 schnell      Kombi stark K1, Kombi stark K2,              Dreier leicht K1 / Dreier stark K1 / Passiv St.4
-				(beste Angriffskategorie)           Kombi-Top St.4, Kombi-Buff St.4
-  Mythisch      wie Legendär                        wie Legendär, aber Dreier-Top St.4           Dreier stark K1 / Kombi-Top St.4 / Passiv St.4
+				(beste Angriffskategorie)           Kombi-Top St.4, universeller Buff St.4
+  Mythisch      wie Legendär                        wie Legendär, aber Dreier-Top St.4           Dreier stark K1 / Kombi-Top St.4 / Dreier-Passiv St.4
 
 Kombi-Skills: Selten und Episch nur die leichten (Stufe 2), Legendär und Mythisch auch starke, Top und Dreier.
 Pro Art 3 Start-Skills + 3-4 Ei-Attacken + 3 Meilensteine = bis zu 10 Optionen für 6 Plätze (MAX_SKILLS).
@@ -114,15 +114,37 @@ Passive gelten nur, wenn das Monster eins ihrer Elemente hat, ohne alle Elemente
 Mehrere Extras auf einer Karte nur bei seltenen Quellen (Couvert, Trophäen, Stufe 4).
 
 
-6. BUFFS (effect "buff") UND SONDER-VERSTÄRKUNGEN (effect "boon")
-=================================================================
-  Stufe 2  ein eigenes Monster +25 % für 2 Züge (CD 2), auf den besten Wert der Art (K1)
-  Stufe 3  das ganze Team +12 % für 2 Züge (CD 3)
-  Stufe 4  Kombi-Buffs, Team +15-18 % oder Einzel +35 % für 3 Züge (CD 3, 2 Aktionen), nicht beim Trainer
-		   Magma Team Ang., Schlamm Team Vert., Staub Team Sp. Ang., Eis Einzel Sp. Ang., Dampf Team Sp. Vert. + Heilung,
-		   Blitz: Überladung (alle Angriffe kritisch)
-  Sonder-Verstärkungen (Stufe 2-4): Fokusflamme (nächster Angriff kritisch), Überladung, Rückenwind (+1 Aktion),
-		   Blutgezeiten (Lebensraub), Kampfschrei (Aggro).
+6. BUFFS (effect "buff"), SONDER-VERSTÄRKUNGEN (effect "boon") UND SCHWÄCHUNGEN (effect "debuff")
+=================================================================================================
+  "Universell" = Element Chaos mit "universal": true: jedes Monster kann sie einsetzen, sie schlummern nie
+  ("min_elements": 2 = erst ab zwei Elementen, egal welchen). Alle Buffs kosten 0 Aktionen, außer wo angegeben.
+  Prozent-Buffs (bleiben):
+	Stufe 2  ein eigenes Monster +25 % für 2 Züge (CD 2), auf den besten Wert der Art (K1)
+	Stufe 3  das ganze Team +12 % für 2 Züge (CD 3)
+  Feste Buffs pro Grundelement (_flat_buff_skill, Monster._flat_mods), auf ein eigenes Monster:
+	Stufe 1  Doppelter Schild: Schilde +8 (1 Zug, CD 2)      Kampfgeist: Angriffe +5 Schaden (1 Zug, CD 2)
+	Stufe 2  Extra Schild: Schilde +12 (2 Züge, CD 3)        Kampfrausch: Angriffe +8 Schaden (2 Züge, CD 3)
+	Stufe 2  Element-Buffs (1 Zug, CD 1): Luft Rückenwind +10 INI, Feuer Gluthitze +20 SAN, Erde Zusatzkeule +20 ANG
+  Universelle Buffs:
+	Stufe 3  Starker Schild +60 % VER (1 Zug, CD 2), Mut & Wille: sofort +1 Aktion, höchstens 4 (CD 3)
+	Stufe 4  Goldener Schild +100 % VER (2 Züge, CD 3, 1 Aktion), Buddhas Faust +60 % ANG (2 Züge, CD 4, 3 Aktionen),
+			 Jin & Jang +100 % SAN (2 Züge, CD 4, 3 Aktionen), Respektschelle: physische Angriffe treffen doppelt
+			 (1 Zug, CD 2, 1 Aktion). Stufe 4 nicht beim Trainer.
+  Schwächungen (debuff_skills): Treibsand -15 INI (Stufe 2, 1 Zug, CD 1, ab 2 Elementen), Plage: höchstens 1 Aktion
+	pro Zug (Stufe 4, 2 Züge, CD 3, 3 Aktionen, ab 2 Elementen), Gewitterfront (Fläche, 25 % Paralyse, Stufe 4),
+	Sumpfgift (2 Giftstapel, Stufe 3), Giftnebel (Fläche, 80 % Gift, Stufe 3). Alle ohne Schaden.
+  Verteilung: Ungewöhnlich Meilenstein leicht = fester Buff St.1, Selten Ei-Attacke = fester Buff St.2,
+	Episch Ei-Attacken = Element-Buff (Wasser: fester St.2) + Team-Buff bzw. Starker Schild / Mut & Wille,
+	Legendär/Mythisch Ei-Attacke = universeller St.4 nach K1 (Mythische Schläger: Respektschelle).
+	Was keine Art bekommt, landet im Couvert (Plage, Treibsand, Großer Bruder, Dreier-Angriffe ...).
+  Die alten Sonder-Buffs (Fokusflamme, Blutgezeiten, alter Rückenwind, Überladung, Kampfschrei) und die
+  Kombi-Buffs der Stufe 4 sind entfernt. Die Mechanik dahinter (crit, leech, taunt ...) bleibt im Code.
+
+  Mehrfach-Treffer ("hits", Punch-Serie 4x): jeder Treffer löst Element-Effekt und Extras einzeln aus (Aschesturm!).
+  Neue Dreier-Passive (Stufe 4, Mythische, wenn sie passen): Sumpffeld (Gift doppelt), Dichte Wolken (Betäubung 20 %),
+	Nachbrennen (+1 Treffer für physische Angriffe), True Magi (Vulkan-Doppelwirkung bei Magie mind. 25 %).
+	Großer Bruder (universell): der Partner übernimmt ANG, SAN, VER und INI des Trägers, wo die höher sind.
+  Trainer: Skills mit 2 Elementen kosten x1,2, mit 3 Elementen x1,4 (Skills.trainer_price_factor).
 
 
 7. QUELLEN UND LISTEN IN SKILLS.GD

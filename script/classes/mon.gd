@@ -84,6 +84,12 @@ var _charges: Dictionary = {}
 # "crit" (alle Treffer kritisch), "leech" (Lebensraub value %), "extra_moves" (+value Aktionen pro Zug),
 # "taunt" (zieht die Einzelangriffe der Gegner auf sich)
 var _boons: Dictionary = {}
+# Feste Boni und Abzüge (Buffs mit festen Werten, Treibsand): Quelle -> {"stat": ..., "value": + Bonus / - Abzug,
+# "turns": übrige eigene Züge (+1 wie bei Buffs)}. stat ist ein echter Wert ("atk", "s_atk", "def", "speed") oder
+# "shield" (+value auf jeden Schild, den das Monster wirkt) bzw. "damage" (+value Schaden auf jeden eigenen Angriff).
+var _flat_mods: Dictionary = {}
+## Über so viele Aktionen pro Zug hebt Mut & Wille (Skills.grant_action) ein Monster nicht
+const MAX_GRANTED_MOVES := 4
 # Buffs und Schwächungen zusammen drücken einen Wert nie unter diesen Faktor
 const MIN_STAT_FACTOR := 0.25
 # Nur Gegner: geplanter nächster Zug als [{"skill": Dictionary, "target": Monster}], im Kampf als Absicht sichtbar (battle.gd _plan_intent)
@@ -138,6 +144,7 @@ func reset_battle_state() -> void:
 	_statuses = {}
 	_charges = {}
 	_boons = {}
+	_flat_mods = {}
 	_intent = []
 	_relic_state = {}
 	_loans = []
@@ -170,6 +177,10 @@ func start_turn() -> void:
 		_boons[key].turns -= 1
 		if _boons[key].turns <= 0:
 			_boons.erase(key)
+	for key in _flat_mods.keys():
+		_flat_mods[key].turns -= 1
+		if _flat_mods[key].turns <= 0:
+			_flat_mods.erase(key)
 	Events.monster_status_changed.emit(self)
 
 ## Summe aller Schilde
@@ -261,7 +272,38 @@ func buff_factor(stat: String) -> float:
 	return maxf(factor, MIN_STAT_FACTOR)
 
 func is_buffed() -> bool:
-	return not _buffs.is_empty() or not _charges.is_empty() or not _boons.is_empty()
+	return not _buffs.is_empty() or not _charges.is_empty() or not _boons.is_empty() \
+		or _flat_mods.values().any(func(mod): return mod.value > 0.0)
+
+# Fester Bonus (value > 0) oder Abzug (value < 0). Erneut aus derselben Quelle: frischt auf, stapelt nicht
+# (der stärkere Wert und die längere Dauer bleiben).
+func add_flat(key: String, stat: String, value: float, turns: int) -> void:
+	var old: Dictionary = _flat_mods.get(key, {})
+	var stronger: float = value if absf(value) >= absf(old.get("value", 0.0)) else old.value
+	_flat_mods[key] = {"stat": stat, "value": stronger, "turns": maxi(turns, old.get("turns", 0))}
+	Events.monster_status_changed.emit(self)
+
+## Summe aller festen Boni und Abzüge auf stat (siehe _flat_mods)
+func flat_bonus(stat: String) -> float:
+	var total := 0.0
+	for mod in _flat_mods.values():
+		if mod.stat == stat:
+			total += mod.value
+	return total
+
+# Plage: Aktionen pro Zug gedeckelt (Schwächung mit stat "moves", factor = höchstens so viele Aktionen), -1 = kein Deckel.
+# next_turn: nur Deckel, die den nächsten eigenen Zug noch erleben (Gegner planen ihren Zug am Ende des vorigen).
+func moves_cap(next_turn := false) -> int:
+	var cap := -1
+	for debuff in _debuffs.values():
+		if debuff.stat != "moves" or (next_turn and debuff.turns == 1):
+			continue
+		cap = roundi(debuff.factor) if cap < 0 else mini(cap, roundi(debuff.factor))
+	return cap
+
+func cap_moves(moves: int, next_turn := false) -> int:
+	var cap := moves_cap(next_turn)
+	return moves if cap < 0 else mini(moves, cap)
 
 # Erneutes Verleihen derselben Sonder-Verstärkung stapelt nicht, sondern nimmt den größeren Wert und die längere Dauer.
 func add_boon(kind: String, value: float, turns: int) -> void:
@@ -311,7 +353,7 @@ func add_debuff(key: String, stat: String, factor: float, turns: int) -> void:
 	Events.monster_status_changed.emit(self)
 
 func is_debuffed() -> bool:
-	return not _debuffs.is_empty()
+	return not _debuffs.is_empty() or _flat_mods.values().any(func(mod): return mod.value < 0.0)
 
 # Statuseffekt bis Kampfende, erneutes Anwenden erhöht die Stapel bis max_stacks.
 # Die Stärke bleibt die der stärksten Karte, eine schwächere Karte senkt sie nicht.
@@ -337,7 +379,8 @@ func reset_to_new_round():
 	print("_upgrades", _upgrades, "_initial_moves", _initial_moves)
 	# Rückenwind & Co.: zusätzliche Aktionen für ein paar eigene Züge (Sonder-Verstärkung "extra_moves")
 	# verliehene Aktionen (Element-Leihgabe) fehlen genau in diesem Zug
-	_computed_moves = maxi(Relics.modify("moves", _initial_moves + _upgrades, self) + roundi(boon_value("extra_moves")) - _loan_debt, 0)
+	# Plage deckelt die Aktionen
+	_computed_moves = maxi(cap_moves(Relics.modify("moves", _initial_moves + _upgrades, self) + roundi(boon_value("extra_moves")) - _loan_debt), 0)
 	_loan_debt = 0
 
 func unlock_skills():
@@ -369,8 +412,15 @@ func s_attack():
 func speed():
 	return _stat_with_bonuses("speed")
 
+# Feste Boni (_flat_mods) zählen zum Grundwert, Prozent-Buffs wirken darauf. Großer Bruder (Passiv beim Vorgänger
+# im Team) hebt den Grundwert auf den des Trägers, wenn der höher ist.
 func _stat_with_bonuses(stat: String) -> float:
-	return (_base_stat(stat) + gem_bonus(stat)) * buff_factor(stat) * Skills.passive_stat_factor(self, stat)
+	var raw := maxf(raw_stat(stat), Skills.big_brother_stat(self, stat))
+	return maxf(raw + flat_bonus(stat), 0.0) * buff_factor(stat) * Skills.passive_stat_factor(self, stat)
+
+## Grundwert + Edelsteine, ohne Buffs und Passive
+func raw_stat(stat: String) -> float:
+	return _base_stat(stat) + gem_bonus(stat)
 
 func best():
 	return _best_points

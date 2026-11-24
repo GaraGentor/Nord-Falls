@@ -650,7 +650,8 @@ func _add_skill_card(skill: Dictionary) -> void:
 	card.on_click = _toggle_focus.bind(card)
 	# das Mausrad scrollt die Liste auch über den Karten, Ziehen klappt trotzdem
 	card.mouse_filter = Control.MOUSE_FILTER_PASS
-	set_price(card, randi_range(skill.shop_cost.min, skill.shop_cost.max))
+	# Skills mit zwei oder drei Elementen kosten etwas mehr (Skills.trainer_price_factor)
+	set_price(card, roundi(randi_range(skill.shop_cost.min, skill.shop_cost.max) * Skills.trainer_price_factor(skill)))
 	_add_price_tag(card)
 	_add_card_backdrop(card)
 	# fester Name, damit die Kopie beim Ziehen die Bilder sicher wiederfindet

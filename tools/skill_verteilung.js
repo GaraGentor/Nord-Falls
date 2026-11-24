@@ -185,13 +185,33 @@ const t1 = {
 const lightOf = (el, c) => isAtk(c) ? t1.strike(el, c) : t1.shield(el, c);
 const weakOf = (el, c) => isAtk(c) ? t1.weakForm(el, c) : t1.plain(el, c);
 
-const buffT2 = (el, st) => planned(`SKILL_${el}_BUFF_${st.toUpperCase()}`, `Stufe 2, Buff: ein eigenes Monster ${STATNAME[st]} +25 % für 2 Züge, CD 2, 1 Aktion`);
-const buffT3 = (el, st) => (el === 'FIRE' && st === 'atk') ? 'SKILL_FIRE_BOON_FOCUS_FLAME'
-  : el === 'AIR' ? 'SKILL_AIR_BOON_TAILWIND'
-  : (el === 'WATER' && isAtk(st)) ? 'SKILL_WATER_BOON_BLOOD_TIDE'
-  : planned(`SKILL_${el}_BUFF_TEAM_${st.toUpperCase()}`, `Stufe 3, Buff: ganzes Team ${STATNAME[st]} +12 % für 2 Züge, CD 3, 1 Aktion`);
-const buffT4 = co => co === 'LIGHTNING' ? 'SKILL_LIGHTNING_BOON_OVERCHARGE'
-  : planned(`SKILL_${co}_BUFF_T4`, 'Stufe 4, Kombi-Buff: Team +15-18 % oder Einzel +35 % für 3 Züge (nach Kombi-Thema), CD 3, 2 Aktionen, "trainer": false');
+// Buffs (todo.txt, Stand Nov. 2026). Kleine Buffs +25 % (Stufe 2) und Team-Buffs +12 % (Stufe 3) bleiben, kosten 0 Aktionen.
+// Neu: feste Buffs pro Grundelement (Schild-Bonus für Verteidiger, Schadens-Bonus für Angreifer), Element-Buffs für ein
+// verbündetes Monster (Feuer Glut Hitze, Erde Zusatz Keule, Luft Rückenwind) und universelle Buffs (Element Chaos, für alle).
+// Fehlt der 25 %-Buff für einen Wert (Feuer hat keinen Vert.-Buff), springt der feste Stufe-2-Buff ein.
+const buffT2 = (el, st) => planned(`SKILL_${el}_BUFF_${st.toUpperCase()}`, `Stufe 2, Buff: ein eigenes Monster ${STATNAME[st]} +25 % für 2 Züge, CD 2, 0 Aktionen`,
+  fixedT2(el, st));
+// fest: Stufe 1 Doppelter Schild (+8 auf Schilde) / Kampfgeist (+5 Schaden), Stufe 2 Extra Schild (+12) / Kampfrausch (+8)
+const fixedT1 = (el, st) => st === 'def' ? `SKILL_${el}_BUFF_DOUBLE_SHIELD` : `SKILL_${el}_BUFF_FIGHTING_SPIRIT`;
+const fixedT2 = (el, st) => st === 'def' ? `SKILL_${el}_BUFF_EXTRA_SHIELD` : `SKILL_${el}_BUFF_BATTLE_FRENZY`;
+// Element-Buff für einen Verbündeten (Stufe 2, CD 1, 0 Aktionen), Wasser hat keinen: dann der feste Stufe-2-Buff
+const ALLY_BUFF = { FIRE: 'SKILL_FIRE_BUFF_EMBER_HEAT', EARTH: 'SKILL_EARTH_BUFF_EXTRA_CLUB', AIR: 'SKILL_AIR_BUFF_TAILWIND' };
+const allyBuff = (el, st) => ALLY_BUFF[el] || fixedT2(el, st);
+// Stufe 3: Team-Buff +12 %, wenn es ihn für den Wert gibt, sonst universell: Verteidiger Starker Schild, Angreifer Mut & Wille
+const buffT3 = (el, st) => exists(`SKILL_${el}_BUFF_TEAM_${st.toUpperCase()}`) ? `SKILL_${el}_BUFF_TEAM_${st.toUpperCase()}`
+  : st === 'def' ? 'SKILL_CHAOS_BUFF_STRONG_SHIELD' : 'SKILL_CHAOS_BOON_COURAGE';
+// Stufe 4 (universell, ersetzt die alten Kombi-Buffs): nach K1, mythische Schläger bekommen Respekt Schelle
+const buffT4 = (st, rarity) => st === 'def' ? 'SKILL_CHAOS_BUFF_GOLDEN_SHIELD' : st === 's_atk' ? 'SKILL_CHAOS_BUFF_YIN_YANG'
+  : rarity === 'MYTHIC' ? 'SKILL_CHAOS_BOON_RESPECT_SLAP' : 'SKILL_CHAOS_BUFF_BUDDHA_FIST';
+// Dreier-Passive (Stufe 4) für Mythische, wenn sie zur Art passen (Nachbrennen nur für Schläger, True Magi nur für Magier)
+const triPassive = (tri, cs) => {
+  const physFirst = cs.indexOf('atk') < cs.indexOf('s_atk');
+  if (tri === 'SWAMP') return 'SKILL_PASSIVE_SWAMP_FIELD';
+  if (tri === 'THUNDERSTORM') return 'SKILL_PASSIVE_DENSE_CLOUDS';
+  if (tri === 'ASH_STORM' && physFirst) return 'SKILL_PASSIVE_AFTERBURN';
+  if (tri === 'VOLCANO' && !physFirst) return 'SKILL_PASSIVE_TRUE_MAGI';
+  return null;
+};
 const passiveT3 = el => planned(`SKILL_PASSIVE_${el}_POWER`, `Stufe 3, Passiv ${ELEM_PASSIVE[el]}`);
 const passiveT4 = co => planned(`SKILL_PASSIVE_${co}_T4`, 'Stufe 4, Passiv element_power 15 mit passive_element = Kombi (Angriffe mit allen Elementen der Kombi +15 %), "trainer": false, nur Meilenstein');
 const swift = (el, c) => planned(`SKILL_${el}_${CAT[c]}_${BASE[el][c][1]}_SWIFT`, `Stufe 3, schnelle Variante von ${BASE[el][c][1]}: CD 0, 1 Aktion, ca. 12 + 0,30 (Element-Charakter +)`,
@@ -235,24 +255,24 @@ function plan(mon) {
       if (isAtk(k1)) p.def = [t1.strong(el, k1), t1.thrust(el, k1), lightOf(el, k2)];
       else p.def = [t1.shield(el, k1), t1.thrust(el, ba), k2 === ba ? t1.strike(el, k2) : lightOf(el, k2)];
       p.egg = [weakOf(el, k3), base(el, k2, 2), base(el, k1, 3), buffT2(el, k1)];
-      p.ms = [base(el, k3, 2), base(el, k1, 2), base(el, k2, 3)];
+      p.ms = [fixedT1(el, k1), base(el, k1, 2), base(el, k2, 3)];
       break;
     case 'RARE':
       p.def = [base(el, k1, 2), isAtk(k2) ? t1.strong(el, k2) : t1.shield(el, k2), t1.small(el, ba)];
-      p.egg = [base(el, k1, 3), base(el, k2, 3), base(el, k3, 2), isAtk(k1) ? buffT2(el, k1) : passiveT3(el)];
+      p.egg = [base(el, k1, 3), base(el, k2, 3), fixedT2(el, k1), isAtk(k1) ? buffT2(el, k1) : passiveT3(el)];
       p.ms = [base(el, k2, 2), combo(co, k2, 0), combo(co, k1, 0)];
       break;
     case 'EPIC':
       p.def = [base(el, k1, 3), base(el, k2, 2), t1.small(el, ba)];
-      p.egg = [base(el, k2, 3), swift(el, k1), base(el, k3, 3), buffT3(el, k1)];
+      p.egg = [base(el, k2, 3), swift(el, k1), allyBuff(el, k1), buffT3(el, k1)];
       p.ms = [combo(co, k2, 0), combo(co, k1, 0), epicPassive(el, co, cs)];
       break;
     case 'LEGENDARY':
     case 'MYTHIC':
       p.def = [base(el, k1, 3), base(el, k2, 3), swift(el, ba)];
-      p.egg = [combo(co, k1, 1), combo(co, k2, 1), mon.rarity === 'MYTHIC' ? top(tri) : top(co), buffT4(co)];
+      p.egg = [combo(co, k1, 1), combo(co, k2, 1), mon.rarity === 'MYTHIC' ? top(tri) : top(co), buffT4(k1, mon.rarity)];
       p.ms = mon.rarity === 'MYTHIC'
-        ? [combo(tri, k1, 1), top(co), passiveT4(co)]
+        ? [combo(tri, k1, 1), top(co), triPassive(tri, cs) || passiveT4(co)]
         : [combo(tri, k1, 0), combo(tri, k1, 1), passiveT4(co)];
       break;
   }
@@ -371,9 +391,12 @@ if (!ONLY_TEXT && !problems.length) {
 //   von keiner Art benutzt, Stufe 1       -> draft_skills
 // starter_skills, standard_skills, bounty_skills und ascension_skills bleiben unberührt.
 
-const MANAGED = ['egg_skills', 'defensive_skills', 'buff_skills', 'passive_skills', 'area_skills', 'milestone_skills', 'bounty_skills', 'reward_skills', 'draft_skills'];
-// Baustein -> [Pool-Liste, Index des Arguments "tier" (null = immer Stufe 1)]
+const MANAGED = ['egg_skills', 'defensive_skills', 'buff_skills', 'passive_skills', 'area_skills', 'debuff_skills', 'milestone_skills', 'bounty_skills', 'reward_skills', 'draft_skills'];
+// Baustein -> [Pool-Liste, Index des Arguments "tier" (null = immer Stufe 1)].
+// Reihenfolge zählt: längere Namen vor den kürzeren, die darin stecken (_flat_buff_skill vor _buff_skill).
 const BUILDERS = {
+  _flat_buff_skill: ['buff_skills', 5], _action_skill: ['buff_skills', 3],
+  _debuff_skill: ['debuff_skills', 7], _status_skill: ['debuff_skills', 6],
   _flat_attack_skill: ['egg_skills', null], _attack_skill: ['egg_skills', 5],
   _flat_shield_skill: ['defensive_skills', null], _shield_skill: ['defensive_skills', 5], _cross_shield_skill: ['defensive_skills', 5],
   _buff_skill: ['buff_skills', 5], _team_buff_skill: ['buff_skills', 5], _boon_skill: ['buff_skills', 7],

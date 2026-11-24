@@ -272,6 +272,9 @@ func skill_description(skill: Dictionary, rich := false, mon: Monster = null) ->
 	var values := {}
 	for key in used:
 		values[key] = format_number(used[key]) if used[key] is float else used[key]
+	# Auslösechance von Statuseffekt-Karten in Prozent (0.25 -> 25)
+	if used.get("chance") is float:
+		values.chance = roundi(used.chance * 100)
 	if dormant and rich and used.has("value") and used.value != skill.value:
 		values.value = _inactive(format_number(skill.value)) + " " + values.value
 	# Platzhalter für Buffs und Passive: {stat} = Kurzname des Werts, {element} = Element der Element-Passive

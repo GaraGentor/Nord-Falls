@@ -536,27 +536,33 @@ func _use_skill(from: Monster, card: Dictionary, target: Monster) -> void:
 	var crit := Skills.is_damage_skill(skill) and Skills.is_crit(from)
 	if crit:
 		Events.monster_effect_text.emit(from, tr("EFFECT_TEXT_CRIT"), ElementEffects.ERUPTION_COLOR)
+	# Mehrfach-Treffer (Punch Serie, Nachbrennen, Respekt Schelle): jeder Treffer einzeln, mit eigenen Element-Effekten
+	var hits := Skills.hit_count(from, skill)
 	for _i in repeats:
 		for mon in targets:
-			if not mon.is_alive():
-				continue
-			# Angriffsanimation nur gegen Gegner
-			if hostile:
-				Events.monster_hit_monster.emit(_scene_for(from), _scene_for(mon))
-				# Boss-Relikt Nebelmaschine: der Angriff kann ins Leere gehen
-				if Skills.is_damage_skill(skill) and BossRelics.dodges(mon):
-					continue
-			var props := {"from": from, "skill": skill, "mon": mon}
-			skill.handle.call(props)
-			Events.skill_vfx.emit(mon, skill, props.get("blocked", 0.0))
-			var hit: float = props.get("dealt", 0.0)
-			dealt += hit
-			if hostile:
-				ElementEffects.on_hit(from, mon, skill)
-				Skills.apply_hit_extras(from, mon, skill)
-				BossRelics.on_damage_dealt(from, mon, skill, hit, turn_wheel.round_number)
-			else:
-				Skills.apply_friend_extras(from, mon, skill)
+			for _hit in hits:
+				if not mon.is_alive():
+					break
+				# Angriffsanimation nur gegen Gegner
+				if hostile:
+					Events.monster_hit_monster.emit(_scene_for(from), _scene_for(mon))
+					# Boss-Relikt Nebelmaschine: der Angriff kann ins Leere gehen
+					if Skills.is_damage_skill(skill) and BossRelics.dodges(mon):
+						continue
+				var props := {"from": from, "skill": skill, "mon": mon}
+				skill.handle.call(props)
+				Events.skill_vfx.emit(mon, skill, props.get("blocked", 0.0))
+				var hit: float = props.get("dealt", 0.0)
+				dealt += hit
+				if hostile:
+					ElementEffects.on_hit(from, mon, skill)
+					Skills.apply_hit_extras(from, mon, skill)
+					BossRelics.on_damage_dealt(from, mon, skill, hit, turn_wheel.round_number)
+				else:
+					Skills.apply_friend_extras(from, mon, skill)
+			# Plage: ein Gegner kürzt seinen schon angekündigten Zug sofort
+			if skill.get("debuff", "") == "moves" and State.enemy_mons.has(mon):
+				_trim_intent(mon)
 	# die eigene Aufladung ist mit diesem Angriff verbraucht, danach erst laden die Extras die Partner auf
 	if Skills.is_damage_skill(skill):
 		from.consume_charge(Skills.charge_kind(skill))
@@ -901,8 +907,8 @@ func _plan_intent(emon: Monster) -> void:
 	emon._intent = []
 	if not emon.is_alive() or _opponents_of(emon).is_empty():
 		return
-	# verliehene Aktionen (Element-Leihgabe) fehlen im nächsten Zug
-	var moves: int = Relics.modify("moves", emon._initial_moves, emon) + roundi(emon.boon_value("extra_moves")) - emon._loan_debt
+	# verliehene Aktionen (Element-Leihgabe) fehlen im nächsten Zug, Plage deckelt sie
+	var moves: int = emon.cap_moves(Relics.modify("moves", emon._initial_moves, emon) + roundi(emon.boon_value("extra_moves")) - emon._loan_debt, true)
 	var once_used = []
 	while true:
 		var options = emon._skills.filter(func(skill): return _can_plan(emon, skill, moves) and not once_used.has(skill))
@@ -913,7 +919,8 @@ func _plan_intent(emon: Monster) -> void:
 			for target in _candidate_targets(emon, skill):
 				candidates.append({"skill": skill, "target": target, "score": _score_action(emon, skill, target)})
 		var picked: Dictionary = _weighted_pick(candidates)
-		moves -= maxi(Skills.skill_cost(emon, picked.skill), 1)
+		# Mut & Wille: die Aktion gibt es schon beim Planen dazu (Skills.grant_action wirkt nur bei eigenen Monstern)
+		moves = Skills.granted_moves(picked.skill, moves - _intent_cost(emon, picked.skill))
 		if picked.skill.get("cooldown", 0) > 0 or not Skills.is_damage_skill(picked.skill):
 			once_used.append(picked.skill)
 		# sofort eintragen: die folgenden Aktionen sehen diesen Angriff schon bei den Rest-KP
@@ -992,13 +999,28 @@ func _take_loan(emon: Monster, action: Dictionary) -> void:
 
 ## Angekündigten Zug kürzen, bis er mit den verbliebenen Aktionen auskommt (hinten fallen Angriffe zuerst weg)
 func _trim_intent(emon: Monster) -> void:
-	var moves: int = Relics.modify("moves", emon._initial_moves, emon) + roundi(emon.boon_value("extra_moves")) - emon._loan_debt
+	var base: int = emon.cap_moves(Relics.modify("moves", emon._initial_moves, emon) + roundi(emon.boon_value("extra_moves")) - emon._loan_debt, true)
+	while not emon._intent.is_empty() and _intent_total(emon) > _intent_budget(emon, base):
+		emon._intent.pop_back()
+	Events.intents_changed.emit()
+
+## Aktionen, die eine geplante Karte verbraucht: mindestens 1, nur Mut & Wille ist wirklich frei (es gibt ja eine dazu)
+func _intent_cost(emon: Monster, skill: Dictionary) -> int:
+	var cost := Skills.skill_cost(emon, skill)
+	return cost if skill.get("boon", "") == "extra_action" else maxi(cost, 1)
+
+func _intent_total(emon: Monster) -> int:
 	var total := 0
 	for action in emon._intent:
-		total += maxi(Skills.skill_cost(emon, action.skill), 1)
-	while total > moves and not emon._intent.is_empty():
-		total -= maxi(Skills.skill_cost(emon, emon._intent.pop_back().skill), 1)
-	Events.intents_changed.emit()
+		total += _intent_cost(emon, action.skill)
+	return total
+
+## Aktionen des angekündigten Zuges: base plus, was Mut & Wille darin dazugibt
+func _intent_budget(emon: Monster, base: int) -> int:
+	var moves := base
+	for action in emon._intent:
+		moves = Skills.granted_moves(action.skill, moves)
+	return moves
 
 func _can_plan(emon: Monster, skill: Dictionary, moves_left: int) -> bool:
 	return Skills.can_use(emon, skill) and not Skills.is_passive(skill) \
@@ -1052,20 +1074,55 @@ func _score_action(emon: Monster, skill: Dictionary, target: Monster) -> float:
 	var extra_factor := 1.0 + AI_EXTRA_WEIGHT * Skills.extras(skill).size()
 	if Skills.targets_friends(skill):
 		var receivers := _allies_of(emon).size() if Skills.targets_team(skill) else 1
-		# Sonder-Verstärkungen grob nach dem stärkeren Angriffswert des Ziels (gibt es bei Gegnern bisher nicht)
+		# Sonder-Verstärkungen grob nach dem stärkeren Angriffswert des Ziels
 		if skill.get("effect", "") == "boon":
 			return maxf(target.attack(), target.s_attack()) * AI_DEFENSE_WEIGHT * extra_factor
+		# feste Buffs: Schild- und Schadens-Boni zählen voll, Wertepunkte etwa mit dem Anteil, mit dem Karten rechnen
+		if Skills.is_flat_buff(skill):
+			var share: float = AI_FLAT_STAT_SHARE.get(skill.buff_stat, 1.0)
+			return skill.value * share * skill.get("buff_turns", 1) * AI_DEFENSE_WEIGHT * receivers * extra_factor
 		if skill.has("buff_stat"):
 			var stat_value: float = _stat_value(target, skill.buff_stat)
 			return stat_value * skill.value / 100 * skill.get("buff_turns", 1) * AI_DEFENSE_WEIGHT * receivers * extra_factor
 		return Skills.shield_amount(emon, skill) * AI_DEFENSE_WEIGHT * receivers * extra_factor
+	var targets = _allies_of(target) if Skills.targets_team(skill) else [target]
+	if Skills.is_debuff_skill(skill):
+		var debuff_score := 0.0
+		for mon: Monster in targets:
+			debuff_score += _debuff_value(emon, skill, mon)
+		return debuff_score * extra_factor
 	if not Skills.is_damage_skill(skill):
 		return AI_MIN_SCORE
-	var targets = _allies_of(target) if Skills.targets_team(skill) else [target]
 	var score := 0.0
 	for mon: Monster in targets:
 		score += _damage_value(emon, skill, mon)
 	return score * extra_factor
+
+## Feste Buffs auf Wertepunkte: so viel davon kommt etwa als Schaden bzw. Schild an (Rest 1.0: Schild, Schaden)
+const AI_FLAT_STAT_SHARE := {"atk": 0.4, "s_atk": 0.4, "def": 0.4, "speed": 0.3}
+
+## Grober Wert einer Schwächung gegen ein Ziel (Treibsand, Plage, Gifte, Gewitter Front), in "Schaden-ähnlichen" Punkten
+func _debuff_value(emon: Monster, skill: Dictionary, target: Monster) -> float:
+	if not target.is_alive():
+		return AI_MIN_SCORE
+	var threat := maxf(target.attack(), target.s_attack()) * _threat_factor(target)
+	match skill.get("debuff", ""):
+		"flat":
+			return skill.value * AI_FLAT_STAT_SHARE.get(skill.buff_stat, 1.0) * skill.get("buff_turns", 1) * AI_DEFENSE_WEIGHT
+		"moves":
+			# schon gedeckelt: bringt nichts mehr
+			if target.moves_cap() >= 0 and target.moves_cap() <= roundi(skill.value):
+				return AI_MIN_SCORE
+			return threat * 0.5 * skill.get("buff_turns", 1)
+		"status":
+			var chance: float = skill.get("chance", 1.0)
+			if skill.status == ElementEffects.POISON:
+				var stacks := mini(roundi(skill.value), ElementEffects.POISON_MAX_STACKS - target.status_stacks(skill.status))
+				return chance * maxi(stacks, 0) * target.hp() * ElementEffects.POISON_SHARE * ElementEffects.poison_factor(emon) * 3.0
+			if target.has_status(skill.status):
+				return AI_MIN_SCORE
+			return chance * threat * 0.4
+	return AI_MIN_SCORE
 
 ## aktueller Wert zu einem Buff-Schlüssel (buff_stat)
 func _stat_value(mon: Monster, stat: String) -> float:
@@ -1079,7 +1136,7 @@ func _stat_value(mon: Monster, stat: String) -> float:
 ## Kill = Bonus, Schaden darüber hinaus zählt kaum, Ziele mit hohem Angriff werden leicht bevorzugt.
 ## Schilde der Ziele zählen nicht: sie laufen meist ab, bevor der Gegner zuschlägt.
 func _damage_value(emon: Monster, skill: Dictionary, target: Monster) -> float:
-	var damage := Skills.calc_damage(emon, target, skill)
+	var damage := Skills.calc_damage(emon, target, skill) * Skills.hit_count(emon, skill)
 	var remaining := _remaining_hp(target)
 	var value: float
 	if remaining <= 0.0:
@@ -1121,7 +1178,7 @@ func _order_intent(emon: Monster) -> void:
 	emon._intent = entries.map(func(e): return e.action)
 
 func _action_priority(skill: Dictionary) -> int:
-	if skill.has("buff_stat") or skill.get("effect", "") == "boon":
+	if skill.has("buff_stat") or skill.get("effect", "") in ["boon", "debuff"]:
 		return 0
 	if not Skills.is_damage_skill(skill):
 		return 1

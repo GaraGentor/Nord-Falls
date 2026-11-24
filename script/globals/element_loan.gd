@@ -39,7 +39,7 @@ static func shown_mask(mon: Monster) -> int:
 ## Gegner haben keine Kerkermeister-Verbesserungen (wie battle.gd _plan_intent)
 static func moves_per_turn(mon: Monster) -> int:
 	var base: int = mon._initial_moves if State.enemy_mons.has(mon) else mon._initial_moves + mon._upgrades
-	return Relics.modify("moves", base, mon) + roundi(mon.boon_value("extra_moves"))
+	return mon.cap_moves(Relics.modify("moves", base, mon) + roundi(mon.boon_value("extra_moves")))
 
 ## Kann lender noch eine Aktion verleihen?
 static func can_lend_more(lender: Monster) -> bool:

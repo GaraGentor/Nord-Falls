@@ -78,8 +78,10 @@ func _play_skill_vfx(_mon: Monster, skill: Dictionary, blocked: float) -> void:
 				_spawn_vfx(kind, Color.WHITE, VFX_HIT_DELAY)
 		if blocked > 0:
 			_spawn_vfx(BattleVfxScript.Kind.SHIELD_HIT, Color.WHITE, VFX_HIT_DELAY)
-	elif skill.get("effect", "") == "buff":
+	elif skill.get("effect", "") in ["buff", "boon"]:
 		_spawn_vfx(BattleVfxScript.Kind.BUFF)
+	elif Skills.is_debuff_skill(skill):
+		_spawn_vfx(BattleVfxScript.Kind.DEBUFF, Color.WHITE, VFX_HIT_DELAY)
 	else:
 		_spawn_vfx(BattleVfxScript.Kind.SHIELD)
 
@@ -426,13 +428,20 @@ func _enemy_intent_rows() -> Array:
 			var side = State.mons if State.mons.has(target) else State.enemy_mons
 			targets = side.filter(func(m: Monster): return m.is_alive())
 		if Skills.is_damage_skill(skill):
-			var items = [ICON_ATTACK if physical else ICON_S_ATTACK, "-%d" % roundi(Skills.calc_damage(mon, target, skill))]
+			var hits := Skills.hit_count(mon, skill)
+			var damage_text := "-%d" % roundi(Skills.calc_damage(mon, target, skill))
+			var items = [ICON_ATTACK if physical else ICON_S_ATTACK, damage_text if hits <= 1 else "%dx %s" % [hits, damage_text]]
 			var row := _icon_row(items + targets, INTENT_COLOR if physical else SPECIAL_COLOR, INTENT_FONT_SIZE)
 			_add_loan_tag(row, action)
 			rows.append(row)
+		elif Skills.is_flat_buff(skill):
+			rows.append(_icon_row([ICON_BUFF, "+%d %s" % [roundi(skill.value), Skills.stat_label(skill.buff_stat)]] + targets, BUFF_COLOR, INTENT_FONT_SIZE))
 		elif skill.get("effect", "") == "buff":
 			var stat = tr(BUFF_STAT_KEYS.get(skill.buff_stat, "")).trim_suffix(":")
 			rows.append(_icon_row([ICON_BUFF, "+%d%% %s" % [roundi(skill.value), stat]] + targets, BUFF_COLOR, INTENT_FONT_SIZE))
+		elif Skills.is_debuff_skill(skill):
+			# Schwächung: Name der Karte, in der Farbe der Schwächungen
+			rows.append(_icon_row([ICON_DEBUFF, tr(skill.name)] + targets, ElementEffects.DEBUFF_COLOR, INTENT_FONT_SIZE))
 		elif skill.get("effect", "") == "boon":
 			# Sonder-Verstärkung: Name der Karte statt einer Zahl
 			rows.append(_icon_row([ICON_BUFF, tr(skill.name)] + targets, BUFF_COLOR, INTENT_FONT_SIZE))

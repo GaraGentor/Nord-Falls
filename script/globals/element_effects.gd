@@ -159,7 +159,15 @@ func rolls_eruption(skill: Dictionary, from: Monster = null) -> bool:
 	if effect_nature(skill) != VOLCANO or not is_active(skill):
 		return false
 	# geliehen (ElementLoan): wirkt sicher doppelt
-	return is_loaned(skill) or randf() < effect_chance(skill, from) * VOLCANO_CHANCE * effect_power(skill)
+	return is_loaned(skill) or randf() < effect_chance(skill, from) * eruption_base(skill, from) * effect_power(skill)
+
+## Grund-Chance des Vulkan-Ausbruchs: VOLCANO_CHANCE, eigene Karten-Chance ("eruption_chance", Vulkan Ausbruch)
+## und für magische Angriffe mindestens das Passiv "magic_eruption" des Wirkers (True Magi)
+func eruption_base(skill: Dictionary, from: Monster = null) -> float:
+	var base: float = skill.get("eruption_chance", VOLCANO_CHANCE)
+	if from != null and Skills.is_damage_skill(skill) and not Skills.is_physical(skill):
+		base = maxf(base, Skills.own_passive_sum(from, "magic_eruption") / 100.0)
+	return base
 
 ## Chaos: Zuschlag auf den Element-Faktor (Skills.element_multiplier). Kennt nur das Element, nicht die Karte,
 ## daher gilt hier immer der Standardwert.
@@ -198,9 +206,14 @@ func trigger_chance(skill: Dictionary, from: Monster = null) -> float:
 func _triggers(skill: Dictionary, from: Monster = null) -> bool:
 	return is_active(skill) and randf() < trigger_chance(skill, from)
 
-func _apply_status(target: Monster, status: String, from: Monster, power: float, max_stacks := 1) -> void:
+## Statuseffekt aus einer Karte ohne Schaden (Skills.apply_debuff "status"): stacks Stapel auf einmal, normale Stärke
+func inflict(target: Monster, status: String, from: Monster, stacks := 1) -> void:
+	_apply_status(target, status, from, 1.0, POISON_MAX_STACKS if status == POISON else 1, stacks)
+
+func _apply_status(target: Monster, status: String, from: Monster, power: float, max_stacks := 1, stacks := 1) -> void:
 	var is_new := not target.has_status(status)
-	target.add_status(status, from, max_stacks, power)
+	for _i in stacks:
+		target.add_status(status, from, max_stacks, power)
 	if is_new or max_stacks > 1:
 		var text := tr(STATUS_LABELS[status])
 		if max_stacks > 1:
@@ -215,13 +228,25 @@ func tick_poison(mon: Monster) -> bool:
 	if not mon.is_alive() or not mon.has_status(POISON):
 		return false
 	var from: Monster = mon._statuses[POISON].get("from")
-	_effect_damage(mon, from, mon.hp() * POISON_SHARE * mon.status_power(POISON) * mon.status_stacks(POISON),
+	_effect_damage(mon, from, mon.hp() * POISON_SHARE * mon.status_power(POISON) * mon.status_stacks(POISON) * poison_factor(from),
 		tr(STATUS_LABELS[POISON]), STATUS_COLORS[POISON], STATUS_LABELS[POISON])
 	return true
 
+## Sumpffeld (Passiv "poison_power" des Verursachers): Gift wirkt stärker, 1.0 ohne
+func poison_factor(from: Monster) -> float:
+	return 1.0 if from == null else 1.0 + Skills.own_passive_sum(from, "poison_power") / 100.0
+
+## Chance pro Zug, betäubt zu sein: PARALYSIS_CHANCE, mit Dichte Wolken (Passiv "paralysis_chance" des Verursachers) mehr
+func paralysis_chance(mon: Monster) -> float:
+	var base := PARALYSIS_CHANCE
+	var from: Monster = mon._statuses.get(PARALYSIS, {}).get("from")
+	if from != null:
+		base = maxf(base, Skills.own_passive_sum(from, "paralysis_chance") / 100.0)
+	return base * mon.status_power(PARALYSIS)
+
 ## Paralyse, zu Zugbeginn: ist das Monster diesmal betäubt?
 func rolls_paralysis(mon: Monster) -> bool:
-	if not mon.is_alive() or not mon.has_status(PARALYSIS) or randf() >= PARALYSIS_CHANCE * mon.status_power(PARALYSIS):
+	if not mon.is_alive() or not mon.has_status(PARALYSIS) or randf() >= paralysis_chance(mon):
 		return false
 	Events.monster_effect_text.emit(mon, tr("EFFECT_TEXT_STUNNED"), STATUS_COLORS[PARALYSIS])
 	return true
@@ -244,6 +269,9 @@ func _effect_damage(mon: Monster, from: Monster, amount: float, text: String, co
 
 ## Effekt-Zeile für Skill-Beschreibungen mit den Werten dieser Karte (effect_chance, effect_power), "" ohne Effekt
 func skill_effect_text(skill: Dictionary) -> String:
+	# universelle Skills (Element Chaos), Schwächungen ohne Schaden und Passive haben keinen Element-Effekt
+	if Skills.is_universal(skill) or Skills.is_debuff_skill(skill) or Skills.is_passive(skill):
+		return ""
 	var mask := effect_nature(skill)
 	if not EFFECT_KEYS.has(mask) or mask == CHAOS:
 		return element_effect_text(mask)
@@ -254,8 +282,8 @@ func skill_effect_text(skill: Dictionary) -> String:
 		# die doppelte Wirkung ist sicher: 100 % statt der Vulkan-Chance
 		return element_effect_text(mask, 1.0 / VOLCANO_CHANCE)
 	if mask == VOLCANO:
-		# bei Vulkan ist die Chance selbst der Effekt
-		power *= chance
+		# bei Vulkan ist die Chance selbst der Effekt (eigene Karten-Chance: Vulkan Ausbruch)
+		power *= chance * eruption_base(skill) / VOLCANO_CHANCE
 		chance = 1.0
 	return element_effect_text(mask, power, chance)
 

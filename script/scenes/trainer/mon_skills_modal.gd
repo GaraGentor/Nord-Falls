@@ -134,8 +134,10 @@ func _skill_text(skill: Dictionary) -> String:
 func _kind_text(skill: Dictionary) -> String:
 	if Skills.is_passive(skill):
 		return tr("EGG_CATEGORY_PASSIVE")
-	if skill.get("effect", "") == "buff":
+	if Skills.is_buff_skill(skill):
 		return tr("EGG_CATEGORY_BUFF")
+	if Skills.is_debuff_skill(skill):
+		return tr("SKILL_KIND_DEBUFF")
 	return tr("SKILL_KIND_ACTIVE")
 
 func _portrait(mon: Monster) -> Control:

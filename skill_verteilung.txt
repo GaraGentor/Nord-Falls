@@ -51,8 +51,8 @@ TEIL B: SCHABLONE PRO SELTENHEIT
 
 Pro Art: 3 Start-Skills + 3-4 Ei-Attacken + 3 Meilensteine = bis zu 10 Optionen für 6 Plätze (MAX_SKILLS).
 
-Buffs: Stufe 2 = ein Monster +25 % auf den Wert der K1 für 2 Züge. Stufe 3 bei Episch: Sonder-Buff, wenn er passt
-(Feuer mit Ang. vorn -> Fokusflamme, Luft -> Rückenwind, Wasser-Angreifer -> Blutflut), sonst Team +12 % auf K1.
+Buffs: siehe skill_regeln.txt Punkt 6 (Stand todo.txt Nov. 2026). Stufe 2 = ein Monster +25 % auf K1, dazu feste Buffs
+(Schild +8/+12 für Verteidiger, Schaden +5/+8 für Angreifer), Episch Element-Buffs für Verbündete, ab Legendär universelle Stufe-4-Buffs.
 Passive Stufe 3: Element-Passiv (Feuer element_power, Luft magic_power, Erde shield_power, Wasser s_shield_power),
 bei Episch mit Blitz Kampfeifer/Sturmgeist, mit Schlamm Bollwerkmeister/Tiefe Lebenskraft (vorhandene Entwürfe).
 
@@ -68,20 +68,21 @@ Neue Skills, die noch fehlen (0). Sobald es sie in skills.gd gibt, trägt der n�
   keine
 
 Skill-Listen in skills.gd nach diesem Lauf:
-  draft_skills       1
-  reward_skills      11
+  draft_skills       2
+  reward_skills      23
   bounty_skills      6
-  milestone_skills   41
+  milestone_skills   50
+  debuff_skills      0
   area_skills        0
   passive_skills     2
-  buff_skills        24
+  buff_skills        29
   defensive_skills   15
   egg_skills         43
 
 Nur im Couvert (reward_skills, von keiner Art benutzt), dazu kommt der gemeinsame Pool ab Stufe 2:
-  Stufe 2: MUD_ARMOR_CLAY_SHELL, CHAOS_BOON_BATTLE_CRY
-  Stufe 3: MAGMA_MAG_MAGMA_BURST, PASSIVE_DEEP_VITALITY, VOLCANO_MAG_PYROCLAST, VOLCANO_MAG_FUME_BURST, ASH_STORM_MAG_EMBER_GUST, ASH_STORM_ARMOR_SLAG_ARMOR, SWAMP_ARMOR_MANGROVE_WALL
-  Stufe 4: VOLCANO_PHYS_MAGMA_TITAN, PASSIVE_PROVOKER
+  Stufe 2: FIRE_BUFF_EXTRA_SHIELD, AIR_BUFF_EXTRA_SHIELD, MUD_ARMOR_CLAY_SHELL, CHAOS_DEBUFF_QUICKSAND
+  Stufe 3: MAGMA_MAG_MAGMA_BURST, PASSIVE_DEEP_VITALITY, VOLCANO_MAG_PYROCLAST, VOLCANO_MAG_FUME_BURST, VOLCANO_MAG_ERUPTION, ASH_STORM_MAG_EMBER_GUST, ASH_STORM_ARMOR_SLAG_ARMOR, ASH_STORM_PHYS_PUNCH_SERIES, SWAMP_ARMOR_MANGROVE_WALL, SWAMP_DEBUFF_VENOM, SWAMP_DEBUFF_TOXIC_FOG, CHAOS_BUFF_STRONG_SHIELD
+  Stufe 4: THUNDERSTORM_DEBUFF_STORM_FRONT, VOLCANO_PHYS_MAGMA_TITAN, PASSIVE_TRUE_MAGI, PASSIVE_AFTERBURN, PASSIVE_PROVOKER, CHAOS_DEBUFF_PLAGUE, PASSIVE_BIG_BROTHER
 
 
 TEIL D: VERTEILUNG PRO ART
@@ -219,119 +220,119 @@ UNGEWÖHNLICH (17 Arten)
   Werte: KP 12 | Ang 8 | Vert 12 | SpAng 27 | Init 20   Reihenfolge: Sp. Ang. > Vert. > Ang.
   Start:      FIRE_MAG_CANNON, FIRE_MAG_LIGHT_THRUST, FIRE_ARMOR_LIGHT
   Ei-Attacke: FIRE_PHYS_BACKHAND, FIRE_ARMOR_CINDER_PLATE, FIRE_MAG_FIREBALL, FIRE_BUFF_S_ATK
-  Meilenst.:  Boss 1: FIRE_PHYS_FLAME_FIST | 10 K.O.s: FIRE_MAG_SPARK_SHOT | Dreier-Kombi: FIRE_ARMOR_FLAME_WALL
+  Meilenst.:  Boss 1: FIRE_BUFF_FIGHTING_SPIRIT | 10 K.O.s: FIRE_MAG_SPARK_SHOT | Dreier-Kombi: FIRE_ARMOR_FLAME_WALL
   Kopfgeld:   FIRE_PHYS_BLAZE_RUSH (Alpha Strudelseele, ab Biom 2, +2 Stufen)
 
 #8 Glutmolch  [Ungewöhnlich, FIRE]
   Werte: KP 17 | Ang 16 | Vert 15 | SpAng 24 | Init 14   Reihenfolge: Sp. Ang. > Ang. > Vert.
   Start:      FIRE_MAG_CANNON, FIRE_MAG_LIGHT_THRUST, FIRE_PHYS_LIGHT_STRIKE
   Ei-Attacke: FIRE_ARMOR_PLAIN, FIRE_PHYS_FLAME_FIST, FIRE_MAG_FIREBALL, FIRE_BUFF_S_ATK
-  Meilenst.:  5 K.O.s: FIRE_ARMOR_CINDER_PLATE | neues Element: FIRE_MAG_SPARK_SHOT | Boss 3: FIRE_PHYS_BLAZE_RUSH
+  Meilenst.:  5 K.O.s: FIRE_BUFF_FIGHTING_SPIRIT | neues Element: FIRE_MAG_SPARK_SHOT | Boss 3: FIRE_PHYS_BLAZE_RUSH
   Kopfgeld:   FIRE_ARMOR_FLAME_WALL (Alpha Böenmähne, ab Biom 2, +2 Stufen)
 
 #9 Quallolotl  [Ungewöhnlich, WATER]
   Werte: KP 24 | Ang 10 | Vert 14 | SpAng 20 | Init 10   Reihenfolge: Sp. Ang. > Vert. > Ang.
   Start:      WATER_MAG_CANNON, WATER_MAG_LIGHT_THRUST, WATER_ARMOR_LIGHT
   Ei-Attacke: WATER_PHYS_BACKHAND, WATER_ARMOR_SHELL, WATER_MAG_HYDRO_LANCE, WATER_BUFF_S_ATK
-  Meilenst.:  Boss 1: WATER_PHYS_TIDE_SLAP | neues Element: WATER_MAG_BUBBLE_BEAM | Boss 3: WATER_ARMOR_CORAL_WALL
+  Meilenst.:  Boss 1: WATER_BUFF_FIGHTING_SPIRIT | neues Element: WATER_MAG_BUBBLE_BEAM | Boss 3: WATER_ARMOR_CORAL_WALL
   Kopfgeld:   WATER_PHYS_BREAKER (Alpha Glotzlibelle, ab Biom 2, +2 Stufen)
 
 #15 Nebelspuk  [Ungewöhnlich, AIR]
   Werte: KP 14 | Ang 6 | Vert 14 | SpAng 26 | Init 16   Reihenfolge: Sp. Ang. > Vert. > Ang.
   Start:      AIR_MAG_CANNON, AIR_MAG_LIGHT_THRUST, AIR_ARMOR_LIGHT
   Ei-Attacke: AIR_PHYS_BACKHAND, AIR_ARMOR_DRAFT_GUARD, AIR_MAG_TEMPEST_RAY, AIR_BUFF_S_ATK
-  Meilenst.:  Boss 1: AIR_PHYS_GUST_KICK | 2x letzter Boss-Treffer: AIR_MAG_WIND_BLADE | Dreier-Kombi: AIR_ARMOR_GALE_WALL
+  Meilenst.:  Boss 1: AIR_BUFF_FIGHTING_SPIRIT | 2x letzter Boss-Treffer: AIR_MAG_WIND_BLADE | Dreier-Kombi: AIR_ARMOR_GALE_WALL
   Kopfgeld:   AIR_PHYS_CYCLONE_CLAW (Alpha Nebelspuk, ab Biom 2, +2 Stufen)
 
 #17 Glutskorpion  [Ungewöhnlich, FIRE]
   Werte: KP 16 | Ang 24 | Vert 22 | SpAng 14 | Init 12   Reihenfolge: Ang. > Vert. > Sp. Ang.
   Start:      FIRE_PHYS_PUNCH, FIRE_PHYS_LIGHT_THRUST, FIRE_ARMOR_LIGHT
   Ei-Attacke: FIRE_MAG_LIGHT_CANNON, FIRE_ARMOR_CINDER_PLATE, FIRE_PHYS_BLAZE_RUSH, FIRE_BUFF_ATK
-  Meilenst.:  5 K.O.s: FIRE_MAG_SPARK_SHOT | neues Element: FIRE_PHYS_FLAME_FIST | Boss 2 ohne K.O.: FIRE_ARMOR_FLAME_WALL
+  Meilenst.:  5 K.O.s: FIRE_BUFF_FIGHTING_SPIRIT | neues Element: FIRE_PHYS_FLAME_FIST | Boss 2 ohne K.O.: FIRE_ARMOR_FLAME_WALL
   Kopfgeld:   FIRE_MAG_FIREBALL (Alpha Sandseelen, ab Biom 2, +2 Stufen)
 
 #20 Dampfhorn  [Ungewöhnlich, WATER]
   Werte: KP 22 | Ang 14 | Vert 22 | SpAng 18 | Init 8   Reihenfolge: Vert. > Sp. Ang. > Ang.
   Start:      WATER_ARMOR_LIGHT, WATER_MAG_LIGHT_THRUST, WATER_MAG_LIGHT_STRIKE
   Ei-Attacke: WATER_PHYS_BACKHAND, WATER_MAG_BUBBLE_BEAM, WATER_ARMOR_CORAL_WALL, WATER_BUFF_DEF
-  Meilenst.:  1x letzter Boss-Treffer: WATER_PHYS_TIDE_SLAP | neues Element: WATER_ARMOR_SHELL | 2x letzter Boss-Treffer: WATER_MAG_HYDRO_LANCE
+  Meilenst.:  1x letzter Boss-Treffer: WATER_BUFF_DOUBLE_SHIELD | neues Element: WATER_ARMOR_SHELL | 2x letzter Boss-Treffer: WATER_MAG_HYDRO_LANCE
   Kopfgeld:   WATER_PHYS_BREAKER (Alpha Funkenigel, ab Biom 2, +2 Stufen)
 
 #24 Voltkäfer  [Ungewöhnlich, AIR]
   Werte: KP 14 | Ang 22 | Vert 24 | SpAng 14 | Init 14   Reihenfolge: Vert. > Ang. > Sp. Ang.
   Start:      AIR_ARMOR_LIGHT, AIR_PHYS_LIGHT_THRUST, AIR_PHYS_LIGHT_STRIKE
   Ei-Attacke: AIR_MAG_LIGHT_CANNON, AIR_PHYS_GUST_KICK, AIR_ARMOR_GALE_WALL, AIR_BUFF_DEF
-  Meilenst.:  5 K.O.s: AIR_MAG_WIND_BLADE | neues Element: AIR_ARMOR_DRAFT_GUARD | Kopfgeld: AIR_PHYS_CYCLONE_CLAW
+  Meilenst.:  5 K.O.s: AIR_BUFF_DOUBLE_SHIELD | neues Element: AIR_ARMOR_DRAFT_GUARD | Kopfgeld: AIR_PHYS_CYCLONE_CLAW
   Kopfgeld:   AIR_MAG_TEMPEST_RAY (Alpha Glutskorpion, ab Biom 2, +2 Stufen)
 
 #26 Aschwirbel  [Ungewöhnlich, FIRE]
   Werte: KP 12 | Ang 10 | Vert 12 | SpAng 26 | Init 22   Reihenfolge: Sp. Ang. > Vert. > Ang.
   Start:      FIRE_MAG_CANNON, FIRE_MAG_LIGHT_THRUST, FIRE_ARMOR_LIGHT
   Ei-Attacke: FIRE_PHYS_BACKHAND, FIRE_ARMOR_CINDER_PLATE, FIRE_MAG_FIREBALL, FIRE_BUFF_S_ATK
-  Meilenst.:  Boss 1: FIRE_PHYS_FLAME_FIST | neues Element: FIRE_MAG_SPARK_SHOT | Boss 2 ohne K.O.: FIRE_ARMOR_FLAME_WALL
+  Meilenst.:  Boss 1: FIRE_BUFF_FIGHTING_SPIRIT | neues Element: FIRE_MAG_SPARK_SHOT | Boss 2 ohne K.O.: FIRE_ARMOR_FLAME_WALL
   Kopfgeld:   FIRE_PHYS_BLAZE_RUSH (Alpha Glühzirpe, ab Biom 2, +2 Stufen)
 
 #36 Staubgreifer  [Ungewöhnlich, EARTH]
   Werte: KP 12 | Ang 22 | Vert 12 | SpAng 16 | Init 24   Reihenfolge: Ang. > Sp. Ang. > Vert.
   Start:      EARTH_PHYS_PUNCH, EARTH_PHYS_LIGHT_THRUST, EARTH_MAG_LIGHT_STRIKE
   Ei-Attacke: EARTH_ARMOR_PLAIN, EARTH_MAG_PEBBLE_STORM, EARTH_PHYS_QUAKE_STOMP, EARTH_BUFF_ATK
-  Meilenst.:  5 K.O.s: EARTH_ARMOR_STONE_SKIN | neues Element: EARTH_PHYS_BOULDER_BASH | Boss 2 ohne K.O.: EARTH_MAG_GEO_PULSE
+  Meilenst.:  5 K.O.s: EARTH_BUFF_FIGHTING_SPIRIT | neues Element: EARTH_PHYS_BOULDER_BASH | Boss 2 ohne K.O.: EARTH_MAG_GEO_PULSE
   Kopfgeld:   EARTH_ARMOR_GRANITE_BASTION (Alpha Wolkenkauz, ab Biom 2, +2 Stufen)
 
 #42 Smogfaust  [Ungewöhnlich, AIR]
   Werte: KP 16 | Ang 24 | Vert 14 | SpAng 16 | Init 16   Reihenfolge: Ang. > Sp. Ang. > Vert.
   Start:      AIR_PHYS_PUNCH, AIR_PHYS_LIGHT_THRUST, AIR_MAG_LIGHT_STRIKE
   Ei-Attacke: AIR_ARMOR_PLAIN, AIR_MAG_WIND_BLADE, AIR_PHYS_CYCLONE_CLAW, AIR_BUFF_ATK
-  Meilenst.:  Boss 1: AIR_ARMOR_DRAFT_GUARD | Boss 3: AIR_PHYS_GUST_KICK | Dreier-Kombi: AIR_MAG_TEMPEST_RAY
+  Meilenst.:  Boss 1: AIR_BUFF_FIGHTING_SPIRIT | Boss 3: AIR_PHYS_GUST_KICK | Dreier-Kombi: AIR_MAG_TEMPEST_RAY
   Kopfgeld:   AIR_ARMOR_GALE_WALL (Alpha Sandgolem, ab Biom 2, +2 Stufen)
 
 #47 Schwertflosser  [Ungewöhnlich, WATER]
   Werte: KP 13 | Ang 27 | Vert 12 | SpAng 14 | Init 22   Reihenfolge: Ang. > Sp. Ang. > Vert.
   Start:      WATER_PHYS_PUNCH, WATER_PHYS_LIGHT_THRUST, WATER_MAG_LIGHT_STRIKE
   Ei-Attacke: WATER_ARMOR_PLAIN, WATER_MAG_BUBBLE_BEAM, WATER_PHYS_BREAKER, WATER_BUFF_ATK
-  Meilenst.:  Boss 1: WATER_ARMOR_SHELL | Boss 3: WATER_PHYS_TIDE_SLAP | Dreier-Kombi: WATER_MAG_HYDRO_LANCE
+  Meilenst.:  Boss 1: WATER_BUFF_FIGHTING_SPIRIT | Boss 3: WATER_PHYS_TIDE_SLAP | Dreier-Kombi: WATER_MAG_HYDRO_LANCE
   Kopfgeld:   WATER_ARMOR_CORAL_WALL (Alpha Glutskorpion, ab Biom 2, +2 Stufen)
 
 #50 Keulenschwanz  [Ungewöhnlich, EARTH]
   Werte: KP 22 | Ang 22 | Vert 28 | SpAng 6 | Init 8   Reihenfolge: Vert. > Ang. > Sp. Ang.
   Start:      EARTH_ARMOR_LIGHT, EARTH_PHYS_LIGHT_THRUST, EARTH_PHYS_LIGHT_STRIKE
   Ei-Attacke: EARTH_MAG_LIGHT_CANNON, EARTH_PHYS_BOULDER_BASH, EARTH_ARMOR_GRANITE_BASTION, EARTH_BUFF_DEF
-  Meilenst.:  5 K.O.s: EARTH_MAG_PEBBLE_STORM | 10 K.O.s: EARTH_ARMOR_STONE_SKIN | Dreier-Kombi: EARTH_PHYS_QUAKE_STOMP
+  Meilenst.:  5 K.O.s: EARTH_BUFF_DOUBLE_SHIELD | 10 K.O.s: EARTH_ARMOR_STONE_SKIN | Dreier-Kombi: EARTH_PHYS_QUAKE_STOMP
   Kopfgeld:   EARTH_MAG_GEO_PULSE (Alpha Frostklumpen, ab Biom 2, +2 Stufen)
 
 #59 Sandseelen  [Ungewöhnlich, EARTH]
   Werte: KP 20 | Ang 14 | Vert 16 | SpAng 26 | Init 10   Reihenfolge: Sp. Ang. > Vert. > Ang.
   Start:      EARTH_MAG_CANNON, EARTH_MAG_LIGHT_THRUST, EARTH_ARMOR_LIGHT
   Ei-Attacke: EARTH_PHYS_BACKHAND, EARTH_ARMOR_STONE_SKIN, EARTH_MAG_GEO_PULSE, EARTH_BUFF_S_ATK
-  Meilenst.:  Boss 1: EARTH_PHYS_BOULDER_BASH | 2x letzter Boss-Treffer: EARTH_MAG_PEBBLE_STORM | Dreier-Kombi: EARTH_ARMOR_GRANITE_BASTION
+  Meilenst.:  Boss 1: EARTH_BUFF_FIGHTING_SPIRIT | 2x letzter Boss-Treffer: EARTH_MAG_PEBBLE_STORM | Dreier-Kombi: EARTH_ARMOR_GRANITE_BASTION
   Kopfgeld:   EARTH_PHYS_QUAKE_STOMP (Alpha Nebelspuk, ab Biom 2, +2 Stufen)
 
 #63 Spaltknochen  [Ungewöhnlich, AIR]
   Werte: KP 14 | Ang 14 | Vert 12 | SpAng 24 | Init 18   Reihenfolge: Sp. Ang. > Ang. > Vert.
   Start:      AIR_MAG_CANNON, AIR_MAG_LIGHT_THRUST, AIR_PHYS_LIGHT_STRIKE
   Ei-Attacke: AIR_ARMOR_PLAIN, AIR_PHYS_GUST_KICK, AIR_MAG_TEMPEST_RAY, AIR_BUFF_S_ATK
-  Meilenst.:  Boss 1: AIR_ARMOR_DRAFT_GUARD | Boss 2 ohne K.O.: AIR_MAG_WIND_BLADE | Dreier-Kombi: AIR_PHYS_CYCLONE_CLAW
+  Meilenst.:  Boss 1: AIR_BUFF_FIGHTING_SPIRIT | Boss 2 ohne K.O.: AIR_MAG_WIND_BLADE | Dreier-Kombi: AIR_PHYS_CYCLONE_CLAW
   Kopfgeld:   AIR_ARMOR_GALE_WALL (Alpha Dampfhorn, ab Biom 2, +2 Stufen)
 
 #70 Scherenhorn  [Ungewöhnlich, EARTH]
   Werte: KP 18 | Ang 26 | Vert 22 | SpAng 10 | Init 12   Reihenfolge: Ang. > Vert. > Sp. Ang.
   Start:      EARTH_PHYS_PUNCH, EARTH_PHYS_LIGHT_THRUST, EARTH_ARMOR_LIGHT
   Ei-Attacke: EARTH_MAG_LIGHT_CANNON, EARTH_ARMOR_STONE_SKIN, EARTH_PHYS_QUAKE_STOMP, EARTH_BUFF_ATK
-  Meilenst.:  5 K.O.s: EARTH_MAG_PEBBLE_STORM | Boss 2 ohne K.O.: EARTH_PHYS_BOULDER_BASH | Dreier-Kombi: EARTH_ARMOR_GRANITE_BASTION
+  Meilenst.:  5 K.O.s: EARTH_BUFF_FIGHTING_SPIRIT | Boss 2 ohne K.O.: EARTH_PHYS_BOULDER_BASH | Dreier-Kombi: EARTH_ARMOR_GRANITE_BASTION
   Kopfgeld:   EARTH_MAG_GEO_PULSE (Alpha Blattfee, ab Biom 2, +2 Stufen)
 
 #76 Glühzirpe  [Ungewöhnlich, AIR]
   Werte: KP 14 | Ang 12 | Vert 12 | SpAng 22 | Init 22   Reihenfolge: Sp. Ang. > Ang. > Vert.
   Start:      AIR_MAG_CANNON, AIR_MAG_LIGHT_THRUST, AIR_PHYS_LIGHT_STRIKE
   Ei-Attacke: AIR_ARMOR_PLAIN, AIR_PHYS_GUST_KICK, AIR_MAG_TEMPEST_RAY, AIR_BUFF_S_ATK
-  Meilenst.:  Boss 1: AIR_ARMOR_DRAFT_GUARD | neues Element: AIR_MAG_WIND_BLADE | 2x letzter Boss-Treffer: AIR_PHYS_CYCLONE_CLAW
+  Meilenst.:  Boss 1: AIR_BUFF_FIGHTING_SPIRIT | neues Element: AIR_MAG_WIND_BLADE | 2x letzter Boss-Treffer: AIR_PHYS_CYCLONE_CLAW
   Kopfgeld:   AIR_ARMOR_GALE_WALL (Alpha Keulenschwanz, ab Biom 2, +2 Stufen)
 
 #80 Strudelseele  [Ungewöhnlich, WATER]
   Werte: KP 16 | Ang 10 | Vert 14 | SpAng 24 | Init 16   Reihenfolge: Sp. Ang. > Vert. > Ang.
   Start:      WATER_MAG_CANNON, WATER_MAG_LIGHT_THRUST, WATER_ARMOR_LIGHT
   Ei-Attacke: WATER_PHYS_BACKHAND, WATER_ARMOR_SHELL, WATER_MAG_HYDRO_LANCE, WATER_BUFF_S_ATK
-  Meilenst.:  Boss 1: WATER_PHYS_TIDE_SLAP | Boss 3: WATER_MAG_BUBBLE_BEAM | Dreier-Kombi: WATER_ARMOR_CORAL_WALL
+  Meilenst.:  Boss 1: WATER_BUFF_FIGHTING_SPIRIT | Boss 3: WATER_MAG_BUBBLE_BEAM | Dreier-Kombi: WATER_ARMOR_CORAL_WALL
   Kopfgeld:   WATER_PHYS_BREAKER (Alpha Strudelseele, ab Biom 2, +2 Stufen)
 
 ==============================================================================================================
@@ -342,7 +343,7 @@ SELTEN (16 Arten)
   Werte: KP 19 | Ang 28 | Vert 20 | SpAng 7 | Init 12   Reihenfolge: Ang. > Vert. > Sp. Ang.
   Neben-Element: MUD
   Start:      EARTH_PHYS_BOULDER_BASH, EARTH_ARMOR_LIGHT, EARTH_PHYS_SMALL_PUNCH
-  Ei-Attacke: EARTH_PHYS_QUAKE_STOMP, EARTH_ARMOR_GRANITE_BASTION, EARTH_MAG_PEBBLE_STORM, EARTH_BUFF_ATK
+  Ei-Attacke: EARTH_PHYS_QUAKE_STOMP, EARTH_ARMOR_GRANITE_BASTION, EARTH_BUFF_BATTLE_FRENZY, EARTH_BUFF_ATK
   Meilenst.:  8 K.O.s: EARTH_ARMOR_STONE_SKIN | Boss 4: MUD_ARMOR_MUD_COAT | Dreier-Kombi: MUD_PHYS_MUD_PUNCH
   Kopfgeld:   MUD_MAG_SLUDGE_SHOT (Alpha Kristallwühler, ab Biom 3, +3 Stufen)
 
@@ -350,7 +351,7 @@ SELTEN (16 Arten)
   Werte: KP 24 | Ang 26 | Vert 24 | SpAng 8 | Init 8   Reihenfolge: Ang. > Vert. > Sp. Ang.
   Neben-Element: MAGMA
   Start:      FIRE_PHYS_FLAME_FIST, FIRE_ARMOR_LIGHT, FIRE_PHYS_SMALL_PUNCH
-  Ei-Attacke: FIRE_PHYS_BLAZE_RUSH, FIRE_ARMOR_FLAME_WALL, FIRE_MAG_SPARK_SHOT, FIRE_BUFF_ATK
+  Ei-Attacke: FIRE_PHYS_BLAZE_RUSH, FIRE_ARMOR_FLAME_WALL, FIRE_BUFF_BATTLE_FRENZY, FIRE_BUFF_ATK
   Meilenst.:  8 K.O.s: FIRE_ARMOR_CINDER_PLATE | Boss 4: MAGMA_ARMOR_PUMICE_SKIN | Dreier-Kombi: MAGMA_PHYS_EMBER_KNUCKLE
   Kopfgeld:   MAGMA_MAG_LAVA_SPIT (Alpha Schattflaum, ab Biom 3, +3 Stufen)
 
@@ -358,7 +359,7 @@ SELTEN (16 Arten)
   Werte: KP 22 | Ang 22 | Vert 27 | SpAng 6 | Init 8   Reihenfolge: Vert. > Ang. > Sp. Ang.
   Neben-Element: DUST
   Start:      EARTH_ARMOR_STONE_SKIN, EARTH_PHYS_PUNCH, EARTH_PHYS_SMALL_PUNCH
-  Ei-Attacke: EARTH_ARMOR_GRANITE_BASTION, EARTH_PHYS_QUAKE_STOMP, EARTH_MAG_PEBBLE_STORM, PASSIVE_EARTH_POWER
+  Ei-Attacke: EARTH_ARMOR_GRANITE_BASTION, EARTH_PHYS_QUAKE_STOMP, EARTH_BUFF_EXTRA_SHIELD, PASSIVE_EARTH_POWER
   Meilenst.:  Boss 2: EARTH_PHYS_BOULDER_BASH | Boss 4: DUST_PHYS_GRIT_PUNCH | Dreier-Kombi: DUST_ARMOR_SANDSTONE_SKIN
   Kopfgeld:   DUST_MAG_DUST_SHOT (Alpha Glutroller, ab Biom 3, +3 Stufen)
 
@@ -366,7 +367,7 @@ SELTEN (16 Arten)
   Werte: KP 14 | Ang 20 | Vert 12 | SpAng 20 | Init 20   Reihenfolge: Ang. > Sp. Ang. > Vert.
   Neben-Element: ICE
   Start:      WATER_PHYS_TIDE_SLAP, WATER_MAG_CANNON, WATER_PHYS_SMALL_PUNCH
-  Ei-Attacke: WATER_PHYS_BREAKER, WATER_MAG_HYDRO_LANCE, WATER_ARMOR_SHELL, WATER_BUFF_ATK
+  Ei-Attacke: WATER_PHYS_BREAKER, WATER_MAG_HYDRO_LANCE, WATER_BUFF_BATTLE_FRENZY, WATER_BUFF_ATK
   Meilenst.:  2x letzter Boss-Treffer: WATER_MAG_BUBBLE_BEAM | 15 K.O.s: ICE_MAG_SNOW_FLURRY | Dreier-Kombi: ICE_PHYS_FROST_BITE
   Kopfgeld:   ICE_ARMOR_RIME_COAT (Alpha Funkenigel, ab Biom 3, +3 Stufen)
 
@@ -374,7 +375,7 @@ SELTEN (16 Arten)
   Werte: KP 15 | Ang 22 | Vert 18 | SpAng 10 | Init 22   Reihenfolge: Ang. > Vert. > Sp. Ang.
   Neben-Element: DUST
   Start:      AIR_PHYS_GUST_KICK, AIR_ARMOR_LIGHT, AIR_PHYS_SMALL_PUNCH
-  Ei-Attacke: AIR_PHYS_CYCLONE_CLAW, AIR_ARMOR_GALE_WALL, AIR_MAG_WIND_BLADE, AIR_BUFF_ATK
+  Ei-Attacke: AIR_PHYS_CYCLONE_CLAW, AIR_ARMOR_GALE_WALL, AIR_BUFF_BATTLE_FRENZY, AIR_BUFF_ATK
   Meilenst.:  Boss 2: AIR_ARMOR_DRAFT_GUARD | Boss 4: DUST_ARMOR_SANDSTONE_SKIN | Dreier-Kombi: DUST_PHYS_GRIT_PUNCH
   Kopfgeld:   DUST_MAG_DUST_SHOT (Alpha Denkwurzel, ab Biom 3, +3 Stufen)
 
@@ -382,7 +383,7 @@ SELTEN (16 Arten)
   Werte: KP 14 | Ang 24 | Vert 12 | SpAng 18 | Init 20   Reihenfolge: Ang. > Sp. Ang. > Vert.
   Neben-Element: ICE
   Start:      WATER_PHYS_TIDE_SLAP, WATER_MAG_CANNON, WATER_PHYS_SMALL_PUNCH
-  Ei-Attacke: WATER_PHYS_BREAKER, WATER_MAG_HYDRO_LANCE, WATER_ARMOR_SHELL, WATER_BUFF_ATK
+  Ei-Attacke: WATER_PHYS_BREAKER, WATER_MAG_HYDRO_LANCE, WATER_BUFF_BATTLE_FRENZY, WATER_BUFF_ATK
   Meilenst.:  8 K.O.s: WATER_MAG_BUBBLE_BEAM | Kopfgeld: ICE_MAG_SNOW_FLURRY | Dreier-Kombi: ICE_PHYS_FROST_BITE
   Kopfgeld:   ICE_ARMOR_RIME_COAT (Alpha Knochenschläger, ab Biom 3, +3 Stufen)
 
@@ -390,7 +391,7 @@ SELTEN (16 Arten)
   Werte: KP 20 | Ang 26 | Vert 22 | SpAng 12 | Init 8   Reihenfolge: Ang. > Vert. > Sp. Ang.
   Neben-Element: MAGMA
   Start:      FIRE_PHYS_FLAME_FIST, FIRE_ARMOR_LIGHT, FIRE_PHYS_SMALL_PUNCH
-  Ei-Attacke: FIRE_PHYS_BLAZE_RUSH, FIRE_ARMOR_FLAME_WALL, FIRE_MAG_SPARK_SHOT, FIRE_BUFF_ATK
+  Ei-Attacke: FIRE_PHYS_BLAZE_RUSH, FIRE_ARMOR_FLAME_WALL, FIRE_BUFF_BATTLE_FRENZY, FIRE_BUFF_ATK
   Meilenst.:  8 K.O.s: FIRE_ARMOR_CINDER_PLATE | 3x letzter Boss-Treffer: MAGMA_ARMOR_PUMICE_SKIN | Dreier-Kombi: MAGMA_PHYS_EMBER_KNUCKLE
   Kopfgeld:   MAGMA_MAG_LAVA_SPIT (Alpha Mooswürfel, ab Biom 3, +3 Stufen)
 
@@ -398,7 +399,7 @@ SELTEN (16 Arten)
   Werte: KP 16 | Ang 12 | Vert 14 | SpAng 26 | Init 14   Reihenfolge: Sp. Ang. > Vert. > Ang.
   Neben-Element: LIGHTNING
   Start:      AIR_MAG_WIND_BLADE, AIR_ARMOR_LIGHT, AIR_MAG_SMALL_CANNON
-  Ei-Attacke: AIR_MAG_TEMPEST_RAY, AIR_ARMOR_GALE_WALL, AIR_PHYS_GUST_KICK, AIR_BUFF_S_ATK
+  Ei-Attacke: AIR_MAG_TEMPEST_RAY, AIR_ARMOR_GALE_WALL, AIR_BUFF_BATTLE_FRENZY, AIR_BUFF_S_ATK
   Meilenst.:  8 K.O.s: AIR_ARMOR_DRAFT_GUARD | 15 K.O.s: LIGHTNING_ARMOR_CHARGE_PLATE | Dreier-Kombi: LIGHTNING_MAG_SPARK_BOLT
   Kopfgeld:   LIGHTNING_PHYS_SHOCK_TAP (Alpha Glutkoloss, ab Biom 3, +3 Stufen)
 
@@ -406,7 +407,7 @@ SELTEN (16 Arten)
   Werte: KP 20 | Ang 20 | Vert 28 | SpAng 8 | Init 8   Reihenfolge: Vert. > Ang. > Sp. Ang.
   Neben-Element: ICE
   Start:      WATER_ARMOR_SHELL, WATER_PHYS_PUNCH, WATER_PHYS_SMALL_PUNCH
-  Ei-Attacke: WATER_ARMOR_CORAL_WALL, WATER_PHYS_BREAKER, WATER_MAG_BUBBLE_BEAM, PASSIVE_WATER_POWER
+  Ei-Attacke: WATER_ARMOR_CORAL_WALL, WATER_PHYS_BREAKER, WATER_BUFF_EXTRA_SHIELD, PASSIVE_WATER_POWER
   Meilenst.:  8 K.O.s: WATER_PHYS_TIDE_SLAP | Boss 3 ohne K.O.: ICE_PHYS_FROST_BITE | Dreier-Kombi: ICE_ARMOR_RIME_COAT
   Kopfgeld:   ICE_MAG_SNOW_FLURRY (Alpha Reifwolf, ab Biom 3, +3 Stufen)
 
@@ -414,7 +415,7 @@ SELTEN (16 Arten)
   Werte: KP 13 | Ang 27 | Vert 12 | SpAng 14 | Init 22   Reihenfolge: Ang. > Sp. Ang. > Vert.
   Neben-Element: LIGHTNING
   Start:      FIRE_PHYS_FLAME_FIST, FIRE_MAG_CANNON, FIRE_PHYS_SMALL_PUNCH
-  Ei-Attacke: FIRE_PHYS_BLAZE_RUSH, FIRE_MAG_FIREBALL, FIRE_ARMOR_CINDER_PLATE, FIRE_BUFF_ATK
+  Ei-Attacke: FIRE_PHYS_BLAZE_RUSH, FIRE_MAG_FIREBALL, FIRE_BUFF_BATTLE_FRENZY, FIRE_BUFF_ATK
   Meilenst.:  Boss 2: FIRE_MAG_SPARK_SHOT | Kopfgeld: LIGHTNING_MAG_SPARK_BOLT | Dreier-Kombi: LIGHTNING_PHYS_SHOCK_TAP
   Kopfgeld:   LIGHTNING_ARMOR_CHARGE_PLATE (Alpha Wolkenkauz, ab Biom 3, +3 Stufen)
 
@@ -422,7 +423,7 @@ SELTEN (16 Arten)
   Werte: KP 22 | Ang 18 | Vert 24 | SpAng 16 | Init 6   Reihenfolge: Vert. > Ang. > Sp. Ang.
   Neben-Element: DUST
   Start:      EARTH_ARMOR_STONE_SKIN, EARTH_PHYS_PUNCH, EARTH_PHYS_SMALL_PUNCH
-  Ei-Attacke: EARTH_ARMOR_GRANITE_BASTION, EARTH_PHYS_QUAKE_STOMP, EARTH_MAG_PEBBLE_STORM, PASSIVE_EARTH_POWER
+  Ei-Attacke: EARTH_ARMOR_GRANITE_BASTION, EARTH_PHYS_QUAKE_STOMP, EARTH_BUFF_EXTRA_SHIELD, PASSIVE_EARTH_POWER
   Meilenst.:  Boss 2: EARTH_PHYS_BOULDER_BASH | Boss 4: DUST_PHYS_GRIT_PUNCH | Dreier-Kombi: DUST_ARMOR_SANDSTONE_SKIN
   Kopfgeld:   DUST_MAG_DUST_SHOT (Alpha Nebelspuk, ab Biom 3, +3 Stufen)
 
@@ -430,7 +431,7 @@ SELTEN (16 Arten)
   Werte: KP 16 | Ang 26 | Vert 24 | SpAng 10 | Init 12   Reihenfolge: Ang. > Vert. > Sp. Ang.
   Neben-Element: STEAM
   Start:      WATER_PHYS_TIDE_SLAP, WATER_ARMOR_LIGHT, WATER_PHYS_SMALL_PUNCH
-  Ei-Attacke: WATER_PHYS_BREAKER, WATER_ARMOR_CORAL_WALL, WATER_MAG_BUBBLE_BEAM, WATER_BUFF_ATK
+  Ei-Attacke: WATER_PHYS_BREAKER, WATER_ARMOR_CORAL_WALL, WATER_BUFF_BATTLE_FRENZY, WATER_BUFF_ATK
   Meilenst.:  2x letzter Boss-Treffer: WATER_ARMOR_SHELL | Boss 4: STEAM_ARMOR_STEAM_COAT | Dreier-Kombi: STEAM_PHYS_HOT_JAB
   Kopfgeld:   STEAM_MAG_VAPOR_PUFF (Alpha Frostfähe, ab Biom 3, +3 Stufen)
 
@@ -438,7 +439,7 @@ SELTEN (16 Arten)
   Werte: KP 14 | Ang 26 | Vert 12 | SpAng 16 | Init 20   Reihenfolge: Ang. > Sp. Ang. > Vert.
   Neben-Element: STEAM
   Start:      WATER_PHYS_TIDE_SLAP, WATER_MAG_CANNON, WATER_PHYS_SMALL_PUNCH
-  Ei-Attacke: WATER_PHYS_BREAKER, WATER_MAG_HYDRO_LANCE, WATER_ARMOR_SHELL, WATER_BUFF_ATK
+  Ei-Attacke: WATER_PHYS_BREAKER, WATER_MAG_HYDRO_LANCE, WATER_BUFF_BATTLE_FRENZY, WATER_BUFF_ATK
   Meilenst.:  Boss 2: WATER_MAG_BUBBLE_BEAM | Boss 3 ohne K.O.: STEAM_MAG_VAPOR_PUFF | Dreier-Kombi: STEAM_PHYS_HOT_JAB
   Kopfgeld:   STEAM_ARMOR_STEAM_COAT (Alpha Donnerhorn, ab Biom 3, +3 Stufen)
 
@@ -446,7 +447,7 @@ SELTEN (16 Arten)
   Werte: KP 20 | Ang 26 | Vert 24 | SpAng 10 | Init 8   Reihenfolge: Ang. > Vert. > Sp. Ang.
   Neben-Element: DUST
   Start:      EARTH_PHYS_BOULDER_BASH, EARTH_ARMOR_LIGHT, EARTH_PHYS_SMALL_PUNCH
-  Ei-Attacke: EARTH_PHYS_QUAKE_STOMP, EARTH_ARMOR_GRANITE_BASTION, EARTH_MAG_PEBBLE_STORM, EARTH_BUFF_ATK
+  Ei-Attacke: EARTH_PHYS_QUAKE_STOMP, EARTH_ARMOR_GRANITE_BASTION, EARTH_BUFF_BATTLE_FRENZY, EARTH_BUFF_ATK
   Meilenst.:  Boss 2: EARTH_ARMOR_STONE_SKIN | Boss 4: DUST_ARMOR_SANDSTONE_SKIN | Dreier-Kombi: DUST_PHYS_GRIT_PUNCH
   Kopfgeld:   DUST_MAG_DUST_SHOT (Alpha Böenmähne, ab Biom 3, +3 Stufen)
 
@@ -454,7 +455,7 @@ SELTEN (16 Arten)
   Werte: KP 18 | Ang 18 | Vert 14 | SpAng 20 | Init 16   Reihenfolge: Sp. Ang. > Ang. > Vert.
   Neben-Element: LIGHTNING
   Start:      AIR_MAG_WIND_BLADE, AIR_PHYS_PUNCH, AIR_MAG_SMALL_CANNON
-  Ei-Attacke: AIR_MAG_TEMPEST_RAY, AIR_PHYS_CYCLONE_CLAW, AIR_ARMOR_DRAFT_GUARD, AIR_BUFF_S_ATK
+  Ei-Attacke: AIR_MAG_TEMPEST_RAY, AIR_PHYS_CYCLONE_CLAW, AIR_BUFF_BATTLE_FRENZY, AIR_BUFF_S_ATK
   Meilenst.:  8 K.O.s: AIR_PHYS_GUST_KICK | Boss 4: LIGHTNING_PHYS_SHOCK_TAP | Dreier-Kombi: LIGHTNING_MAG_SPARK_BOLT
   Kopfgeld:   LIGHTNING_ARMOR_CHARGE_PLATE (Alpha Spaltknochen, ab Biom 3, +3 Stufen)
 
@@ -462,7 +463,7 @@ SELTEN (16 Arten)
   Werte: KP 20 | Ang 6 | Vert 16 | SpAng 28 | Init 8   Reihenfolge: Sp. Ang. > Vert. > Ang.
   Neben-Element: MUD
   Start:      EARTH_MAG_PEBBLE_STORM, EARTH_ARMOR_LIGHT, EARTH_MAG_SMALL_CANNON
-  Ei-Attacke: EARTH_MAG_GEO_PULSE, EARTH_ARMOR_GRANITE_BASTION, EARTH_PHYS_BOULDER_BASH, EARTH_BUFF_S_ATK
+  Ei-Attacke: EARTH_MAG_GEO_PULSE, EARTH_ARMOR_GRANITE_BASTION, EARTH_BUFF_BATTLE_FRENZY, EARTH_BUFF_S_ATK
   Meilenst.:  8 K.O.s: EARTH_ARMOR_STONE_SKIN | 3x letzter Boss-Treffer: MUD_ARMOR_MUD_COAT | Dreier-Kombi: MUD_MAG_SLUDGE_SHOT
   Kopfgeld:   MUD_PHYS_MUD_PUNCH (Alpha Voltkäfer, ab Biom 3, +3 Stufen)
 
@@ -474,7 +475,7 @@ EPISCH (13 Arten)
   Werte: KP 17 | Ang 8 | Vert 14 | SpAng 25 | Init 12   Reihenfolge: Sp. Ang. > Vert. > Ang.
   Neben-Element: MUD
   Start:      EARTH_MAG_GEO_PULSE, EARTH_ARMOR_STONE_SKIN, EARTH_MAG_SMALL_CANNON
-  Ei-Attacke: EARTH_ARMOR_GRANITE_BASTION, EARTH_MAG_GEO_PULSE_SWIFT, EARTH_PHYS_QUAKE_STOMP, EARTH_BUFF_TEAM_S_ATK
+  Ei-Attacke: EARTH_ARMOR_GRANITE_BASTION, EARTH_MAG_GEO_PULSE_SWIFT, EARTH_BUFF_EXTRA_CLUB, EARTH_BUFF_TEAM_S_ATK
   Meilenst.:  8 K.O.s: MUD_ARMOR_MUD_COAT | Boss 3 ohne K.O.: MUD_MAG_SLUDGE_SHOT | Dreier-Kombi: PASSIVE_BULWARK_MASTER
   Kopfgeld:   MUD_PHYS_MUD_PUNCH (Alpha Smogfaust, ab Biom 4, +3 Stufen)
 
@@ -482,7 +483,7 @@ EPISCH (13 Arten)
   Werte: KP 15 | Ang 22 | Vert 12 | SpAng 22 | Init 19   Reihenfolge: Ang. > Sp. Ang. > Vert.
   Neben-Element: LIGHTNING
   Start:      AIR_PHYS_CYCLONE_CLAW, AIR_MAG_WIND_BLADE, AIR_PHYS_SMALL_PUNCH
-  Ei-Attacke: AIR_MAG_TEMPEST_RAY, AIR_PHYS_CYCLONE_CLAW_SWIFT, AIR_ARMOR_GALE_WALL, AIR_BOON_TAILWIND
+  Ei-Attacke: AIR_MAG_TEMPEST_RAY, AIR_PHYS_CYCLONE_CLAW_SWIFT, AIR_BUFF_TAILWIND, CHAOS_BOON_COURAGE
   Meilenst.:  Boss 2: LIGHTNING_MAG_SPARK_BOLT | 15 K.O.s: LIGHTNING_PHYS_SHOCK_TAP | Dreier-Kombi: PASSIVE_BATTLE_FERVOR
   Kopfgeld:   LIGHTNING_ARMOR_CHARGE_PLATE (Alpha Irrflamme, ab Biom 4, +3 Stufen)
 
@@ -490,7 +491,7 @@ EPISCH (13 Arten)
   Werte: KP 26 | Ang 14 | Vert 26 | SpAng 12 | Init 6   Reihenfolge: Vert. > Ang. > Sp. Ang.
   Neben-Element: MUD
   Start:      EARTH_ARMOR_GRANITE_BASTION, EARTH_PHYS_BOULDER_BASH, EARTH_PHYS_SMALL_PUNCH
-  Ei-Attacke: EARTH_PHYS_QUAKE_STOMP, EARTH_ARMOR_GRANITE_BASTION_SWIFT, EARTH_MAG_GEO_PULSE, EARTH_BUFF_TEAM_DEF
+  Ei-Attacke: EARTH_PHYS_QUAKE_STOMP, EARTH_ARMOR_GRANITE_BASTION_SWIFT, EARTH_BUFF_EXTRA_CLUB, EARTH_BUFF_TEAM_DEF
   Meilenst.:  Boss 2: MUD_PHYS_MUD_PUNCH | Boss 3 ohne K.O.: MUD_ARMOR_MUD_COAT | Dreier-Kombi: PASSIVE_BULWARK_MASTER
   Kopfgeld:   MUD_MAG_SLUDGE_SHOT (Alpha Hainschwestern, ab Biom 4, +3 Stufen)
 
@@ -498,7 +499,7 @@ EPISCH (13 Arten)
   Werte: KP 20 | Ang 28 | Vert 24 | SpAng 6 | Init 10   Reihenfolge: Ang. > Vert. > Sp. Ang.
   Neben-Element: MAGMA
   Start:      FIRE_PHYS_BLAZE_RUSH, FIRE_ARMOR_CINDER_PLATE, FIRE_PHYS_SMALL_PUNCH
-  Ei-Attacke: FIRE_ARMOR_FLAME_WALL, FIRE_PHYS_BLAZE_RUSH_SWIFT, FIRE_MAG_FIREBALL, FIRE_BOON_FOCUS_FLAME
+  Ei-Attacke: FIRE_ARMOR_FLAME_WALL, FIRE_PHYS_BLAZE_RUSH_SWIFT, FIRE_BUFF_EMBER_HEAT, CHAOS_BOON_COURAGE
   Meilenst.:  8 K.O.s: MAGMA_ARMOR_PUMICE_SKIN | 15 K.O.s: MAGMA_PHYS_EMBER_KNUCKLE | Dreier-Kombi: PASSIVE_FIRE_POWER
   Kopfgeld:   MAGMA_MAG_LAVA_SPIT (Alpha Voltkäfer, ab Biom 4, +3 Stufen)
 
@@ -506,7 +507,7 @@ EPISCH (13 Arten)
   Werte: KP 24 | Ang 16 | Vert 18 | SpAng 18 | Init 8   Reihenfolge: Sp. Ang. > Vert. > Ang.
   Neben-Element: MUD
   Start:      EARTH_MAG_GEO_PULSE, EARTH_ARMOR_STONE_SKIN, EARTH_MAG_SMALL_CANNON
-  Ei-Attacke: EARTH_ARMOR_GRANITE_BASTION, EARTH_MAG_GEO_PULSE_SWIFT, EARTH_PHYS_QUAKE_STOMP, EARTH_BUFF_TEAM_S_ATK
+  Ei-Attacke: EARTH_ARMOR_GRANITE_BASTION, EARTH_MAG_GEO_PULSE_SWIFT, EARTH_BUFF_EXTRA_CLUB, EARTH_BUFF_TEAM_S_ATK
   Meilenst.:  8 K.O.s: MUD_ARMOR_MUD_COAT | 15 K.O.s: MUD_MAG_SLUDGE_SHOT | Dreier-Kombi: PASSIVE_BULWARK_MASTER
   Kopfgeld:   MUD_PHYS_MUD_PUNCH (Alpha Glutechse, ab Biom 4, +3 Stufen)
 
@@ -514,7 +515,7 @@ EPISCH (13 Arten)
   Werte: KP 16 | Ang 22 | Vert 22 | SpAng 14 | Init 12   Reihenfolge: Ang. > Vert. > Sp. Ang.
   Neben-Element: DUST
   Start:      AIR_PHYS_CYCLONE_CLAW, AIR_ARMOR_DRAFT_GUARD, AIR_PHYS_SMALL_PUNCH
-  Ei-Attacke: AIR_ARMOR_GALE_WALL, AIR_PHYS_CYCLONE_CLAW_SWIFT, AIR_MAG_TEMPEST_RAY, AIR_BOON_TAILWIND
+  Ei-Attacke: AIR_ARMOR_GALE_WALL, AIR_PHYS_CYCLONE_CLAW_SWIFT, AIR_BUFF_TAILWIND, CHAOS_BOON_COURAGE
   Meilenst.:  Boss 2: DUST_ARMOR_SANDSTONE_SKIN | Kopfgeld: DUST_PHYS_GRIT_PUNCH | Dreier-Kombi: PASSIVE_AIR_POWER
   Kopfgeld:   DUST_MAG_DUST_SHOT (Alpha Glotzlibelle, ab Biom 4, +3 Stufen)
 
@@ -522,7 +523,7 @@ EPISCH (13 Arten)
   Werte: KP 14 | Ang 22 | Vert 12 | SpAng 26 | Init 14   Reihenfolge: Sp. Ang. > Ang. > Vert.
   Neben-Element: MAGMA
   Start:      FIRE_MAG_FIREBALL, FIRE_PHYS_FLAME_FIST, FIRE_MAG_SMALL_CANNON
-  Ei-Attacke: FIRE_PHYS_BLAZE_RUSH, FIRE_MAG_FIREBALL_SWIFT, FIRE_ARMOR_FLAME_WALL, FIRE_BUFF_TEAM_S_ATK
+  Ei-Attacke: FIRE_PHYS_BLAZE_RUSH, FIRE_MAG_FIREBALL_SWIFT, FIRE_BUFF_EMBER_HEAT, FIRE_BUFF_TEAM_S_ATK
   Meilenst.:  Boss 2: MAGMA_PHYS_EMBER_KNUCKLE | Boss 4: MAGMA_MAG_LAVA_SPIT | Dreier-Kombi: PASSIVE_FIRE_POWER
   Kopfgeld:   MAGMA_ARMOR_PUMICE_SKIN (Alpha Schlammschlund, ab Biom 4, +3 Stufen)
 
@@ -530,7 +531,7 @@ EPISCH (13 Arten)
   Werte: KP 18 | Ang 16 | Vert 14 | SpAng 24 | Init 12   Reihenfolge: Sp. Ang. > Ang. > Vert.
   Neben-Element: ICE
   Start:      WATER_MAG_HYDRO_LANCE, WATER_PHYS_TIDE_SLAP, WATER_MAG_SMALL_CANNON
-  Ei-Attacke: WATER_PHYS_BREAKER, WATER_MAG_HYDRO_LANCE_SWIFT, WATER_ARMOR_CORAL_WALL, WATER_BOON_BLOOD_TIDE
+  Ei-Attacke: WATER_PHYS_BREAKER, WATER_MAG_HYDRO_LANCE_SWIFT, WATER_BUFF_BATTLE_FRENZY, CHAOS_BOON_COURAGE
   Meilenst.:  Boss 2: ICE_PHYS_FROST_BITE | Boss 4: ICE_MAG_SNOW_FLURRY | Dreier-Kombi: PASSIVE_WATER_POWER
   Kopfgeld:   ICE_ARMOR_RIME_COAT (Alpha Glühzirpe, ab Biom 4, +3 Stufen)
 
@@ -538,7 +539,7 @@ EPISCH (13 Arten)
   Werte: KP 14 | Ang 12 | Vert 12 | SpAng 26 | Init 18   Reihenfolge: Sp. Ang. > Ang. > Vert.
   Neben-Element: ICE
   Start:      AIR_MAG_TEMPEST_RAY, AIR_PHYS_GUST_KICK, AIR_MAG_SMALL_CANNON
-  Ei-Attacke: AIR_PHYS_CYCLONE_CLAW, AIR_MAG_TEMPEST_RAY_SWIFT, AIR_ARMOR_GALE_WALL, AIR_BOON_TAILWIND
+  Ei-Attacke: AIR_PHYS_CYCLONE_CLAW, AIR_MAG_TEMPEST_RAY_SWIFT, AIR_BUFF_TAILWIND, CHAOS_BOON_COURAGE
   Meilenst.:  2x letzter Boss-Treffer: ICE_PHYS_FROST_BITE | 15 K.O.s: ICE_MAG_SNOW_FLURRY | Dreier-Kombi: PASSIVE_AIR_POWER
   Kopfgeld:   ICE_ARMOR_RIME_COAT (Alpha Frostgürtler, ab Biom 4, +3 Stufen)
 
@@ -546,7 +547,7 @@ EPISCH (13 Arten)
   Werte: KP 14 | Ang 10 | Vert 12 | SpAng 28 | Init 16   Reihenfolge: Sp. Ang. > Vert. > Ang.
   Neben-Element: MUD
   Start:      WATER_MAG_HYDRO_LANCE, WATER_ARMOR_SHELL, WATER_MAG_SMALL_CANNON
-  Ei-Attacke: WATER_ARMOR_CORAL_WALL, WATER_MAG_HYDRO_LANCE_SWIFT, WATER_PHYS_BREAKER, WATER_BOON_BLOOD_TIDE
+  Ei-Attacke: WATER_ARMOR_CORAL_WALL, WATER_MAG_HYDRO_LANCE_SWIFT, WATER_BUFF_BATTLE_FRENZY, CHAOS_BOON_COURAGE
   Meilenst.:  Boss 1 ohne K.O.: MUD_ARMOR_MUD_COAT | 3x letzter Boss-Treffer: MUD_MAG_SLUDGE_SHOT | Dreier-Kombi: PASSIVE_BULWARK_MASTER
   Kopfgeld:   MUD_PHYS_MUD_PUNCH (Alpha Glotzlibelle, ab Biom 4, +3 Stufen)
 
@@ -554,7 +555,7 @@ EPISCH (13 Arten)
   Werte: KP 20 | Ang 26 | Vert 18 | SpAng 14 | Init 10   Reihenfolge: Ang. > Vert. > Sp. Ang.
   Neben-Element: MUD
   Start:      EARTH_PHYS_QUAKE_STOMP, EARTH_ARMOR_STONE_SKIN, EARTH_PHYS_SMALL_PUNCH
-  Ei-Attacke: EARTH_ARMOR_GRANITE_BASTION, EARTH_PHYS_QUAKE_STOMP_SWIFT, EARTH_MAG_GEO_PULSE, EARTH_BUFF_TEAM_ATK
+  Ei-Attacke: EARTH_ARMOR_GRANITE_BASTION, EARTH_PHYS_QUAKE_STOMP_SWIFT, EARTH_BUFF_EXTRA_CLUB, EARTH_BUFF_TEAM_ATK
   Meilenst.:  8 K.O.s: MUD_ARMOR_MUD_COAT | Boss 4: MUD_PHYS_MUD_PUNCH | Dreier-Kombi: PASSIVE_BULWARK_MASTER
   Kopfgeld:   MUD_MAG_SLUDGE_SHOT (Alpha Dünenstachler, ab Biom 4, +3 Stufen)
 
@@ -562,7 +563,7 @@ EPISCH (13 Arten)
   Werte: KP 18 | Ang 16 | Vert 22 | SpAng 26 | Init 6   Reihenfolge: Sp. Ang. > Vert. > Ang.
   Neben-Element: MAGMA
   Start:      FIRE_MAG_FIREBALL, FIRE_ARMOR_CINDER_PLATE, FIRE_MAG_SMALL_CANNON
-  Ei-Attacke: FIRE_ARMOR_FLAME_WALL, FIRE_MAG_FIREBALL_SWIFT, FIRE_PHYS_BLAZE_RUSH, FIRE_BUFF_TEAM_S_ATK
+  Ei-Attacke: FIRE_ARMOR_FLAME_WALL, FIRE_MAG_FIREBALL_SWIFT, FIRE_BUFF_EMBER_HEAT, FIRE_BUFF_TEAM_S_ATK
   Meilenst.:  Boss 1 ohne K.O.: MAGMA_ARMOR_PUMICE_SKIN | Boss 4: MAGMA_MAG_LAVA_SPIT | Dreier-Kombi: PASSIVE_FIRE_POWER
   Kopfgeld:   MAGMA_PHYS_EMBER_KNUCKLE (Alpha Quallolotl, ab Biom 4, +3 Stufen)
 
@@ -570,7 +571,7 @@ EPISCH (13 Arten)
   Werte: KP 14 | Ang 12 | Vert 10 | SpAng 28 | Init 22   Reihenfolge: Sp. Ang. > Ang. > Vert.
   Neben-Element: LIGHTNING
   Start:      FIRE_MAG_FIREBALL, FIRE_PHYS_FLAME_FIST, FIRE_MAG_SMALL_CANNON
-  Ei-Attacke: FIRE_PHYS_BLAZE_RUSH, FIRE_MAG_FIREBALL_SWIFT, FIRE_ARMOR_FLAME_WALL, FIRE_BUFF_TEAM_S_ATK
+  Ei-Attacke: FIRE_PHYS_BLAZE_RUSH, FIRE_MAG_FIREBALL_SWIFT, FIRE_BUFF_EMBER_HEAT, FIRE_BUFF_TEAM_S_ATK
   Meilenst.:  Boss 1 ohne K.O.: LIGHTNING_PHYS_SHOCK_TAP | Boss 4: LIGHTNING_MAG_SPARK_BOLT | Dreier-Kombi: PASSIVE_STORM_SPIRIT
   Kopfgeld:   LIGHTNING_ARMOR_CHARGE_PLATE (Alpha Schattflaum, ab Biom 4, +3 Stufen)
 
@@ -582,7 +583,7 @@ LEGENDÄR (8 Arten)
   Werte: KP 14 | Ang 10 | Vert 18 | SpAng 26 | Init 18   Reihenfolge: Sp. Ang. > Vert. > Ang.
   Neben-Element: LIGHTNING   Dreier-Kombi: THUNDERSTORM
   Start:      AIR_MAG_TEMPEST_RAY, AIR_ARMOR_GALE_WALL, AIR_MAG_TEMPEST_RAY_SWIFT
-  Ei-Attacke: LIGHTNING_MAG_ARC_BOLT, LIGHTNING_ARMOR_STATIC_PLATE, LIGHTNING_MAG_THUNDERCLAP, LIGHTNING_BOON_OVERCHARGE
+  Ei-Attacke: LIGHTNING_MAG_ARC_BOLT, LIGHTNING_ARMOR_STATIC_PLATE, LIGHTNING_MAG_THUNDERCLAP, CHAOS_BUFF_YIN_YANG
   Meilenst.:  Boss 1 ohne K.O.: THUNDERSTORM_MAG_STATIC_RAIN | Kopfgeld: THUNDERSTORM_MAG_CHAIN_LIGHTNING | Dreier-Kombi: PASSIVE_LIGHTNING_T4
   Kopfgeld:   THUNDERSTORM_ARMOR_RAIN_GUARD (Alpha Dünenstachler, ab Biom 5, +4 Stufen)
 
@@ -590,7 +591,7 @@ LEGENDÄR (8 Arten)
   Werte: KP 22 | Ang 28 | Vert 22 | SpAng 8 | Init 8   Reihenfolge: Ang. > Vert. > Sp. Ang.
   Neben-Element: MAGMA   Dreier-Kombi: VOLCANO
   Start:      FIRE_PHYS_BLAZE_RUSH, FIRE_ARMOR_FLAME_WALL, FIRE_PHYS_BLAZE_RUSH_SWIFT
-  Ei-Attacke: MAGMA_PHYS_LAVA_FIST, MAGMA_ARMOR_OBSIDIAN_PLATE, MAGMA_PHYS_ERUPTION_SLAM, MAGMA_BUFF_T4
+  Ei-Attacke: MAGMA_PHYS_LAVA_FIST, MAGMA_ARMOR_OBSIDIAN_PLATE, MAGMA_PHYS_ERUPTION_SLAM, CHAOS_BUFF_BUDDHA_FIST
   Meilenst.:  8 K.O.s: VOLCANO_PHYS_VOLCANIC_FIST | Boss 4: VOLCANO_PHYS_CALDERA_CRUSH | Dreier-Kombi: PASSIVE_MAGMA_T4
   Kopfgeld:   VOLCANO_ARMOR_LAVA_CRUST (Alpha Glutkerker, ab Biom 5, +4 Stufen)
 
@@ -598,7 +599,7 @@ LEGENDÄR (8 Arten)
   Werte: KP 14 | Ang 26 | Vert 14 | SpAng 10 | Init 16   Reihenfolge: Ang. > Vert. > Sp. Ang.
   Neben-Element: DUST   Dreier-Kombi: ASH_STORM
   Start:      AIR_PHYS_CYCLONE_CLAW, AIR_ARMOR_GALE_WALL, AIR_PHYS_CYCLONE_CLAW_SWIFT
-  Ei-Attacke: DUST_PHYS_SAND_CLAW, DUST_ARMOR_DUNE_WALL, DUST_MAG_SANDSTORM, DUST_BUFF_T4
+  Ei-Attacke: DUST_PHYS_SAND_CLAW, DUST_ARMOR_DUNE_WALL, DUST_MAG_SANDSTORM, CHAOS_BUFF_BUDDHA_FIST
   Meilenst.:  Boss 2: ASH_STORM_PHYS_SOOT_STRIKE | Boss 4: ASH_STORM_PHYS_CINDER_CLAW | Dreier-Kombi: PASSIVE_DUST_T4
   Kopfgeld:   ASH_STORM_ARMOR_CINDER_SHELL (Alpha Panzerspinne, ab Biom 5, +4 Stufen)
 
@@ -606,7 +607,7 @@ LEGENDÄR (8 Arten)
   Werte: KP 16 | Ang 22 | Vert 20 | SpAng 12 | Init 18   Reihenfolge: Ang. > Vert. > Sp. Ang.
   Neben-Element: DUST   Dreier-Kombi: ASH_STORM
   Start:      EARTH_PHYS_QUAKE_STOMP, EARTH_ARMOR_GRANITE_BASTION, EARTH_PHYS_QUAKE_STOMP_SWIFT
-  Ei-Attacke: DUST_PHYS_SAND_CLAW, DUST_ARMOR_DUNE_WALL, DUST_MAG_SANDSTORM, DUST_BUFF_T4
+  Ei-Attacke: DUST_PHYS_SAND_CLAW, DUST_ARMOR_DUNE_WALL, DUST_MAG_SANDSTORM, CHAOS_BUFF_BUDDHA_FIST
   Meilenst.:  Boss 1 ohne K.O.: ASH_STORM_PHYS_SOOT_STRIKE | Boss 3 ohne K.O.: ASH_STORM_PHYS_CINDER_CLAW | Dreier-Kombi: PASSIVE_DUST_T4
   Kopfgeld:   ASH_STORM_ARMOR_CINDER_SHELL (Alpha Vulkanpanzer, ab Biom 5, +4 Stufen)
 
@@ -614,7 +615,7 @@ LEGENDÄR (8 Arten)
   Werte: KP 15 | Ang 14 | Vert 13 | SpAng 26 | Init 16   Reihenfolge: Sp. Ang. > Ang. > Vert.
   Neben-Element: MUD   Dreier-Kombi: SWAMP
   Start:      WATER_MAG_HYDRO_LANCE, WATER_PHYS_BREAKER, WATER_MAG_HYDRO_LANCE_SWIFT
-  Ei-Attacke: MUD_MAG_BOG_PULSE, MUD_PHYS_MUD_SLAM, MUD_ARMOR_LANDSLIDE_WALL, MUD_BUFF_T4
+  Ei-Attacke: MUD_MAG_BOG_PULSE, MUD_PHYS_MUD_SLAM, MUD_ARMOR_LANDSLIDE_WALL, CHAOS_BUFF_YIN_YANG
   Meilenst.:  Boss 2: SWAMP_MAG_SPORE_PUFF | Boss 4: SWAMP_MAG_MIASMA_CLOUD | Dreier-Kombi: PASSIVE_MUD_T4
   Kopfgeld:   SWAMP_PHYS_REED_WHIP (Alpha Wolkenkauz, ab Biom 5, +4 Stufen)
 
@@ -622,7 +623,7 @@ LEGENDÄR (8 Arten)
   Werte: KP 22 | Ang 18 | Vert 26 | SpAng 18 | Init 6   Reihenfolge: Vert. > Ang. > Sp. Ang.
   Neben-Element: MAGMA   Dreier-Kombi: VOLCANO
   Start:      FIRE_ARMOR_FLAME_WALL, FIRE_PHYS_BLAZE_RUSH, FIRE_PHYS_BLAZE_RUSH_SWIFT
-  Ei-Attacke: MAGMA_ARMOR_OBSIDIAN_PLATE, MAGMA_PHYS_LAVA_FIST, MAGMA_PHYS_ERUPTION_SLAM, MAGMA_BUFF_T4
+  Ei-Attacke: MAGMA_ARMOR_OBSIDIAN_PLATE, MAGMA_PHYS_LAVA_FIST, MAGMA_PHYS_ERUPTION_SLAM, CHAOS_BUFF_GOLDEN_SHIELD
   Meilenst.:  Boss 2: VOLCANO_ARMOR_LAVA_CRUST | Boss 4: VOLCANO_ARMOR_BASALT_FORT | Dreier-Kombi: PASSIVE_MAGMA_T4
   Kopfgeld:   VOLCANO_PHYS_VOLCANIC_FIST (Alpha Nebelspuk, ab Biom 5, +4 Stufen)
 
@@ -630,7 +631,7 @@ LEGENDÄR (8 Arten)
   Werte: KP 14 | Ang 18 | Vert 12 | SpAng 28 | Init 16   Reihenfolge: Sp. Ang. > Ang. > Vert.
   Neben-Element: STEAM   Dreier-Kombi: THUNDERSTORM
   Start:      WATER_MAG_HYDRO_LANCE, WATER_PHYS_BREAKER, WATER_MAG_HYDRO_LANCE_SWIFT
-  Ei-Attacke: STEAM_MAG_STEAM_JET, STEAM_PHYS_SCALD_STRIKE, STEAM_PHYS_STEAM_HAMMER, STEAM_BUFF_T4
+  Ei-Attacke: STEAM_MAG_STEAM_JET, STEAM_PHYS_SCALD_STRIKE, STEAM_PHYS_STEAM_HAMMER, CHAOS_BUFF_YIN_YANG
   Meilenst.:  Boss 1 ohne K.O.: THUNDERSTORM_MAG_STATIC_RAIN | Boss 4: THUNDERSTORM_MAG_CHAIN_LIGHTNING | Dreier-Kombi: PASSIVE_STEAM_T4
   Kopfgeld:   THUNDERSTORM_PHYS_SQUALL_STRIKE (Alpha Schattflaum, ab Biom 5, +4 Stufen)
 
@@ -638,7 +639,7 @@ LEGENDÄR (8 Arten)
   Werte: KP 14 | Ang 8 | Vert 12 | SpAng 28 | Init 16   Reihenfolge: Sp. Ang. > Vert. > Ang.
   Neben-Element: ICE   Dreier-Kombi: THUNDERSTORM
   Start:      AIR_MAG_TEMPEST_RAY, AIR_ARMOR_GALE_WALL, AIR_MAG_TEMPEST_RAY_SWIFT
-  Ei-Attacke: ICE_MAG_FROST_RAY, ICE_ARMOR_ICE_PLATE, ICE_MAG_BLIZZARD, ICE_BUFF_T4
+  Ei-Attacke: ICE_MAG_FROST_RAY, ICE_ARMOR_ICE_PLATE, ICE_MAG_BLIZZARD, CHAOS_BUFF_YIN_YANG
   Meilenst.:  Boss 2: THUNDERSTORM_MAG_STATIC_RAIN | 15 K.O.s: THUNDERSTORM_MAG_CHAIN_LIGHTNING | Dreier-Kombi: PASSIVE_ICE_T4
   Kopfgeld:   THUNDERSTORM_ARMOR_RAIN_GUARD (Alpha Reifwolf, ab Biom 5, +4 Stufen)
 
@@ -650,7 +651,7 @@ MYTHISCH (6 Arten)
   Werte: KP 16 | Ang 20 | Vert 14 | SpAng 22 | Init 12   Reihenfolge: Sp. Ang. > Ang. > Vert.
   Neben-Element: DUST   Dreier-Kombi: ASH_STORM
   Start:      AIR_MAG_TEMPEST_RAY, AIR_PHYS_CYCLONE_CLAW, AIR_MAG_TEMPEST_RAY_SWIFT
-  Ei-Attacke: DUST_MAG_DUST_DEVIL, DUST_PHYS_SAND_CLAW, ASH_STORM_PHYS_ASHEN_ROLLER, DUST_BUFF_T4
+  Ei-Attacke: DUST_MAG_DUST_DEVIL, DUST_PHYS_SAND_CLAW, ASH_STORM_PHYS_ASHEN_ROLLER, CHAOS_BUFF_YIN_YANG
   Meilenst.:  Boss 1 ohne K.O.: ASH_STORM_MAG_ASH_CYCLONE | Kopfgeld: DUST_MAG_SANDSTORM | Dreier-Kombi: PASSIVE_DUST_T4
   Kopfgeld:   ASH_STORM_PHYS_CINDER_CLAW (Alpha Nebelspuk, ab Biom 5, +4 Stufen)
 
@@ -658,32 +659,32 @@ MYTHISCH (6 Arten)
   Werte: KP 16 | Ang 24 | Vert 20 | SpAng 18 | Init 8   Reihenfolge: Ang. > Vert. > Sp. Ang.
   Neben-Element: LIGHTNING   Dreier-Kombi: THUNDERSTORM
   Start:      FIRE_PHYS_BLAZE_RUSH, FIRE_ARMOR_FLAME_WALL, FIRE_PHYS_BLAZE_RUSH_SWIFT
-  Ei-Attacke: LIGHTNING_PHYS_VOLT_PUNCH, LIGHTNING_ARMOR_STATIC_PLATE, THUNDERSTORM_MAG_SKYFALL, LIGHTNING_BOON_OVERCHARGE
-  Meilenst.:  Boss 1 ohne K.O.: THUNDERSTORM_PHYS_STORM_FIST | Boss 4: LIGHTNING_MAG_THUNDERCLAP | Dreier-Kombi: PASSIVE_LIGHTNING_T4
+  Ei-Attacke: LIGHTNING_PHYS_VOLT_PUNCH, LIGHTNING_ARMOR_STATIC_PLATE, THUNDERSTORM_MAG_SKYFALL, CHAOS_BOON_RESPECT_SLAP
+  Meilenst.:  Boss 1 ohne K.O.: THUNDERSTORM_PHYS_STORM_FIST | Boss 4: LIGHTNING_MAG_THUNDERCLAP | Dreier-Kombi: PASSIVE_DENSE_CLOUDS
   Kopfgeld:   THUNDERSTORM_ARMOR_STORM_PLATE (Alpha Rochenklinge, ab Biom 5, +4 Stufen)
 
 #73 Moorschrecken  [Mythisch, EARTH]
   Werte: KP 18 | Ang 26 | Vert 16 | SpAng 18 | Init 10   Reihenfolge: Ang. > Sp. Ang. > Vert.
   Neben-Element: MUD   Dreier-Kombi: SWAMP
   Start:      EARTH_PHYS_QUAKE_STOMP, EARTH_MAG_GEO_PULSE, EARTH_PHYS_QUAKE_STOMP_SWIFT
-  Ei-Attacke: MUD_PHYS_MUD_SLAM, MUD_MAG_BOG_PULSE, SWAMP_MAG_BOG_MAW, MUD_BUFF_T4
-  Meilenst.:  2x letzter Boss-Treffer: SWAMP_PHYS_ROOT_LASH | Kopfgeld: MUD_ARMOR_LANDSLIDE_WALL | Dreier-Kombi: PASSIVE_MUD_T4
+  Ei-Attacke: MUD_PHYS_MUD_SLAM, MUD_MAG_BOG_PULSE, SWAMP_MAG_BOG_MAW, CHAOS_BOON_RESPECT_SLAP
+  Meilenst.:  2x letzter Boss-Treffer: SWAMP_PHYS_ROOT_LASH | Kopfgeld: MUD_ARMOR_LANDSLIDE_WALL | Dreier-Kombi: PASSIVE_SWAMP_FIELD
   Kopfgeld:   SWAMP_MAG_MIASMA_CLOUD (Alpha Nebelspuk, ab Biom 5, +4 Stufen)
 
 #79 Seherdämon  [Mythisch, WATER]
   Werte: KP 18 | Ang 16 | Vert 14 | SpAng 26 | Init 12   Reihenfolge: Sp. Ang. > Ang. > Vert.
   Neben-Element: ICE   Dreier-Kombi: SWAMP
   Start:      WATER_MAG_HYDRO_LANCE, WATER_PHYS_BREAKER, WATER_MAG_HYDRO_LANCE_SWIFT
-  Ei-Attacke: ICE_MAG_FROST_RAY, ICE_PHYS_ICICLE_JAB, SWAMP_MAG_BOG_MAW, ICE_BUFF_T4
-  Meilenst.:  8 K.O.s: SWAMP_MAG_MIASMA_CLOUD | Boss 4: ICE_MAG_BLIZZARD | Dreier-Kombi: PASSIVE_ICE_T4
+  Ei-Attacke: ICE_MAG_FROST_RAY, ICE_PHYS_ICICLE_JAB, SWAMP_MAG_BOG_MAW, CHAOS_BUFF_YIN_YANG
+  Meilenst.:  8 K.O.s: SWAMP_MAG_MIASMA_CLOUD | Boss 4: ICE_MAG_BLIZZARD | Dreier-Kombi: PASSIVE_SWAMP_FIELD
   Kopfgeld:   SWAMP_PHYS_ROOT_LASH (Alpha Frostklumpen, ab Biom 5, +4 Stufen)
 
 #85 Gezeitenritter  [Mythisch, WATER]
   Werte: KP 16 | Ang 26 | Vert 18 | SpAng 14 | Init 14   Reihenfolge: Ang. > Vert. > Sp. Ang.
   Neben-Element: STEAM   Dreier-Kombi: THUNDERSTORM
   Start:      WATER_PHYS_BREAKER, WATER_ARMOR_CORAL_WALL, WATER_PHYS_BREAKER_SWIFT
-  Ei-Attacke: STEAM_PHYS_SCALD_STRIKE, STEAM_ARMOR_VAPOR_PLATE, THUNDERSTORM_MAG_SKYFALL, STEAM_BUFF_T4
-  Meilenst.:  Boss 2: THUNDERSTORM_PHYS_STORM_FIST | Boss 4: STEAM_PHYS_STEAM_HAMMER | Dreier-Kombi: PASSIVE_STEAM_T4
+  Ei-Attacke: STEAM_PHYS_SCALD_STRIKE, STEAM_ARMOR_VAPOR_PLATE, THUNDERSTORM_MAG_SKYFALL, CHAOS_BOON_RESPECT_SLAP
+  Meilenst.:  Boss 2: THUNDERSTORM_PHYS_STORM_FIST | Boss 4: STEAM_PHYS_STEAM_HAMMER | Dreier-Kombi: PASSIVE_DENSE_CLOUDS
   Kopfgeld:   THUNDERSTORM_ARMOR_STORM_PLATE (Alpha Staubkönig, ab Biom 5, +4 Stufen)
 
 #84 Weltenfresser  [Mythisch, EARTH | FIRE | WATER | AIR]

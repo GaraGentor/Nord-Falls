@@ -343,7 +343,7 @@ func _skill_card(skill: Dictionary, note: String, mon: Monster = null) -> Button
 
 # Schon bekannt oder fehlende Elemente, sonst ""
 func _learn_note(mon: Monster, skill: Dictionary) -> String:
-	return tr("JUDGEMENT_LEARN_KNOWN") if Skills.knows_skill(mon, skill.name) else Skills.missing_elements_text(mon, skill)
+	return tr("JUDGEMENT_LEARN_KNOWN_LONG") if Skills.knows_skill(mon, skill.name) else Skills.missing_elements_text(mon, skill)
 
 # Ziel-Monster mit Bild und Hinweis; blocked sperrt die Auswahl
 func _mon_card(mon: Monster, note_text: String, blocked: bool) -> Button:

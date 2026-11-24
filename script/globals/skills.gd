@@ -66,7 +66,20 @@ func calc_damage(from: Monster, to: Monster, skill: Dictionary) -> float:
 	# Passive, Aufladungen und Extras (Jäger, Ausnutzen) wirken als Faktor auf den ganzen Schaden,
 	# kritische Treffer (Fokusflamme, Überladung) multiplizieren obendrauf. Der Element-Faktor gilt nur für Magie.
 	var factor := damage_factor(from, to, skill) * skill_element_multiplier(skill, to._type) * crit_factor(from)
-	return stat_damage(atk, skill.value, skill.get("scaling", 0.0), factor)
+	# feste Buffs auf Schaden (Kampfgeist, Kampfrausch) zählen zum festen Schaden der Karte
+	return stat_damage(atk, skill.value + from.flat_bonus("damage"), skill.get("scaling", 0.0), factor)
+
+# ─────────────────────────
+# Mehrfach-Treffer: "hits" = so oft trifft ein Angriff pro Einsatz (Punch Serie). Jeder Treffer rechnet seinen Schaden
+# und löst Element-Effekte (Aschesturm, Gift ...) und Extras einzeln aus (battle.gd _use_skill).
+# Physische Angriffe: Passiv "extra_hit" (Nachbrennen) gibt Treffer dazu, Sonder-Verstärkung "double_hit"
+# (Respekt Schelle) lässt den ganzen Angriff ein zweites Mal treffen.
+func hit_count(from: Monster, skill: Dictionary) -> int:
+	var hits: int = skill.get("hits", 1)
+	if from != null and is_damage_skill(skill) and is_physical(skill):
+		hits += roundi(own_passive_sum(from, "extra_hit"))
+		hits *= 1 + roundi(from.boon_value("double_hit"))
+	return maxi(hits, 1)
 
 # ─────────────────────────
 # Kritische Treffer: gibt es nur über Sonder-Verstärkungen, kein Zufall. Darum stehen sie auch in Vorschau und Absichten.
@@ -199,15 +212,67 @@ func add_shield(props):
 func shield_amount(from: Monster, skill: Dictionary) -> float:
 	var used := effective_skill(from, skill)
 	var bonus := own_passive_sum(from, "shield_power") / 100.0
-	return ceilf((used.value + used.get("scaling", 0.0) * from.defense()) * (1.0 + bonus))
+	# feste Buffs auf Schilde (Doppelter Schild, Extra Schild) zählen zum festen Wert der Karte
+	return ceilf((used.value + from.flat_bonus("shield") + used.get("scaling", 0.0) * from.defense()) * (1.0 + bonus))
 # Buff: value % mehr auf buff_stat für buff_turns eigene Züge des Ziels.
 # +1, weil Buffs zu Beginn jedes eigenen Zuges herunterzählen (wie bei den Element-Effekten).
 func add_buff(props):
 	props.mon.add_buff(props.skill.buff_stat, props.skill.value / 100, props.skill.buff_turns + 1)
 
+# Buff mit festem Wert ("buff_flat": true): +value auf buff_stat für buff_turns eigene Züge des Ziels (Monster._flat_mods).
+# buff_stat: "atk", "s_atk", "def", "speed" (feste Wertepunkte), "shield" (+value auf jeden eigenen Schild),
+# "damage" (+value Schaden auf jeden eigenen Angriff, physisch und magisch).
+func add_flat_buff(props):
+	props.mon.add_flat("buff_" + props.skill.buff_stat, props.skill.buff_stat, props.skill.value, props.skill.buff_turns + 1)
+
+func is_flat_buff(skill: Dictionary) -> bool:
+	return skill.get("buff_flat", false)
+
+# ─────────────────────────
+# Schwächungen (effect "debuff", Feld "debuff" = Art) treffen Gegner, machen keinen Schaden:
+#   "flat":   -value auf buff_stat für buff_turns Züge des Ziels (Treibsand: -15 INI)
+#   "moves":  das Ziel hat höchstens value Aktionen pro Zug, für buff_turns Züge (Plage)
+#   "status": Statuseffekt "status" (ElementEffects.POISON / PARALYSIS) mit value Stapeln, mit "chance" pro Ziel
+#             (Gewitter Front, Sumpf-Gifte). Passive des Wirkers (Sumpffeld, Dichte Wolken) wirken wie beim Element-Effekt.
+func apply_debuff(props):
+	var skill: Dictionary = props.skill
+	var mon: Monster = props.mon
+	if not mon.is_alive():
+		return
+	match skill.get("debuff", ""):
+		"flat":
+			mon.add_flat("debuff_" + skill.buff_stat, skill.buff_stat, -skill.value, skill.buff_turns + 1)
+			Events.monster_effect_text.emit(mon, "-%d %s" % [roundi(skill.value), stat_label(skill.buff_stat)], ElementEffects.DEBUFF_COLOR)
+		"moves":
+			mon.add_debuff("skill_moves", "moves", skill.value, skill.buff_turns + 1)
+			Events.monster_effect_text.emit(mon, tr("EFFECT_TEXT_MOVES_CAP").format({"value": roundi(skill.value)}), ElementEffects.DEBUFF_COLOR)
+		"status":
+			if randf() >= skill.get("chance", 1.0):
+				Events.monster_effect_text.emit(mon, tr("EFFECT_TEXT_RESISTED"), ElementEffects.DEBUFF_COLOR)
+				return
+			ElementEffects.inflict(mon, skill.status, props.from, maxi(roundi(skill.value), 1))
+
+# ─────────────────────────
+# Mut & Wille (effect "boon", boon "extra_action"): der Wirker bekommt sofort value Aktionen dazu, aber nicht über
+# Monster.MAX_GRANTED_MOVES. Gegner rechnen die Aktion schon beim Planen ihres Zuges mit (battle.gd _plan_intent).
+func grant_action(props):
+	var mon: Monster = props.mon
+	if not State.mons.has(mon):
+		return
+	var before: int = mon._computed_moves
+	mon._computed_moves = maxi(before, mini(before + roundi(props.skill.value), Monster.MAX_GRANTED_MOVES))
+	if mon._computed_moves > before:
+		Events.monster_effect_text.emit(mon, tr("EFFECT_TEXT_EXTRA_ACTION").format({"value": mon._computed_moves - before}), ElementEffects.ERUPTION_COLOR)
+
+## Aktionen nach einer Karte, die beim Planen eines Zuges Aktionen dazugibt (Mut & Wille), gedeckelt wie grant_action
+func granted_moves(skill: Dictionary, moves: int) -> int:
+	if skill.get("boon", "") != "extra_action":
+		return moves
+	return maxi(moves, mini(moves + roundi(skill.value), Monster.MAX_GRANTED_MOVES))
+
 # Sonder-Verstärkung (effect "boon", Feld "boon" = Art, siehe Monster._boons): value für buff_turns eigene Züge des Ziels,
 # buff_turns -1 = bis verbraucht (nächster Treffer kritisch). Der Wert kommt aus props.skill, schlummernd also abgeschwächt.
-const BOON_KINDS := ["crit_next", "crit", "leech", "extra_moves", "taunt"]
+const BOON_KINDS := ["crit_next", "crit", "leech", "extra_moves", "taunt", "double_hit", "extra_action"]
 
 func add_boon(props):
 	var turns: int = props.skill.get("buff_turns", -1)
@@ -263,10 +328,11 @@ func incoming_hits(target: Monster, attackers: Array) -> Array:
 			# Aufladungen gelten nur für den ersten passenden Angriff, die Vorschau rechnet sie bei jedem mit (kleine Ungenauigkeit)
 			# gleiche Rechnung wie Monster.absorb_damage. Dass Magma oder Schlamm durch den Schild gehen, ist Zufall
 			# und steht nicht in der Vorschau. Ebenso, dass ein Schild mittendrin abläuft, weil sein Wirker zwischen
-			# zwei angekündigten Angriffen am Zug ist (kleine Ungenauigkeit).
-			var blocked = minf(shield, full)
-			shield -= blocked
-			hits.append({"physical": physical, "full": full, "after": full - blocked})
+			# zwei angekündigten Angriffen am Zug ist (kleine Ungenauigkeit). Mehrfach-Treffer zählen einzeln.
+			for _hit in hit_count(attacker, action.skill):
+				var blocked = minf(shield, full)
+				shield -= blocked
+				hits.append({"physical": physical, "full": full, "after": full - blocked})
 	return hits
 
 # ─────────────────────────
@@ -283,6 +349,12 @@ func incoming_hits(target: Monster, attackers: Array) -> Array:
 #   "regen":          heilt sich zu Beginn jedes eigenen Zuges um value % seiner max. KP (apply_regen)
 #   "shield_cost":    eigene Schilde ab SHIELD_COST_DISCOUNT_FROM Aktionen kosten value Aktionen weniger (skill_cost)
 #   "taunt":          zieht dauerhaft die Einzelangriffe der Gegner auf sich (taunters)
+#   "big_brother":    der Partner (das nächste Monster im Team) bekommt die Werte des Trägers, wo die höher sind
+#                     (BIG_BROTHER_STATS, Grundwert + Edelsteine, siehe big_brother_stat). Großer Bruder, universell.
+#   "magic_eruption": Vulkan-Effekt eigener magischer Angriffe: Chance mindestens value % (True Magi)
+#   "poison_power":   eigene Gifte wirken value % stärker (Sumpffeld, 100 = doppelt)
+#   "paralysis_chance": eigene Paralysen betäuben mit mindestens value % Chance (Dichte Wolken)
+#   "extra_hit":      eigene physische Angriffe treffen value Mal öfter (Nachbrennen, hit_count)
 
 const PASSIVE_SCOPES := ["self", "partner", "team"]
 
@@ -311,6 +383,19 @@ func own_passive_sum(mon: Monster, kind: String) -> float:
 	for skill in own_passives(mon, kind):
 		total += effective_skill(mon, skill).value
 	return total
+
+## Großer Bruder: diese Werte gibt der Träger an seinen Partner weiter (KP nicht)
+const BIG_BROTHER_STATS := ["atk", "s_atk", "def", "speed"]
+
+## Höchster Grundwert (+ Edelsteine) eines Großen Bruders, dessen Partner mon ist, sonst 0
+func big_brother_stat(mon: Monster, stat: String) -> float:
+	if not BIG_BROTHER_STATS.has(stat):
+		return 0.0
+	var best := 0.0
+	for member in team_of(mon):
+		if member != mon and partner_of(member) == mon and not own_passives(member, "big_brother").is_empty():
+			best = maxf(best, member.raw_stat(stat))
+	return best
 
 ## Faktor aller Werte-Passive im Team auf einen Wert von mon (1.0 = kein Bonus)
 func passive_stat_factor(mon: Monster, stat: String) -> float:
@@ -404,7 +489,7 @@ func heal(mon: Monster, amount: float) -> void:
 
 ## Kurzname eines Werts ("ANG", "VER", ...) für Texte
 const STAT_LABELS := {"hp": "STAT_HP", "atk": "STAT_ATK", "def": "STAT_DEF", "s_atk": "STAT_SPA", "fail": "STAT_FAIL",
-	"speed": "STAT_SPE"}
+	"speed": "STAT_SPE", "shield": "STAT_FLAT_SHIELD", "damage": "STAT_FLAT_DAMAGE", "moves": "STAT_MOVES"}
 
 func stat_label(stat: String) -> String:
 	return tr(STAT_LABELS.get(stat, stat)).trim_suffix(":")
@@ -454,7 +539,7 @@ const TIER_WEIGHTS = {1: 50, 2: 25, 3: 10, 4: 3}
 
 # Liefert eine frische Kopie des Skills mit diesem Namen (aus allen Skill-Listen) oder {}.
 func get_skill(skill_name: String) -> Dictionary:
-	for list in [starter_skills, standard_skills, egg_skills, defensive_skills, buff_skills, passive_skills, area_skills, milestone_skills, bounty_skills, reward_skills, ascension_skills, draft_skills]:
+	for list in [starter_skills, standard_skills, egg_skills, defensive_skills, buff_skills, passive_skills, area_skills, debuff_skills, milestone_skills, bounty_skills, reward_skills, ascension_skills, draft_skills]:
 		for skill in list:
 			if skill.name == skill_name:
 				var copy = skill.duplicate(true)
@@ -469,11 +554,11 @@ func has_skill(skill_name: String) -> bool:
 ## Aus ihm würfeln wilde Monster (Biom-Pool) und der Trainer, die Arten verweisen in Monmap darauf.
 ## Standard-, Meilenstein-, Kopfgeld-, Couvert- und Aufstiegs-Skills gehören nicht dazu.
 func pool_skills() -> Array:
-	return egg_skills + defensive_skills + buff_skills + passive_skills + area_skills
+	return egg_skills + defensive_skills + buff_skills + passive_skills + area_skills + debuff_skills
 
 ## Effekt-Skills des Pools (alles außer Schaden auf ein Ziel)
 func effect_skills() -> Array:
-	return defensive_skills + buff_skills + passive_skills + area_skills
+	return defensive_skills + buff_skills + passive_skills + area_skills + debuff_skills
 
 ## Tauchen bei wilden Monstern im Biom-Pool auf (Feld "wild": false = nie wild; Meilenstein-Skills liegen ohnehin nicht im Pool)
 func is_wild_skill(skill: Dictionary) -> bool:
@@ -550,6 +635,14 @@ func get_biome_skills(biome_mask: int) -> Array:
 	return pool_skills().filter(func(skill): return is_wild_skill(skill) and (biome_mask == 0 or skill.nature & biome_mask != 0)).map(
 		func(skill): return skill.name)
 
+## Trainer: Skills mit zwei oder drei Elementen kosten etwas mehr (universelle Skills zählen wie eins)
+const TRAINER_ELEMENT_PRICE := {1: 1.0, 2: 1.2, 3: 1.4}
+
+func trainer_price_factor(skill: Dictionary) -> float:
+	if is_universal(skill):
+		return 1.0
+	return TRAINER_ELEMENT_PRICE.get(Map.count_elements(skill.nature), 1.0)
+
 ## Skills, die der Trainer lehren kann: gemeinsamer Pool ab min_tier, ohne die mit "trainer": false
 func trainer_skills(min_tier: int) -> Array:
 	return pool_skills().filter(func(skill): return is_trainer_skill(skill) and skill.tier >= min_tier)
@@ -579,10 +672,21 @@ func covers(type_mask: int, nature: int) -> bool:
 func shares_element(type_mask: int, nature: int) -> bool:
 	return nature == 0 or nature & type_mask != 0
 
+# Universelle Skills ("universal": true, Element Chaos): brauchen kein bestimmtes Element, jedes Monster kann sie
+# einsetzen, sie schlummern nie. "min_elements": n = erst ab n Elementen, egal welchen (Plage, Treibsand).
+func is_universal(skill: Dictionary) -> bool:
+	return skill.get("universal", false)
+
+## Hat ein Monster mit diesen Elementen alles, was der Skill braucht (wach)?
+func fits(type_mask: int, skill: Dictionary) -> bool:
+	if is_universal(skill):
+		return Map.count_elements(type_mask) >= skill.get("min_elements", 1)
+	return covers(type_mask, skill.nature)
+
 func can_use(mon: Monster, skill: Dictionary) -> bool:
-	if covers(mon._type, skill.nature):
+	if fits(mon._type, skill):
 		return true
-	return may_slumber(skill) and shares_element(mon._type, skill.nature)
+	return not is_universal(skill) and may_slumber(skill) and shares_element(mon._type, skill.nature)
 
 ## Darf der Skill schlummern, also mit nur einem Teil seiner Elemente eingesetzt werden? Siehe Element-Regel oben.
 func may_slumber(skill: Dictionary) -> bool:
@@ -603,11 +707,11 @@ func carried_egg_skill(skill_name: String) -> Dictionary:
 
 ## Hat das Monster alle Elemente des Skills? (Gegner und wilde Monster bekommen nur solche Skills)
 func is_awake(mon: Monster, skill: Dictionary) -> bool:
-	return covers(mon._type, skill.nature)
+	return fits(mon._type, skill)
 
 func is_awake_name(mon: Monster, skill_name: String) -> bool:
 	var skill = get_skill(skill_name)
-	return not skill.is_empty() and covers(mon._type, skill.nature)
+	return not skill.is_empty() and fits(mon._type, skill)
 
 ## Einsetzbar, aber noch nicht alle Elemente da
 func is_dormant(mon: Monster, skill: Dictionary) -> bool:
@@ -653,6 +757,8 @@ func _element_list(elements: Array) -> String:
 func missing_elements_text(mon: Monster, skill: Dictionary) -> String:
 	if can_use(mon, skill):
 		return ""
+	if is_universal(skill):
+		return tr("SKILL_NEEDS_MIN_ELEMENTS").format({"count": skill.get("min_elements", 1)})
 	var missing = missing_elements(mon, skill)
 	# ohne Schlummern braucht der Skill alle fehlenden Elemente, sonst reicht eins davon
 	var key := "SKILL_NEEDS_ELEMENTS" if missing.size() == 1 or not may_slumber(skill) else "SKILL_NEEDS_ONE_ELEMENT"
@@ -670,7 +776,7 @@ func dormant_text(mon: Monster, skill: Dictionary) -> String:
 
 ## Nach einem neuen Element (Trank): kurz oben einblenden, welche Skills des Monsters dadurch erwacht sind
 func announce_awakened(mon: Monster, old_type: int) -> void:
-	var awakened = mon._skills.filter(func(skill): return covers(mon._type, skill.nature) and not covers(old_type, skill.nature))
+	var awakened = mon._skills.filter(func(skill): return fits(mon._type, skill) and not fits(old_type, skill))
 	if awakened.is_empty():
 		return
 	var names = awakened.map(func(skill): return tr(skill.name))
@@ -837,12 +943,15 @@ func power_text(skill: Dictionary, mon: Monster) -> String:
 		stat = "def"
 	if stat == "" or not used.has("scaling"):
 		return Helper.format_number(value)
+	# Mehrfach-Treffer (Punch Serie): "4x 26"
+	var hits := hit_count(mon, skill) if is_damage_skill(skill) else 1
+	var prefix := "%dx " % hits if hits > 1 else ""
 	if mon == null or not _stat_visible(mon, stat):
-		return "%s+%sx" % [Helper.format_number(value), Helper.format_number(used.scaling)]
+		return prefix + "%s+%sx" % [Helper.format_number(value), Helper.format_number(used.scaling)]
 	if skill.get("effect", "") == "shield":
 		return str(int(shield_amount(mon, skill)))
 	var base: float = mon.attack() if physical else mon.s_attack()
-	return str(int(stat_damage(base, used.value, used.scaling, 1.0)))
+	return prefix + str(int(stat_damage(base, used.value + mon.flat_bonus("damage"), used.scaling, 1.0)))
 
 ## Gegner im Kampf verraten ihre Werte erst, wenn sie aufgedeckt sind (siehe BattleInfoPanel._hidden_stats).
 func _stat_visible(mon: Monster, stat: String) -> bool:
@@ -853,7 +962,8 @@ func _stat_visible(mon: Monster, stat: String) -> bool:
 func egg_skill_category(skill: Dictionary) -> String:
 	if is_passive(skill):
 		return "passive"
-	if skill.get("effect", "") in ["buff", "boon"]:
+	# Schwächungen zählen in der Übersicht zu den Buffs (Effekt-Karten ohne Schaden)
+	if skill.get("effect", "") in ["buff", "boon", "debuff"]:
 		return "buff"
 	if not is_damage_skill(skill):
 		return "shield"
@@ -1153,6 +1263,8 @@ const PHYS := Enums.SKILL_DAMAGE_TYPE.PHYSICAL
 const MAG := Enums.SKILL_DAMAGE_TYPE.ABILITY
 const SELF := Enums.CARD_TARGETS.SELF
 const ALLY := Enums.CARD_TARGETS.SINGLE_FRIEND
+const FOE := Enums.CARD_TARGETS.SINGLE_ENEMY
+const FOES := Enums.CARD_TARGETS.TEAM_ENEMY
 
 # ─────────────────────────
 # Start-Skills (Ei-Attacken der Arten, siehe Monmap default_egg_skills), pro Grundelement:
@@ -1359,39 +1471,39 @@ var defensive_skills = [
 # Gemeinsamer Pool: Buffs und Sonder-Verstärkungen
 var buff_skills = [
 	# Feuer
-	_buff_skill("SKILL_FIRE_BUFF_ATK", FIRE, "atk", 25.0, 2, 2, 2, 1),
-	_buff_skill("SKILL_FIRE_BUFF_S_ATK", FIRE, "s_atk", 25.0, 2, 2, 2, 1),
-	_team_buff_skill("SKILL_FIRE_BUFF_TEAM_S_ATK", FIRE, "s_atk", 12.0, 2, 3, 3, 1),
-	_boon_skill("SKILL_FIRE_BOON_FOCUS_FLAME", FIRE, "crit_next", 50.0, -1, SELF, "atk", 3, 2, 1, "SKILL_BOON_CRIT_NEXT_DESC"),
+	_buff_skill("SKILL_FIRE_BUFF_ATK", FIRE, "atk", 25.0, 2, 2, 2, 0),
+	_buff_skill("SKILL_FIRE_BUFF_S_ATK", FIRE, "s_atk", 25.0, 2, 2, 2, 0),
+	_flat_buff_skill("SKILL_FIRE_BUFF_BATTLE_FRENZY", FIRE, "damage", 8.0, 2, 2, 3, 0, "SKILL_FLAT_BUFF_DAMAGE_DESC"),
+	_flat_buff_skill("SKILL_FIRE_BUFF_EMBER_HEAT", FIRE, "s_atk", 20.0, 1, 2, 1, 0, "SKILL_FLAT_BUFF_DESC"),
+	_team_buff_skill("SKILL_FIRE_BUFF_TEAM_S_ATK", FIRE, "s_atk", 12.0, 2, 3, 3, 0),
 	# Wasser
-	_buff_skill("SKILL_WATER_BUFF_ATK", WATER, "atk", 25.0, 2, 2, 2, 1),
-	_buff_skill("SKILL_WATER_BUFF_DEF", WATER, "def", 25.0, 2, 2, 2, 1),
-	_buff_skill("SKILL_WATER_BUFF_S_ATK", WATER, "s_atk", 25.0, 2, 2, 2, 1),
-	_boon_skill("SKILL_WATER_BOON_BLOOD_TIDE", WATER, "leech", 20.0, 1, ALLY, "hp", 3, 2, 2, "SKILL_BOON_LEECH_DESC"),
+	_buff_skill("SKILL_WATER_BUFF_ATK", WATER, "atk", 25.0, 2, 2, 2, 0),
+	_buff_skill("SKILL_WATER_BUFF_DEF", WATER, "def", 25.0, 2, 2, 2, 0),
+	_buff_skill("SKILL_WATER_BUFF_S_ATK", WATER, "s_atk", 25.0, 2, 2, 2, 0),
+	_flat_buff_skill("SKILL_WATER_BUFF_EXTRA_SHIELD", WATER, "shield", 12.0, 2, 2, 3, 0, "SKILL_FLAT_BUFF_SHIELD_DESC"),
+	_flat_buff_skill("SKILL_WATER_BUFF_BATTLE_FRENZY", WATER, "damage", 8.0, 2, 2, 3, 0, "SKILL_FLAT_BUFF_DAMAGE_DESC"),
 	# Erde
-	_buff_skill("SKILL_EARTH_BUFF_ATK", EARTH, "atk", 25.0, 2, 2, 2, 1),
-	_buff_skill("SKILL_EARTH_BUFF_DEF", EARTH, "def", 25.0, 2, 2, 2, 1),
-	_buff_skill("SKILL_EARTH_BUFF_S_ATK", EARTH, "s_atk", 25.0, 2, 2, 2, 1),
-	_team_buff_skill("SKILL_EARTH_BUFF_TEAM_ATK", EARTH, "atk", 12.0, 2, 3, 3, 1),
-	_team_buff_skill("SKILL_EARTH_BUFF_TEAM_DEF", EARTH, "def", 12.0, 2, 3, 3, 1),
-	_team_buff_skill("SKILL_EARTH_BUFF_TEAM_S_ATK", EARTH, "s_atk", 12.0, 2, 3, 3, 1),
+	_buff_skill("SKILL_EARTH_BUFF_ATK", EARTH, "atk", 25.0, 2, 2, 2, 0),
+	_buff_skill("SKILL_EARTH_BUFF_DEF", EARTH, "def", 25.0, 2, 2, 2, 0),
+	_buff_skill("SKILL_EARTH_BUFF_S_ATK", EARTH, "s_atk", 25.0, 2, 2, 2, 0),
+	_flat_buff_skill("SKILL_EARTH_BUFF_EXTRA_SHIELD", EARTH, "shield", 12.0, 2, 2, 3, 0, "SKILL_FLAT_BUFF_SHIELD_DESC"),
+	_flat_buff_skill("SKILL_EARTH_BUFF_BATTLE_FRENZY", EARTH, "damage", 8.0, 2, 2, 3, 0, "SKILL_FLAT_BUFF_DAMAGE_DESC"),
+	_flat_buff_skill("SKILL_EARTH_BUFF_EXTRA_CLUB", EARTH, "atk", 20.0, 1, 2, 1, 0, "SKILL_FLAT_BUFF_DESC"),
+	_team_buff_skill("SKILL_EARTH_BUFF_TEAM_ATK", EARTH, "atk", 12.0, 2, 3, 3, 0),
+	_team_buff_skill("SKILL_EARTH_BUFF_TEAM_DEF", EARTH, "def", 12.0, 2, 3, 3, 0),
+	_team_buff_skill("SKILL_EARTH_BUFF_TEAM_S_ATK", EARTH, "s_atk", 12.0, 2, 3, 3, 0),
 	# Luft
-	_buff_skill("SKILL_AIR_BUFF_ATK", AIR, "atk", 25.0, 2, 2, 2, 1),
-	_buff_skill("SKILL_AIR_BUFF_DEF", AIR, "def", 25.0, 2, 2, 2, 1),
-	_buff_skill("SKILL_AIR_BUFF_S_ATK", AIR, "s_atk", 25.0, 2, 2, 2, 1),
-	_boon_skill("SKILL_AIR_BOON_TAILWIND", AIR, "extra_moves", 1.0, 3, ALLY, "speed", 3, 2, 2, "SKILL_BOON_EXTRA_MOVES_DESC"),
-	# Dampf
-	_with(_team_buff_skill("SKILL_STEAM_BUFF_T4", STEAM, "def", 15.0, 2, 4, 3, 2), {"trainer": false, "extras": [_extra("heal", 8.0, "", 0, 1.0)]}),
-	# Blitz
-	_with(_boon_skill("SKILL_LIGHTNING_BOON_OVERCHARGE", LIGHTNING, "crit", 50.0, 1, SELF, "atk", 4, 3, 2, "SKILL_BOON_CRIT_DESC"), {"trainer": false}),
-	# Magma
-	_with(_team_buff_skill("SKILL_MAGMA_BUFF_T4", MAGMA, "atk", 18.0, 2, 4, 3, 2), {"trainer": false}),
-	# Eis
-	_with(_buff_skill("SKILL_ICE_BUFF_T4", ICE, "s_atk", 35.0, 3, 4, 3, 2), {"trainer": false}),
-	# Staub
-	_with(_team_buff_skill("SKILL_DUST_BUFF_T4", DUST, "s_atk", 15.0, 2, 4, 3, 2), {"trainer": false}),
-	# Schlamm
-	_with(_team_buff_skill("SKILL_MUD_BUFF_T4", MUD, "def", 18.0, 2, 4, 3, 2), {"trainer": false}),
+	_buff_skill("SKILL_AIR_BUFF_ATK", AIR, "atk", 25.0, 2, 2, 2, 0),
+	_buff_skill("SKILL_AIR_BUFF_DEF", AIR, "def", 25.0, 2, 2, 2, 0),
+	_buff_skill("SKILL_AIR_BUFF_S_ATK", AIR, "s_atk", 25.0, 2, 2, 2, 0),
+	_flat_buff_skill("SKILL_AIR_BUFF_BATTLE_FRENZY", AIR, "damage", 8.0, 2, 2, 3, 0, "SKILL_FLAT_BUFF_DAMAGE_DESC"),
+	_flat_buff_skill("SKILL_AIR_BUFF_TAILWIND", AIR, "speed", 10.0, 1, 2, 1, 0, "SKILL_FLAT_BUFF_DESC"),
+	# Chaos
+	_with(_action_skill("SKILL_CHAOS_BOON_COURAGE", CHAOS, 1.0, 3, 3, 0), {"universal": true}),
+	_with(_buff_skill("SKILL_CHAOS_BUFF_GOLDEN_SHIELD", CHAOS, "def", 100.0, 2, 4, 3, 1), {"universal": true, "trainer": false}),
+	_with(_buff_skill("SKILL_CHAOS_BUFF_BUDDHA_FIST", CHAOS, "atk", 60.0, 2, 4, 4, 3), {"universal": true, "trainer": false}),
+	_with(_buff_skill("SKILL_CHAOS_BUFF_YIN_YANG", CHAOS, "s_atk", 100.0, 2, 4, 4, 3), {"universal": true, "trainer": false}),
+	_with(_boon_skill("SKILL_CHAOS_BOON_RESPECT_SLAP", CHAOS, "double_hit", 1.0, 1, ALLY, "atk", 4, 2, 1, "SKILL_BOON_DOUBLE_HIT_DESC"), {"universal": true, "trainer": false}),
 ]
 # Gemeinsamer Pool: Passive
 var passive_skills = [
@@ -1402,11 +1514,22 @@ var passive_skills = [
 ]
 # Gemeinsamer Pool: Flächenschaden
 var area_skills = []
+# Gemeinsamer Pool: Schwächungen ohne Schaden (Statuseffekte, Treibsand, Plage)
+var debuff_skills = []
 # Nur über Meilensteine (Skills.MILESTONES): nicht im Pool, nicht beim Trainer, nicht im Couvert
 var milestone_skills = [
 	# Feuer
+	_flat_buff_skill("SKILL_FIRE_BUFF_FIGHTING_SPIRIT", FIRE, "damage", 5.0, 1, 1, 2, 0, "SKILL_FLAT_BUFF_DAMAGE_DESC"),
 	_with(_passive_skill("SKILL_PASSIVE_FIRE_POWER", FIRE, 10.0, 3, "element_power", "SKILL_PASSIVE_ELEMENT_POWER_DESC"), {"passive_element": FIRE}),
+	# Wasser
+	_flat_buff_skill("SKILL_WATER_BUFF_DOUBLE_SHIELD", WATER, "shield", 8.0, 1, 1, 2, 0, "SKILL_FLAT_BUFF_SHIELD_DESC"),
+	_flat_buff_skill("SKILL_WATER_BUFF_FIGHTING_SPIRIT", WATER, "damage", 5.0, 1, 1, 2, 0, "SKILL_FLAT_BUFF_DAMAGE_DESC"),
+	# Erde
+	_flat_buff_skill("SKILL_EARTH_BUFF_DOUBLE_SHIELD", EARTH, "shield", 8.0, 1, 1, 2, 0, "SKILL_FLAT_BUFF_SHIELD_DESC"),
+	_flat_buff_skill("SKILL_EARTH_BUFF_FIGHTING_SPIRIT", EARTH, "damage", 5.0, 1, 1, 2, 0, "SKILL_FLAT_BUFF_DAMAGE_DESC"),
 	# Luft
+	_flat_buff_skill("SKILL_AIR_BUFF_DOUBLE_SHIELD", AIR, "shield", 8.0, 1, 1, 2, 0, "SKILL_FLAT_BUFF_SHIELD_DESC"),
+	_flat_buff_skill("SKILL_AIR_BUFF_FIGHTING_SPIRIT", AIR, "damage", 5.0, 1, 1, 2, 0, "SKILL_FLAT_BUFF_DAMAGE_DESC"),
 	_passive_skill("SKILL_PASSIVE_AIR_POWER", AIR, 10.0, 3, "magic_power", "SKILL_PASSIVE_MAGIC_POWER_DESC"),
 	# Dampf
 	_shield_skill("SKILL_STEAM_ARMOR_STEAM_COAT", STEAM, 18.0, 0.35, 2, 1, 1),
@@ -1449,6 +1572,7 @@ var milestone_skills = [
 	_attack_skill("SKILL_THUNDERSTORM_PHYS_STORM_FIST", THUNDERSTORM, 60.0, 0.8, PHYS, 3, 3, 3),
 	_attack_skill("SKILL_THUNDERSTORM_MAG_CHAIN_LIGHTNING", THUNDERSTORM, 60.0, 0.8, MAG, 3, 3, 3),
 	_attack_skill("SKILL_THUNDERSTORM_MAG_STATIC_RAIN", THUNDERSTORM, 22.0, 0.55, MAG, 3, 1, 1),
+	_with(_passive_skill("SKILL_PASSIVE_DENSE_CLOUDS", THUNDERSTORM, 20.0, 4, "paralysis_chance", "SKILL_PASSIVE_PARALYSIS_CHANCE_DESC"), {"trainer": false}),
 	# Vulkan
 	_shield_skill("SKILL_VOLCANO_ARMOR_LAVA_CRUST", VOLCANO, 22.0, 0.55, 3, 1, 1),
 	_attack_skill("SKILL_VOLCANO_PHYS_CALDERA_CRUSH", VOLCANO, 60.0, 0.8, PHYS, 3, 3, 3),
@@ -1462,6 +1586,7 @@ var milestone_skills = [
 	_attack_skill("SKILL_SWAMP_PHYS_ROOT_LASH", SWAMP, 55.0, 0.75, PHYS, 3, 3, 3),
 	_attack_skill("SKILL_SWAMP_MAG_MIASMA_CLOUD", SWAMP, 60.0, 0.8, MAG, 3, 3, 3),
 	_attack_skill("SKILL_SWAMP_MAG_SPORE_PUFF", SWAMP, 22.0, 0.55, MAG, 3, 1, 1),
+	_with(_passive_skill("SKILL_PASSIVE_SWAMP_FIELD", SWAMP, 100.0, 4, "poison_power", "SKILL_PASSIVE_POISON_POWER_DESC"), {"trainer": false}),
 ]
 # Kopfgeld-Ei-Attacken (Skills.BOUNTIES)
 var bounty_skills = [
@@ -1478,24 +1603,38 @@ var bounty_skills = [
 ]
 # Nur im Couvert der Bosse: Skills ab Stufe 2, die keine Art benutzt
 var reward_skills = [
+	# Feuer
+	_flat_buff_skill("SKILL_FIRE_BUFF_EXTRA_SHIELD", FIRE, "shield", 12.0, 2, 2, 3, 0, "SKILL_FLAT_BUFF_SHIELD_DESC"),
+	# Luft
+	_flat_buff_skill("SKILL_AIR_BUFF_EXTRA_SHIELD", AIR, "shield", 12.0, 2, 2, 3, 0, "SKILL_FLAT_BUFF_SHIELD_DESC"),
 	# Magma
 	_attack_skill("SKILL_MAGMA_MAG_MAGMA_BURST", MAGMA, 30.0, 0.5, MAG, 3, 2, 2),
 	# Schlamm
 	_shield_skill("SKILL_MUD_ARMOR_CLAY_SHELL", MUD, 28.0, 0.5, 3, 2, 1),
 	_with(_passive_skill("SKILL_PASSIVE_DEEP_VITALITY", MUD, 20.0, 3, "stat", "SKILL_PASSIVE_STAT_SELF_DESC"), {"passive_stat": "hp", "passive_scope": "self"}),
+	# Gewitter
+	_with(_status_skill("SKILL_THUNDERSTORM_DEBUFF_STORM_FRONT", THUNDERSTORM, "paralysis", 1.0, 0.25, FOES, 4, 1, 2, "SKILL_STATUS_PARALYSIS_DESC"), {"trainer": false}),
 	# Vulkan
 	_attack_skill("SKILL_VOLCANO_MAG_PYROCLAST", VOLCANO, 55.0, 0.75, MAG, 3, 3, 3),
 	_attack_skill("SKILL_VOLCANO_MAG_FUME_BURST", VOLCANO, 20.0, 0.5, MAG, 3, 1, 1),
+	_with(_attack_skill("SKILL_VOLCANO_MAG_ERUPTION", VOLCANO, 60.0, 0.8, MAG, 3, 3, 3), {"eruption_chance": 0.75}),
 	_attack_skill("SKILL_VOLCANO_PHYS_MAGMA_TITAN", VOLCANO, 80.0, 1.0, PHYS, 4, 4, 3),
+	_with(_passive_skill("SKILL_PASSIVE_TRUE_MAGI", VOLCANO, 25.0, 4, "magic_eruption", "SKILL_PASSIVE_MAGIC_ERUPTION_DESC"), {"trainer": false}),
 	# Aschesturm
 	_attack_skill("SKILL_ASH_STORM_MAG_EMBER_GUST", ASH_STORM, 22.0, 0.55, MAG, 3, 1, 1),
 	_shield_skill("SKILL_ASH_STORM_ARMOR_SLAG_ARMOR", ASH_STORM, 60.0, 0.8, 3, 3, 3),
+	_with(_attack_skill("SKILL_ASH_STORM_PHYS_PUNCH_SERIES", ASH_STORM, 10.0, 0.4, PHYS, 3, 2, 2), {"hits": 4, "description": "SKILL_DAMAGE_PHYSICAL_MULTI_DESC"}),
+	_with(_passive_skill("SKILL_PASSIVE_AFTERBURN", ASH_STORM, 1.0, 4, "extra_hit", "SKILL_PASSIVE_EXTRA_HIT_DESC"), {"trainer": false}),
 	# Sumpf
 	_shield_skill("SKILL_SWAMP_ARMOR_MANGROVE_WALL", SWAMP, 60.0, 0.8, 3, 3, 3),
-	# Früher Chaos: Spieler-Monster haben höchstens drei Elemente (Monster.MAX_ELEMENTS), Chaos-Skills würden nie wach.
-	# Die Namen bleiben wegen der Spielstände.
-	_boon_skill("SKILL_CHAOS_BOON_BATTLE_CRY", THUNDERSTORM, "taunt", 1.0, 0, SELF, "def", 2, 2, 1, "SKILL_BOON_TAUNT_DESC"),
+	_status_skill("SKILL_SWAMP_DEBUFF_VENOM", SWAMP, "poison", 2.0, 1.0, FOE, 3, 3, 2, "SKILL_STATUS_POISON_DESC"),
+	_status_skill("SKILL_SWAMP_DEBUFF_TOXIC_FOG", SWAMP, "poison", 1.0, 0.8, FOES, 3, 3, 3, "SKILL_STATUS_POISON_DESC"),
 	_passive_skill("SKILL_PASSIVE_PROVOKER", SWAMP, 1.0, 4, "taunt", "SKILL_PASSIVE_TAUNT_DESC"),
+	# Chaos
+	_with(_debuff_skill("SKILL_CHAOS_DEBUFF_QUICKSAND", CHAOS, "flat", "speed", 15.0, 1, FOE, 2, 1, 0, "SKILL_DEBUFF_FLAT_DESC"), {"universal": true, "min_elements": 2}),
+	_with(_buff_skill("SKILL_CHAOS_BUFF_STRONG_SHIELD", CHAOS, "def", 60.0, 1, 3, 2, 0), {"universal": true}),
+	_with(_debuff_skill("SKILL_CHAOS_DEBUFF_PLAGUE", CHAOS, "moves", "moves", 1.0, 2, FOE, 4, 3, 3, "SKILL_DEBUFF_MOVES_DESC"), {"universal": true, "min_elements": 2, "trainer": false}),
+	_with(_passive_skill("SKILL_PASSIVE_BIG_BROTHER", CHAOS, 1.0, 4, "big_brother", "SKILL_PASSIVE_BIG_BROTHER_DESC"), {"universal": true, "trainer": false}),
 ]
 
 # ─────────────────────────
@@ -1584,6 +1723,8 @@ var ascension_skills = []
 # Entwürfe: Skills der Stufe 1, die keine Art benutzt, und neue Skills, bis tools/skill_verteilung.js sie einsortiert.
 # get_skill findet sie, das Wiki listet sie unter "Unbenutzt". Werte-Tabelle: siehe oben bei den Skill-Listen.
 var draft_skills = [
+	# Feuer
+	_flat_buff_skill("SKILL_FIRE_BUFF_DOUBLE_SHIELD", FIRE, "shield", 8.0, 1, 1, 2, 0, "SKILL_FLAT_BUFF_SHIELD_DESC"),
 	# Sumpf
 	_shield_skill("SKILL_SWAMP_ARMOR_MOSS_HIDE", SWAMP, 22.0, 0.55, 3, 1, 1),
 ]
@@ -1732,6 +1873,92 @@ func _boon_skill(skill_name: String, nature: int, boon: String, value: float, tu
 		"tier": tier,
 		"shop_cost": {"min": 5 * tier, "max": 15 * tier},
 		"handle": func(props): add_boon(props)
+	}
+
+## Buff mit festem Wert auf ein eigenes Monster (add_flat_buff): +value auf stat ("atk", "s_atk", "def", "speed",
+## "shield" = jeder eigene Schild, "damage" = jeder eigene Angriff) für turns eigene Züge des Ziels
+func _flat_buff_skill(skill_name: String, nature: int, stat: String, value: float, turns: int, tier: int, cooldown: int, cost: int, description: String) -> Dictionary:
+	return {
+		"cost": cost,
+		"name": skill_name,
+		"nature": nature,
+		"value": value,
+		"cooldown": cooldown,
+		"damage_type": Enums.SKILL_DAMAGE_TYPE.ABILITY,
+		"effect": "buff",
+		"buff_flat": true,
+		"buff_stat": stat,
+		"buff_turns": turns,
+		"description": description,
+		"target": Enums.CARD_TARGETS.SINGLE_FRIEND,
+		"scouted": false,
+		"tier": tier,
+		"shop_cost": {"min": 5 * tier, "max": 15 * tier},
+		"handle": func(props): add_flat_buff(props)
+	}
+
+## Zusätzliche Aktion für den Wirker, sofort (grant_action, Mut & Wille): +value Aktionen, höchstens Monster.MAX_GRANTED_MOVES
+func _action_skill(skill_name: String, nature: int, value: float, tier: int, cooldown: int, cost: int) -> Dictionary:
+	return {
+		"cost": cost,
+		"name": skill_name,
+		"nature": nature,
+		"value": value,
+		"cooldown": cooldown,
+		"damage_type": Enums.SKILL_DAMAGE_TYPE.ABILITY,
+		"effect": "boon",
+		"boon": "extra_action",
+		"buff_turns": 0,
+		"icon_stat": "speed",
+		"description": "SKILL_BOON_EXTRA_ACTION_DESC",
+		"target": Enums.CARD_TARGETS.SELF,
+		"scouted": false,
+		"tier": tier,
+		"shop_cost": {"min": 5 * tier, "max": 15 * tier},
+		"handle": func(props): grant_action(props)
+	}
+
+## Schwächung ohne Schaden (apply_debuff): debuff "flat" (-value auf stat) oder "moves" (höchstens value Aktionen)
+## für turns Züge des Ziels. target SINGLE_ENEMY oder TEAM_ENEMY.
+func _debuff_skill(skill_name: String, nature: int, debuff: String, stat: String, value: float, turns: int, target: int, tier: int, cooldown: int, cost: int, description: String) -> Dictionary:
+	return {
+		"cost": cost,
+		"name": skill_name,
+		"nature": nature,
+		"value": value,
+		"cooldown": cooldown,
+		"damage_type": Enums.SKILL_DAMAGE_TYPE.ABILITY,
+		"effect": "debuff",
+		"debuff": debuff,
+		"buff_stat": stat,
+		"buff_turns": turns,
+		"description": description,
+		"target": target,
+		"scouted": false,
+		"tier": tier,
+		"shop_cost": {"min": 5 * tier, "max": 15 * tier},
+		"handle": func(props): apply_debuff(props)
+	}
+
+## Statuseffekt ohne Schaden (apply_debuff "status"): status ("poison", "paralysis") mit stacks Stapeln, chance (0..1) pro Ziel
+func _status_skill(skill_name: String, nature: int, status: String, stacks: float, chance: float, target: int, tier: int, cooldown: int, cost: int, description: String) -> Dictionary:
+	return {
+		"cost": cost,
+		"name": skill_name,
+		"nature": nature,
+		"value": stacks,
+		"chance": chance,
+		"cooldown": cooldown,
+		"damage_type": Enums.SKILL_DAMAGE_TYPE.ABILITY,
+		"effect": "debuff",
+		"debuff": "status",
+		"status": status,
+		"description": description,
+		"target": target,
+		"scouted": false,
+		"tier": tier,
+		"shop_cost": {"min": 5 * tier, "max": 15 * tier},
+		"handle": func(props): apply_debuff(props)
 	}
 
 ## Passiver Skill (effect "passive", passive = Art, siehe Passive weiter oben), kann nicht ausgespielt werden
