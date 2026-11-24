@@ -92,7 +92,7 @@ func get_labels() -> Array[String]:
 	for obj in grid.map:
 		old_values.append(obj.value.call(mon))
 	_level_before = mon._level
-	mon.upgrade_by_level(Relics.modify("level_up_levels", 1, mon))
+	mon.upgrade_by_level(1)
 	grid.init_with_mon(mon)
 	_refresh_name()
 	var labels: Array[String] = []
@@ -113,8 +113,12 @@ var _finished := false
 ## Spielt die K.O.s nacheinander ab. Jeder K.O. wird zuerst verbucht (Fortschritt, Level-Up), dann animiert:
 ## so kann finish_now jederzeit den Rest ohne Animation verbuchen (OK-Knopf während der Animation).
 ## Beide Monster laufen parallel (level_up.gd wartet nicht auf das erste).
+## Jeder K.O. ist eine halbe Stufe, "battle_progress" gibt pro Kampf halbe Stufen extra (Doppeltes Wachstum),
+## die wie ein weiterer K.O. abgespielt werden.
 func play_kills(kills: int) -> void:
 	_remaining = kills
+	if kills > 0:
+		_remaining += Relics.modify("battle_progress", 0, mon)
 	while _remaining > 0 and not _finished:
 		_remaining -= 1
 		var gains := _apply_kill()
@@ -129,7 +133,7 @@ func finish_now() -> void:
 		_remaining -= 1
 		_apply_kill()
 
-## Ein K.O.: Fortschritt, beim zweiten ein Level-Up. Gibt die (+)-Texte zurück, leer ohne Level-Up
+## Eine halbe Stufe: Fortschritt, bei der zweiten ein Level-Up. Gibt die (+)-Texte zurück, leer ohne Level-Up
 func _apply_kill() -> Array[String]:
 	mon._level_progress += 1
 	if mon._level_progress < 2:

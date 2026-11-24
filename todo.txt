@@ -1,0 +1,4 @@
+> Speicher mir die Settings für die Geschwindigkeit und Auto End Turn
+> Im Kampf dürfen die gegnerischen Monster sich nicht über die eigenen Elemente legen, die man einem anderen geben kann.
+> Die Boxen / Container für die gegnerischen Monster müssen so groß sein, wie die Icons, damit ich darauf die fähigkeiten draggen kann.
+> 
