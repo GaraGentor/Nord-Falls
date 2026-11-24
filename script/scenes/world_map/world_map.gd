@@ -192,6 +192,41 @@ func _setup_bag_button() -> void:
 	bag_icon.mouse_entered.connect(func(): RewardDialog.set_outline(bag_icon.material, true))
 	bag_icon.mouse_exited.connect(func(): RewardDialog.set_outline(bag_icon.material, _inventory != null))
 	bag_icon.add_to_group("tut_map_bag")
+	_add_bag_count()
+
+## Anzahl der Items in der Tasche auf der schwarzen Plakette in der Mitte der Tasche (leer: keine Zahl)
+const BAG_PLAQUE_CENTER := Vector2(90, 124)
+const BAG_TEXTURE_SIZE := Vector2(180, 170)
+const BAG_COUNT_SIZE := Vector2(44, 40)
+const BAG_COUNT_FONT_SIZE := 32
+
+func _add_bag_count() -> void:
+	var count_label := Label.new()
+	count_label.add_theme_font_override("font", OpenBag.PIXEL_FONT)
+	count_label.add_theme_font_size_override("font_size", BAG_COUNT_FONT_SIZE)
+	count_label.add_theme_color_override("font_color", SkillDetailPopup.GOLD)
+	count_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	count_label.add_theme_constant_override("outline_size", 4)
+	count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	count_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	count_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	count_label.size = BAG_COUNT_SIZE
+	# eigenes Material des Icons nicht erben (der Umriss würde sonst auch die Zahl umranden)
+	count_label.use_parent_material = false
+	bag_icon.add_child(count_label)
+	var place := func():
+		# das Bild sitzt mit Seitenverhältnis mittig im TextureRect
+		var factor := minf(bag_icon.size.x / BAG_TEXTURE_SIZE.x, bag_icon.size.y / BAG_TEXTURE_SIZE.y)
+		var offset := (bag_icon.size - BAG_TEXTURE_SIZE * factor) / 2
+		count_label.position = offset + BAG_PLAQUE_CENTER * factor - BAG_COUNT_SIZE / 2
+	bag_icon.resized.connect(place)
+	place.call()
+	var refresh := func():
+		var count := Items.bag_count()
+		count_label.text = str(count) if count > 0 else ""
+	Items.items_changed.connect(refresh)
+	tree_exiting.connect(func(): Items.items_changed.disconnect(refresh))
+	refresh.call()
 
 func toggle_inventory() -> void:
 	if _inventory:
@@ -405,6 +440,7 @@ func call_map_event(path_type) -> void:
 			call_event_by_type(path_type._type)
 			State.current_map_position = path_type._pos
 			#reset_animation_state(path_type)
+			return
 		if can_walk_to(path_type, State.current_map_position):
 			Map.pending_enemies = path_type._enemies
 			Map.pending_relics = path_type._boss_relics
@@ -412,8 +448,11 @@ func call_map_event(path_type) -> void:
 			State.current_map_position = path_type._pos
 			#reset_animation_state(path_type)
 
-## Immer nur eine Reihe weiter, die Lane darf nur der Fliegende Teppich wechseln
+## Immer nur eine Reihe weiter, die Lane darf nur der Fliegende Teppich wechseln.
+## Debug-Menü "JEDES FELD": jedes Feld der Karte ist betretbar, auch zurück und quer.
 func can_walk_to(node, pos: Vector3) -> bool:
+	if DebugSettings.free_walk_enabled():
+		return true
 	return node._pos.y == pos.y + 1 and (node._pos.z == pos.z or Relics.works("flying_carpet"))
 
 func call_event_by_type(type) -> void:
@@ -486,7 +525,7 @@ func open_heal_camp() -> void:
 
 func _on_boss_button_pressed() -> void:
 	if State.current_map.size() > 0:
-		if State.current_map_position.y + 1 == State.current_map[0].size():
+		if State.current_map_position.y + 1 == State.current_map[0].size() or DebugSettings.free_walk_enabled():
 			start_biome_boss()
 
 ## Biom-Boss besiegt und Beute abgehandelt: weiter ins nächste Biom, nach dem letzten endet der Run mit einem Sieg.

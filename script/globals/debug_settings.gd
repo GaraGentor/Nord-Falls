@@ -55,6 +55,8 @@ var _boss_trophies := DEFAULT_BOSS_TROPHIES
 ## Sofortsieg und für die sichere Fangchance
 var _win_button := false
 var _catch_button := false
+## Karte: jedes Feld betretbar (Schalter im Debug-Menü, gespeichert)
+var _free_walk := false
 ## Fangchance gerade auf 100 % (Knopf im Kampf). Gilt nur, solange der Fang-Knopf im Debug-Menü an ist, nicht gespeichert.
 var sure_catch := false
 
@@ -79,6 +81,7 @@ func _ready() -> void:
 		_boss_trophies = bool(parsed.get("boss_trophies", DEFAULT_BOSS_TROPHIES))
 		_win_button = bool(parsed.get("battle_win_button", false))
 		_catch_button = bool(parsed.get("battle_catch_button", false))
+		_free_walk = bool(parsed.get("map_free_walk", false))
 
 func save() -> void:
 	var file := FileAccess.open(PATH, FileAccess.WRITE)
@@ -87,7 +90,7 @@ func save() -> void:
 		var data := _other.duplicate()
 		data.merge({"reserved_stats": _reserved, "growth_per_level": _growth, "damage_formula": _damage, "disabled_relics": _disabled_relics,
 			"trophy_bonus": _trophy_bonus, "boss_trophies": _boss_trophies,
-			"battle_win_button": _win_button, "battle_catch_button": _catch_button}, true)
+			"battle_win_button": _win_button, "battle_catch_button": _catch_button, "map_free_walk": _free_walk}, true)
 		file.store_string(JSON.stringify(data))
 
 func is_relic_disabled(id: String) -> bool:
@@ -137,6 +140,14 @@ func win_button_enabled() -> bool:
 
 func set_win_button_enabled(on: bool) -> void:
 	_win_button = on
+	save()
+
+## Karte: jedes Feld betretbar, unabhängig von den Wegen (nur Debug-Builds, gespeichert)
+func free_walk_enabled() -> bool:
+	return OS.is_debug_build() and _free_walk
+
+func set_free_walk_enabled(on: bool) -> void:
+	_free_walk = on
 	save()
 
 func catch_button_enabled() -> bool:

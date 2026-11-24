@@ -35,6 +35,8 @@ const DEFAULT_DATA := {
 	"failed_runs": 0,
 	# Runs mit mehr als einer Boss Träne bis zum nächsten Kerkermeister im ersten Biom (Map.generate_run_jailer), 0 = noch nicht gewürfelt
 	"runs_until_jailer": 0,
+	# nächster Tipp in der Ei-Auswahl (Tips), läuft nach dem letzten wieder von vorne
+	"tip_index": 0,
 }
 
 var save_data: Dictionary = DEFAULT_DATA.duplicate(true)

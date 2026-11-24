@@ -1,20 +1,5 @@
-> Bei fähigkeiten ohne abklingzeit, kann das icon und die anzahl mit abklingtzeit weg.
+> Tipps ansicht anpassen. Ohne Container. Direkt auf dem Schwarzen. Die drei ??? sollen hinter den ganzen Text als Icon liegen. Groß Zentral mittig, sodass auch lägnerer und kürzerer Text die ??? nicht beeinflusst. 
+> Wenn ich im Kampf eine Fähigkeit Dragge. Dann sieht das so schonmal gut aus allerdings möchte ich, dass der Shader alleine zur Maus wandern. Nicht die <SP>. Es soll auch keine Kopie davon entstehen sondern der Shader wandert zur maus. Wenn ich loslasse geht es wieder zurück. 
+> Wenn ich beim Trainer eine Fähigkeit ziehe und über ein Monster bin, soll die fähigkeit 50% schrumpfen.
 
-> Level Up Animationen sollten nicht den OK Button Blockieren
-> Die Level Up Animationen können auch parallel für beide monster laufen
-> Wenn ich ein Item hab, soll auf der map bei der Tasche im Header eine Zahl stehen, wie viele Items drin sind am besten in das schwarze in der Mitte
-> Bug: Beim Level up sind die (+) werte vertauscht oder nicht genau, da wir ja die stats angepasst haben. Die stimmen nicht mehr
-> Neue Funktion: Tipps!
-	> Steht bei jedem neuen Run auf der Schwarzen Fläche oben im Container wo auch das EI Werfen... ist.
-	> Gehen immer vom ersten zum letzten
-	> Ich möchte Tipps in einer eigenen JSON pflegen können mit Titel und Description
-	> Dahinter kann man ein "???" Icon machen, dass man weiß was das ist.
-	> Tipps spielen immer nacheinander ab (neuer Run -> nächster Tipp)
-	> Tipps können auch weiter geschaltet werden mit einem "Mehr Tipps" Button
-	Tipp Nummer 1: Titel: "Tipp" Beschreibung: "Im Kerkermeister kannst du Permanent deine Monster aufwärten"
-	Tipp Nummer 2: Titel: "Tipp" Beschreibung: "Im Kerkermeister kannst du Permanent deine Monster aufwärten"
-> Bei der EI Auswahl, wenn die Attacken dort stehen, die über das Limit hinausgehen, würde ich gerne mit Wischen scrollen können (dass es auch auf mobile funktioniert)
-> Cool wäre es, wenn ich eine Fähigkeit anklicke, dass der Shader Effekt intensiver wird, wenn ich dann anfange zu drag and droppen, dann soll der Shader Effekt von den Skill Punkten erstmal richtung Maus fliegt, und ich den dann drag and droppe anstelle der ganzen fähigkeit. Sonst Bedeckt die Fähigkeiten Karte alles.
-
-> Ich möchte beim Kampf noch sehen, wie viele Züge das gegnerische Monster hat. Dazu soll neben dem Raritäts Stern ">" erscheinen. ">" für eine Aktion, ">>" für zwei und ">>>" für drei. mach die in dem Stil wie den Diamant für die Skill Punkte.
-> Ich möchte beim Kampf noch sehen, ob ich das Monster schon besitze. Mach mir dafür im Zugrad rechts neben dem Gewöhnlich stern noch ein grünes häckchen dran. (auch am besten nach den >>>).
+> 

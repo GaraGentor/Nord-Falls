@@ -198,6 +198,12 @@ func _build_main() -> void:
 		DebugSettings.set_win_button_enabled, "Knopf im Kampf: ein Klick besiegt alle Gegner"))
 	cheats.add_child(_make_setting_toggle("FANG 100 %", DebugSettings.catch_button_enabled(),
 		DebugSettings.set_catch_button_enabled, "Knopf im Kampf: schaltet die Fangchance auf 100 % und wieder zurück"))
+	var walk := _add_section(list, "Karte", [])
+	walk.add_child(_make_setting_toggle("JEDES FELD", DebugSettings.free_walk_enabled(),
+		func(on: bool):
+			DebugSettings.set_free_walk_enabled(on)
+			map.refresh_walkable_nodes(),
+		"Jedes Feld der Karte (und der Biom-Boss) lässt sich betreten, egal ob ein Weg dorthin führt"))
 
 	var fields := []
 	for type in [Map.PATH_TYPE.CAMP, Map.PATH_TYPE.HUB, Map.PATH_TYPE.SHOP, Map.PATH_TYPE.TRAINER, Map.PATH_TYPE.JAILER, Map.PATH_TYPE.GEM, Map.PATH_TYPE.TREASURE]:

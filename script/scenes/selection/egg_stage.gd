@@ -289,6 +289,8 @@ func _build_cards_row() -> void:
 	_cards_scroll.mouse_filter = MOUSE_FILTER_PASS
 	_cards_scroll.z_index = 20
 	add_child(_cards_scroll)
+	# mehr Attacken als Platz: Wischen scrollt (auch auf dem Handy), obwohl die Karten den Finger abfangen
+	DragScroll.attach(_cards_scroll)
 	_cards_scroll.anchor_left = 0.0
 	_cards_scroll.anchor_right = 1.0
 	_cards_scroll.anchor_top = 1.0

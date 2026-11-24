@@ -60,6 +60,8 @@ const STARS_GAP := 8.0
 ## Rand-Effekt um die Raute (Flammen, Wellen, Funken je nach Art der Karte, SkillCardPaper.flame_settings):
 ## so weit ragt er links, oben, rechts und unten über die Raute hinaus
 const BADGE_FLAME_PAD := Vector4(18, 20, 18, 14)
+## so schnell wird der Effekt um die Raute stärker bzw. wieder normal (TopRow.set_intensity)
+const INTENSITY_TIME := 0.18
 ## Die Ziffern der Pixelschrift sitzen in ihrer Zeile nicht mittig (bei 24 px etwa 0,75 px zu weit links und
 ## 1,2 px zu tief): so weit wird die Zahl in der Raute verschoben, damit sie optisch mittig steht
 const BADGE_TEXT_SHIFT := Vector2(1, -1)
@@ -95,6 +97,9 @@ class TopRow extends Control:
 	## Rand-Effekt hinter der Raute
 	var _flames: ColorRect
 	var _flames_material: ShaderMaterial
+	## Stärke des Effekts um die Raute (set_intensity)
+	var _intensity := 1.0
+	var _intensity_tween: Tween
 
 	func _init() -> void:
 		mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -161,7 +166,8 @@ class TopRow extends Control:
 		var to_local := get_global_transform().affine_inverse() * _paper.get_global_transform()
 		var corner: Vector2 = to_local * Vector2.ZERO
 		cost_badge.position = corner - SkillCardFace.BADGE_SIZE / 2 - Vector2.ONE * SkillCardFace.BADGE_OUTSET
-		_flames.position = cost_badge.position - Vector2(SkillCardFace.BADGE_FLAME_PAD.x, SkillCardFace.BADGE_FLAME_PAD.y)
+		var pad := SkillCardFace.BADGE_FLAME_PAD * _intensity
+		_flames.position = cost_badge.position - Vector2(pad.x, pad.y)
 		var badge_right := cost_badge.position.x + SkillCardFace.BADGE_SIZE.x
 		_stars.position = Vector2(badge_right + SkillCardFace.STARS_GAP, corner.y - SkillCardFace.STAR_SIZE / 2)
 		# gedreht liegt die Höhe des Labels waagerecht, die Grundlinie (Ascent) zeigt zur Karte:
@@ -171,6 +177,63 @@ class TopRow extends Control:
 		var font := _element.get_theme_font("font")
 		var ascent := font.get_ascent(_element.get_theme_font_size("font_size")) if font != null else _element.size.y
 		_element.position = Vector2(bottom_left.x - ascent - SkillCardFace.ELEMENT_GAP, bottom_left.y - SkillCardFace.PAPER_FRAME_INSET)
+
+	## Effekt um die Raute stärker (1 = normal), z. B. solange eine Kampfkarte gedrückt ist.
+	## Der Überstand wächst mit, damit der größere Effekt nicht abgeschnitten wird.
+	func set_intensity(value: float, animate := true) -> void:
+		if _intensity_tween:
+			_intensity_tween.kill()
+		if not animate or not is_inside_tree():
+			_apply_intensity(value)
+			return
+		_intensity_tween = create_tween()
+		_intensity_tween.set_ignore_time_scale(true)
+		_intensity_tween.tween_method(_apply_intensity, _intensity, value, SkillCardFace.INTENSITY_TIME)
+
+	func _apply_intensity(value: float) -> void:
+		_intensity = value
+		var pad := SkillCardFace.BADGE_FLAME_PAD * value
+		_flames.size = SkillCardFace.BADGE_SIZE + Vector2(pad.x + pad.z, pad.y + pad.w)
+		_flames.position = cost_badge.position - Vector2(pad.x, pad.y)
+		_flames_material.set_shader_parameter("pad", pad)
+		_flames_material.set_shader_parameter("rect_size", _flames.size)
+		_flames_material.set_shader_parameter("intensity", value)
+
+	## Kosten-Raute samt Effekt als eigenes Control, die Mitte der Raute liegt im Ursprung.
+	## Dient als Drag-Vorschau der Kampfkarte: statt der ganzen Karte hängt nur die Raute am Finger.
+	func make_token(intensity: float) -> Control:
+		var token := Control.new()
+		token.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var pad := SkillCardFace.BADGE_FLAME_PAD * intensity
+		var flames := ColorRect.new()
+		var material: ShaderMaterial = _flames_material.duplicate()
+		flames.material = material
+		flames.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		flames.size = SkillCardFace.BADGE_SIZE + Vector2(pad.x + pad.z, pad.y + pad.w)
+		flames.position = -SkillCardFace.BADGE_SIZE / 2 - Vector2(pad.x, pad.y)
+		material.set_shader_parameter("pad", pad)
+		material.set_shader_parameter("rect_size", flames.size)
+		material.set_shader_parameter("intensity", intensity)
+		flames.visible = _flames.visible
+		token.add_child(flames)
+		var badge: MovesBadge = SkillCardFace.MOVES_BADGE.instantiate()
+		badge.custom_minimum_size = SkillCardFace.BADGE_SIZE
+		badge.size = SkillCardFace.BADGE_SIZE
+		badge.position = -SkillCardFace.BADGE_SIZE / 2
+		badge.label.add_theme_font_size_override("font_size", SkillCardFace.INFO_SIZE)
+		badge.label.add_theme_constant_override("outline_size", 4)
+		badge.label.offset_left = SkillCardFace.BADGE_TEXT_SHIFT.x
+		badge.label.offset_right = SkillCardFace.BADGE_TEXT_SHIFT.x
+		badge.label.offset_top = SkillCardFace.BADGE_TEXT_SHIFT.y
+		badge.label.offset_bottom = SkillCardFace.BADGE_TEXT_SHIFT.y
+		badge.label.text = cost_badge.label.text
+		SkillCardFace.ignore_mouse(badge)
+		token.add_child(badge)
+		return token
+
+	## Mitte der Kosten-Raute in globalen Koordinaten
+	func badge_center() -> Vector2:
+		return cost_badge.get_global_rect().get_center()
 
 	## Effekt um die Raute in Art und Farbe der Karte, wie ihn das Papier vorgibt
 	func _sync_flames() -> void:
@@ -285,8 +348,8 @@ class BottomRow extends MarginContainer:
 	func show_skill(skill: Dictionary, mon: Monster = null, known := true) -> void:
 		show_missing("")
 		_nature_color = SkillCardPaper.readable_color(Helper.color_by_type(skill.nature))
-		# Passive wirken dauerhaft, eine Abklingzeit gibt es dort nicht
-		_cooldown.modulate.a = 0.0 if Skills.is_passive(skill) or not known else 1.0
+		# Passive wirken dauerhaft, eine Abklingzeit gibt es dort nicht; ohne Abklingzeit bleibt die Uhr ebenfalls weg
+		_cooldown.modulate.a = 0.0 if Skills.is_passive(skill) or not known or int(skill.get("cooldown", 0)) <= 0 else 1.0
 		_cooldown_label.text = str(skill.get("cooldown", 0))
 		_cooldown_label.add_theme_color_override("font_color", _nature_color)
 		_cooldown_icon.modulate = _nature_color

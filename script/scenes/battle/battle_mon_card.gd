@@ -38,6 +38,13 @@ const POINTER_GAP := 3.0
 var mon: Monster
 var selected := false
 
+## Aktionen pro Zug und Besitz-Häkchen der Gegner (MoveChevrons)
+var _marks: MoveChevrons
+## "NEU"-Aufkleber oben rechts, nur bei Arten, die man noch nicht besitzt
+var _new_tag: Label
+const NEW_TAG_FONT_SIZE := 24
+## so weit ragt der Aufkleber über die obere rechte Ecke hinaus
+const NEW_TAG_OFFSET := Vector2(8, -12)
 var _shown_hp := 0.0
 var _hp_tween: Tween
 
@@ -72,6 +79,35 @@ func setup(_mon: Monster) -> void:
 	moves_badge.visible = State.mons.has(mon)
 	moves_badge.tooltip_text = tr("BATTLE_MON_MOVES")
 	moves_badge.show_number(mon._computed_moves, false, true)
+	# Gegner einer Art, die man besitzt: ">" je Aktion pro Zug hinter dem Stern
+	if _marks == null:
+		_marks = MoveChevrons.new()
+		rarity_star.get_parent().add_child(_marks)
+		_marks.move_to_front()
+		if not Events.intents_changed.is_connected(_refresh_marks):
+			Events.intents_changed.connect(_refresh_marks)
+	_refresh_marks()
+	# "NEU" als schräger Aufkleber auf der oberen rechten Ecke: liegt über der Karte, nimmt in der Zeile keinen Platz weg
+	if _new_tag == null:
+		var overlay := Control.new()
+		overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(overlay)
+		_new_tag = MoveChevrons.make_new_tag(tr("BATTLE_MON_NEW"), NEW_TAG_FONT_SIZE)
+		overlay.add_child(_new_tag)
+		_new_tag.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT, Control.PRESET_MODE_MINSIZE)
+		_new_tag.position += NEW_TAG_OFFSET
+	_new_tag.visible = not State.mons.has(mon) and MoveChevrons.is_new_species(mon._name)
+
+## Aktionen pro Zug wie beim Planen des Gegners (battle.gd _plan_intent).
+## Nur bei Arten, die man schon besitzt: neue Arten zeigen stattdessen den "NEU"-Aufkleber.
+func _refresh_marks() -> void:
+	if mon == null or _marks == null:
+		return
+	if State.mons.has(mon) or MoveChevrons.is_new_species(mon._name):
+		_marks.setup(0)
+		return
+	var actions: int = Relics.modify("moves", mon._initial_moves, mon) + roundi(mon.boon_value("extra_moves"))
+	_marks.setup(maxi(actions, 1))
 
 ## Poppt nur auf, wenn sich die Zahl geändert hat (refresh_ui_for_monster kommt für jedes Monster)
 func _refresh_moves() -> void:

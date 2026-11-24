@@ -7,6 +7,14 @@ const DRAG_THRESHOLD := 12.0
 ## so weit nach oben gezogen wird aus einem Wischen doch noch Drag & Drop,
 ## damit ein seitliches Zucken am Anfang den Drag nicht verhindert
 const SWIPE_TO_DRAG := 40.0
+## Effekt um die Kosten-Raute: angetippt stärker, als Drag-Vorschau noch stärker
+const PRESSED_INTENSITY := 1.6
+const DRAG_INTENSITY := 1.9
+## Drag-Vorschau: Raute etwas größer als auf der Karte, kurz über dem Finger, damit sie sichtbar bleibt
+const DRAG_TOKEN_SCALE := 1.4
+const DRAG_TOKEN_OFFSET := Vector2(0, -24)
+## so lange fliegt die Raute von der Karte zum Finger
+const TOKEN_FLY_TIME := 0.22
 @export var name_label: Label
 ## Beschreibung mit gelb hervorgehobenen Werten (Helper.skill_description rich)
 @export var description_label: RichTextLabel
@@ -33,6 +41,8 @@ var playable := true:
 var _press_pos := Vector2.ZERO
 var _pressed := false
 var _swiping := false
+## läuft gerade ein Drag & Drop dieser Karte
+var _dragging := false
 var _paper: SkillCardPaper
 ## oben die Kosten schräg auf der Ecke, unten Wert und Art-Symbol, Sterne (Stufe), Abklingzeit und Element (SkillCardFace)
 var _top_row := SkillCardFace.TopRow.new()
@@ -107,23 +117,34 @@ func _gui_input(event: InputEvent) -> void:
 			_pressed = true
 			_swiping = false
 			_press_pos = event.global_position
+			hand.stop_fling()
+			# angetippt: der Effekt um die Kosten-Raute lodert stärker
+			if _can_drag():
+				_top_row.set_intensity(PRESSED_INTENSITY)
 		else:
+			if _swiping:
+				hand.end_swipe()
 			_pressed = false
 			_swiping = false
+			if not _dragging:
+				_top_row.set_intensity(1.0)
 		accept_event()
 	elif event is InputEventMouseMotion and _pressed:
 		var delta: Vector2 = event.global_position - _press_pos
 		if _swiping:
-			if -delta.y > SWIPE_TO_DRAG:
+			if -delta.y > SWIPE_TO_DRAG and _can_drag():
 				_pressed = false
 				_swiping = false
+				hand.stop_fling()
 				_start_drag()
 			else:
 				hand.swipe_by(-event.relative.x)
 		elif delta.length() > DRAG_THRESHOLD:
-			# nur eindeutig seitliche Bewegungen scrollen, schräg nach oben ist ein Drag
-			if absf(delta.x) > absf(delta.y) * 1.5:
+			# nur eindeutig seitliche Bewegungen scrollen, schräg nach oben ist ein Drag.
+			# Lässt sich die Karte gerade nicht spielen, scrollt jede Bewegung die Hand.
+			if absf(delta.x) > absf(delta.y) * 1.5 or not _can_drag():
 				_swiping = true
+				_top_row.set_intensity(1.0)
 				hand.swipe_by(-delta.x)
 			else:
 				_pressed = false
@@ -133,19 +154,35 @@ func _gui_input(event: InputEvent) -> void:
 		# Touch wird als Maus emuliert, sonst würde der ScrollContainer doppelt scrollen
 		accept_event()
 
+## spielbar und die Hand ist nicht gesperrt (Gegner am Zug)
+func _can_drag() -> bool:
+	return playable and (hand == null or hand.can_play.call())
+
+## Statt der ganzen Karte (die alles verdecken würde) hängt nur die Kosten-Raute mit ihrem Effekt am Finger.
+## Sie fliegt von ihrem Platz auf der Karte zum Finger.
 func _start_drag() -> void:
-	if not playable:
+	if not _can_drag():
+		_top_row.set_intensity(1.0)
 		return
-	var preview: Control = duplicate(0)
-	preview.size = size
-	preview.modulate.a = 0.85
-	# Vorschau so verschieben, dass sie unter dem Finger hängt
+	var token := _top_row.make_token(DRAG_INTENSITY)
+	token.scale = Vector2.ONE * DRAG_TOKEN_SCALE
 	var holder := Control.new()
-	holder.add_child(preview)
-	preview.position = -size / 2
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(token)
+	# die Vorschau folgt dem Finger, die Raute startet aber dort, wo sie auf der Karte sitzt
+	token.position = _top_row.badge_center() - get_global_mouse_position()
 	force_drag({"type": "skill_card", "skill": skill, "mon": mon}, holder)
+	_dragging = true
 	modulate.a = 0.3
+	# die Vorschau ist hier evtl. noch nicht im Baum: Tween am SceneTree, an die Raute gebunden
+	var tween := get_tree().create_tween().bind_node(token)
+	tween.set_ignore_time_scale(true)
+	tween.tween_property(token, "position", DRAG_TOKEN_OFFSET, TOKEN_FLY_TIME) \
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_DRAG_END:
 		modulate.a = 1.0
+		if _dragging:
+			_dragging = false
+			_top_row.set_intensity(1.0)

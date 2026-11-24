@@ -1289,3 +1289,9 @@ TUT_BAT_ITEMS,"On the left edge you'll find your one-way items. Click your monst
 TUT_BAT_BAIT,"For practice you borrowed a bait. Drag it onto the enemy: your catch chance goes up by 5%, without using an action.","Für die Übung hast du einen Köder geliehen. Zieh ihn auf den Gegner: Deine Fangchance steigt um 5 %, ganz ohne Aktion."
 BATTLE_ITEM_CARRIER,Carried by {mon},Getragen von {mon}
 BATTLE_ITEM_WAIT_TURN,Can only be used during {mon}'s turn.,Einsetzen geht nur im Zug von {mon}.
+TIPS_MORE,More tips,Mehr Tipps
+TIPS_TITLE,Tip,Tipp
+BATTLE_ENEMY_ACTIONS,Actions per turn: {count},Aktionen pro Zug: {count}
+BATTLE_MON_NEW,NEW,NEU
+BATTLE_MON_NEW_HINT,You do not own this species yet,Diese Art besitzt du noch nicht
+BATTLE_CATCH_NEW,New!,Neu!

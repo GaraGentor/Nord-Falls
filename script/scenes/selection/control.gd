@@ -45,6 +45,7 @@ var _thrown := 0
 var _queued := 0
 
 var _spacer: Control
+var _tips: Tips
 var _failures: Label
 var _details: VBoxContainer
 var _name_label: Label
@@ -178,6 +179,7 @@ func select_egg(index: int) -> void:
 	var mon: Monster = mons[index]
 	if not _details.visible:
 		_spacer.visible = false
+		_tips.visible = false
 		_fade(_details, true)
 	_show_details(mon)
 	stage.show_skills(mon)
@@ -192,6 +194,8 @@ func _on_go_pressed() -> void:
 	# Ladungen werden erst beim Aufbruch verbraucht, und nur wenn neu gewürfelt wurde (auch vor einem Neustart)
 	if SaveManager.save_data["eggs_rerolled"]:
 		SaveManager.spend_reroll_charges()
+	# der nächste Run zeigt den nächsten Tipp
+	Tips.advance()
 	get_tree().change_scene_to_file("res://script/scenes/egg_configurator/egg_configurator.tscn")
 
 ## Faule Eier: neue würfeln, alle drei fliegen gleichzeitig herein
@@ -224,6 +228,10 @@ func _build_side() -> void:
 	column.add_theme_constant_override("separation", 14)
 	column.mouse_filter = MOUSE_FILTER_IGNORE
 	margin.add_child(column)
+
+	# Tipp des Runs oben in der Spalte, macht Platz, sobald das erste Monster zu sehen ist
+	_tips = Tips.new()
+	column.add_child(_tips)
 
 	# vor dem ersten Wurf leer, hält die Knöpfe unten
 	_spacer = Control.new()

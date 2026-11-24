@@ -158,14 +158,17 @@ func _ready() -> void:
 func _update_cloud_size() -> void:
 	battlefield_image.material.set_shader_parameter("rect_size", battlefield_image.size)
 
+## Beide Monster spielen ihre Level-Ups gleichzeitig ab. Weiter geht es jederzeit:
+## der OK-Knopf verbucht, was noch nicht animiert wurde (_on_button_pressed).
 func _start() -> void:
-	for killed in State.killed_monsters:
-		State.killed_monsters -= 1
-		if monster_scene1.mon:
-			await monster_scene1._play()
-		if monster_scene2.mon:
-			await monster_scene2._play()
+	var kills := State.killed_monsters
+	State.killed_monsters = 0
 	go_button.disabled = false
+	for scene in _monster_scenes():
+		scene.play_kills(kills)
+
+func _monster_scenes() -> Array:
+	return [monster_scene1, monster_scene2].filter(func(scene): return scene.mon != null)
 
 ## Oben der Hinweis, unten die Tasche, darüber die verstreute Beute
 func _build_battlefield() -> void:
@@ -364,6 +367,9 @@ func _notification(what: int) -> void:
 			loot.mouse_filter = Control.MOUSE_FILTER_STOP
 
 func _on_button_pressed() -> void:
+	# noch laufende Level-Ups sofort verbuchen
+	for scene in _monster_scenes():
+		scene.finish_now()
 	# was nicht in der Tasche liegt, bleibt auf dem Schlachtfeld
 	State.clear_pending_loot()
 	get_tree().change_scene_to_file("res://script/scenes/world_map/world_map.tscn")

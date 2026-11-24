@@ -25,6 +25,9 @@ uniform float overlap = 4.0;
 uniform float pixel = 2.0;
 uniform float speed = 1.0;
 uniform float seed = 0.0;
+// Stärke des Effekts (1 = normal): größer reicht er weiter hinaus, bewegt sich schneller und leuchtet heller
+// (angetippte Kampfkarte, Drag-Vorschau). Der Überstand pad muss entsprechend mitwachsen.
+uniform float intensity = 1.0;
 
 float hash(vec2 p) {
 	vec3 p3 = fract(vec3(p.xyx) * 0.1031);
@@ -196,8 +199,8 @@ void fragment() {
 		COLOR = vec4(0.0);
 	} else {
 		// Abstand zur Papierkante, der Überlapp gehört noch zum Rand
-		float e = max(d - overlap, 0.0);
-		float t = TIME * speed;
+		float e = max(d - overlap, 0.0) / max(intensity, 0.01);
+		float t = TIME * speed * mix(1.0, intensity, 0.6);
 		vec2 sp = p + vec2(seed * 3.0, seed * 5.0);
 		if (mode == 1) {
 			COLOR = waves(sp, u, e, t, variant == 1);
@@ -208,5 +211,7 @@ void fragment() {
 		} else {
 			COLOR = flames(sp, e, dir_y, t);
 		}
+		// stärker: heller
+		COLOR.rgb *= 1.0 + max(intensity - 1.0, 0.0) * 0.35;
 	}
 }

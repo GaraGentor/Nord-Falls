@@ -138,8 +138,22 @@ func _ready() -> void:
 	card_hand.show_mon(State.mons[0])
 	_relic_bar = BossRelicBar.new()
 	$GameWindow.add_child(_relic_bar)
+	# Ebene genau über dem Kampffeld, aber über dem Eingabe-Blocker: Geschwindigkeit und Auto-Zugende lassen sich
+	# immer umstellen, die Hand immer scrollen (ausspielen nur im eigenen Zug, siehe card_hand.can_play)
+	var top_layer := Control.new()
+	top_layer.name = "GameWindowTop"
+	top_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(top_layer)
+	top_layer.anchor_right = $GameWindow.anchor_right
+	top_layer.anchor_bottom = $GameWindow.anchor_bottom
+	top_layer.offset_left = $GameWindow.offset_left
+	top_layer.offset_top = $GameWindow.offset_top
+	top_layer.offset_right = $GameWindow.offset_right
+	top_layer.offset_bottom = $GameWindow.offset_bottom
+	card_hand.reparent(top_layer, false)
+	card_hand.can_play = func() -> bool: return not $UI_Blocker.visible and _is_own_turn() and not _battle_over
 	var controls := BattleControls.new()
-	$GameWindow.add_child(controls)
+	top_layer.add_child(controls)
 	controls.auto_end_toggled.connect(func(_enabled): _try_auto_end())
 	# Kampf-Cheats aus dem Debug-Menü links neben den Knöpfen, nicht im Übungskampf
 	if BattleDebugButtons.wanted() and not Tutorial.practice:
@@ -153,6 +167,8 @@ func _ready() -> void:
 	# über dem Eingabe-Blocker: auch im Zug der Gegner lassen sich die Postits ausfahren (Einsetzen nur im eigenen Zug)
 	add_child(_item_postits)
 	move_child(_item_postits, $UI_Blocker.get_index() + 1)
+	# Hand und Knöpfe über dem Blocker, die Postits noch darüber
+	move_child(top_layer, _item_postits.get_index())
 	_apply_start_items()
 	_relic_overlay = BossRelicOverlayScript.new()
 	add_child(_relic_overlay)
@@ -337,6 +353,26 @@ func _select_mon(mon: Monster) -> void:
 		scene.texture_rect.material = Monmap.monster_battle_selected_material if scene.mon == mon and mon != null else Monmap.MONSTER_MATERIAL
 	turn_wheel.set_selected_mon(mon)
 	battle_info.monster = mon
+	_refresh_catch_badge()
+
+## "Neu!" am Hypnose-Knopf: der ausgewählte Gegner (das Ziel der Hypnose) ist eine Art, die man noch nicht besitzt
+const CATCH_BADGE_FONT_SIZE := 32
+## Lage des Schilds relativ zur oberen Mitte des Knopfs
+const CATCH_BADGE_OFFSET := Vector2(42, 0)
+var _catch_badge: Label
+
+func _refresh_catch_badge() -> void:
+	if catch_button == null:
+		return
+	if _catch_badge == null:
+		_catch_badge = MoveChevrons.make_new_tag(tr("BATTLE_CATCH_NEW"), CATCH_BADGE_FONT_SIZE)
+		catch_button.add_child(_catch_badge)
+		# wie ein Aufkleber schräg oben rechts an der Spirale (das Symbol sitzt mittig im breiteren Knopf)
+		_catch_badge.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP, Control.PRESET_MODE_MINSIZE)
+		_catch_badge.position += CATCH_BADGE_OFFSET
+	var target := currently_selected_enemy_mon
+	_catch_badge.visible = target != null and target.is_alive() and not target._minion \
+		and MoveChevrons.is_new_species(target._name)
 
 ## nach einem K.O. oder Fang ein noch kämpfendes Monster markieren
 func _reselect_if_gone(gone: Monster) -> void:
@@ -345,6 +381,7 @@ func _reselect_if_gone(gone: Monster) -> void:
 	var alive_enemies = State.enemy_mons.filter(func(mon: Monster): return mon.is_alive() and mon != gone)
 	if currently_selected_enemy_mon == gone:
 		currently_selected_enemy_mon = alive_enemies[0] if not alive_enemies.is_empty() else null
+		_refresh_catch_badge()
 	if selected_mon != gone:
 		return
 	var alive = alive_enemies + State.mons.filter(func(mon: Monster): return mon.is_alive())

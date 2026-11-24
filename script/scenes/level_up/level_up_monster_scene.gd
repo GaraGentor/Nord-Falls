@@ -65,31 +65,29 @@ func _refresh_hp(animate: bool) -> void:
 	var current: float = maxf(max_hp - mon._lost_hp, 0.0)
 	_hp_bar.set_hp(current, max_hp, "%s %d / %d" % [tr("STAT_HP").trim_suffix(":"), roundi(current), roundi(max_hp)], animate)
 
-func trigger_level_up() -> bool:
+func trigger_level_up(gains: Array[String]) -> bool:
 	level_label.position = Vector2(level_label.position.x, 0)
 	level_label.visible = true
-	grid.show_p_labels(get_labels())
+	grid.show_p_labels(gains)
 	_refresh_hp(true)
 	await get_tree().create_tween().tween_property(level_label, "position", Vector2(level_label.position.x, size.y), 2).finished
+	if not is_inside_tree():
+		return false
 	level_label.visible = false
 	return true
 
+## Zuwachs je Zeile des Grids: Reihenfolge und Werte kommen aus grid.map, damit jedes (+) neben seinem Wert steht
+## (früher fest verdrahtet, nach dem Umbau der Werte standen Verteidigung und Sp. Angriff vertauscht)
 func get_labels() -> Array[String]:
-	var old_hp = mon.hp()
-	var old_attack = mon.attack()
-	var old_defense = mon.defense()
-	var old_s_attack = mon.s_attack()
-	var old_speed = mon.speed()
+	var old_values := []
+	for obj in grid.map:
+		old_values.append(obj.value.call(mon))
 	mon.upgrade_by_level(Relics.modify("level_up_levels", 1, mon))
 	grid.init_with_mon(mon)
-	return [
-		gain_text(old_hp, mon.hp()),
-		gain_text(old_attack, mon.attack()),
-		gain_text(old_defense, mon.defense()),
-		gain_text(old_s_attack, mon.s_attack()),
-		gain_text(old_speed, mon.speed()),
-		"",
-	]
+	var labels: Array[String] = []
+	for i in grid.map.size():
+		labels.append(gain_text(old_values[i], grid.map[i].value.call(mon)))
+	return labels
 
 ## Das Grid zeigt die Werte abgeschnitten (int), also zählt der Unterschied der angezeigten Zahlen.
 ## Springt die angezeigte Zahl nicht, bleibt das Feld leer.
@@ -97,14 +95,46 @@ func gain_text(old_val: float, new_val: float) -> String:
 	var shown_diff := int(new_val) - int(old_val)
 	return " %+d" % shown_diff if shown_diff != 0 else ""
 
-func _play() -> bool:
+## K.O.s, die noch nicht verbucht sind (play_kills)
+var _remaining := 0
+var _finished := false
+
+## Spielt die K.O.s nacheinander ab. Jeder K.O. wird zuerst verbucht (Fortschritt, Level-Up), dann animiert:
+## so kann finish_now jederzeit den Rest ohne Animation verbuchen (OK-Knopf während der Animation).
+## Beide Monster laufen parallel (level_up.gd wartet nicht auf das erste).
+func play_kills(kills: int) -> void:
+	_remaining = kills
+	while _remaining > 0 and not _finished:
+		_remaining -= 1
+		var gains := _apply_kill()
+		await _animate_kill(gains)
+		if not is_inside_tree():
+			return
+
+## Restliche K.O.s sofort verbuchen, ohne Animation
+func finish_now() -> void:
+	_finished = true
+	while _remaining > 0:
+		_remaining -= 1
+		_apply_kill()
+
+## Ein K.O.: Fortschritt, beim zweiten ein Level-Up. Gibt die (+)-Texte zurück, leer ohne Level-Up
+func _apply_kill() -> Array[String]:
 	mon._level_progress += 1
-	if mon._level_progress == 1:
+	if mon._level_progress < 2:
+		return []
+	mon._level_progress = 0
+	return get_labels()
+
+func _animate_kill(gains: Array[String]) -> void:
+	if gains.is_empty():
 		await get_tree().create_tween().tween_property(pg1, "value", 10, .5).finished
-	if mon._level_progress == 2:
-		await get_tree().create_tween().tween_property(pg2, "value", 10, .5).finished
-		await trigger_level_up()
-		pg1.value = 0
-		pg2.value = 0
-		mon._level_progress = 0
-	return true
+		return
+	await get_tree().create_tween().tween_property(pg2, "value", 10, .5).finished
+	if not is_inside_tree() or _finished:
+		return
+	await trigger_level_up(gains)
+	if not is_inside_tree():
+		return
+	pg1.value = 0
+	pg2.value = 0
