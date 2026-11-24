@@ -27,6 +27,8 @@ var retry_battle := false
 ## Schlummernde Skills: jeder Skill ist schon mit einem seiner Elemente abgeschwächt einsetzbar (Skills.may_slumber).
 ## Aus: nur mitgenommene Ei-Attacken schlummern, alle anderen brauchen alle ihre Elemente.
 var dormant_skills := false
+## Zum Testen: Gegner nutzen die Element-Leihgabe (ElementLoan, battle.gd _plan_loans). Aus: nur der Spieler leiht.
+var enemy_loans := false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -99,6 +101,13 @@ func set_dormant_skills(on: bool) -> void:
 	_save()
 	changed.emit()
 
+func set_enemy_loans(on: bool) -> void:
+	if enemy_loans == on:
+		return
+	enemy_loans = on
+	_save()
+	changed.emit()
+
 func toggle_fullscreen() -> void:
 	set_fullscreen(not fullscreen)
 
@@ -136,6 +145,7 @@ func _load() -> void:
 	flying_carpet = config.get_value("gameplay", "flying_carpet", false)
 	retry_battle = config.get_value("gameplay", "retry_battle", false)
 	dormant_skills = config.get_value("gameplay", "dormant_skills", false)
+	enemy_loans = config.get_value("gameplay", "enemy_loans", false)
 
 func _save() -> void:
 	var config := ConfigFile.new()
@@ -147,4 +157,5 @@ func _save() -> void:
 	config.set_value("gameplay", "flying_carpet", flying_carpet)
 	config.set_value("gameplay", "retry_battle", retry_battle)
 	config.set_value("gameplay", "dormant_skills", dormant_skills)
+	config.set_value("gameplay", "enemy_loans", enemy_loans)
 	config.save(PATH)

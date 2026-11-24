@@ -32,6 +32,8 @@ var _gap_press_x := 0.0
 
 func _ready() -> void:
 	Events.call_skill_card.connect(func(_skill): refresh_playable.call_deferred())
+	# Element-Leihgabe: Karten zeigen das geliehene Element bzw. beim Ziehen einer Kugel die Vorschau
+	Events.element_loans_changed.connect(refresh_playable)
 
 func show_mon(mon: Monster) -> void:
 	_mon = mon
@@ -57,6 +59,7 @@ func refresh_playable() -> void:
 		if not card.is_queued_for_deletion():
 			card.show_state(_mon)
 			card.playable = _mon._computed_moves >= Skills.skill_cost(_mon, card.skill) and Skills.is_playable(_mon, card.skill)
+			card.loan_dim = ElementLoan.preview_dims(_mon, card.skill)
 
 ## Wischen um amount Pixel (von einer Karte oder einer freien Stelle der Hand)
 func swipe_by(amount: float) -> void:

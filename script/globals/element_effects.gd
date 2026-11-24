@@ -17,6 +17,9 @@ extends Node
 ## Schlummernde Skills (Skills.effective_skill, "_dormant") haben keinen Effekt, erst wenn sie erwacht sind.
 ## Passive "effect_chance" des Wirkers (z. B. Permafrost) erhöhen die Auslösechance (effect_chance mit from).
 ##
+## Element-Leihgabe (ElementLoan): geliehene Elemente geben dem Skill ein anderes Effekt-Element ("effect_nature"),
+## das dann sicher auslöst ("_loaned"). Schaden und Element-Faktor rechnen weiter mit "nature".
+##
 ## Alle Werte stehen hier, damit das Balancing an einer Stelle passiert.
 ##
 ## Einzelne Karten können die Werte ihres Elements anpassen (optionale Felder im Skill, ohne sie gilt 1.0):
@@ -100,12 +103,13 @@ const FAIL_STAT := "fail"
 
 ## Pro getroffenem Gegner, nach dem Schaden: Schwächungen, Statuseffekte und Zusatzschaden aufs Ziel.
 func on_hit(from: Monster, target: Monster, skill: Dictionary) -> void:
-	if not Skills.is_damage_skill(skill) or not target.is_alive() or not skill.nature in [STEAM, DUST, LIGHTNING, SWAMP, ASH_STORM, THUNDERSTORM]:
+	var nature := effect_nature(skill)
+	if not Skills.is_damage_skill(skill) or not target.is_alive() or not nature in [STEAM, DUST, LIGHTNING, SWAMP, ASH_STORM, THUNDERSTORM]:
 		return
 	if not _triggers(skill, from):
 		return
 	var power := effect_power(skill)
-	match skill.nature:
+	match nature:
 		STEAM:
 			target.add_debuff("steam_def", "def", DEBUFF_FACTOR * power, EFFECT_TURNS + 1)
 			Events.status_vfx.emit(target, "debuff")
@@ -125,13 +129,13 @@ func on_hit(from: Monster, target: Monster, skill: Dictionary) -> void:
 
 ## Einmal pro Einsatz, nach allen Treffern: Eis gibt dem Wirker einen Schild aus dem Schaden.
 func on_cast(from: Monster, skill: Dictionary, dealt: float) -> void:
-	if not from.is_alive() or skill.nature != ICE or dealt <= 0 or not _triggers(skill, from):
+	if not from.is_alive() or effect_nature(skill) != ICE or dealt <= 0 or not _triggers(skill, from):
 		return
 	from.add_shield(ceilf(dealt * ICE_SHIELD_SHARE * effect_power(skill)))
 
 ## Magma / Schlamm: geht dieser Treffer durch den Schild?
 func rolls_pierce(skill: Dictionary, from: Monster = null) -> bool:
-	return skill.get("nature", 0) in [MAGMA, MUD] and _triggers(skill, from)
+	return effect_nature(skill) in [MAGMA, MUD] and _triggers(skill, from)
 
 ## Zeigt "Durchschlag!" über dem Ziel, wenn es einen Schild hatte
 func show_pierce(target: Monster) -> void:
@@ -152,7 +156,10 @@ func rolls_fail(mon: Monster) -> bool:
 ## Vulkan: wirkt der Skill diesmal doppelt?
 ## from: Wirker, seine Passive "effect_chance" machen den Ausbruch wahrscheinlicher
 func rolls_eruption(skill: Dictionary, from: Monster = null) -> bool:
-	return skill.nature == VOLCANO and is_active(skill) and randf() < effect_chance(skill, from) * VOLCANO_CHANCE * effect_power(skill)
+	if effect_nature(skill) != VOLCANO or not is_active(skill):
+		return false
+	# geliehen (ElementLoan): wirkt sicher doppelt
+	return is_loaned(skill) or randf() < effect_chance(skill, from) * VOLCANO_CHANCE * effect_power(skill)
 
 ## Chaos: Zuschlag auf den Element-Faktor (Skills.element_multiplier). Kennt nur das Element, nicht die Karte,
 ## daher gilt hier immer der Standardwert.
@@ -174,9 +181,19 @@ func effect_power(skill: Dictionary) -> float:
 func is_active(skill: Dictionary) -> bool:
 	return not skill.get("_dormant", false)
 
-## Auslösechance des Elements x Kartenwert x Passive des Wirkers, höchstens 100 %
+## Element, dessen Effekt der Skill auslöst: sein eigenes oder mit geliehenen Elementen (ElementLoan, "effect_nature")
+func effect_nature(skill: Dictionary) -> int:
+	return skill.get("effect_nature", skill.get("nature", 0))
+
+## Mit geliehenem Element (ElementLoan): der Effekt löst sicher aus
+func is_loaned(skill: Dictionary) -> bool:
+	return skill.get("_loaned", false)
+
+## Auslösechance des Elements x Kartenwert x Passive des Wirkers, höchstens 100 %. Geliehen: immer.
 func trigger_chance(skill: Dictionary, from: Monster = null) -> float:
-	return minf(TRIGGER_CHANCES.get(skill.get("nature", 0), 1.0) * effect_chance(skill, from), 1.0)
+	if is_loaned(skill):
+		return 1.0
+	return minf(TRIGGER_CHANCES.get(effect_nature(skill), 1.0) * effect_chance(skill, from), 1.0)
 
 func _triggers(skill: Dictionary, from: Monster = null) -> bool:
 	return is_active(skill) and randf() < trigger_chance(skill, from)
@@ -227,11 +244,15 @@ func _effect_damage(mon: Monster, from: Monster, amount: float, text: String, co
 
 ## Effekt-Zeile für Skill-Beschreibungen mit den Werten dieser Karte (effect_chance, effect_power), "" ohne Effekt
 func skill_effect_text(skill: Dictionary) -> String:
-	var mask: int = skill.get("nature", 0)
+	var mask := effect_nature(skill)
 	if not EFFECT_KEYS.has(mask) or mask == CHAOS:
 		return element_effect_text(mask)
 	var power := effect_power(skill)
-	var chance := effect_chance(skill)
+	# geliehen (ElementLoan): löst sicher aus, die Chance im Text deckelt element_effect_text auf 100 %
+	var chance := INF if is_loaned(skill) else effect_chance(skill)
+	if mask == VOLCANO and is_loaned(skill):
+		# die doppelte Wirkung ist sicher: 100 % statt der Vulkan-Chance
+		return element_effect_text(mask, 1.0 / VOLCANO_CHANCE)
 	if mask == VOLCANO:
 		# bei Vulkan ist die Chance selbst der Effekt
 		power *= chance

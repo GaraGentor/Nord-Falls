@@ -90,6 +90,11 @@ const MIN_STAT_FACTOR := 0.25
 var _intent: Array = []
 # Zwischenstände der Boss-Relikte dieses Monsters im laufenden Kampf (z. B. Schaden für den Fate-Spiegel), siehe BossRelics
 var _relic_state: Dictionary = {}
+# Element-Leihgabe (ElementLoan): geliehene Elemente [{"element": int, "from": Monster}], gelten bis zur nächsten
+# Fähigkeit, die sie verändern, oder bis Zugende
+var _loans: Array = []
+# Aktionen, die dieses Monster verliehen hat: fehlen ihm in seinem nächsten Zug (reset_to_new_round)
+var _loan_debt: int = 0
 
 func _init(level: int, meta_data: Dictionary) -> void:
 	## get saved data and apply.
@@ -135,6 +140,8 @@ func reset_battle_state() -> void:
 	_boons = {}
 	_intent = []
 	_relic_state = {}
+	_loans = []
+	_loan_debt = 0
 	for skill in _skills:
 		skill.erase("_cooldown_left")
 	Events.monster_status_changed.emit(self)
@@ -329,7 +336,9 @@ func reset_to_new_round():
 	Events.refresh_ui_for_monster.emit()
 	print("_upgrades", _upgrades, "_initial_moves", _initial_moves)
 	# Rückenwind & Co.: zusätzliche Aktionen für ein paar eigene Züge (Sonder-Verstärkung "extra_moves")
-	_computed_moves = Relics.modify("moves", _initial_moves + _upgrades, self) + roundi(boon_value("extra_moves"))
+	# verliehene Aktionen (Element-Leihgabe) fehlen genau in diesem Zug
+	_computed_moves = maxi(Relics.modify("moves", _initial_moves + _upgrades, self) + roundi(boon_value("extra_moves")) - _loan_debt, 0)
+	_loan_debt = 0
 
 func unlock_skills():
 	for skill in _skills:

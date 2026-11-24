@@ -1292,7 +1292,17 @@ BATTLE_ITEM_CARRIER,Carried by {mon},Getragen von {mon}
 BATTLE_ITEM_WAIT_TURN,Can only be used during {mon}'s turn.,Einsetzen geht nur im Zug von {mon}.
 TIPS_MORE,More tips,Mehr Tipps
 TIPS_TITLE,Tip,Tipp
-BATTLE_ENEMY_ACTIONS,Actions per turn: {count},Aktionen pro Zug: {count}
+BATTLE_MON_CHAINS_SOME,"Jailer: {broken} of {max} chains broken for this species","Kerkermeister: {broken} von {max} Ketten dieser Art gesprengt"
+BATTLE_MON_CHAINS_MAX,"Jailer: all {max} chains broken, this species is fully upgraded","Kerkermeister: alle {max} Ketten gesprengt, diese Art ist voll verbessert"
 BATTLE_MON_NEW,NEW,NEU
 BATTLE_MON_NEW_HINT,You do not own this species yet,Diese Art besitzt du noch nicht
 BATTLE_CATCH_NEW,New!,Neu!
+LOAN_ORB_TOOLTIP,"{element}: drag onto your partner while it is their turn. Their moves gain this element's combo effect (guaranteed) for the next move it changes. Costs this monster 1 action next turn.","{element}: auf den Partner ziehen, wenn er am Zug ist. Seine Fähigkeiten bekommen für die nächste veränderte Fähigkeit den Kombi-Effekt dieses Elements (sicher). Kostet dieses Monster 1 Aktion im nächsten Zug."
+LOAN_BORROWED_TOOLTIP,"Borrowed: {element}. Click to give it back (the partner gets its action back).","Geliehen: {element}. Klicken, um es zurückzugeben (der Partner bekommt seine Aktion zurück)."
+LOAN_LENT_TOOLTIP,{element} is lent to your partner right now.,{element} ist gerade an den Partner verliehen.
+LOAN_DEBT_TOOLTIP,Lent: {count} action(s) missing next turn.,Verliehen: {count} Aktion(en) fehlen im nächsten Zug.
+LOAN_TURN_SKIPPED,Skips turn (actions lent),Setzt aus (Aktionen verliehen)
+SETTINGS_ENEMY_LOANS,Enemies borrow elements (test),Gegner leihen Elemente (Test)
+SETTINGS_ENEMY_LOANS_HINT,"Enemies use the element loan too: an attack borrows an element from a partner and gains its combo effect (guaranteed), the partner loses an action. Shown in the enemy's intent.","Gegner nutzen die Element-Leihgabe auch: Ein Angriff leiht sich ein Element vom Partner und bekommt den Kombi-Effekt (sicher), der Partner verliert eine Aktion. Steht in der Absicht des Gegners."
+LOAN_ACTION_LENT,-1 action,-1 Aktion
+LOAN_INTENT_TOOLTIP,"Borrows {element} from {lender}: {effect}","Leiht {element} von {lender}: {effect}"

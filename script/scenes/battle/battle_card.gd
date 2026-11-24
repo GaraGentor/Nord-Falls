@@ -31,7 +31,16 @@ var hand: ScrollContainer
 var playable := true:
 	set(val):
 		playable = val
-		modulate = Color(1, 1, 1) if playable else Color(0.5, 0.5, 0.5)
+		_apply_modulate()
+
+## Element-Leihgabe: beim Ziehen einer Kugel grau, wenn das Element diese Karte nicht verändert (ElementLoan)
+var loan_dim := false:
+	set(val):
+		loan_dim = val
+		_apply_modulate()
+
+func _apply_modulate() -> void:
+	modulate = Color(1, 1, 1) if playable and not loan_dim else Color(0.5, 0.5, 0.5)
 
 var _press_pos := Vector2.ZERO
 var _pressed := false
@@ -59,18 +68,23 @@ func _ready() -> void:
 func _init_card() -> void:
 	if skill.is_empty():
 		return
+	# Element-Leihgabe (auch die Vorschau beim Ziehen einer Kugel): Karte erscheint im Kombi-Element mit sicherem Effekt.
+	# Wert und Abklingzeit unten bleiben die des Skills selbst.
+	var face := ElementLoan.display_skill(mon, skill) if mon != null else {}
+	if face.is_empty():
+		face = skill
 	if _paper == null:
-		_paper = SkillCardPaper.attach(self, skill)
+		_paper = SkillCardPaper.attach(self, face)
 	else:
-		_paper.set_skill(skill)
+		_paper.set_skill(face)
 	name_label.text = tr(skill.name)
 	SkillCardFace.style_title(name_label)
-	name_label.self_modulate = SkillCardPaper.readable_color(Helper.color_by_type(skill.nature))
+	name_label.self_modulate = SkillCardPaper.readable_color(Helper.color_by_type(face.nature))
 	# Kosten, wie das Monster sie zahlt (Bollwerkmeister verbilligt teure Schilde)
-	_top_row.show_skill(skill, true, Skills.skill_cost(mon, skill) if mon != null else -1)
+	_top_row.show_skill(face, true, Skills.skill_cost(mon, skill) if mon != null else -1)
 	_bottom_row.show_skill(skill, mon)
 	# schlummert der Skill bei seinem Monster: abgeschwächte Werte, Element-Effekt durchgestrichen
-	_set_description(Helper.skill_description(skill, true, mon), Color.WHITE)
+	_set_description(Helper.skill_description(face, true, mon), Color.WHITE)
 
 ## Neuer Text beginnt wieder oben, gleicher Text (z. B. erneutes show_state) scrollt einfach weiter
 func _set_description(text: String, color: Color) -> void:

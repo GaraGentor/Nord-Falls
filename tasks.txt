@@ -43,6 +43,7 @@ Nach Game Finish:
 - Tutorial Final Testen wenn Game Fertig ist
 - Tutorial Text bei Monster Auswahl updaten
 
+- Physische Angriffe etwas weaker balanzieren und mehrere Treffer hinzufügen (für Aschesturm)
 
 PT: 
 > Wenn ich mir die Elemente angucke, check ich da noch nicht sooo viel. Es wird kompliziert, wenn ich Aschesturm besitze und schauen will, wer hiergegen viel schaden macht, dann klick ich mich überall durch. D.h. hier müssen auch die ELement Kombinationen angezeigt werden, die Hart treffen und Weniger schaden machen (nicht nur die Basis elemente)

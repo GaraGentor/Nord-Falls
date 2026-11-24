@@ -60,3 +60,5 @@ signal use_item(carrier, index, target)
 signal item_used(item)
 ## Todes-Totem: ein gefallenes Monster steht wieder auf
 signal monster_revived(mon)
+## Element-Leihgabe (ElementLoan): Leihgaben oder die Vorschau beim Ziehen einer Kugel haben sich geändert
+signal element_loans_changed

@@ -1,0 +1,69 @@
+ELEMENT-LEIHGABE (Idee, wird umgesetzt)
+=======================================
+
+Kurz:
+	Über jedem Monster schweben seine Elemente als kleine Flammenkugeln. Das Monster, das gerade dran ist, kann per
+	Drag & Drop ein Element seines Partners auf sich ziehen. Dann bekommen seine Fähigkeiten dieses Element dazu und
+	damit den Kombi-Effekt (element_effects.gd). Die Fähigkeit selbst bleibt gleich (Schaden, Kosten, CD), nur der
+	Effekt kommt dazu.
+
+Beispiel:
+	Ich: Luft-Monster. Partner: Dampf-Monster (Feuer + Wasser).
+	Mein Luft-Monster ist dran -> ich ziehe die Feuer-Kugel vom Dampf-Monster auf mich.
+	Beim Ziehen sehe ich auf meinen Karten direkt die Vorschau: meine Luft-Skills werden zu Blitz.
+	Lege ich die Kugel ab, bin ich Blitz, bis ich EINE Fähigkeit gespielt habe. Danach geht die Kugel zurück zum Besitzer.
+	Das Dampf-Monster verliert dafür 1 Aktion.
+
+
+1. REGELN
+=========
+	> Nur das Monster, das gerade dran ist, kann sich ein Element leihen, und nur vom Partner im eigenen Team.
+	> Eine Leihgabe gilt für genau EINE Fähigkeit (egal wie viele Aktionen sie kostet). Danach geht das Element zurück.
+	> Preis: Der Partner verliert 1 Aktion in seinem NÄCHSTEN Zug ("Aktionsschuld").
+	> Mehrfach möglich: pro Leihgabe 1 Aktion des Partners, höchstens so oft, wie der Partner Aktionen hat
+	  (3 Aktionen -> 3 Leihgaben -> Partner setzt einen ganzen Zug aus).
+	> Das Element geht zurück, bevor der Partner dran ist. Der Partner verliert sein Element also nie, nur die Aktion.
+	> Die Grundlage ist das Element der FÄHIGKEIT (skill.nature), nicht das des Monsters:
+		Luft-Skill + Feuer      -> Blitz
+		Staub-Skill + Feuer     -> Aschesturm (aus einem Zweier- wird ein Dreier-Effekt)
+		Skill enthält Feuer schon -> keine Änderung (in der Vorschau ausgegraut)
+		Ergebnis wären 4 Elemente -> nicht erlaubt (Chaos bleibt beim Endboss), ausgegraut
+	> Ohne zweites Monster (Start mit einem Ei) gibt es die Mechanik nicht -> Tutorial, sobald das zweite Monster da ist.
+
+
+2. VORSCHLÄGE / BALANCING
+=========================
+	> Mit geliehenem Element löst der Effekt SICHER aus (statt 10-25 % Chance), sonst ist 1 Aktion zu teuer.
+	  Ein Start ohne Extra-Bonus, mit damage_sim.gd prüfen, ob 1 Aktion dafür fair ist.
+	> Teure Skills (2-3 Aktionen) holen mehr aus einer Leihgabe heraus -> gewollt, so bereitet man den großen Schlag vor.
+	> ENTSCHIEDEN: Beide Elemente eines Kombi-Partners dürfen gleichzeitig geliehen werden, PRO ELEMENT 1 AKTION
+	  (z. B. Feuer UND Wasser von Dampf = 2 Aktionen -> ein Luft-Skill wird Gewitter).
+	  Grund: Sonst wären Kombi-Partner immer besser als Grundelement-Partner, und Dreier-Effekte wären zu billig.
+	  Obergrenze: Die Schuld darf nicht höher sein als die Aktionen des Partners in seinem nächsten Zug.
+	> Abbrechen: Kugel zurückziehen, bevor ein Skill gespielt wurde -> Aktion kommt zurück.
+	  Bis zum Zugende nicht benutzt -> Aktion trotzdem weg.
+	> Anzeige: Am Partner sieht man die fehlende Aktion (verblasstes Aktionssymbol).
+	> Gegner-KI kann es auch: sichtbare Kugel zum Partner = Warnung "gleich kommt ein sicherer Effekt" (gut für Bosse).
+
+
+3. UMSETZUNG (Reihenfolge)
+==========================
+	STAND: 1-4 umgesetzt (script/globals/element_loan.gd, script/scenes/battle/element_orbs.gd, battle.gd _plan_loans).
+	Gegner-KI nur mit Einstellung "Gegner leihen Elemente (Test)" (GameSettings.enemy_loans). 5 offen.
+	KI: plant die Leihgabe mit dem Zug (steht in der Absicht als Kugel + "+Blitz"), gewürfelt nach Effekt-Wert
+	(AI_LOAN_GAIN_*) gegen den Wert einer Aktion des Partners. Beim Einlösen wird der angekündigte Zug des Partners gekürzt.
+	Feinheit: Die Leihgabe verbraucht erst die nächste Fähigkeit, die sie VERÄNDERT. Ein Schild davor verbraucht sie nicht.
+	Vulkan als Leihgabe wirkt sicher doppelt -> beim Balancing im Auge behalten.
+
+	1. Logik: Leihgabe-Zustand pro Monster, Aktionsschuld beim Partner, effektives Skill-Element (nature | geliehen),
+	   sichere Auslösung in element_effects.gd, Rückgabe nach dem Skill bzw. am Zugende.
+	2. Drag & Drop der Element-Kugeln mit Vorschau auf den Karten (Element, Effekt, ausgegraute Karten).
+	3. Anzeige der Aktionsschuld am Partner.
+	4. Gegner-KI.
+	5. Balancing mit damage_sim.gd.
+
+
+ENTSCHIEDEN
+===========
+	> Gleiches Element (Feuer auf einen Skill, der Feuer schon enthält): kein Effekt, Skill ausgegraut.
+	> Schild-Skills: kein Effekt, wenn das Element dort nichts bewirkt (ausgegraut).

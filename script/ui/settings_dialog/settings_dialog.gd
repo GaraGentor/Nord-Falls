@@ -99,6 +99,11 @@ func _build(content: VBoxContainer) -> void:
 	easy_check.size_flags_horizontal = SIZE_SHRINK_BEGIN
 	content.add_child(easy_check)
 	content.add_child(_note(tr("SETTINGS_EASY_MODE_HINT"), IronPlate.TEXT_COLOR))
+	# Test-Schalter direkt unter dem Easy Mode: Gegner nutzen die Element-Leihgabe (ElementLoan)
+	var loans_check := make_check(tr("SETTINGS_ENEMY_LOANS"), GameSettings.enemy_loans, GameSettings.set_enemy_loans)
+	loans_check.size_flags_horizontal = SIZE_SHRINK_BEGIN
+	content.add_child(loans_check)
+	content.add_child(_note(tr("SETTINGS_ENEMY_LOANS_HINT"), IronPlate.TEXT_COLOR))
 	var dormant_check := make_check(tr("SETTINGS_DORMANT_SKILLS"), GameSettings.dormant_skills, GameSettings.set_dormant_skills)
 	dormant_check.size_flags_horizontal = SIZE_SHRINK_BEGIN
 	content.add_child(dormant_check)

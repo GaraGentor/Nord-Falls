@@ -129,6 +129,11 @@ func _ready() -> void:
 
 	if State.mons.size() > 1:
 		$GameWindow/HBoxContainer2/MonsterScene1.visible = true
+	# Element-Kugeln neben den eigenen Monstern (Element-Leihgabe, ElementLoan)
+	# Gegner haben keine: ihre Leihgaben stehen in der Absicht (monster_scene.gd _add_loan_tag)
+	for scene in _monster_scenes():
+		if scene.home_mons:
+			scene.add_child(ElementOrbs.new(scene))
 
 	if State.is_final_boss:
 		$UI/HBoxContainer/TextureRect/Catch.visible = false
@@ -254,6 +259,9 @@ func _is_own_turn() -> bool:
 func _on_turn_for(mon: Monster) -> void:
 	active_mon = mon
 	_turn_serial += 1
+	# Element-Leihgabe erst, wenn der eigene Zug wirklich losgeht (unten)
+	ElementLoan.active = null
+	ElementLoan.set_preview(0)
 	# Pfeil rechts neben dem Monster, das am Zug ist
 	for scene in _monster_scenes():
 		scene.set_turn_active(scene.mon == mon and mon != null)
@@ -283,6 +291,8 @@ func _on_turn_for(mon: Monster) -> void:
 	# Mikrofon: in ungeraden Runden fällt jeder Zug aus, dafür heilt sich das Monster etwas.
 	# Gegner behalten ihren angekündigten Zug für die nächste Runde.
 	if BossRelics.silences_round(turn_wheel.round_number):
+		# verliehene Aktionen sind mit dem ausgefallenen Zug abgegolten
+		mon._loan_debt = 0
 		BossRelics.microphone_turn(mon)
 		await get_tree().create_timer(STUNNED_TIME).timeout
 		if not is_inside_tree():
@@ -291,6 +301,7 @@ func _on_turn_for(mon: Monster) -> void:
 		return
 	# Paralyse: betäubt, der Zug endet sofort
 	if ElementEffects.rolls_paralysis(mon):
+		mon._loan_debt = 0
 		await get_tree().create_timer(STUNNED_TIME).timeout
 		if not is_inside_tree():
 			return
@@ -301,8 +312,20 @@ func _on_turn_for(mon: Monster) -> void:
 		return
 	var own_index = State.mons.find(mon)
 	if own_index > -1:
-		# Skillpunkte zu Beginn des eigenen Zuges auffüllen
+		# Skillpunkte zu Beginn des eigenen Zuges auffüllen, verliehene Aktionen (Element-Leihgabe) fehlen
+		var debt: int = mon._loan_debt
 		mon.reset_to_new_round()
+		Events.monster_status_changed.emit(mon)
+		# alle Aktionen verliehen: das Monster setzt diesen Zug aus
+		if debt > 0 and mon._computed_moves <= 0:
+			Events.monster_effect_text.emit(mon, tr("LOAN_TURN_SKIPPED"), ElementOrbs.DEBT_COLOR)
+			await get_tree().create_timer(STUNNED_TIME).timeout
+			if not is_inside_tree():
+				return
+			_end_turn(mon)
+			return
+		ElementLoan.active = mon
+		Events.element_loans_changed.emit()
 		# wer am Zug ist, zeigt das Turn Wheel; die Hand zeigt seine Karten
 		card_hand.show_mon(mon)
 		catch_button.disabled = false
@@ -325,12 +348,20 @@ func _on_turn_for(mon: Monster) -> void:
 		await _relic_overlay.wait_idle()
 		if not is_inside_tree():
 			return
+	# verliehene Aktionen sind mit diesem (gekürzten) Zug abgegolten
+	mon._loan_debt = 0
+	Events.monster_status_changed.emit(mon)
 	_plan_intent(mon)
 	Events.intents_changed.emit()
 	_end_turn(mon)
 
 ## Ende eines Zuges: das nächste Monster ist dran. Vorher stehen die vom Todes-Totem geretteten Monster wieder auf.
 func _end_turn(_mon: Monster) -> void:
+	# nicht verbrauchte Leihgaben gehen zurück, die verliehenen Aktionen bleiben weg
+	ElementLoan.return_all(_mon)
+	ElementLoan.active = null
+	ElementLoan.set_preview(0)
+	Events.element_loans_changed.emit()
 	_revive_pending()
 	turn_wheel.next_mon()
 
@@ -365,14 +396,14 @@ func _refresh_catch_badge() -> void:
 	if catch_button == null:
 		return
 	if _catch_badge == null:
-		_catch_badge = MoveChevrons.make_new_tag(tr("BATTLE_CATCH_NEW"), CATCH_BADGE_FONT_SIZE)
+		_catch_badge = SpeciesMark.make_new_tag(tr("BATTLE_CATCH_NEW"), CATCH_BADGE_FONT_SIZE)
 		catch_button.add_child(_catch_badge)
 		# wie ein Aufkleber schräg oben rechts an der Spirale (das Symbol sitzt mittig im breiteren Knopf)
 		_catch_badge.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP, Control.PRESET_MODE_MINSIZE)
 		_catch_badge.position += CATCH_BADGE_OFFSET
 	var target := currently_selected_enemy_mon
 	_catch_badge.visible = target != null and target.is_alive() and not target._minion \
-		and MoveChevrons.is_new_species(target._name)
+		and SpeciesMark.is_new_species(target._name)
 
 ## nach einem K.O. oder Fang ein noch kämpfendes Monster markieren
 func _reselect_if_gone(gone: Monster) -> void:
@@ -398,6 +429,8 @@ func _exit_tree() -> void:
 	Events.finish_catching.disconnect(_finish_catching)
 	Events.use_item.disconnect(_on_use_item)
 	Monster.shield_expiry = Callable()
+	ElementLoan.active = null
+	ElementLoan.preview_element = 0
 	# Boss-Relikte gelten nur für diesen Kampf
 	BossRelics.active = []
 	BossRelics.banned_until_round = 0
@@ -471,6 +504,9 @@ func _is_valid_target(from: Monster, skill: Dictionary, target: Monster) -> bool
 func _use_skill(from: Monster, card: Dictionary, target: Monster) -> void:
 	# Blitz: die Fähigkeit kann fehlschlagen, Aktion und Abklingzeit sind trotzdem verbraucht
 	if ElementEffects.rolls_fail(from):
+		# eine Leihgabe, die diese Fähigkeit verändert hätte, ist trotzdem verbraucht
+		if ElementLoan.loan_nature(from, card) != 0:
+			ElementLoan.return_all(from)
 		Skills.start_cooldown(card)
 		Events.monster_status_changed.emit(from)
 		return
@@ -481,6 +517,12 @@ func _use_skill(from: Monster, card: Dictionary, target: Monster) -> void:
 		skill = card
 		from._item_marks.erase("awake")
 		Events.monster_effect_text.emit(from, tr("ITEM_WAKE_STONE"), Items.EFFECT_COLOR)
+	# Element-Leihgabe: der Skill bekommt den Kombi-Effekt dazu, der dann sicher auslöst
+	skill = ElementLoan.apply(from, skill)
+	var loaned := ElementEffects.is_loaned(skill)
+	if loaned:
+		var combo := ColorMap.get_combo(ElementEffects.effect_nature(skill))
+		Events.monster_effect_text.emit(from, tr(combo.label) + "!", Color(combo.get("color", "#FFFFFF")))
 	var targets = [target]
 	if Skills.targets_team(skill):
 		targets = _allies_of(target)
@@ -522,6 +564,9 @@ func _use_skill(from: Monster, card: Dictionary, target: Monster) -> void:
 		from.consume_boon("crit_next")
 	ElementEffects.on_cast(from, skill, dealt)
 	Skills.apply_cast_extras(from, skill, dealt)
+	# die Leihgabe ist verbraucht, die Elemente gehen an ihre Besitzer zurück
+	if loaned:
+		ElementLoan.return_all(from)
 	Skills.start_cooldown(card)
 	Events.monster_status_changed.emit(from)
 	# Kampfschrei: angekündigte Einzelangriffe der Gegner gehen jetzt auf den Wirker
@@ -856,7 +901,8 @@ func _plan_intent(emon: Monster) -> void:
 	emon._intent = []
 	if not emon.is_alive() or _opponents_of(emon).is_empty():
 		return
-	var moves: int = Relics.modify("moves", emon._initial_moves, emon) + roundi(emon.boon_value("extra_moves"))
+	# verliehene Aktionen (Element-Leihgabe) fehlen im nächsten Zug
+	var moves: int = Relics.modify("moves", emon._initial_moves, emon) + roundi(emon.boon_value("extra_moves")) - emon._loan_debt
 	var once_used = []
 	while true:
 		var options = emon._skills.filter(func(skill): return _can_plan(emon, skill, moves) and not once_used.has(skill))
@@ -873,6 +919,86 @@ func _plan_intent(emon: Monster) -> void:
 		# sofort eintragen: die folgenden Aktionen sehen diesen Angriff schon bei den Rest-KP
 		emon._intent.append({"skill": picked.skill, "target": picked.target})
 	_order_intent(emon)
+	_plan_loans(emon)
+
+# ─────────────────────────
+# Element-Leihgabe der Gegner (ElementLoan), nur mit GameSettings.enemy_loans.
+# Geplant mit dem Zug: eine Aktion bekommt "loan" (Element) und "lender" (Partner) und zeigt das in der Absicht.
+# Ausgeführt beim Zug (_take_loan): erst dann verliert der Partner seine Aktion, sein angekündigter Zug wird gekürzt.
+
+## Wert des Effekts im Verhältnis zum Wert der Aktion selbst: Zweier-Effekte, Dreier-Effekte, Vulkan (doppelte Wirkung)
+const AI_LOAN_GAIN_DOUBLE := 0.6
+const AI_LOAN_GAIN_TRIPLE := 1.0
+const AI_LOAN_GAIN_VOLCANO := 1.0
+
+func _plan_loans(emon: Monster) -> void:
+	if not GameSettings.enemy_loans:
+		return
+	for action in emon._intent:
+		var best := {}
+		for lender: Monster in _allies_of(emon):
+			if lender == emon or _loan_budget(lender) <= 0:
+				continue
+			for element in ElementGlyph.elements_of(lender._type):
+				var mask := ElementLoan.loan_nature(emon, action.skill, element)
+				if mask == 0:
+					continue
+				var gain := _score_action(emon, action.skill, action.target) * _loan_gain(mask)
+				if best.is_empty() or gain > best.gain:
+					best = {"gain": gain, "lender": lender, "element": element}
+		if best.is_empty():
+			continue
+		# gewürfelt: je mehr der Effekt bringt im Vergleich zu einer Aktion des Partners, desto eher
+		var cost := _action_worth(best.lender)
+		if randf() < best.gain / maxf(best.gain + cost, 0.001):
+			action.loan = best.element
+			action.lender = best.lender
+
+func _loan_gain(mask: int) -> float:
+	if mask == ElementEffects.VOLCANO:
+		return AI_LOAN_GAIN_VOLCANO
+	return AI_LOAN_GAIN_TRIPLE if Map.count_elements(mask) >= 3 else AI_LOAN_GAIN_DOUBLE
+
+## Wie viele Aktionen lender noch verleihen kann (abzüglich schon verliehener und schon eingeplanter)
+func _loan_budget(lender: Monster) -> int:
+	var planned := 0
+	for emon in State.enemy_mons:
+		for action in emon._intent:
+			if action.get("lender") == lender:
+				planned += 1
+	return ElementLoan.moves_per_turn(lender) - lender._loan_debt - planned
+
+## Grob, was eine Aktion des Partners wert ist: seine beste Karte pro Aktion
+func _action_worth(mon: Monster) -> float:
+	var best := AI_MIN_SCORE
+	for skill in mon._skills:
+		if not Skills.can_use(mon, skill) or Skills.is_passive(skill):
+			continue
+		for target in _candidate_targets(mon, skill):
+			best = maxf(best, _score_action(mon, skill, target) / maxi(Skills.skill_cost(mon, skill), 1))
+	return best
+
+## Geplante Leihgabe einlösen, wenn sie noch geht (Partner lebt, hat Aktionen übrig, das Element verändert den Skill)
+func _take_loan(emon: Monster, action: Dictionary) -> void:
+	var lender: Monster = action.get("lender")
+	var element: int = action.get("loan", 0)
+	if lender == null or not lender.is_alive() or not State.enemy_mons.has(lender) or not ElementLoan.can_lend_more(lender):
+		return
+	if ElementLoan.loan_nature(emon, action.skill, element) == 0:
+		return
+	ElementLoan.lend(emon, lender, element)
+	Events.monster_effect_text.emit(lender, tr("LOAN_ACTION_LENT"), ElementOrbs.DEBT_COLOR)
+	_trim_intent(lender)
+
+## Angekündigten Zug kürzen, bis er mit den verbliebenen Aktionen auskommt (hinten fallen Angriffe zuerst weg)
+func _trim_intent(emon: Monster) -> void:
+	var moves: int = Relics.modify("moves", emon._initial_moves, emon) + roundi(emon.boon_value("extra_moves")) - emon._loan_debt
+	var total := 0
+	for action in emon._intent:
+		total += maxi(Skills.skill_cost(emon, action.skill), 1)
+	while total > moves and not emon._intent.is_empty():
+		total -= maxi(Skills.skill_cost(emon, emon._intent.pop_back().skill), 1)
+	Events.intents_changed.emit()
 
 func _can_plan(emon: Monster, skill: Dictionary, moves_left: int) -> bool:
 	return Skills.can_use(emon, skill) and not Skills.is_passive(skill) \
@@ -1019,6 +1145,8 @@ func _ki_action(emon: Monster, action: Dictionary) -> void:
 		target = _pick_target(emon, skill)
 		if target == null:
 			return
+	if action.has("loan"):
+		_take_loan(emon, action)
 	_use_skill(emon, skill, target)
 	skill.scouted = true
 

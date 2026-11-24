@@ -64,15 +64,17 @@ func _play_skill_vfx(_mon: Monster, skill: Dictionary, blocked: float) -> void:
 	if mon != _mon or not is_inside_tree() or Skills.is_passive(skill):
 		return
 	var physical := Skills.is_physical(skill)
+	# mit geliehenem Element (ElementLoan) zeigt der Treffer den Kombi-Effekt
+	var nature := ElementEffects.effect_nature(skill)
 	if Skills.is_damage_skill(skill):
 		if physical:
-			var accent := Color(ColorMap.get_combo(skill.nature).get("color", "#FFFFFF"))
+			var accent := Color(ColorMap.get_combo(nature).get("color", "#FFFFFF"))
 			_spawn_vfx(BattleVfxScript.Kind.SLASH, accent, VFX_HIT_DELAY)
-			if Map.count_elements(skill.nature) > 1:
-				for kind in BattleVfxScript.element_kinds(skill.nature):
+			if Map.count_elements(nature) > 1:
+				for kind in BattleVfxScript.element_kinds(nature):
 					_spawn_vfx(kind, Color.WHITE, VFX_HIT_DELAY + 0.1)
 		else:
-			for kind in BattleVfxScript.element_kinds(skill.nature):
+			for kind in BattleVfxScript.element_kinds(nature):
 				_spawn_vfx(kind, Color.WHITE, VFX_HIT_DELAY)
 		if blocked > 0:
 			_spawn_vfx(BattleVfxScript.Kind.SHIELD_HIT, Color.WHITE, VFX_HIT_DELAY)
@@ -280,6 +282,9 @@ func _can_drop_data(_at_position: Vector2, data) -> bool:
 	if data is Dictionary and data.get("type") == "battle_item":
 		# Items ohne Ziel wirken auch, wenn sie auf einem Monster landen
 		return Items.battle_target_ok(data.item, null if Items.use_of(data.item) == Items.USE_FIELD else mon)
+	# Element-Leihgabe: Kugel des Partners auf das eigene Monster am Zug
+	if data is Dictionary and data.get("type") == "element_orb":
+		return home_mons and ElementLoan.can_borrow(mon, data.lender, data.element)
 	if not (data is Dictionary and data.get("type") == "skill_card"):
 		return false
 	match data.skill.get("target", Enums.CARD_TARGETS.SINGLE_ENEMY):
@@ -296,6 +301,10 @@ func _drop_data(_at_position: Vector2, data) -> void:
 	modulate = Color.WHITE
 	if data.get("type") == "battle_item":
 		Events.use_item.emit(data.carrier, data.index, null if Items.use_of(data.item) == Items.USE_FIELD else mon)
+		return
+	if data.get("type") == "element_orb":
+		ElementLoan.set_preview(0)
+		ElementLoan.borrow(mon, data.lender, data.element)
 		return
 	Events.mouse_event.emit({"action": Enums.MOUSE_ACTION.SELECT_MONSTER, "mon": mon})
 	Events.mouse_event.emit({"action": Enums.MOUSE_ACTION.PLAY_CARD, "skill": data.skill, "mon": mon})
@@ -418,7 +427,9 @@ func _enemy_intent_rows() -> Array:
 			targets = side.filter(func(m: Monster): return m.is_alive())
 		if Skills.is_damage_skill(skill):
 			var items = [ICON_ATTACK if physical else ICON_S_ATTACK, "-%d" % roundi(Skills.calc_damage(mon, target, skill))]
-			rows.append(_icon_row(items + targets, INTENT_COLOR if physical else SPECIAL_COLOR, INTENT_FONT_SIZE))
+			var row := _icon_row(items + targets, INTENT_COLOR if physical else SPECIAL_COLOR, INTENT_FONT_SIZE)
+			_add_loan_tag(row, action)
+			rows.append(row)
 		elif skill.get("effect", "") == "buff":
 			var stat = tr(BUFF_STAT_KEYS.get(skill.buff_stat, "")).trim_suffix(":")
 			rows.append(_icon_row([ICON_BUFF, "+%d%% %s" % [roundi(skill.value), stat]] + targets, BUFF_COLOR, INTENT_FONT_SIZE))
@@ -428,8 +439,32 @@ func _enemy_intent_rows() -> Array:
 		else:
 			# gleiche Rechnung wie Skills.add_shield, Wert kommt vom Wirker
 			var amount = Skills.shield_amount(mon, skill)
-			rows.append(_icon_row([ICON_SHIELD, "+%d" % amount] + targets, INTENT_BLOCKED_COLOR, INTENT_FONT_SIZE))
+			var row := _icon_row([ICON_SHIELD, "+%d" % amount] + targets, INTENT_BLOCKED_COLOR, INTENT_FONT_SIZE)
+			_add_loan_tag(row, action)
+			rows.append(row)
 	return rows
+
+## Geplante Element-Leihgabe (battle.gd _plan_loans): Kugel des Elements und das Kombi-Element, das daraus wird,
+## z. B. "+Blitz". Tooltip: von wem geliehen und was der Effekt macht (sicher).
+func _add_loan_tag(row: HBoxContainer, action: Dictionary) -> void:
+	if not action.has("loan"):
+		return
+	var mask := ElementLoan.loan_nature(mon, action.skill, action.loan)
+	if mask == 0:
+		return
+	var combo := ColorMap.get_combo(mask)
+	var color := Color(combo.get("color", "#FFFFFF"))
+	row.add_child(ElementOrbs.badge(action.loan, INTENT_FONT_SIZE * 1.6))
+	row.add_child(_icon_row(["+" + tr(combo.label)], color, INTENT_FONT_SIZE))
+	var lender: Monster = action.get("lender")
+	var shown: Dictionary = action.skill.duplicate()
+	shown.effect_nature = mask
+	shown._loaned = true
+	row.tooltip_text = tr("LOAN_INTENT_TOOLTIP").format({
+		"element": tr(ColorMap.get_combo(action.loan).label),
+		"lender": Helper.mon_battle_name(lender) if lender != null else "",
+		"effect": Helper.highlight(ElementEffects.skill_effect_text(shown), false)})
+	row.mouse_filter = Control.MOUSE_FILTER_STOP
 
 func _on_gui_input(event: InputEvent) -> void:
 	print(event)
