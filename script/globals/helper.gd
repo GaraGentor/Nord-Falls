@@ -142,17 +142,20 @@ const FULL_BIOME_TYPE_CHANCE := 0.25
 # Wilde Monster nehmen Elemente des aktuellen Bioms an: meist eine Ebene unter dem Biom, ab und zu das Biom selbst.
 # Dampf (Wasser+Feuer) -> Wasser und Feuer, ein paar Dampf. Gewitter (Luft+Wasser+Feuer) -> Dampf, Eis und Blitz,
 # ein paar Gewitter. Einzelelement-Biome ändern nichts, dort tauchen die Arten des Elements selbst auf.
+# Nie mehr als Monster.MAX_ELEMENTS: Im Chaos-Biom tragen die Monster Dreier-Kombis (Sumpf, Vulkan, ...), Chaos hat nur
+# der Endboss als Art-Element.
 func add_biome_element(mon: Monster) -> void:
 	var biome = State.current_biome()
 	var size = Map.count_elements(biome)
 	if size <= 1:
 		return
-	if randf() < FULL_BIOME_TYPE_CHANCE:
-		mon._type |= biome
-		return
+	var target_size: int = size if randf() < FULL_BIOME_TYPE_CHANCE else size - 1
+	target_size = mini(target_size, Monster.MAX_ELEMENTS)
 	var candidates = Enums.MON_TYPES.values().filter(func(element): return biome & element and not mon._type & element)
 	candidates.shuffle()
-	for element in candidates.slice(0, maxi(size - 1 - Map.count_elements(mon._type & biome), 0)):
+	for element in candidates.slice(0, maxi(target_size - Map.count_elements(mon._type & biome), 0)):
+		if Map.count_elements(mon._type) >= Monster.MAX_ELEMENTS:
+			break
 		mon._type |= element
 
 const WILD_SKILL_COUNT := 3

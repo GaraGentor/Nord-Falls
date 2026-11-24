@@ -75,29 +75,29 @@ const ELEM_PASSIVE = { FIRE: 'element_power (Feuer-Angriffe +10 %)', AIR: 'magic
 
 // Meilensteine (Schlüssel wie Skills.MILESTONES in skills.gd). Pro Art drei Plätze, pro Platz wird eine Bedingung
 // gewürfelt [Schlüssel, Gewicht]. Alles gilt innerhalb EINES Runs mit der Art als Start-Monster.
-// Standard: Gewöhnlich/Ungewöhnlich Boss 1 + Boss 3, ab Selten Boss 2 + Boss 4, dritter Platz Chaos
+// Standard: Gewöhnlich/Ungewöhnlich Boss 1 + Boss 3, ab Selten Boss 2 + Boss 4, dritter Platz Dreier-Kombi
 // (bei Gewöhnlich/Ungewöhnlich manchmal nur "ein neues Element"). Den Endboss gibt es als Meilenstein nicht mehr.
 const MILESTONE_SLOTS = {
   low: [
     [['boss_1', 55], ['kills_5', 25], ['finisher_1', 20]],
     [['boss_3', 50], ['kills_10', 15], ['flawless_2', 15], ['bounty', 10], ['finisher_2', 10]],
-    [['chaos', 60], ['new_element', 40]],
+    [['triple', 60], ['new_element', 40]],
   ],
   high: [
     [['boss_2', 50], ['kills_8', 20], ['flawless_1', 15], ['finisher_2', 15]],
     [['boss_4', 50], ['kills_15', 15], ['flawless_3', 10], ['bounty', 15], ['finisher_3', 10]],
-    [['chaos', 100]],
+    [['triple', 100]],
   ],
 };
 // Schwierigkeit: die drei Meilenstein-Skills (schwach -> stark) gehen in dieser Reihenfolge an die Bedingungen
 const MILESTONE_DIFFICULTY = {
   boss_1: 1, finisher_1: 1.5, kills_5: 2, flawless_1: 2, new_element: 2, boss_2: 2, finisher_2: 2.5, kills_8: 2.5,
-  boss_3: 3, flawless_2: 3, kills_10: 3, bounty: 3.5, finisher_3: 3.5, boss_4: 4, kills_15: 4, flawless_3: 4, chaos: 5,
+  boss_3: 3, flawless_2: 3, kills_10: 3, bounty: 3.5, finisher_3: 3.5, boss_4: 4, kills_15: 4, flawless_3: 4, triple: 5,
 };
 const MILESTONE_LABEL = {
   boss_1: 'Boss 1', boss_2: 'Boss 2', boss_3: 'Boss 3', boss_4: 'Boss 4', flawless_1: 'Boss 1 ohne K.O.', flawless_2: 'Boss 2 ohne K.O.',
   flawless_3: 'Boss 3 ohne K.O.', finisher_1: '1x letzter Boss-Treffer', finisher_2: '2x letzter Boss-Treffer', finisher_3: '3x letzter Boss-Treffer',
-  kills_5: '5 K.O.s', kills_8: '8 K.O.s', kills_10: '10 K.O.s', kills_15: '15 K.O.s', bounty: 'Kopfgeld', new_element: 'neues Element', chaos: 'Chaos',
+  kills_5: '5 K.O.s', kills_8: '8 K.O.s', kills_10: '10 K.O.s', kills_15: '15 K.O.s', bounty: 'Kopfgeld', new_element: 'neues Element', triple: 'Dreier-Kombi',
 };
 // kleiner Zufallsgenerator mit Seed (xmur3 + mulberry32), damit jeder Lauf gleich würfelt
 function rng(seedText) {

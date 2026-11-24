@@ -12,7 +12,7 @@ extends Node
 ##   Schlamm: wie Magma (Platzhalter, bis es einen eigenen Effekt gibt)
 ## Dreier-Kombis: Sumpf = Gift bis Kampfende (10 % pro Treffer auf einen Stapel), Aschesturm = wahrer Zusatzschaden
 ## (10 %), Gewitter = Paralyse bis Kampfende, Vulkan = Chance auf doppelte Wirkung.
-## Chaos: höherer Element-Faktor gegen alle Nicht-Chaos-Ziele.
+## Chaos: höherer Element-Faktor gegen alle Nicht-Chaos-Ziele. Hat nur der Endboss (Monster.MAX_ELEMENTS = 3).
 ##
 ## Schlummernde Skills (Skills.effective_skill, "_dormant") haben keinen Effekt, erst wenn sie erwacht sind.
 ## Passive "effect_chance" des Wirkers (z. B. Permafrost) erhöhen die Auslösechance (effect_chance mit from).

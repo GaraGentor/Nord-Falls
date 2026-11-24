@@ -163,8 +163,9 @@ static func pick_potion_element(elements: Array) -> int:
 			return elements[i]
 	return elements.back()
 
+## Team-Monster, die das Element noch trinken können (fehlt ihnen und bleibt bei höchstens Monster.MAX_ELEMENTS)
 static func mons_without(element: int) -> Array:
-	return State.mons.filter(func(mon): return not ColorMap.has_element(mon._type, element))
+	return State.mons.filter(func(mon: Monster): return mon.can_gain_element(element))
 
 ## Flasche im Pixel-Look, die Flüssigkeit hat die Farbe des Elements. Glas und Korken bleiben ungefärbt.
 static func potion_art(element: int) -> Control:

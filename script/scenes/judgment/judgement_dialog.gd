@@ -204,7 +204,7 @@ func _will_gifts(fallen: Monster) -> Array:
 func _accepts(heir: Monster, gift: Dictionary) -> bool:
 	match gift.kind:
 		"element":
-			return not ColorMap.has_element(heir._type, gift.element)
+			return heir.can_gain_element(gift.element)
 		"skill":
 			return not Skills.knows_skill(heir, gift.skill.name)
 	return true
@@ -265,8 +265,10 @@ func _heir_note(heir: Monster, gift: Dictionary) -> String:
 		"element":
 			if _accepts(heir, gift):
 				lines.append("%s %s" % [tr("SHOP_CHANGES_TO"), tr(ColorMap.get_combo(ColorMap.add_element(heir._type, gift.element)).label)])
-			else:
+			elif ColorMap.has_element(heir._type, gift.element):
 				lines.append(tr("LAST_WILL_HAS_ELEMENT"))
+			else:
+				lines.append(tr("ELEMENT_LIMIT_REACHED"))
 		"skill":
 			lines.append(_learn_note(heir, gift.skill))
 	if not State.mons.has(heir):

@@ -115,6 +115,8 @@ class TrainerStamp extends Control:
 		draw_colored_polygon(points, COLOR)
 
 ## Tasche oben links, zeigt die Essenz (wie die Boss Tränen beim Kerkermeister), nur zur Anzeige
+## gezogene Skill-Karte über einem Monster: halb so groß, damit man das Monster noch sieht (RewardDialog.hover_shrink)
+const TRAINER_HOVER_SHRINK := 0.5
 const BAG_SIZE := Vector2(104, 98)
 const ESSENCE_SIZE := Vector2(34, 34)
 const BAG_FONT_SIZE := 24
@@ -208,6 +210,7 @@ var _bag: OpenBag
 var _recommended: Array = []
 
 func _ready() -> void:
+	hover_shrink = TRAINER_HOVER_SHRINK
 	use_scene_layout(background)
 	_title.visible = false
 	_build_sides()

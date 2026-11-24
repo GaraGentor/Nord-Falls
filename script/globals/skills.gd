@@ -891,7 +891,7 @@ const MILESTONES = [
 	{"key": "bounty", "stat": "starter_bounties", "count": 1, "hint": "MILESTONE_HINT_BOUNTY", "source_hint": "MILESTONE_SOURCE_BOUNTY"},
 	# Elemente des Start-Monsters (Tränke, Letzter Wille)
 	{"key": "new_element", "stat": "new_elements", "count": 1, "hint": "MILESTONE_HINT_NEW_ELEMENT", "source_hint": "MILESTONE_SOURCE_NEW_ELEMENT"},
-	{"key": "chaos", "stat": "elements", "count": 4, "hint": "MILESTONE_HINT_CHAOS", "source_hint": "MILESTONE_SOURCE_CHAOS"},
+	{"key": "triple", "stat": "elements", "count": 3, "hint": "MILESTONE_HINT_TRIPLE", "source_hint": "MILESTONE_SOURCE_TRIPLE"},
 ]
 
 func get_milestone(key: String) -> Dictionary:
@@ -1492,9 +1492,10 @@ var reward_skills = [
 	_shield_skill("SKILL_ASH_STORM_ARMOR_SLAG_ARMOR", ASH_STORM, 60.0, 0.8, 3, 3, 3),
 	# Sumpf
 	_shield_skill("SKILL_SWAMP_ARMOR_MANGROVE_WALL", SWAMP, 60.0, 0.8, 3, 3, 3),
-	# Chaos
-	_boon_skill("SKILL_CHAOS_BOON_BATTLE_CRY", CHAOS, "taunt", 1.0, 0, SELF, "def", 2, 2, 1, "SKILL_BOON_TAUNT_DESC"),
-	_passive_skill("SKILL_PASSIVE_PROVOKER", CHAOS, 1.0, 4, "taunt", "SKILL_PASSIVE_TAUNT_DESC"),
+	# Früher Chaos: Spieler-Monster haben höchstens drei Elemente (Monster.MAX_ELEMENTS), Chaos-Skills würden nie wach.
+	# Die Namen bleiben wegen der Spielstände.
+	_boon_skill("SKILL_CHAOS_BOON_BATTLE_CRY", THUNDERSTORM, "taunt", 1.0, 0, SELF, "def", 2, 2, 1, "SKILL_BOON_TAUNT_DESC"),
+	_passive_skill("SKILL_PASSIVE_PROVOKER", SWAMP, 1.0, 4, "taunt", "SKILL_PASSIVE_TAUNT_DESC"),
 ]
 
 # ─────────────────────────

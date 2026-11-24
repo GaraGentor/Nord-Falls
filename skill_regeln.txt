@@ -54,8 +54,8 @@ Kategorien: die vier Kampfwerte (Ang., Sp. Ang., Vert., Sp. Vert.) aus preferred
 Neben-Element ab Selten: "affinity" in monmap.gd, genau EINE Zweier-Kombi mit dem Grundelement der Art (nach Aussehen).
   Ab Legendär zusätzlich "affinity_triple": eine Dreier-Kombi, die das Neben-Element enthält.
 Meilensteine: drei pro Art, alle innerhalb EINES Runs mit der Art als Start-Monster (muss noch im Team sein).
-  Standard Gewöhnlich/Ungewöhnlich: Boss 1 + Boss 3 + Chaos (manchmal statt Chaos nur "ein neues Element").
-  Standard ab Selten: Boss 2 + Boss 4 + Chaos. Der Endboss ist kein Meilenstein mehr.
+  Standard Gewöhnlich/Ungewöhnlich: Boss 1 + Boss 3 + Dreier-Kombi (manchmal statt Dreier-Kombi nur "ein neues Element").
+  Standard ab Selten: Boss 2 + Boss 4 + Dreier-Kombi. Der Endboss ist kein Meilenstein mehr.
   Pro Platz würfelt das Werkzeug (MILESTONE_SLOTS, fester Seed) auch Varianten: x K.O.s durch das Start-Monster,
   Boss n ohne ein einziges K.O. im Run, letzter Treffer in n Boss-Kämpfen, Kopfgeld erlegen (Bounty Hunter).
   Die drei Skills unten (schwach -> stark) gehen nach MILESTONE_DIFFICULTY an die leichteste bis schwerste Bedingung.

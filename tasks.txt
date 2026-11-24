@@ -12,7 +12,7 @@ Tasks:
 > Bei den Element Boni checken, ob die Darstellung davon ausreichen ist (poison, paralyziert etc.)
 > Wide Screen
 > Exit Button bei Shop und Trainer
-> Harter Stopp bei max 3 verschmelzungen? Chaos ist kein Chaos sondern monster mit mehreren Elementen? Nur Boss ist weiterhin Chaos?
+> [erledigt] Harter Stopp bei max 3 Elementen, nur der Endboss ist Chaos, Meilenstein "Dreier-Kombi" statt "Chaos"
 
 
 > Neue Passive für Magier?

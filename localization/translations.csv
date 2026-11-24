@@ -95,6 +95,7 @@ LAST_WILL_PICK_HEIR,Who should inherit {gift}?,Wer soll {gift} erben?
 LAST_WILL_GEMS,Trophies,Trophäen
 LAST_WILL_ELEMENT_DESC,Adds this element to the heir.,Gibt dem Erben dieses Element dazu.
 LAST_WILL_HAS_ELEMENT,Already has it,Hat es schon
+ELEMENT_LIMIT_REACHED,Already has three elements,Hat schon drei Elemente
 LAST_WILL_ALL_HAVE_ELEMENT,All heirs already have it,Alle Erben haben es schon
 LAST_WILL_HEIR_CATCH,New catch: must join team,Neuer Fang: muss ins Team
 LAST_WILL_DECLINE,Leave nothing,Nichts hinterlassen
@@ -278,7 +279,7 @@ MILESTONE_HINT_KILLS_10,"Milestone egg move: with this monster as your starter (
 MILESTONE_HINT_KILLS_15,"Milestone egg move: with this monster as your starter (still in your team): knock out 15 enemies with it in one run (last hit)","Meilenstein-Ei-Attacke: Mit diesem Monster als Start-Monster (es muss noch im Team sein): Schlage damit in einem Run 15 Gegner K.O. (letzter Treffer)"
 MILESTONE_HINT_BOUNTY,"Milestone egg move: with this monster as your starter (still in your team): defeat a bounty monster with it (last hit, catching does not count). While this is open, bounties show up","Meilenstein-Ei-Attacke: Mit diesem Monster als Start-Monster (es muss noch im Team sein): Erlege damit ein Kopfgeld-Monster (letzter Treffer, Fangen zählt nicht). Solange das offen ist, tauchen Kopfgelder auf"
 MILESTONE_HINT_NEW_ELEMENT,"Milestone egg move: with this monster as your starter (still in your team): give it a new element (potion or last will)","Meilenstein-Ei-Attacke: Mit diesem Monster als Start-Monster (es muss noch im Team sein): Gib ihm ein neues Element (Trank oder Letzter Wille)"
-MILESTONE_HINT_CHAOS,"Milestone egg move: with this monster as your starter (still in your team): make it reach Chaos (all four elements)","Meilenstein-Ei-Attacke: Mit diesem Monster als Start-Monster (es muss noch im Team sein): Bring es zu Chaos (alle vier Elemente)"
+MILESTONE_HINT_TRIPLE,"Milestone egg move: with this monster as your starter (still in your team): give it a triple combo (three elements)","Meilenstein-Ei-Attacke: Mit diesem Monster als Start-Monster (es muss noch im Team sein): Bring es zu einer Dreier-Kombi (drei Elemente)"
 ELEMENT_AIR,Air,Luft
 ELEMENT_WATER,Water,Wasser
 ELEMENT_FIRE,Fire,Feuer
@@ -728,7 +729,7 @@ MILESTONE_SOURCE_KILLS_10,"Milestone egg move: as your starter, this monster kno
 MILESTONE_SOURCE_KILLS_15,"Milestone egg move: as your starter, this monster knocked out 15 enemies in one run","Meilenstein-Ei-Attacke: Als Start-Monster hat es in einem Run 15 Gegner K.O. geschlagen"
 MILESTONE_SOURCE_BOUNTY,"Milestone egg move: as your starter, this monster claimed a bounty","Meilenstein-Ei-Attacke: Als Start-Monster hat es ein Kopfgeld erlegt"
 MILESTONE_SOURCE_NEW_ELEMENT,"Milestone egg move: as your starter, this monster gained a new element","Meilenstein-Ei-Attacke: Als Start-Monster hat es ein neues Element bekommen"
-MILESTONE_SOURCE_CHAOS,"Milestone egg move: as your starter, this monster reached Chaos","Meilenstein-Ei-Attacke: Als Start-Monster hat es Chaos erreicht"
+MILESTONE_SOURCE_TRIPLE,"Milestone egg move: as your starter, this monster reached a triple combo","Meilenstein-Ei-Attacke: Als Start-Monster hat es eine Dreier-Kombi erreicht"
 JAILER_TEAR_COUNT_ONE,{amount} Boss Tear,{amount} Boss Träne
 JAILER_TEAR_COUNT_MANY,{amount} Boss Tears,{amount} Boss Tränen
 TREASURE_HINT,Drag all the essence into the bag.,Zieh die ganze Essenz in die Tasche.

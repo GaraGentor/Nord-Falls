@@ -7,14 +7,9 @@ const DRAG_THRESHOLD := 12.0
 ## so weit nach oben gezogen wird aus einem Wischen doch noch Drag & Drop,
 ## damit ein seitliches Zucken am Anfang den Drag nicht verhindert
 const SWIPE_TO_DRAG := 40.0
-## Effekt um die Kosten-Raute: angetippt stärker, als Drag-Vorschau noch stärker
+## Effekt um die Kosten-Raute: angetippt stärker, beim Ziehen noch stärker
 const PRESSED_INTENSITY := 1.6
 const DRAG_INTENSITY := 1.9
-## Drag-Vorschau: Raute etwas größer als auf der Karte, kurz über dem Finger, damit sie sichtbar bleibt
-const DRAG_TOKEN_SCALE := 1.4
-const DRAG_TOKEN_OFFSET := Vector2(0, -24)
-## so lange fliegt die Raute von der Karte zum Finger
-const TOKEN_FLY_TIME := 0.22
 @export var name_label: Label
 ## Beschreibung mit gelb hervorgehobenen Werten (Helper.skill_description rich)
 @export var description_label: RichTextLabel
@@ -118,7 +113,8 @@ func _gui_input(event: InputEvent) -> void:
 			_swiping = false
 			_press_pos = event.global_position
 			hand.stop_fling()
-			# angetippt: der Effekt um die Kosten-Raute lodert stärker
+			# angetippt: der Effekt um die Kosten-Raute lodert stärker (abheben erst, wenn es sicher ein Drag ist,
+			# sonst springt er beim seitlichen Wischen hin und her)
 			if _can_drag():
 				_top_row.set_intensity(PRESSED_INTENSITY)
 		else:
@@ -127,7 +123,7 @@ func _gui_input(event: InputEvent) -> void:
 			_pressed = false
 			_swiping = false
 			if not _dragging:
-				_top_row.set_intensity(1.0)
+				_return_flames()
 		accept_event()
 	elif event is InputEventMouseMotion and _pressed:
 		var delta: Vector2 = event.global_position - _press_pos
@@ -144,7 +140,7 @@ func _gui_input(event: InputEvent) -> void:
 			# Lässt sich die Karte gerade nicht spielen, scrollt jede Bewegung die Hand.
 			if absf(delta.x) > absf(delta.y) * 1.5 or not _can_drag():
 				_swiping = true
-				_top_row.set_intensity(1.0)
+				_return_flames()
 				hand.swipe_by(-delta.x)
 			else:
 				_pressed = false
@@ -158,31 +154,28 @@ func _gui_input(event: InputEvent) -> void:
 func _can_drag() -> bool:
 	return playable and (hand == null or hand.can_play.call())
 
-## Statt der ganzen Karte (die alles verdecken würde) hängt nur die Kosten-Raute mit ihrem Effekt am Finger.
-## Sie fliegt von ihrem Platz auf der Karte zum Finger.
+## Als Drag-Vorschau dient ein leeres Control: Statt einer Kopie wandern die Kosten-Raute und ihr Effekt selbst zur
+## Maus (TopRow.lift_flames), die Karte bleibt blass in der Hand.
 func _start_drag() -> void:
 	if not _can_drag():
-		_top_row.set_intensity(1.0)
+		_return_flames()
 		return
-	var token := _top_row.make_token(DRAG_INTENSITY)
-	token.scale = Vector2.ONE * DRAG_TOKEN_SCALE
-	var holder := Control.new()
-	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	holder.add_child(token)
-	# die Vorschau folgt dem Finger, die Raute startet aber dort, wo sie auf der Karte sitzt
-	token.position = _top_row.badge_center() - get_global_mouse_position()
-	force_drag({"type": "skill_card", "skill": skill, "mon": mon}, holder)
+	var preview := Control.new()
+	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	force_drag({"type": "skill_card", "skill": skill, "mon": mon}, preview)
 	_dragging = true
 	modulate.a = 0.3
-	# die Vorschau ist hier evtl. noch nicht im Baum: Tween am SceneTree, an die Raute gebunden
-	var tween := get_tree().create_tween().bind_node(token)
-	tween.set_ignore_time_scale(true)
-	tween.tween_property(token, "position", DRAG_TOKEN_OFFSET, TOKEN_FLY_TIME) \
-		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_top_row.set_intensity(DRAG_INTENSITY)
+	_top_row.lift_flames()
+
+## Effekt wieder normal und zurück auf die Karte
+func _return_flames() -> void:
+	_top_row.set_intensity(1.0)
+	_top_row.drop_flames()
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_DRAG_END:
 		modulate.a = 1.0
 		if _dragging:
 			_dragging = false
-			_top_row.set_intensity(1.0)
+			_return_flames()

@@ -10,7 +10,7 @@ Gefühl: Monster fangen wie in Pokémon, Run-Struktur und Kartenwahl wie in Slay
 - Start mit einem Ei-Monster auf Stufe 5. Mein Team hat maximal 2 Monster, Gegner 1 bis 3.
 - Fangen statt Töten: Statt anzugreifen kann ich einen Fang versuchen (beendet den Zug).
   Aber nur K.O.s geben Stufen (2 K.O.s = +1 Stufe für das Team). Wer nur fängt, fällt zurück.
-- Biome sind Elementkombinationen: Biom 1 hat ein Element, das letzte ist "Chaos" (alle vier).
+- Biome sind Elementkombinationen: Biom 1 hat ein Element, das letzte ist "Chaos" (alle vier). Monster haben höchstens drei Elemente, Chaos hat nur der Endboss.
 
 
 # 1. STATS
@@ -149,7 +149,7 @@ Dreier-Kombis (Status bis Kampfende):
   Gewitter (Luft+Wasser+Feuer)   Paralyse: 20 % Chance zu Zugbeginn, dass der Zug ausfällt
   Vulkan (Erde+Feuer+Wasser)     15 % Chance, dass der Skill ein zweites Mal wirkt
 
-Chaos (alle vier): nur +0,25 Element-Faktor, kein weiterer Effekt. Soll Ziel für den Endkampf sein.
+Chaos (alle vier): nur +0,25 Element-Faktor, kein weiterer Effekt. Nur der Endboss ist Chaos, alle anderen höchstens Dreier-Kombi.
 
 Gleicher Effekt erneut: frischt auf, stapelt nicht (Ausnahme Gift).
 Karten können Auslösechance (effect_chance) und Stärke (effect_power) ihres Effekts anpassen:
@@ -200,7 +200,7 @@ Herkunft der Skills pro Art:
   - 3 Meilensteine (nur mit der Art als Start-Monster): Boss 1, Boss 5, Spielsieg -> im Neben-Element
   - 3 Kopfgelder: zwei geteilte "Jäger"-Skills des Grundelements, eine einzigartige Trophäe im Neben-Element
   Neben-Element: Jede Art hat genau EIN Kombi-Element, das ihr Grundelement enthält. Legendäre dürfen zwei
-  mischen, Mythische haben Dreier-Kombis und Chaos.
+  mischen, Mythische haben Dreier-Kombis.
 
 
 # 6. PASSIVE

@@ -1,5 +1,4 @@
-> Tipps ansicht anpassen. Ohne Container. Direkt auf dem Schwarzen. Die drei ??? sollen hinter den ganzen Text als Icon liegen. Groß Zentral mittig, sodass auch lägnerer und kürzerer Text die ??? nicht beeinflusst. 
-> Wenn ich im Kampf eine Fähigkeit Dragge. Dann sieht das so schonmal gut aus allerdings möchte ich, dass der Shader alleine zur Maus wandern. Nicht die <SP>. Es soll auch keine Kopie davon entstehen sondern der Shader wandert zur maus. Wenn ich loslasse geht es wieder zurück. 
-> Wenn ich beim Trainer eine Fähigkeit ziehe und über ein Monster bin, soll die fähigkeit 50% schrumpfen.
-
-> 
+> [erledigt] Tipps ansicht anpassen. Ohne Container. Direkt auf dem Schwarzen. Die drei ??? sollen hinter den ganzen Text als Icon liegen. Groß Zentral mittig, sodass auch lägnerer und kürzerer Text die ??? nicht beeinflusst. 
+> [erledigt] Wenn ich im Kampf eine Fähigkeit Dragge. Dann sieht das so schonmal gut aus allerdings möchte ich, dass der Shader alleine zur Maus wandert, auch schon sobald ich klicke. Nicht die <SP>. Es soll auch keine Kopie davon entstehen sondern der Shader wandert zur maus. Wenn ich loslasse geht es wieder zurück. 
+> [erledigt] Wenn ich beim Trainer eine Fähigkeit ziehe und über ein Monster bin, soll die fähigkeit 50% schrumpfen.
+> [erledigt] Wenn ich bei einer Fähigkeit ein "Element Effekt" habe, dann will ich bei den SP das als Icon auch sichtbar haben hinter der Zahl. Erstelle dafür geeignete Icons. Diese Sollen dann mit gedragged werden im Kampf.

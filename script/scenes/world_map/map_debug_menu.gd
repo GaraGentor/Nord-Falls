@@ -1358,7 +1358,7 @@ func _build_final_test_page() -> void:
 		_final_buttons[species] = button
 		grid.add_child(button)
 
-	# Stufe und Chaos-Element
+	# Stufe und Dreier-Kombi
 	var options := HBoxContainer.new()
 	options.add_theme_constant_override("separation", 8)
 	list.add_child(options)
@@ -1371,9 +1371,9 @@ func _build_final_test_page() -> void:
 	options.add_child(_final_level_label)
 	for step in [1, 5]:
 		options.add_child(_make_final_level_button(step))
-	_final_chaos = _make_toggle_button("CHAOS-ELEMENT")
+	_final_chaos = _make_toggle_button("DREIER-KOMBI")
 	_final_chaos.custom_minimum_size = BUTTON_SIZE
-	_final_chaos.tooltip_text = "Beide Monster haben alle vier Elemente (wie am Ende eines Runs)"
+	_final_chaos.tooltip_text = "Beide Monster bekommen zufällige Elemente bis zur Dreier-Kombi (wie am Ende eines Runs)"
 	options.add_child(_final_chaos)
 	_final_chaos.button_pressed = true
 
@@ -1575,13 +1575,15 @@ func _start_final_test() -> void:
 		else BossRelics.random_final_relics()
 	_change_scene(BATTLE_PATH)
 
-## Monster für den Endboss-Test: Chaos-Element (falls gewählt) vor dem Deck, damit alle Karten wach sind.
+## Monster für den Endboss-Test: Dreier-Kombi (falls gewählt) vor dem Deck, damit die Karten dazu wach sind.
 ## Gewählte Fähigkeiten ersetzen das zufällige Deck. Trophäen zählen wie im letzten Biom (DebugSettings.trophy_bonus).
 func _final_test_mon(species: String, trophies: Dictionary, skill_names: Array) -> Monster:
 	var meta: Dictionary = Monmap.mon_metainfos_by_name(species)
 	var mon := Monster.new(_final_level, meta)
 	if _final_chaos.button_pressed:
-		for element in Enums.MON_TYPES.values():
+		var missing: Array = Enums.MON_TYPES.values()
+		missing.shuffle()
+		for element in missing:
 			mon.gain_element(element)
 	if skill_names.is_empty():
 		Helper.roll_wild_skills(mon, meta)

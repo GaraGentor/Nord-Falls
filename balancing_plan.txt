@@ -62,8 +62,9 @@ Dreier-Kombis: Status bis Kampfende
 CHAOS (alle vier Elemente)
   - ist durch element_score gegen alles neutral (keine Schwäche)
   - Chaos-Skills: Element-Faktor +0,25 gegen alle Nicht-Chaos-Ziele
-  - kein weiterer Effekt, damit es nicht zu stark wird. Ziel: Spieler motivieren, Chaos für den
-	Endkampf zu erreichen
+  - kein weiterer Effekt. NUR der Endboss ist Chaos: Monster haben höchstens drei Elemente (Monster.MAX_ELEMENTS),
+	  der Spieler muss sich für einen Dreier-Pfad entscheiden. (Früher: Spieler motivieren, Chaos für den
+	Endkampf zu erreichen)
 
 
 2. TECHNISCHE UMSETZUNG

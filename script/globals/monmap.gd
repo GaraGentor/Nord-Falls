@@ -150,7 +150,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_AIR_PHYS_GUST_KICK",
 			"boss_3": "SKILL_AIR_MAG_TEMPEST_RAY",
-			"chaos": "SKILL_AIR_PHYS_CYCLONE_CLAW",
+			"triple": "SKILL_AIR_PHYS_CYCLONE_CLAW",
 		},
 		"bounty_egg_skills": {"alpha_1": "SKILL_AIR_ARMOR_GALE_WALL"},
 	},
@@ -168,7 +168,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_WATER_PHYS_TIDE_SLAP",
 			"kills_10": "SKILL_WATER_ARMOR_CORAL_WALL",
-			"chaos": "SKILL_WATER_PHYS_BREAKER",
+			"triple": "SKILL_WATER_PHYS_BREAKER",
 		},
 		"bounty_egg_skills": {"alpha_2": "SKILL_WATER_MAG_HYDRO_LANCE"},
 	},
@@ -185,7 +185,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_FIRE_PHYS_FLAME_FIST",
 			"kills_10": "SKILL_FIRE_MAG_SPARK_SHOT",
-			"chaos": "SKILL_FIRE_ARMOR_FLAME_WALL",
+			"triple": "SKILL_FIRE_ARMOR_FLAME_WALL",
 		},
 		"bounty_egg_skills": {"alpha_3": "SKILL_FIRE_PHYS_BLAZE_RUSH"},
 	},
@@ -203,7 +203,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_FIRE_ARMOR_CINDER_PLATE",
 			"bounty": "SKILL_FIRE_PHYS_BLAZE_RUSH",
-			"chaos": "SKILL_FIRE_ARMOR_FLAME_WALL",
+			"triple": "SKILL_FIRE_ARMOR_FLAME_WALL",
 		},
 		"bounty_egg_skills": {"alpha_4": "SKILL_FIRE_MAG_FIREBALL"},
 	},
@@ -239,7 +239,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_EARTH_ARMOR_STONE_SKIN",
 			"boss_4": "SKILL_MUD_ARMOR_MUD_COAT",
-			"chaos": "SKILL_MUD_PHYS_MUD_PUNCH",
+			"triple": "SKILL_MUD_PHYS_MUD_PUNCH",
 		},
 		"bounty_egg_skills": {"alpha_6": "SKILL_MUD_MAG_SLUDGE_SHOT"},
 	},
@@ -257,7 +257,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_MUD_ARMOR_MUD_COAT",
 			"flawless_3": "SKILL_MUD_MAG_SLUDGE_SHOT",
-			"chaos": "SKILL_PASSIVE_BULWARK_MASTER",
+			"triple": "SKILL_PASSIVE_BULWARK_MASTER",
 		},
 		"bounty_egg_skills": {"alpha_7": "SKILL_MUD_PHYS_MUD_PUNCH"},
 	},
@@ -309,7 +309,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_FIRE_ARMOR_CINDER_PLATE",
 			"boss_4": "SKILL_MAGMA_ARMOR_PUMICE_SKIN",
-			"chaos": "SKILL_MAGMA_PHYS_EMBER_KNUCKLE",
+			"triple": "SKILL_MAGMA_PHYS_EMBER_KNUCKLE",
 		},
 		"bounty_egg_skills": {"alpha_10": "SKILL_MAGMA_MAG_LAVA_SPIT"},
 	},
@@ -344,7 +344,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_LIGHTNING_MAG_SPARK_BOLT",
 			"kills_15": "SKILL_LIGHTNING_PHYS_SHOCK_TAP",
-			"chaos": "SKILL_PASSIVE_BATTLE_FERVOR",
+			"triple": "SKILL_PASSIVE_BATTLE_FERVOR",
 		},
 		"bounty_egg_skills": {"alpha_12": "SKILL_LIGHTNING_ARMOR_CHARGE_PLATE"},
 	},
@@ -362,7 +362,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_EARTH_PHYS_BOULDER_BASH",
 			"boss_4": "SKILL_DUST_PHYS_GRIT_PUNCH",
-			"chaos": "SKILL_DUST_ARMOR_SANDSTONE_SKIN",
+			"triple": "SKILL_DUST_ARMOR_SANDSTONE_SKIN",
 		},
 		"bounty_egg_skills": {"alpha_13": "SKILL_DUST_MAG_DUST_SHOT"},
 	},
@@ -380,7 +380,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"finisher_2": "SKILL_WATER_MAG_BUBBLE_BEAM",
 			"kills_15": "SKILL_ICE_MAG_SNOW_FLURRY",
-			"chaos": "SKILL_ICE_PHYS_FROST_BITE",
+			"triple": "SKILL_ICE_PHYS_FROST_BITE",
 		},
 		"bounty_egg_skills": {"alpha_14": "SKILL_ICE_ARMOR_RIME_COAT"},
 	},
@@ -397,7 +397,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_AIR_PHYS_GUST_KICK",
 			"finisher_2": "SKILL_AIR_MAG_WIND_BLADE",
-			"chaos": "SKILL_AIR_ARMOR_GALE_WALL",
+			"triple": "SKILL_AIR_ARMOR_GALE_WALL",
 		},
 		"bounty_egg_skills": {"alpha_15": "SKILL_AIR_PHYS_CYCLONE_CLAW"},
 	},
@@ -449,7 +449,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_AIR_ARMOR_DRAFT_GUARD",
 			"boss_4": "SKILL_DUST_ARMOR_SANDSTONE_SKIN",
-			"chaos": "SKILL_DUST_PHYS_GRIT_PUNCH",
+			"triple": "SKILL_DUST_PHYS_GRIT_PUNCH",
 		},
 		"bounty_egg_skills": {"alpha_18": "SKILL_DUST_MAG_DUST_SHOT"},
 	},
@@ -467,7 +467,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_WATER_MAG_BUBBLE_BEAM",
 			"bounty": "SKILL_ICE_MAG_SNOW_FLURRY",
-			"chaos": "SKILL_ICE_PHYS_FROST_BITE",
+			"triple": "SKILL_ICE_PHYS_FROST_BITE",
 		},
 		"bounty_egg_skills": {"alpha_19": "SKILL_ICE_ARMOR_RIME_COAT"},
 	},
@@ -518,7 +518,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"finisher_1": "SKILL_EARTH_ARMOR_STONE_SKIN",
 			"boss_3": "SKILL_EARTH_PHYS_QUAKE_STOMP",
-			"chaos": "SKILL_EARTH_ARMOR_GRANITE_BASTION",
+			"triple": "SKILL_EARTH_ARMOR_GRANITE_BASTION",
 		},
 		"bounty_egg_skills": {"alpha_22": "SKILL_EARTH_MAG_GEO_PULSE"},
 	},
@@ -536,7 +536,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_FIRE_ARMOR_CINDER_PLATE",
 			"finisher_3": "SKILL_MAGMA_ARMOR_PUMICE_SKIN",
-			"chaos": "SKILL_MAGMA_PHYS_EMBER_KNUCKLE",
+			"triple": "SKILL_MAGMA_PHYS_EMBER_KNUCKLE",
 		},
 		"bounty_egg_skills": {"alpha_23": "SKILL_MAGMA_MAG_LAVA_SPIT"},
 	},
@@ -571,7 +571,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_MUD_PHYS_MUD_PUNCH",
 			"flawless_3": "SKILL_MUD_ARMOR_MUD_COAT",
-			"chaos": "SKILL_PASSIVE_BULWARK_MASTER",
+			"triple": "SKILL_PASSIVE_BULWARK_MASTER",
 		},
 		"bounty_egg_skills": {"alpha_25": "SKILL_MUD_MAG_SLUDGE_SHOT"},
 	},
@@ -606,7 +606,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_AIR_ARMOR_DRAFT_GUARD",
 			"kills_15": "SKILL_LIGHTNING_ARMOR_CHARGE_PLATE",
-			"chaos": "SKILL_LIGHTNING_MAG_SPARK_BOLT",
+			"triple": "SKILL_LIGHTNING_MAG_SPARK_BOLT",
 		},
 		"bounty_egg_skills": {"alpha_27": "SKILL_LIGHTNING_PHYS_SHOCK_TAP"},
 	},
@@ -624,7 +624,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_MAGMA_ARMOR_PUMICE_SKIN",
 			"kills_15": "SKILL_MAGMA_PHYS_EMBER_KNUCKLE",
-			"chaos": "SKILL_PASSIVE_FIRE_POWER",
+			"triple": "SKILL_PASSIVE_FIRE_POWER",
 		},
 		"bounty_egg_skills": {"alpha_28": "SKILL_MAGMA_MAG_LAVA_SPIT"},
 	},
@@ -643,7 +643,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"flawless_1": "SKILL_THUNDERSTORM_MAG_STATIC_RAIN",
 			"bounty": "SKILL_THUNDERSTORM_MAG_CHAIN_LIGHTNING",
-			"chaos": "SKILL_PASSIVE_LIGHTNING_T4",
+			"triple": "SKILL_PASSIVE_LIGHTNING_T4",
 		},
 		"bounty_egg_skills": {"alpha_29": "SKILL_THUNDERSTORM_ARMOR_RAIN_GUARD"},
 	},
@@ -662,7 +662,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_VOLCANO_PHYS_VOLCANIC_FIST",
 			"boss_4": "SKILL_VOLCANO_PHYS_CALDERA_CRUSH",
-			"chaos": "SKILL_PASSIVE_MAGMA_T4",
+			"triple": "SKILL_PASSIVE_MAGMA_T4",
 		},
 		"bounty_egg_skills": {"alpha_30": "SKILL_VOLCANO_ARMOR_LAVA_CRUST"},
 	},
@@ -681,7 +681,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_ASH_STORM_PHYS_SOOT_STRIKE",
 			"boss_4": "SKILL_ASH_STORM_PHYS_CINDER_CLAW",
-			"chaos": "SKILL_PASSIVE_DUST_T4",
+			"triple": "SKILL_PASSIVE_DUST_T4",
 		},
 		"bounty_egg_skills": {"alpha_31": "SKILL_ASH_STORM_ARMOR_CINDER_SHELL"},
 	},
@@ -700,7 +700,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"flawless_1": "SKILL_ASH_STORM_PHYS_SOOT_STRIKE",
 			"flawless_3": "SKILL_ASH_STORM_PHYS_CINDER_CLAW",
-			"chaos": "SKILL_PASSIVE_DUST_T4",
+			"triple": "SKILL_PASSIVE_DUST_T4",
 		},
 		"bounty_egg_skills": {"alpha_33": "SKILL_ASH_STORM_ARMOR_CINDER_SHELL"},
 	},
@@ -735,7 +735,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_MUD_ARMOR_MUD_COAT",
 			"kills_15": "SKILL_MUD_MAG_SLUDGE_SHOT",
-			"chaos": "SKILL_PASSIVE_BULWARK_MASTER",
+			"triple": "SKILL_PASSIVE_BULWARK_MASTER",
 		},
 		"bounty_egg_skills": {"alpha_37": "SKILL_MUD_PHYS_MUD_PUNCH"},
 	},
@@ -754,7 +754,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_SWAMP_MAG_SPORE_PUFF",
 			"boss_4": "SKILL_SWAMP_MAG_MIASMA_CLOUD",
-			"chaos": "SKILL_PASSIVE_MUD_T4",
+			"triple": "SKILL_PASSIVE_MUD_T4",
 		},
 		"bounty_egg_skills": {"alpha_38": "SKILL_SWAMP_PHYS_REED_WHIP"},
 	},
@@ -772,7 +772,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_WATER_PHYS_TIDE_SLAP",
 			"flawless_3": "SKILL_ICE_PHYS_FROST_BITE",
-			"chaos": "SKILL_ICE_ARMOR_RIME_COAT",
+			"triple": "SKILL_ICE_ARMOR_RIME_COAT",
 		},
 		"bounty_egg_skills": {"alpha_39": "SKILL_ICE_MAG_SNOW_FLURRY"},
 	},
@@ -790,7 +790,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_DUST_ARMOR_SANDSTONE_SKIN",
 			"bounty": "SKILL_DUST_PHYS_GRIT_PUNCH",
-			"chaos": "SKILL_PASSIVE_AIR_POWER",
+			"triple": "SKILL_PASSIVE_AIR_POWER",
 		},
 		"bounty_egg_skills": {"alpha_40": "SKILL_DUST_MAG_DUST_SHOT"},
 	},
@@ -824,7 +824,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_AIR_ARMOR_DRAFT_GUARD",
 			"boss_3": "SKILL_AIR_PHYS_GUST_KICK",
-			"chaos": "SKILL_AIR_MAG_TEMPEST_RAY",
+			"triple": "SKILL_AIR_MAG_TEMPEST_RAY",
 		},
 		"bounty_egg_skills": {"alpha_42": "SKILL_AIR_ARMOR_GALE_WALL"},
 	},
@@ -842,7 +842,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_FIRE_MAG_SPARK_SHOT",
 			"bounty": "SKILL_LIGHTNING_MAG_SPARK_BOLT",
-			"chaos": "SKILL_LIGHTNING_PHYS_SHOCK_TAP",
+			"triple": "SKILL_LIGHTNING_PHYS_SHOCK_TAP",
 		},
 		"bounty_egg_skills": {"alpha_43": "SKILL_LIGHTNING_ARMOR_CHARGE_PLATE"},
 	},
@@ -861,7 +861,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_VOLCANO_ARMOR_LAVA_CRUST",
 			"boss_4": "SKILL_VOLCANO_ARMOR_BASALT_FORT",
-			"chaos": "SKILL_PASSIVE_MAGMA_T4",
+			"triple": "SKILL_PASSIVE_MAGMA_T4",
 		},
 		"bounty_egg_skills": {"alpha_45": "SKILL_VOLCANO_PHYS_VOLCANIC_FIST"},
 	},
@@ -895,7 +895,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_WATER_ARMOR_SHELL",
 			"boss_3": "SKILL_WATER_PHYS_TIDE_SLAP",
-			"chaos": "SKILL_WATER_MAG_HYDRO_LANCE",
+			"triple": "SKILL_WATER_MAG_HYDRO_LANCE",
 		},
 		"bounty_egg_skills": {"alpha_47": "SKILL_WATER_ARMOR_CORAL_WALL"},
 	},
@@ -931,7 +931,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_MAGMA_PHYS_EMBER_KNUCKLE",
 			"boss_4": "SKILL_MAGMA_MAG_LAVA_SPIT",
-			"chaos": "SKILL_PASSIVE_FIRE_POWER",
+			"triple": "SKILL_PASSIVE_FIRE_POWER",
 		},
 		"bounty_egg_skills": {"alpha_49": "SKILL_MAGMA_ARMOR_PUMICE_SKIN"},
 	},
@@ -948,7 +948,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"kills_5": "SKILL_EARTH_MAG_PEBBLE_STORM",
 			"kills_10": "SKILL_EARTH_ARMOR_STONE_SKIN",
-			"chaos": "SKILL_EARTH_PHYS_QUAKE_STOMP",
+			"triple": "SKILL_EARTH_PHYS_QUAKE_STOMP",
 		},
 		"bounty_egg_skills": {"alpha_50": "SKILL_EARTH_MAG_GEO_PULSE"},
 	},
@@ -967,7 +967,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"flawless_1": "SKILL_ASH_STORM_MAG_ASH_CYCLONE",
 			"bounty": "SKILL_DUST_MAG_SANDSTORM",
-			"chaos": "SKILL_PASSIVE_DUST_T4",
+			"triple": "SKILL_PASSIVE_DUST_T4",
 		},
 		"bounty_egg_skills": {"alpha_51": "SKILL_ASH_STORM_PHYS_CINDER_CLAW"},
 	},
@@ -985,7 +985,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_ICE_PHYS_FROST_BITE",
 			"boss_4": "SKILL_ICE_MAG_SNOW_FLURRY",
-			"chaos": "SKILL_PASSIVE_WATER_POWER",
+			"triple": "SKILL_PASSIVE_WATER_POWER",
 		},
 		"bounty_egg_skills": {"alpha_52": "SKILL_ICE_ARMOR_RIME_COAT"},
 	},
@@ -1003,7 +1003,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"finisher_2": "SKILL_ICE_PHYS_FROST_BITE",
 			"kills_15": "SKILL_ICE_MAG_SNOW_FLURRY",
-			"chaos": "SKILL_PASSIVE_AIR_POWER",
+			"triple": "SKILL_PASSIVE_AIR_POWER",
 		},
 		"bounty_egg_skills": {"alpha_53": "SKILL_ICE_ARMOR_RIME_COAT"},
 	},
@@ -1021,7 +1021,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_EARTH_PHYS_BOULDER_BASH",
 			"boss_4": "SKILL_DUST_PHYS_GRIT_PUNCH",
-			"chaos": "SKILL_DUST_ARMOR_SANDSTONE_SKIN",
+			"triple": "SKILL_DUST_ARMOR_SANDSTONE_SKIN",
 		},
 		"bounty_egg_skills": {"alpha_54": "SKILL_DUST_MAG_DUST_SHOT"},
 	},
@@ -1039,7 +1039,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"finisher_2": "SKILL_WATER_ARMOR_SHELL",
 			"boss_4": "SKILL_STEAM_ARMOR_STEAM_COAT",
-			"chaos": "SKILL_STEAM_PHYS_HOT_JAB",
+			"triple": "SKILL_STEAM_PHYS_HOT_JAB",
 		},
 		"bounty_egg_skills": {"alpha_55": "SKILL_STEAM_MAG_VAPOR_PUFF"},
 	},
@@ -1057,7 +1057,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_WATER_MAG_BUBBLE_BEAM",
 			"flawless_3": "SKILL_STEAM_MAG_VAPOR_PUFF",
-			"chaos": "SKILL_STEAM_PHYS_HOT_JAB",
+			"triple": "SKILL_STEAM_PHYS_HOT_JAB",
 		},
 		"bounty_egg_skills": {"alpha_57": "SKILL_STEAM_ARMOR_STEAM_COAT"},
 	},
@@ -1074,7 +1074,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_EARTH_PHYS_BOULDER_BASH",
 			"finisher_2": "SKILL_EARTH_MAG_PEBBLE_STORM",
-			"chaos": "SKILL_EARTH_ARMOR_GRANITE_BASTION",
+			"triple": "SKILL_EARTH_ARMOR_GRANITE_BASTION",
 		},
 		"bounty_egg_skills": {"alpha_59": "SKILL_EARTH_PHYS_QUAKE_STOMP"},
 	},
@@ -1092,7 +1092,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"flawless_1": "SKILL_MUD_ARMOR_MUD_COAT",
 			"finisher_3": "SKILL_MUD_MAG_SLUDGE_SHOT",
-			"chaos": "SKILL_PASSIVE_BULWARK_MASTER",
+			"triple": "SKILL_PASSIVE_BULWARK_MASTER",
 		},
 		"bounty_egg_skills": {"alpha_60": "SKILL_MUD_PHYS_MUD_PUNCH"},
 	},
@@ -1110,7 +1110,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_MUD_ARMOR_MUD_COAT",
 			"boss_4": "SKILL_MUD_PHYS_MUD_PUNCH",
-			"chaos": "SKILL_PASSIVE_BULWARK_MASTER",
+			"triple": "SKILL_PASSIVE_BULWARK_MASTER",
 		},
 		"bounty_egg_skills": {"alpha_61": "SKILL_MUD_MAG_SLUDGE_SHOT"},
 	},
@@ -1129,7 +1129,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"flawless_1": "SKILL_THUNDERSTORM_MAG_STATIC_RAIN",
 			"boss_4": "SKILL_THUNDERSTORM_MAG_CHAIN_LIGHTNING",
-			"chaos": "SKILL_PASSIVE_STEAM_T4",
+			"triple": "SKILL_PASSIVE_STEAM_T4",
 		},
 		"bounty_egg_skills": {"alpha_62": "SKILL_THUNDERSTORM_PHYS_SQUALL_STRIKE"},
 	},
@@ -1146,7 +1146,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_AIR_ARMOR_DRAFT_GUARD",
 			"flawless_2": "SKILL_AIR_MAG_WIND_BLADE",
-			"chaos": "SKILL_AIR_PHYS_CYCLONE_CLAW",
+			"triple": "SKILL_AIR_PHYS_CYCLONE_CLAW",
 		},
 		"bounty_egg_skills": {"alpha_63": "SKILL_AIR_ARMOR_GALE_WALL"},
 	},
@@ -1163,7 +1163,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_WATER_ARMOR_SHELL",
 			"flawless_2": "SKILL_WATER_MAG_HYDRO_LANCE",
-			"chaos": "SKILL_WATER_ARMOR_CORAL_WALL",
+			"triple": "SKILL_WATER_ARMOR_CORAL_WALL",
 		},
 		"bounty_egg_skills": {"alpha_64": "SKILL_WATER_PHYS_BREAKER"},
 	},
@@ -1181,7 +1181,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_EARTH_ARMOR_STONE_SKIN",
 			"boss_4": "SKILL_DUST_ARMOR_SANDSTONE_SKIN",
-			"chaos": "SKILL_DUST_PHYS_GRIT_PUNCH",
+			"triple": "SKILL_DUST_PHYS_GRIT_PUNCH",
 		},
 		"bounty_egg_skills": {"alpha_66": "SKILL_DUST_MAG_DUST_SHOT"},
 	},
@@ -1216,7 +1216,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"flawless_1": "SKILL_MAGMA_ARMOR_PUMICE_SKIN",
 			"boss_4": "SKILL_MAGMA_MAG_LAVA_SPIT",
-			"chaos": "SKILL_PASSIVE_FIRE_POWER",
+			"triple": "SKILL_PASSIVE_FIRE_POWER",
 		},
 		"bounty_egg_skills": {"alpha_68": "SKILL_MAGMA_PHYS_EMBER_KNUCKLE"},
 	},
@@ -1235,7 +1235,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_THUNDERSTORM_MAG_STATIC_RAIN",
 			"kills_15": "SKILL_THUNDERSTORM_MAG_CHAIN_LIGHTNING",
-			"chaos": "SKILL_PASSIVE_ICE_T4",
+			"triple": "SKILL_PASSIVE_ICE_T4",
 		},
 		"bounty_egg_skills": {"alpha_69": "SKILL_THUNDERSTORM_ARMOR_RAIN_GUARD"},
 	},
@@ -1252,7 +1252,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"kills_5": "SKILL_EARTH_MAG_PEBBLE_STORM",
 			"flawless_2": "SKILL_EARTH_PHYS_BOULDER_BASH",
-			"chaos": "SKILL_EARTH_ARMOR_GRANITE_BASTION",
+			"triple": "SKILL_EARTH_ARMOR_GRANITE_BASTION",
 		},
 		"bounty_egg_skills": {"alpha_70": "SKILL_EARTH_MAG_GEO_PULSE"},
 	},
@@ -1271,7 +1271,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"flawless_1": "SKILL_THUNDERSTORM_PHYS_STORM_FIST",
 			"boss_4": "SKILL_LIGHTNING_MAG_THUNDERCLAP",
-			"chaos": "SKILL_PASSIVE_LIGHTNING_T4",
+			"triple": "SKILL_PASSIVE_LIGHTNING_T4",
 		},
 		"bounty_egg_skills": {"alpha_71": "SKILL_THUNDERSTORM_ARMOR_STORM_PLATE"},
 	},
@@ -1289,7 +1289,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_AIR_PHYS_GUST_KICK",
 			"boss_4": "SKILL_LIGHTNING_PHYS_SHOCK_TAP",
-			"chaos": "SKILL_LIGHTNING_MAG_SPARK_BOLT",
+			"triple": "SKILL_LIGHTNING_MAG_SPARK_BOLT",
 		},
 		"bounty_egg_skills": {"alpha_72": "SKILL_LIGHTNING_ARMOR_CHARGE_PLATE"},
 	},
@@ -1308,7 +1308,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"finisher_2": "SKILL_SWAMP_PHYS_ROOT_LASH",
 			"bounty": "SKILL_MUD_ARMOR_LANDSLIDE_WALL",
-			"chaos": "SKILL_PASSIVE_MUD_T4",
+			"triple": "SKILL_PASSIVE_MUD_T4",
 		},
 		"bounty_egg_skills": {"alpha_73": "SKILL_SWAMP_MAG_MIASMA_CLOUD"},
 	},
@@ -1325,7 +1325,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"kills_5": "SKILL_AIR_ARMOR_DRAFT_GUARD",
 			"finisher_2": "SKILL_AIR_MAG_TEMPEST_RAY",
-			"chaos": "SKILL_AIR_ARMOR_GALE_WALL",
+			"triple": "SKILL_AIR_ARMOR_GALE_WALL",
 		},
 		"bounty_egg_skills": {"alpha_74": "SKILL_AIR_PHYS_CYCLONE_CLAW"},
 	},
@@ -1342,7 +1342,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_FIRE_PHYS_FLAME_FIST",
 			"bounty": "SKILL_FIRE_MAG_FIREBALL",
-			"chaos": "SKILL_FIRE_PHYS_BLAZE_RUSH",
+			"triple": "SKILL_FIRE_PHYS_BLAZE_RUSH",
 		},
 		"bounty_egg_skills": {"alpha_75": "SKILL_FIRE_ARMOR_FLAME_WALL"},
 	},
@@ -1377,7 +1377,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"flawless_1": "SKILL_LIGHTNING_PHYS_SHOCK_TAP",
 			"boss_4": "SKILL_LIGHTNING_MAG_SPARK_BOLT",
-			"chaos": "SKILL_PASSIVE_STORM_SPIRIT",
+			"triple": "SKILL_PASSIVE_STORM_SPIRIT",
 		},
 		"bounty_egg_skills": {"alpha_77": "SKILL_LIGHTNING_ARMOR_CHARGE_PLATE"},
 	},
@@ -1395,7 +1395,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_EARTH_ARMOR_STONE_SKIN",
 			"finisher_3": "SKILL_MUD_ARMOR_MUD_COAT",
-			"chaos": "SKILL_MUD_MAG_SLUDGE_SHOT",
+			"triple": "SKILL_MUD_MAG_SLUDGE_SHOT",
 		},
 		"bounty_egg_skills": {"alpha_78": "SKILL_MUD_PHYS_MUD_PUNCH"},
 	},
@@ -1414,7 +1414,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_SWAMP_MAG_MIASMA_CLOUD",
 			"boss_4": "SKILL_ICE_MAG_BLIZZARD",
-			"chaos": "SKILL_PASSIVE_ICE_T4",
+			"triple": "SKILL_PASSIVE_ICE_T4",
 		},
 		"bounty_egg_skills": {"alpha_79": "SKILL_SWAMP_PHYS_ROOT_LASH"},
 	},
@@ -1434,7 +1434,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_THUNDERSTORM_PHYS_STORM_FIST",
 			"boss_4": "SKILL_STEAM_PHYS_STEAM_HAMMER",
-			"chaos": "SKILL_PASSIVE_STEAM_T4",
+			"triple": "SKILL_PASSIVE_STEAM_T4",
 		},
 		"bounty_egg_skills": {"alpha_85": "SKILL_THUNDERSTORM_ARMOR_STORM_PLATE"},
 	},
@@ -1451,7 +1451,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_WATER_PHYS_TIDE_SLAP",
 			"boss_3": "SKILL_WATER_MAG_BUBBLE_BEAM",
-			"chaos": "SKILL_WATER_ARMOR_CORAL_WALL",
+			"triple": "SKILL_WATER_ARMOR_CORAL_WALL",
 		},
 		"bounty_egg_skills": {"alpha_80": "SKILL_WATER_PHYS_BREAKER"},
 	},
@@ -1487,7 +1487,7 @@ var mons = [
 		"milestone_egg_skills": {
 			"kills_5": "SKILL_EARTH_MAG_PEBBLE_STORM",
 			"kills_10": "SKILL_EARTH_ARMOR_GRANITE_BASTION",
-			"chaos": "SKILL_EARTH_MAG_GEO_PULSE",
+			"triple": "SKILL_EARTH_MAG_GEO_PULSE",
 		},
 		"bounty_egg_skills": {"alpha_82": "SKILL_EARTH_PHYS_QUAKE_STOMP"},
 	},

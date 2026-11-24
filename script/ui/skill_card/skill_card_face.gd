@@ -62,6 +62,14 @@ const STARS_GAP := 8.0
 const BADGE_FLAME_PAD := Vector4(18, 20, 18, 14)
 ## so schnell wird der Effekt um die Raute stärker bzw. wieder normal (TopRow.set_intensity)
 const INTENSITY_TIME := 0.18
+## Gezogene Kampfkarte (TopRow.lift_flames): Die Kosten-Raute samt Effekt löst sich von der Karte und wandert zur Maus.
+## Ebene über allem, Geschwindigkeit (größer = folgt enger), ab welchem Abstand sie wieder an der Karte hängt,
+## etwas größer als auf der Karte und kurz über dem Finger, damit sie sichtbar bleibt
+const LIFTED_LAYER := 100
+const LIFT_FOLLOW_SPEED := 18.0
+const LIFT_HOME_DISTANCE := 1.0
+const LIFT_SCALE := 1.4
+const LIFT_OFFSET := Vector2(0, -24)
 ## Die Ziffern der Pixelschrift sitzen in ihrer Zeile nicht mittig (bei 24 px etwa 0,75 px zu weit links und
 ## 1,2 px zu tief): so weit wird die Zahl in der Raute verschoben, damit sie optisch mittig steht
 const BADGE_TEXT_SHIFT := Vector2(1, -1)
@@ -100,6 +108,14 @@ class TopRow extends Control:
 	## Stärke des Effekts um die Raute (set_intensity)
 	var _intensity := 1.0
 	var _intensity_tween: Tween
+	## Raute und Effekt hängen gerade in einer Ebene über allem (lift_flames), solange nicht an der Karte
+	var _lift_layer: CanvasLayer
+	## wandern zur Maus (sonst zurück auf die Karte)
+	var _following := false
+	## Platz der Raute auf der Karte (_place), gilt auch, solange sie wandert
+	var _badge_home := Vector2.ZERO
+	## Maßstab der Karte auf dem Bildschirm beim Abheben (die Hand kann skaliert sein)
+	var _home_scale := Vector2.ONE
 
 	func _init() -> void:
 		mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -144,6 +160,13 @@ class TopRow extends Control:
 		if what == NOTIFICATION_ENTER_TREE:
 			# das Papier hängt manche Karte erst nach der Kopfzeile an (battle_card)
 			_queue_place()
+		elif what == NOTIFICATION_EXIT_TREE:
+			# Karte verlässt den Baum (gespielt, Hand neu aufgebaut): Effekt sofort zurück
+			_following = false
+			_attach_flames.call_deferred()
+		elif what == NOTIFICATION_PREDELETE:
+			if _lift_layer != null and is_instance_valid(_lift_layer):
+				_lift_layer.queue_free()
 
 	func _queue_place() -> void:
 		if _place_queued:
@@ -165,10 +188,12 @@ class TopRow extends Control:
 			_sync_flames()
 		var to_local := get_global_transform().affine_inverse() * _paper.get_global_transform()
 		var corner: Vector2 = to_local * Vector2.ZERO
-		cost_badge.position = corner - SkillCardFace.BADGE_SIZE / 2 - Vector2.ONE * SkillCardFace.BADGE_OUTSET
+		_badge_home = corner - SkillCardFace.BADGE_SIZE / 2 - Vector2.ONE * SkillCardFace.BADGE_OUTSET
 		var pad := SkillCardFace.BADGE_FLAME_PAD * _intensity
-		_flames.position = cost_badge.position - Vector2(pad.x, pad.y)
-		var badge_right := cost_badge.position.x + SkillCardFace.BADGE_SIZE.x
+		if _lift_layer == null:
+			cost_badge.position = _badge_home
+			_flames.position = _badge_home - Vector2(pad.x, pad.y)
+		var badge_right := _badge_home.x + SkillCardFace.BADGE_SIZE.x
 		_stars.position = Vector2(badge_right + SkillCardFace.STARS_GAP, corner.y - SkillCardFace.STAR_SIZE / 2)
 		# gedreht liegt die Höhe des Labels waagerecht, die Grundlinie (Ascent) zeigt zur Karte:
 		# sie endet ELEMENT_GAP vor der linken Kante; der erste Buchstabe beginnt unten am sichtbaren Rahmen
@@ -194,46 +219,77 @@ class TopRow extends Control:
 		_intensity = value
 		var pad := SkillCardFace.BADGE_FLAME_PAD * value
 		_flames.size = SkillCardFace.BADGE_SIZE + Vector2(pad.x + pad.z, pad.y + pad.w)
-		_flames.position = cost_badge.position - Vector2(pad.x, pad.y)
+		if _lift_layer == null:
+			_flames.position = _badge_home - Vector2(pad.x, pad.y)
 		_flames_material.set_shader_parameter("pad", pad)
 		_flames_material.set_shader_parameter("rect_size", _flames.size)
 		_flames_material.set_shader_parameter("intensity", value)
 
-	## Kosten-Raute samt Effekt als eigenes Control, die Mitte der Raute liegt im Ursprung.
-	## Dient als Drag-Vorschau der Kampfkarte: statt der ganzen Karte hängt nur die Raute am Finger.
-	func make_token(intensity: float) -> Control:
-		var token := Control.new()
-		token.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		var pad := SkillCardFace.BADGE_FLAME_PAD * intensity
-		var flames := ColorRect.new()
-		var material: ShaderMaterial = _flames_material.duplicate()
-		flames.material = material
-		flames.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		flames.size = SkillCardFace.BADGE_SIZE + Vector2(pad.x + pad.z, pad.y + pad.w)
-		flames.position = -SkillCardFace.BADGE_SIZE / 2 - Vector2(pad.x, pad.y)
-		material.set_shader_parameter("pad", pad)
-		material.set_shader_parameter("rect_size", flames.size)
-		material.set_shader_parameter("intensity", intensity)
-		flames.visible = _flames.visible
-		token.add_child(flames)
-		var badge: MovesBadge = SkillCardFace.MOVES_BADGE.instantiate()
-		badge.custom_minimum_size = SkillCardFace.BADGE_SIZE
-		badge.size = SkillCardFace.BADGE_SIZE
-		badge.position = -SkillCardFace.BADGE_SIZE / 2
-		badge.label.add_theme_font_size_override("font_size", SkillCardFace.INFO_SIZE)
-		badge.label.add_theme_constant_override("outline_size", 4)
-		badge.label.offset_left = SkillCardFace.BADGE_TEXT_SHIFT.x
-		badge.label.offset_right = SkillCardFace.BADGE_TEXT_SHIFT.x
-		badge.label.offset_top = SkillCardFace.BADGE_TEXT_SHIFT.y
-		badge.label.offset_bottom = SkillCardFace.BADGE_TEXT_SHIFT.y
-		badge.label.text = cost_badge.label.text
-		SkillCardFace.ignore_mouse(badge)
-		token.add_child(badge)
-		return token
+	## Gezogene Kampfkarte: Kosten-Raute samt Effekt lösen sich von der Karte und wandern zur Maus, etwas größer
+	## (LIFT_SCALE) und kurz über dem Finger (LIFT_OFFSET). Es sind dieselben Nodes, keine Kopie: Sie hängen solange
+	## in einer eigenen Ebene über allem. drop_flames schickt sie zurück, angekommen hängen sie wieder an der Karte.
+	func lift_flames() -> void:
+		_following = true
+		if _lift_layer != null:
+			return
+		var on_screen := get_global_transform_with_canvas()
+		_home_scale = on_screen.get_scale()
+		# In der eigenen Ebene fehlt das Theme der Szene: die Schrift der Zahl vorher festhalten, sonst käme die
+		# Standardschrift
+		var number: Label = cost_badge.label
+		number.add_theme_font_override("font", number.get_theme_font("font"))
+		_lift_layer = CanvasLayer.new()
+		_lift_layer.layer = SkillCardFace.LIFTED_LAYER
+		get_tree().root.add_child(_lift_layer)
+		for node: Control in [_flames, cost_badge]:
+			var screen_pos: Vector2 = on_screen * node.position
+			remove_child(node)
+			_lift_layer.add_child(node)
+			node.position = screen_pos
+			node.scale = _home_scale
+		set_process(true)
 
-	## Mitte der Kosten-Raute in globalen Koordinaten
-	func badge_center() -> Vector2:
-		return cost_badge.get_global_rect().get_center()
+	func drop_flames() -> void:
+		_following = false
+
+	func _process(delta: float) -> void:
+		if _lift_layer == null:
+			set_process(false)
+			return
+		var weight := 1.0 - exp(-SkillCardFace.LIFT_FOLLOW_SPEED * delta)
+		var goal_scale := _home_scale * (SkillCardFace.LIFT_SCALE if _following else 1.0)
+		var scale_now := cost_badge.scale.lerp(goal_scale, weight)
+		var target: Vector2
+		if _following:
+			# Mitte der Raute knapp über der Maus
+			target = get_viewport().get_mouse_position() + SkillCardFace.LIFT_OFFSET - SkillCardFace.BADGE_SIZE / 2 * scale_now
+		else:
+			target = get_global_transform_with_canvas() * _badge_home
+		var badge_pos := cost_badge.position.lerp(target, weight)
+		var pad := SkillCardFace.BADGE_FLAME_PAD * _intensity
+		cost_badge.scale = scale_now
+		cost_badge.position = badge_pos
+		_flames.scale = scale_now
+		_flames.position = badge_pos - Vector2(pad.x, pad.y) * scale_now
+		if not _following and badge_pos.distance_to(target) < SkillCardFace.LIFT_HOME_DISTANCE:
+			_attach_flames()
+
+	## Raute und Effekt wieder auf die Karte (Effekt ganz hinten, Raute gleich darüber)
+	func _attach_flames() -> void:
+		if _lift_layer == null:
+			return
+		for node: Control in [_flames, cost_badge]:
+			_lift_layer.remove_child(node)
+			add_child(node)
+			node.scale = Vector2.ONE
+		move_child(_flames, 0)
+		move_child(cost_badge, 1)
+		_lift_layer.queue_free()
+		_lift_layer = null
+		cost_badge.position = _badge_home
+		var pad := SkillCardFace.BADGE_FLAME_PAD * _intensity
+		_flames.position = _badge_home - Vector2(pad.x, pad.y)
+		set_process(false)
 
 	## Effekt um die Raute in Art und Farbe der Karte, wie ihn das Papier vorgibt
 	func _sync_flames() -> void:

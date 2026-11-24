@@ -396,7 +396,17 @@ func add_gem(stat: String, bonus: int, count := 1) -> void:
 	_gems[stat] = _gems.get(stat, 0) + bonus
 	_gem_counts[stat] = gem_count(stat) + count
 
+## Höchstens so viele Elemente kann ein Monster haben (Dreier-Kombi). Chaos (alle vier) bleibt dem Endboss vorbehalten,
+## der es schon als Art-Element mitbringt. Spieler müssen sich so für einen Dreier-Pfad entscheiden.
+const MAX_ELEMENTS := 3
+
+## Kann das Monster dieses Element noch annehmen? (noch nicht da und danach höchstens MAX_ELEMENTS)
+func can_gain_element(element: int) -> bool:
+	return not ColorMap.has_element(_type, element) and Map.count_elements(_type | element) <= MAX_ELEMENTS
+
 func gain_element(element: int) -> void:
+	if not can_gain_element(element):
+		return
 	_type = ColorMap.add_element(_type, element)
 	_gained_elements |= element
 	# Meilensteine "neues Element" / "Chaos" des Start-Monsters

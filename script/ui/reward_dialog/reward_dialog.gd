@@ -86,7 +86,8 @@ class RewardCard extends PanelContainer:
 		if reason != "":
 			dialog._show_blocked(reason)
 			return null
-		set_drag_preview(dialog._make_drag_preview(self))
+		dialog._drag_preview = dialog._make_drag_preview(self)
+		set_drag_preview(dialog._drag_preview)
 		dialog._show_targets(self)
 		return drag
 
@@ -145,6 +146,13 @@ var _tooltip: PanelContainer
 var _tooltip_label: Label
 ## gerade gezogene Karte, null wenn nichts gezogen wird
 var _dragged: RewardCard
+## was dabei am Mauszeiger hängt (_make_drag_preview)
+var _drag_preview: Control
+## Gezogene Vorschau über einem Monster: schrumpft auf diesen Anteil (1 = gar nicht), damit das Monster sichtbar
+## bleibt. Der Trainer setzt das (TRAINER_HOVER_SHRINK).
+var hover_shrink := 1.0
+## so schnell schrumpft bzw. wächst die Vorschau dabei
+const HOVER_SHRINK_SPEED := 14.0
 ## dauerhaft sichtbare Ziele (show_fixed_targets)
 var _fixed_targets: Array[DropTarget] = []
 var _drag_hint := ""
@@ -322,7 +330,7 @@ static func show_element_preview(row: Control, mon: Monster, drag := {}) -> void
 		row.remove_child(chip)
 		chip.queue_free()
 	add_element_chip(row, mon._type)
-	if drag.has("element") and not ColorMap.has_element(mon._type, drag.element):
+	if drag.has("element") and mon.can_gain_element(drag.element):
 		var arrow := Label.new()
 		arrow.text = PREVIEW_ARROW
 		arrow.mouse_filter = MOUSE_FILTER_IGNORE
@@ -753,7 +761,7 @@ func _drop_targets() -> Array:
 func _tooltip_anchor(target: DropTarget) -> Rect2:
 	return target.get_global_rect()
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if _dragged == null:
 		return
 	# Ziel unter dem gezogenen Preis hervorheben und seinen Tooltip zeigen
@@ -767,6 +775,11 @@ func _process(_delta: float) -> void:
 			hovered = target
 		if target.stats:
 			target.stats.show_gem_preview(target.mon, _dragged.drag.get("stat", "") if over and not target.locked else "", _dragged.drag.get("bonus", 0))
+	# über einem Monster schrumpft die Vorschau (hover_shrink), sie hängt mittig am Mauszeiger und bleibt dort
+	if is_instance_valid(_drag_preview):
+		var goal := hover_shrink if hovered != null and hovered.mon != null else 1.0
+		var weight := 1.0 - exp(-HOVER_SHRINK_SPEED * delta)
+		_drag_preview.scale = _drag_preview.scale.lerp(Vector2.ONE * goal, weight)
 	var tooltip: Callable = _dragged.drag.get("tooltip", Callable())
 	# zeigt das Ziel die Änderung selbst an, braucht es keinen Tooltip (Skills ändern weder Werte noch Typ)
 	var shows_change: bool = hovered != null and (hovered.stats != null or hovered.type_row != null) and not _dragged.drag.has("skill")
