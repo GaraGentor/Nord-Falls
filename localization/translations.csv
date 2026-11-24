@@ -114,6 +114,7 @@ JUDGEMENT_REPLACE,Forget {skill},{skill} vergessen
 BATTLE_UNKNOWN_SKILL,? (Tier {tier}),? (Stufe {tier})
 BATTLE_UNKNOWN_SKILL_HINT,Element and tier are known. The details are revealed once the enemy uses this move or you catch it.,"Element und Stufe sind bekannt. Die Details zeigen sich, sobald der Gegner die Attacke einsetzt oder du ihn fängst."
 LEVEL_UP_TITLE,Level Up!,Level Up!
+LEVEL_UP_LEVELS,Lv. {from} -> {to},Lv. {from} -> {to}
 LEVEL_UP_LOOT_HINT,"Drag your loot into the bag, or it stays behind.","Zieh die Beute in die Tasche, sonst bleibt sie liegen."
 KEY_NAME,Key,Schlüssel
 KEY_DESC,An old key. It opens one treasure chest.,Ein alter Schlüssel. Er öffnet eine Schatzkiste.
@@ -1315,6 +1316,15 @@ SKILL_AIR_BUFF_BATTLE_FRENZY,Battle Frenzy,Kampfrausch
 SKILL_AIR_BUFF_TAILWIND,Tailwind,Rückenwind
 SKILL_FIRE_BUFF_EMBER_HEAT,Ember Heat,Gluthitze
 SKILL_EARTH_BUFF_EXTRA_CLUB,Extra Club,Zusatzkeule
+SKILL_FIRE_BUFF_SPARK_STRIKE,Spark Strike,Funkenschlag
+SKILL_FIRE_BUFF_HEAT_VEIL,Heat Veil,Hitzeschleier
+SKILL_WATER_BUFF_WAVE_SHIELD,Wave Shield,Wellenschild
+SKILL_WATER_BUFF_CURRENT,Current,Strömung
+SKILL_EARTH_BUFF_STONE_SKIN,Stone Skin,Steinhaut
+SKILL_EARTH_BUFF_MOMENTUM,Momentum,Wucht
+SKILL_AIR_BUFF_GUST,Gust,Böe
+SKILL_AIR_BUFF_UPDRAFT,Updraft,Aufwind
+SKILL_AIR_BUFF_WIND_MANTLE,Wind Mantle,Windmantel
 SKILL_CHAOS_BUFF_STRONG_SHIELD,Strong Shield,Starker Schild
 SKILL_CHAOS_BUFF_GOLDEN_SHIELD,Golden Shield,Goldener Schild
 SKILL_CHAOS_BUFF_BUDDHA_FIST,Buddha's Fist,Buddhas Faust
@@ -1334,9 +1344,10 @@ SKILL_PASSIVE_SWAMP_FIELD,Swamp Field,Sumpffeld
 SKILL_PASSIVE_DENSE_CLOUDS,Dense Clouds,Dichte Wolken
 SKILL_PASSIVE_AFTERBURN,Afterburn,Nachbrennen
 SKILL_FLAT_BUFF_DESC,[hl]+{value} {stat}[/hl] (fixed) for an ally for [hl]{buff_turns} of its turns[/hl],[hl]+{value} {stat}[/hl] (fester Wert) für ein eigenes Monster für [hl]{buff_turns} seiner Züge[/hl]
+SKILL_FLAT_BUFF_LEVEL_DESC,"[hl]+{value} {stat}[/hl] ({per_level} per level of the user) for an ally for [hl]{buff_turns} of its turns[/hl]","[hl]+{value} {stat}[/hl] ({per_level} pro Stufe des Anwenders) für ein eigenes Monster für [hl]{buff_turns} seiner Züge[/hl]"
 SKILL_FLAT_BUFF_SHIELD_DESC,An ally's shields are [hl]{value} stronger[/hl] for [hl]{buff_turns} of its turns[/hl],Die Schilde eines eigenen Monsters sind für [hl]{buff_turns} seiner Züge[/hl] um [hl]{value}[/hl] stärker
 SKILL_FLAT_BUFF_DAMAGE_DESC,An ally's attacks (physical and magical) deal [hl]+{value} damage[/hl] for [hl]{buff_turns} of its turns[/hl],Die Angriffe eines eigenen Monsters (physisch und magisch) machen für [hl]{buff_turns} seiner Züge[/hl] [hl]+{value} Schaden[/hl]
-SKILL_BOON_EXTRA_ACTION_DESC,The user gets [hl]+{value} action[/hl] right away (never more than [hl]4 actions[/hl]),Der Wirker bekommt sofort [hl]+{value} Aktion[/hl] (nie mehr als [hl]4 Aktionen[/hl])
+SKILL_BOON_EXTRA_ACTION_DESC,"An own monster gets [hl]+{value} action[/hl]: right away on itself, otherwise in its next turn (never more than [hl]4 actions[/hl])","Ein eigenes Monster bekommt [hl]+{value} Aktion[/hl]: auf sich selbst sofort, sonst im nächsten Zug (nie mehr als [hl]4 Aktionen[/hl])"
 SKILL_BOON_DOUBLE_HIT_DESC,An ally's [hl]physical attacks hit a second time[/hl] until the end of its [hl]next turn[/hl],"Die [hl]physischen Angriffe[/hl] eines eigenen Monsters [hl]treffen ein zweites Mal[/hl], bis zum Ende seines [hl]nächsten Zuges[/hl]"
 SKILL_DEBUFF_MOVES_DESC,The target has [hl]at most {value} action[/hl] per turn for [hl]{buff_turns} of its turns[/hl],Das Ziel hat für [hl]{buff_turns} seiner Züge[/hl] [hl]höchstens {value} Aktion[/hl] pro Zug
 SKILL_DEBUFF_FLAT_DESC,Target: [hl]-{value} {stat}[/hl] (fixed) for [hl]{buff_turns} of its turns[/hl],Ziel: [hl]-{value} {stat}[/hl] (fester Wert) für [hl]{buff_turns} seiner Züge[/hl]

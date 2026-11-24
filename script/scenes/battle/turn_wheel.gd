@@ -16,6 +16,8 @@ const OWN_COLOR := Color("#1f5a33")
 const OWN_PULSE_COLOR := Color("#5fcf80")
 const ENEMY_COLOR := Color("#6b1030")
 const ENEMY_PULSE_COLOR := Color("#e0304f")
+## Alpha-Monster (Kopfgeld, Monster._bounty) leuchten auf dem Rad mit goldenem Hintergrund
+const ALPHA_BG_COLOR := Color(0.93, 0.74, 0.28, 0.95)
 const ROTATE_DURATION := 0.45
 const ACTIVE_SCALE := 1.35
 const INACTIVE_ALPHA := 0.7
@@ -203,7 +205,7 @@ func _create_icon(mon: Monster) -> Control:
 	icon.size = Vector2(wheel.icon_size, wheel.icon_size)
 	icon.pivot_offset = icon.size / 2
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.03, 0.01, 0.02, 0.92)
+	style.bg_color = ALPHA_BG_COLOR if mon._bounty != "" else Color(0.03, 0.01, 0.02, 0.92)
 	style.set_corner_radius_all(int(wheel.icon_size / 2))
 	icon.add_theme_stylebox_override("panel", style)
 

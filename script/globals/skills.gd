@@ -253,10 +253,20 @@ func apply_debuff(props):
 			ElementEffects.inflict(mon, skill.status, props.from, maxi(roundi(skill.value), 1))
 
 # ─────────────────────────
-# Mut & Wille (effect "boon", boon "extra_action"): der Wirker bekommt sofort value Aktionen dazu, aber nicht über
-# Monster.MAX_GRANTED_MOVES. Gegner rechnen die Aktion schon beim Planen ihres Zuges mit (battle.gd _plan_intent).
+# Mut & Wille (effect "boon", boon "extra_action"), auf jedes eigene Monster spielbar:
+# auf sich selbst gibt es sofort value Aktionen dazu, aber nicht über Monster.MAX_GRANTED_MOVES.
+# Auf einen Partner gibt es die Aktionen in dessen nächstem Zug (Sonder-Verstärkung "extra_moves", wie der Wetzstein).
+# Gegner rechnen die Aktion schon beim Planen mit (battle.gd _plan_intent): für sich selbst im eigenen Zug,
+# für einen Partner plant battle.gd dessen Zug sofort neu (die Verstärkung hält dort nur bis zu dessen Zugbeginn).
 func grant_action(props):
 	var mon: Monster = props.mon
+	var from: Monster = props.get("from", mon)
+	if mon != from:
+		var value := roundi(props.skill.value)
+		mon.add_boon("extra_moves", value, 2 if State.mons.has(mon) else 1)
+		Events.status_vfx.emit(mon, "buff")
+		Events.monster_effect_text.emit(mon, tr("EFFECT_TEXT_EXTRA_ACTION").format({"value": value}), ElementEffects.ERUPTION_COLOR)
+		return
 	if not State.mons.has(mon):
 		return
 	var before: int = mon._computed_moves
@@ -264,9 +274,9 @@ func grant_action(props):
 	if mon._computed_moves > before:
 		Events.monster_effect_text.emit(mon, tr("EFFECT_TEXT_EXTRA_ACTION").format({"value": mon._computed_moves - before}), ElementEffects.ERUPTION_COLOR)
 
-## Aktionen nach einer Karte, die beim Planen eines Zuges Aktionen dazugibt (Mut & Wille), gedeckelt wie grant_action
-func granted_moves(skill: Dictionary, moves: int) -> int:
-	if skill.get("boon", "") != "extra_action":
+## Aktionen nach einer Karte, die beim Planen eines Zuges Aktionen dazugibt (Mut & Wille auf sich selbst), gedeckelt wie grant_action
+func granted_moves(skill: Dictionary, moves: int, on_self: bool = true) -> int:
+	if skill.get("boon", "") != "extra_action" or not on_self:
 		return moves
 	return maxi(moves, mini(moves + roundi(skill.value), Monster.MAX_GRANTED_MOVES))
 
@@ -730,19 +740,31 @@ func dormant_power(mon: Monster, skill: Dictionary) -> float:
 func effective_skill(mon: Monster, skill: Dictionary) -> Dictionary:
 	if skill.get("_effective", false) or skill.get("_dormant", false):
 		return skill
-	if not is_dormant(mon, skill):
+	var leveled := skill.has("per_level") and mon != null
+	if not leveled and not is_dormant(mon, skill):
 		return skill
 	var copy := skill.duplicate()
 	copy._effective = true
+	if leveled:
+		copy.value = level_value(mon, skill)
+	if not is_dormant(mon, skill):
+		return copy
 	copy._dormant = true
 	copy.nature = skill.nature & mon._type
 	var power := dormant_power(mon, skill)
-	var value = skill.get("value")
+	var value = copy.get("value")
 	if value is float or value is int:
 		copy.value = maxf(roundf(value * power), 1.0)
 	if skill.has("scaling"):
 		copy.scaling = snappedf(skill.scaling * power, 0.01)
 	return copy
+
+## Wert eines Skills mit "per_level" (Gluthitze, Zusatzkeule, Rückenwind): per_level x Stufe des Anwenders,
+## mindestens 1. Ohne Monster bleibt "value" (der Wert auf Startstufe 5) stehen.
+func level_value(mon: Monster, skill: Dictionary) -> float:
+	if mon == null or not skill.has("per_level"):
+		return float(skill.get("value", 0.0))
+	return maxf(roundf(skill.per_level * mon._level), 1.0)
 
 # Einzelne Elemente, die dem Monster für diesen Skill noch fehlen (zum Einsetzen bzw. zum Erwachen).
 func missing_elements(mon: Monster, skill: Dictionary) -> Array:
@@ -1474,7 +1496,7 @@ var buff_skills = [
 	_buff_skill("SKILL_FIRE_BUFF_ATK", FIRE, "atk", 25.0, 2, 2, 2, 0),
 	_buff_skill("SKILL_FIRE_BUFF_S_ATK", FIRE, "s_atk", 25.0, 2, 2, 2, 0),
 	_flat_buff_skill("SKILL_FIRE_BUFF_BATTLE_FRENZY", FIRE, "damage", 8.0, 2, 2, 3, 0, "SKILL_FLAT_BUFF_DAMAGE_DESC"),
-	_flat_buff_skill("SKILL_FIRE_BUFF_EMBER_HEAT", FIRE, "s_atk", 20.0, 1, 2, 1, 0, "SKILL_FLAT_BUFF_DESC"),
+	_with(_flat_buff_skill("SKILL_FIRE_BUFF_EMBER_HEAT", FIRE, "s_atk", 5.0, 1, 2, 1, 0, "SKILL_FLAT_BUFF_LEVEL_DESC"), {"per_level": 1.0}),
 	_team_buff_skill("SKILL_FIRE_BUFF_TEAM_S_ATK", FIRE, "s_atk", 12.0, 2, 3, 3, 0),
 	# Wasser
 	_buff_skill("SKILL_WATER_BUFF_ATK", WATER, "atk", 25.0, 2, 2, 2, 0),
@@ -1488,7 +1510,7 @@ var buff_skills = [
 	_buff_skill("SKILL_EARTH_BUFF_S_ATK", EARTH, "s_atk", 25.0, 2, 2, 2, 0),
 	_flat_buff_skill("SKILL_EARTH_BUFF_EXTRA_SHIELD", EARTH, "shield", 12.0, 2, 2, 3, 0, "SKILL_FLAT_BUFF_SHIELD_DESC"),
 	_flat_buff_skill("SKILL_EARTH_BUFF_BATTLE_FRENZY", EARTH, "damage", 8.0, 2, 2, 3, 0, "SKILL_FLAT_BUFF_DAMAGE_DESC"),
-	_flat_buff_skill("SKILL_EARTH_BUFF_EXTRA_CLUB", EARTH, "atk", 20.0, 1, 2, 1, 0, "SKILL_FLAT_BUFF_DESC"),
+	_with(_flat_buff_skill("SKILL_EARTH_BUFF_EXTRA_CLUB", EARTH, "atk", 5.0, 1, 2, 1, 0, "SKILL_FLAT_BUFF_LEVEL_DESC"), {"per_level": 1.0}),
 	_team_buff_skill("SKILL_EARTH_BUFF_TEAM_ATK", EARTH, "atk", 12.0, 2, 3, 3, 0),
 	_team_buff_skill("SKILL_EARTH_BUFF_TEAM_DEF", EARTH, "def", 12.0, 2, 3, 3, 0),
 	_team_buff_skill("SKILL_EARTH_BUFF_TEAM_S_ATK", EARTH, "s_atk", 12.0, 2, 3, 3, 0),
@@ -1497,7 +1519,7 @@ var buff_skills = [
 	_buff_skill("SKILL_AIR_BUFF_DEF", AIR, "def", 25.0, 2, 2, 2, 0),
 	_buff_skill("SKILL_AIR_BUFF_S_ATK", AIR, "s_atk", 25.0, 2, 2, 2, 0),
 	_flat_buff_skill("SKILL_AIR_BUFF_BATTLE_FRENZY", AIR, "damage", 8.0, 2, 2, 3, 0, "SKILL_FLAT_BUFF_DAMAGE_DESC"),
-	_flat_buff_skill("SKILL_AIR_BUFF_TAILWIND", AIR, "speed", 10.0, 1, 2, 1, 0, "SKILL_FLAT_BUFF_DESC"),
+	_with(_flat_buff_skill("SKILL_AIR_BUFF_TAILWIND", AIR, "speed", 3.0, 1, 2, 1, 0, "SKILL_FLAT_BUFF_LEVEL_DESC"), {"per_level": 0.5}),
 	# Chaos
 	_with(_action_skill("SKILL_CHAOS_BOON_COURAGE", CHAOS, 1.0, 3, 3, 0), {"universal": true}),
 	_with(_buff_skill("SKILL_CHAOS_BUFF_GOLDEN_SHIELD", CHAOS, "def", 100.0, 2, 4, 3, 1), {"universal": true, "trainer": false}),
@@ -1520,16 +1542,21 @@ var debuff_skills = []
 var milestone_skills = [
 	# Feuer
 	_flat_buff_skill("SKILL_FIRE_BUFF_FIGHTING_SPIRIT", FIRE, "damage", 5.0, 1, 1, 2, 0, "SKILL_FLAT_BUFF_DAMAGE_DESC"),
+	_flat_buff_skill("SKILL_FIRE_BUFF_SPARK_STRIKE", FIRE, "damage", 9.0, 1, 1, 3, 0, "SKILL_FLAT_BUFF_DAMAGE_DESC"),
 	_with(_passive_skill("SKILL_PASSIVE_FIRE_POWER", FIRE, 10.0, 3, "element_power", "SKILL_PASSIVE_ELEMENT_POWER_DESC"), {"passive_element": FIRE}),
 	# Wasser
-	_flat_buff_skill("SKILL_WATER_BUFF_DOUBLE_SHIELD", WATER, "shield", 8.0, 1, 1, 2, 0, "SKILL_FLAT_BUFF_SHIELD_DESC"),
 	_flat_buff_skill("SKILL_WATER_BUFF_FIGHTING_SPIRIT", WATER, "damage", 5.0, 1, 1, 2, 0, "SKILL_FLAT_BUFF_DAMAGE_DESC"),
+	_flat_buff_skill("SKILL_WATER_BUFF_CURRENT", WATER, "damage", 6.0, 2, 1, 4, 0, "SKILL_FLAT_BUFF_DAMAGE_DESC"),
+	_flat_buff_skill("SKILL_WATER_BUFF_WAVE_SHIELD", WATER, "shield", 9.0, 1, 1, 3, 0, "SKILL_FLAT_BUFF_SHIELD_DESC"),
 	# Erde
-	_flat_buff_skill("SKILL_EARTH_BUFF_DOUBLE_SHIELD", EARTH, "shield", 8.0, 1, 1, 2, 0, "SKILL_FLAT_BUFF_SHIELD_DESC"),
 	_flat_buff_skill("SKILL_EARTH_BUFF_FIGHTING_SPIRIT", EARTH, "damage", 5.0, 1, 1, 2, 0, "SKILL_FLAT_BUFF_DAMAGE_DESC"),
+	_flat_buff_skill("SKILL_EARTH_BUFF_MOMENTUM", EARTH, "damage", 6.0, 2, 1, 4, 0, "SKILL_FLAT_BUFF_DAMAGE_DESC"),
+	_flat_buff_skill("SKILL_EARTH_BUFF_STONE_SKIN", EARTH, "shield", 9.0, 1, 1, 3, 0, "SKILL_FLAT_BUFF_SHIELD_DESC"),
 	# Luft
-	_flat_buff_skill("SKILL_AIR_BUFF_DOUBLE_SHIELD", AIR, "shield", 8.0, 1, 1, 2, 0, "SKILL_FLAT_BUFF_SHIELD_DESC"),
 	_flat_buff_skill("SKILL_AIR_BUFF_FIGHTING_SPIRIT", AIR, "damage", 5.0, 1, 1, 2, 0, "SKILL_FLAT_BUFF_DAMAGE_DESC"),
+	_flat_buff_skill("SKILL_AIR_BUFF_GUST", AIR, "damage", 9.0, 1, 1, 3, 0, "SKILL_FLAT_BUFF_DAMAGE_DESC"),
+	_flat_buff_skill("SKILL_AIR_BUFF_UPDRAFT", AIR, "damage", 6.0, 2, 1, 4, 0, "SKILL_FLAT_BUFF_DAMAGE_DESC"),
+	_flat_buff_skill("SKILL_AIR_BUFF_WIND_MANTLE", AIR, "shield", 6.0, 2, 1, 3, 0, "SKILL_FLAT_BUFF_SHIELD_DESC"),
 	_passive_skill("SKILL_PASSIVE_AIR_POWER", AIR, 10.0, 3, "magic_power", "SKILL_PASSIVE_MAGIC_POWER_DESC"),
 	# Dampf
 	_shield_skill("SKILL_STEAM_ARMOR_STEAM_COAT", STEAM, 18.0, 0.35, 2, 1, 1),
@@ -1725,6 +1752,13 @@ var ascension_skills = []
 var draft_skills = [
 	# Feuer
 	_flat_buff_skill("SKILL_FIRE_BUFF_DOUBLE_SHIELD", FIRE, "shield", 8.0, 1, 1, 2, 0, "SKILL_FLAT_BUFF_SHIELD_DESC"),
+	_flat_buff_skill("SKILL_FIRE_BUFF_HEAT_VEIL", FIRE, "shield", 6.0, 2, 1, 3, 0, "SKILL_FLAT_BUFF_SHIELD_DESC"),
+	# Wasser
+	_flat_buff_skill("SKILL_WATER_BUFF_DOUBLE_SHIELD", WATER, "shield", 8.0, 1, 1, 2, 0, "SKILL_FLAT_BUFF_SHIELD_DESC"),
+	# Erde
+	_flat_buff_skill("SKILL_EARTH_BUFF_DOUBLE_SHIELD", EARTH, "shield", 8.0, 1, 1, 2, 0, "SKILL_FLAT_BUFF_SHIELD_DESC"),
+	# Luft
+	_flat_buff_skill("SKILL_AIR_BUFF_DOUBLE_SHIELD", AIR, "shield", 8.0, 1, 1, 2, 0, "SKILL_FLAT_BUFF_SHIELD_DESC"),
 	# Sumpf
 	_shield_skill("SKILL_SWAMP_ARMOR_MOSS_HIDE", SWAMP, 22.0, 0.55, 3, 1, 1),
 ]
@@ -1911,7 +1945,7 @@ func _action_skill(skill_name: String, nature: int, value: float, tier: int, coo
 		"buff_turns": 0,
 		"icon_stat": "speed",
 		"description": "SKILL_BOON_EXTRA_ACTION_DESC",
-		"target": Enums.CARD_TARGETS.SELF,
+		"target": Enums.CARD_TARGETS.SINGLE_FRIEND,
 		"scouted": false,
 		"tier": tier,
 		"shop_cost": {"min": 5 * tier, "max": 15 * tier},

@@ -193,6 +193,20 @@ const buffT2 = (el, st) => planned(`SKILL_${el}_BUFF_${st.toUpperCase()}`, `Stuf
   fixedT2(el, st));
 // fest: Stufe 1 Doppelter Schild (+8 auf Schilde) / Kampfgeist (+5 Schaden), Stufe 2 Extra Schild (+12) / Kampfrausch (+8)
 const fixedT1 = (el, st) => st === 'def' ? `SKILL_${el}_BUFF_DOUBLE_SHIELD` : `SKILL_${el}_BUFF_FIGHTING_SPIRIT`;
+// Weitere schwache feste Buffs (Stufe 1, 5-9 Schaden bzw. Schild). Ungewöhnliche Arten bekommen sie der Reihe nach
+// (nach Element und Angreifer/Verteidiger), damit nicht jede Art Kampfgeist bzw. Doppelter Schild hat.
+const WEAK_BUFFS = {
+  atk: { FIRE: ['SPARK_STRIKE'], WATER: ['CURRENT'], EARTH: ['MOMENTUM'], AIR: ['GUST', 'UPDRAFT'] },
+  def: { FIRE: ['HEAT_VEIL'], WATER: ['WAVE_SHIELD'], EARTH: ['STONE_SKIN'], AIR: ['WIND_MANTLE'] },
+};
+const weakBuff = (mon, el, st) => {
+  const side = isAtk(st) ? 'atk' : 'def';
+  const extra = (WEAK_BUFFS[side][el] || []).map(n => `SKILL_${el}_BUFF_${n}`);
+  // Verteidiger gibt es pro Element meist nur einen: der neue Schild-Buff zuerst, sonst bliebe er unbenutzt
+  const options = (side === 'def' ? [...extra, fixedT1(el, st)] : [fixedT1(el, st), ...extra]).filter(exists);
+  const peers = mons.filter(m => m.rarity === mon.rarity && m.type === el && isAtk(categories(m.ps)[0]) === isAtk(st));
+  return options[Math.max(peers.indexOf(mon), 0) % options.length] || fixedT1(el, st);
+};
 const fixedT2 = (el, st) => st === 'def' ? `SKILL_${el}_BUFF_EXTRA_SHIELD` : `SKILL_${el}_BUFF_BATTLE_FRENZY`;
 // Element-Buff für einen Verbündeten (Stufe 2, CD 1, 0 Aktionen), Wasser hat keinen: dann der feste Stufe-2-Buff
 const ALLY_BUFF = { FIRE: 'SKILL_FIRE_BUFF_EMBER_HEAT', EARTH: 'SKILL_EARTH_BUFF_EXTRA_CLUB', AIR: 'SKILL_AIR_BUFF_TAILWIND' };
@@ -255,7 +269,7 @@ function plan(mon) {
       if (isAtk(k1)) p.def = [t1.strong(el, k1), t1.thrust(el, k1), lightOf(el, k2)];
       else p.def = [t1.shield(el, k1), t1.thrust(el, ba), k2 === ba ? t1.strike(el, k2) : lightOf(el, k2)];
       p.egg = [weakOf(el, k3), base(el, k2, 2), base(el, k1, 3), buffT2(el, k1)];
-      p.ms = [fixedT1(el, k1), base(el, k1, 2), base(el, k2, 3)];
+      p.ms = [weakBuff(mon, el, k1), base(el, k1, 2), base(el, k2, 3)];
       break;
     case 'RARE':
       p.def = [base(el, k1, 2), isAtk(k2) ? t1.strong(el, k2) : t1.shield(el, k2), t1.small(el, ba)];

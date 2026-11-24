@@ -42,6 +42,9 @@ func _init(mon: Monster) -> void:
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	# Klicks gehen nicht auf die Karte darunter durch
 	mouse_filter = MOUSE_FILTER_STOP
+	# über offenen Belohnungen (Couvert): deren Monsterbilder auf den Skill-Karten liegen auf z_index 1
+	# (RewardDialog, vor den Rand-Effekten der Karte) und schienen sonst durch die Details
+	z_index = 2
 
 func _ready() -> void:
 	offset_top = RewardDialog.MAP_HEADER_HEIGHT

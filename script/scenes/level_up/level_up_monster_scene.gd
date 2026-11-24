@@ -25,7 +25,7 @@ var mon: Monster:
 		mon = _mon
 		grid.init_with_mon(mon)
 		Monmap.show_on(monster_texture, mon._name, Monmap.MEDIUM)
-		name_label.text = Helper.mon_display_name(mon._name)
+		_refresh_name()
 		_refresh_hp(false)
 
 func _ready() -> void:
@@ -57,6 +57,10 @@ func init_with_mon(_mon: Monster):
 	if mon._level_progress == 1:
 		pg1.value = 10
 
+## Name mit aktueller Stufe, damit man immer sieht, welche Stufe das Monster gerade hat
+func _refresh_name() -> void:
+	name_label.text = tr("MAP_TEAM_ENTRY").format({"name": Helper.mon_display_name(mon._name), "level": mon._level})
+
 ## KP-Balken in der Farbe wie im Kampf (grün, orange, rot), nach dem Level-Up mit den neuen Max-KP
 func _refresh_hp(animate: bool) -> void:
 	if _hp_bar == null or mon == null:
@@ -65,7 +69,12 @@ func _refresh_hp(animate: bool) -> void:
 	var current: float = maxf(max_hp - mon._lost_hp, 0.0)
 	_hp_bar.set_hp(current, max_hp, "%s %d / %d" % [tr("STAT_HP").trim_suffix(":"), roundi(current), roundi(max_hp)], animate)
 
-func trigger_level_up(gains: Array[String]) -> bool:
+## Stufe vor dem letzten verbuchten Level-Up (get_labels), für "Lv. 5 -> 6" in der Animation
+var _level_before := 0
+
+func trigger_level_up(gains: Array[String], from_level: int, to_level: int) -> bool:
+	level_label.text = tr("LEVEL_UP_TITLE") + "\n" + tr("LEVEL_UP_LEVELS").format({"from": from_level, "to": to_level})
+	level_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	level_label.position = Vector2(level_label.position.x, 0)
 	level_label.visible = true
 	grid.show_p_labels(gains)
@@ -82,8 +91,10 @@ func get_labels() -> Array[String]:
 	var old_values := []
 	for obj in grid.map:
 		old_values.append(obj.value.call(mon))
+	_level_before = mon._level
 	mon.upgrade_by_level(Relics.modify("level_up_levels", 1, mon))
 	grid.init_with_mon(mon)
+	_refresh_name()
 	var labels: Array[String] = []
 	for i in grid.map.size():
 		labels.append(gain_text(old_values[i], grid.map[i].value.call(mon)))
@@ -133,7 +144,7 @@ func _animate_kill(gains: Array[String]) -> void:
 	await get_tree().create_tween().tween_property(pg2, "value", 10, .5).finished
 	if not is_inside_tree() or _finished:
 		return
-	await trigger_level_up(gains)
+	await trigger_level_up(gains, _level_before, mon._level)
 	if not is_inside_tree():
 		return
 	pg1.value = 0

@@ -575,6 +575,12 @@ func _use_skill(from: Monster, card: Dictionary, target: Monster) -> void:
 		ElementLoan.return_all(from)
 	Skills.start_cooldown(card)
 	Events.monster_status_changed.emit(from)
+	# Mut & Wille auf einen gegnerischen Partner: dessen angekündigter Zug bekommt die Aktion gleich dazu
+	if skill.get("boon", "") == "extra_action":
+		for mon: Monster in targets:
+			if mon != from and State.enemy_mons.has(mon) and mon.is_alive():
+				_plan_intent(mon)
+				Events.intents_changed.emit()
 	# Kampfschrei: angekündigte Einzelangriffe der Gegner gehen jetzt auf den Wirker
 	if skill.get("boon", "") == "taunt":
 		_retarget_intents()
@@ -766,8 +772,29 @@ func _count_starter_kill(defeated: Monster) -> void:
 		State.run_boss_finishers += 1
 	Skills.check_milestones()
 
+## Gegner, deren K.O. schon verbucht ist (Erfahrung, Beute, Kopfgeld): jeder genau einmal
+var _credited_kills: Array[Monster] = []
+
+## K.O. eines Gegners verbuchen: Erfahrung (State.killed_monsters), Statistik, Beute, Kopfgeld, Meilensteine
+func _credit_enemy_kill(defeated: Monster) -> void:
+	if _credited_kills.has(defeated):
+		return
+	_credited_kills.append(defeated)
+	State.killed_monsters += 1
+	State.run_kills += 1
+	State.mark_mon_defeated(defeated._name)
+	_roll_kill_loot()
+	var bounty_skill = Skills.claim_bounty(defeated)
+	if bounty_skill != "":
+		Helper.show_unlock_message(tr("BOUNTY_UNLOCKED").format({"skill": tr(bounty_skill), "mon": Helper.mon_display_name(defeated._last_hit_by._name)}))
+	_count_starter_kill(defeated)
+
 func _check_game_over(last_fainted:Monster) -> void:
 	if _battle_over:
+		# fallen mehrere Gegner im selben Moment (Flächenangriff, Sofortsieg), beendet der erste den Kampf:
+		# die übrigen K.O.s zählen trotzdem voll (Erfahrung und Beute wie im normalen Kampf)
+		if State.enemy_mons.has(last_fainted) and not last_fainted.is_alive():
+			_credit_enemy_kill(last_fainted)
 		return
 	turn_wheel.remove_mon(last_fainted)
 	_reselect_if_gone(last_fainted)
@@ -783,14 +810,7 @@ func _check_game_over(last_fainted:Monster) -> void:
 	if is_enemy and last_fainted._minion:
 		BossRelics.buddy_gone(turn_wheel.round_number)
 	if is_enemy:
-		State.killed_monsters += 1
-		State.run_kills += 1
-		State.mark_mon_defeated(last_fainted._name)
-		_roll_kill_loot()
-		var bounty_skill = Skills.claim_bounty(last_fainted)
-		if bounty_skill != "":
-			Helper.show_unlock_message(tr("BOUNTY_UNLOCKED").format({"skill": tr(bounty_skill), "mon": Helper.mon_display_name(last_fainted._last_hit_by._name)}))
-		_count_starter_kill(last_fainted)
+		_credit_enemy_kill(last_fainted)
 		# mit dem letzten Gegner zerbrechen die Relikte des Kampfs, erst danach geht es weiter
 		if not BossRelics.active.is_empty() and State.enemy_mons.all(func(mon: Monster): return not mon.is_alive()):
 			_pending_breaks += 1
@@ -846,10 +866,14 @@ func _check_game_over(last_fainted:Monster) -> void:
 func _debug_win() -> void:
 	if _battle_over:
 		return
-	for mon: Monster in State.enemy_mons.duplicate():
-		if mon.is_alive():
-			mon._last_hit_by = null
-			mon._lost_hp = mon.hp()
+	var alive: Array = State.enemy_mons.filter(func(mon: Monster): return mon.is_alive())
+	# erst alle K.O.s verbuchen (Erfahrung und Beute wie im normalen Kampf): der erste Gegner, der fällt,
+	# beendet den Kampf, auf die übrigen Faint-Signale ist dann kein Verlass mehr
+	for mon: Monster in alive:
+		mon._last_hit_by = null
+		_credit_enemy_kill(mon)
+	for mon: Monster in alive:
+		mon._lost_hp = mon.hp()
 
 ## Der letzte Gegner ist weg: die Relikte des Kampfs zerbrechen, forgotten = Fang mit vollen KP (sie bleiben liegen)
 func _break_relics(forgotten: bool) -> void:
@@ -919,8 +943,8 @@ func _plan_intent(emon: Monster) -> void:
 			for target in _candidate_targets(emon, skill):
 				candidates.append({"skill": skill, "target": target, "score": _score_action(emon, skill, target)})
 		var picked: Dictionary = _weighted_pick(candidates)
-		# Mut & Wille: die Aktion gibt es schon beim Planen dazu (Skills.grant_action wirkt nur bei eigenen Monstern)
-		moves = Skills.granted_moves(picked.skill, moves - _intent_cost(emon, picked.skill))
+		# Mut & Wille auf sich selbst: die Aktion gibt es schon beim Planen dazu (Skills.grant_action wirkt sofort nur bei eigenen Monstern)
+		moves = Skills.granted_moves(picked.skill, moves - _intent_cost(emon, picked.skill), picked.target == emon)
 		if picked.skill.get("cooldown", 0) > 0 or not Skills.is_damage_skill(picked.skill):
 			once_used.append(picked.skill)
 		# sofort eintragen: die folgenden Aktionen sehen diesen Angriff schon bei den Rest-KP
@@ -1019,7 +1043,7 @@ func _intent_total(emon: Monster) -> int:
 func _intent_budget(emon: Monster, base: int) -> int:
 	var moves := base
 	for action in emon._intent:
-		moves = Skills.granted_moves(action.skill, moves)
+		moves = Skills.granted_moves(action.skill, moves, action.target == emon)
 	return moves
 
 func _can_plan(emon: Monster, skill: Dictionary, moves_left: int) -> bool:
@@ -1080,7 +1104,7 @@ func _score_action(emon: Monster, skill: Dictionary, target: Monster) -> float:
 		# feste Buffs: Schild- und Schadens-Boni zählen voll, Wertepunkte etwa mit dem Anteil, mit dem Karten rechnen
 		if Skills.is_flat_buff(skill):
 			var share: float = AI_FLAT_STAT_SHARE.get(skill.buff_stat, 1.0)
-			return skill.value * share * skill.get("buff_turns", 1) * AI_DEFENSE_WEIGHT * receivers * extra_factor
+			return Skills.effective_skill(emon, skill).value * share * skill.get("buff_turns", 1) * AI_DEFENSE_WEIGHT * receivers * extra_factor
 		if skill.has("buff_stat"):
 			var stat_value: float = _stat_value(target, skill.buff_stat)
 			return stat_value * skill.value / 100 * skill.get("buff_turns", 1) * AI_DEFENSE_WEIGHT * receivers * extra_factor

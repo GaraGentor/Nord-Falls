@@ -133,6 +133,9 @@ func generate_mons(props: Dictionary = {
 			add_biome_element(newMon)
 		roll_wild_skills(newMon, mon_meta_data)
 		roll_egg_skill(newMon)
+		ensure_wild_attack(newMon, mon_meta_data)
+		if mon_meta_data.get("final_boss", false):
+			add_final_boss_skills(newMon)
 		mons.append(newMon)
 	return mons
 
@@ -162,18 +165,67 @@ const WILD_SKILL_COUNT := 3
 
 # Wilde Monster: ein Skill ihrer Art, der Rest aus dem Pool des aktuellen Bioms (tiefere Biome -> stärkere Skills).
 # Gezogen werden nur Skills, die das Monster mit seinem Typ wach einsetzen kann (Gegner schlummern nie, Skills.is_awake).
+## Universelle Skills (Chaos: Mut & Wille, Goldener Schild, ...) ziehen wilde Monster erst ab so vielen Elementen
+## aus dem Biom-Pool, sonst hätte sie fast jedes wilde Monster (sie passen ja zu jedem Element).
+const WILD_UNIVERSAL_MIN_ELEMENTS := 3
+
 func roll_wild_skills(mon: Monster, mon_meta_data: Dictionary) -> void:
 	var usable = func(skill_name): return Skills.is_awake_name(mon, skill_name)
 	var species_pool = mon_meta_data.default_egg_skills.filter(usable)
 	# Art ohne passende (existierende) Ei-Attacke: pick_weighted liefert "", dann nur aus dem Biom-Pool
 	var skill_names = [Skills.pick_weighted(species_pool)].filter(func(skill_name): return skill_name != "")
 	var not_picked = func(skill_name): return not skill_names.has(skill_name)
-	var biome_pool = Skills.get_biome_skills(State.current_biome()).filter(usable).filter(not_picked)
+	var universal_ok := Map.count_elements(mon._type) >= WILD_UNIVERSAL_MIN_ELEMENTS
+	var biome_pool = Skills.get_biome_skills(State.current_biome()).filter(usable).filter(not_picked).filter(
+		func(skill_name): return universal_ok or not Skills.is_universal(Skills.get_skill(skill_name)))
 	skill_names.append_array(Skills.pick_weighted_unique(biome_pool, WILD_SKILL_COUNT - skill_names.size(), State.map_level))
 	# zu wenig passende Biom-Skills: mit den Skills der Art auffüllen
 	skill_names.append_array(Skills.pick_weighted_unique(species_pool.filter(not_picked), WILD_SKILL_COUNT - skill_names.size()))
 	for skill_name in skill_names:
 		var skill = Skills.get_skill(skill_name)
+		if not skill.is_empty():
+			mon._skills.append(skill)
+
+## Ab dieser Seltenheit trägt ein wildes Monster immer mindestens eine Attacke (nicht nur Buffs und Schilde)
+const WILD_ATTACK_MIN_RARITY := Enums.MON_RARITY.EPIC
+
+## Hat ein wildes Monster ab WILD_ATTACK_MIN_RARITY keine Attacke, tauscht es einen Skill gegen eine:
+## bevorzugt eine Attacke seiner Art, sonst aus dem Biom-Pool. Ei-Attacken (egg_skill) bleiben.
+func ensure_wild_attack(mon: Monster, mon_meta_data: Dictionary) -> void:
+	if mon_meta_data.get("rarity", 0) < WILD_ATTACK_MIN_RARITY or mon._skills.is_empty():
+		return
+	if mon._skills.any(func(skill): return Skills.is_damage_skill(skill)):
+		return
+	var attack_ok = func(skill_name): return Skills.is_awake_name(mon, skill_name) \
+		and Skills.is_damage_skill(Skills.get_skill(skill_name)) and not Skills.knows_skill(mon, skill_name)
+	var skill_name := Skills.pick_weighted(mon_meta_data.default_egg_skills.filter(attack_ok))
+	if skill_name == "":
+		skill_name = Skills.pick_weighted(Skills.get_biome_skills(State.current_biome()).filter(attack_ok), State.map_level)
+	if skill_name == "":
+		skill_name = Skills.pick_weighted(Skills.get_biome_skills(0).filter(attack_ok), State.map_level)
+	var skill := Skills.get_skill(skill_name)
+	if skill.is_empty():
+		return
+	# ersetzt wird der letzte Skill, der keine Ei-Attacke ist
+	for i in range(mon._skills.size() - 1, -1, -1):
+		if not mon._skills[i].get("egg_skill", false):
+			mon._skills[i] = skill
+			return
+	mon._skills.append(skill)
+
+## Der Endboss trägt zusätzlich immer eine Fähigkeit mit mindestens drei Elementen und eine Chaos-Fähigkeit
+## (universell, Buff oder Schwächung, keine Passive), beide gewichtet nach Biom-Tiefe.
+func add_final_boss_skills(mon: Monster) -> void:
+	var fresh = func(skill_name): return Skills.is_awake_name(mon, skill_name) and not Skills.knows_skill(mon, skill_name)
+	var pool: Array = Skills.get_biome_skills(0).filter(fresh)
+	var triple := pool.filter(func(skill_name):
+		var skill := Skills.get_skill(skill_name)
+		return not Skills.is_universal(skill) and not Skills.is_passive(skill) and Map.count_elements(skill.nature) >= 3)
+	var chaos := pool.filter(func(skill_name):
+		var skill := Skills.get_skill(skill_name)
+		return Skills.is_universal(skill) and not Skills.is_passive(skill))
+	for skill_name in [Skills.pick_weighted(triple, State.map_level), Skills.pick_weighted(chaos, State.map_level)]:
+		var skill := Skills.get_skill(skill_name)
 		if not skill.is_empty():
 			mon._skills.append(skill)
 
@@ -275,8 +327,9 @@ func skill_description(skill: Dictionary, rich := false, mon: Monster = null) ->
 	# Auslösechance von Statuseffekt-Karten in Prozent (0.25 -> 25)
 	if used.get("chance") is float:
 		values.chance = roundi(used.chance * 100)
-	if dormant and rich and used.has("value") and used.value != skill.value:
-		values.value = _inactive(format_number(skill.value)) + " " + values.value
+	var full_value = Skills.level_value(mon, skill) if skill.has("per_level") else skill.get("value")
+	if dormant and rich and used.has("value") and used.value != full_value:
+		values.value = _inactive(format_number(full_value)) + " " + values.value
 	# Platzhalter für Buffs und Passive: {stat} = Kurzname des Werts, {element} = Element der Element-Passive
 	values.stat = Skills.stat_label(skill.get("buff_stat", skill.get("passive_stat", "")))
 	values.element = tr(ColorMap.get_combo(skill.get("passive_element", skill.nature)).label)

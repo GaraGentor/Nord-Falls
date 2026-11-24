@@ -68,10 +68,10 @@ Neue Skills, die noch fehlen (0). Sobald es sie in skills.gd gibt, trägt der n�
   keine
 
 Skill-Listen in skills.gd nach diesem Lauf:
-  draft_skills       2
+  draft_skills       6
   reward_skills      23
   bounty_skills      6
-  milestone_skills   50
+  milestone_skills   55
   debuff_skills      0
   area_skills        0
   passive_skills     2
@@ -227,7 +227,7 @@ UNGEWÖHNLICH (17 Arten)
   Werte: KP 17 | Ang 16 | Vert 15 | SpAng 24 | Init 14   Reihenfolge: Sp. Ang. > Ang. > Vert.
   Start:      FIRE_MAG_CANNON, FIRE_MAG_LIGHT_THRUST, FIRE_PHYS_LIGHT_STRIKE
   Ei-Attacke: FIRE_ARMOR_PLAIN, FIRE_PHYS_FLAME_FIST, FIRE_MAG_FIREBALL, FIRE_BUFF_S_ATK
-  Meilenst.:  5 K.O.s: FIRE_BUFF_FIGHTING_SPIRIT | neues Element: FIRE_MAG_SPARK_SHOT | Boss 3: FIRE_PHYS_BLAZE_RUSH
+  Meilenst.:  5 K.O.s: FIRE_BUFF_SPARK_STRIKE | neues Element: FIRE_MAG_SPARK_SHOT | Boss 3: FIRE_PHYS_BLAZE_RUSH
   Kopfgeld:   FIRE_ARMOR_FLAME_WALL (Alpha Böenmähne, ab Biom 2, +2 Stufen)
 
 #9 Quallolotl  [Ungewöhnlich, WATER]
@@ -255,21 +255,21 @@ UNGEWÖHNLICH (17 Arten)
   Werte: KP 22 | Ang 14 | Vert 22 | SpAng 18 | Init 8   Reihenfolge: Vert. > Sp. Ang. > Ang.
   Start:      WATER_ARMOR_LIGHT, WATER_MAG_LIGHT_THRUST, WATER_MAG_LIGHT_STRIKE
   Ei-Attacke: WATER_PHYS_BACKHAND, WATER_MAG_BUBBLE_BEAM, WATER_ARMOR_CORAL_WALL, WATER_BUFF_DEF
-  Meilenst.:  1x letzter Boss-Treffer: WATER_BUFF_DOUBLE_SHIELD | neues Element: WATER_ARMOR_SHELL | 2x letzter Boss-Treffer: WATER_MAG_HYDRO_LANCE
+  Meilenst.:  1x letzter Boss-Treffer: WATER_BUFF_WAVE_SHIELD | neues Element: WATER_ARMOR_SHELL | 2x letzter Boss-Treffer: WATER_MAG_HYDRO_LANCE
   Kopfgeld:   WATER_PHYS_BREAKER (Alpha Funkenigel, ab Biom 2, +2 Stufen)
 
 #24 Voltkäfer  [Ungewöhnlich, AIR]
   Werte: KP 14 | Ang 22 | Vert 24 | SpAng 14 | Init 14   Reihenfolge: Vert. > Ang. > Sp. Ang.
   Start:      AIR_ARMOR_LIGHT, AIR_PHYS_LIGHT_THRUST, AIR_PHYS_LIGHT_STRIKE
   Ei-Attacke: AIR_MAG_LIGHT_CANNON, AIR_PHYS_GUST_KICK, AIR_ARMOR_GALE_WALL, AIR_BUFF_DEF
-  Meilenst.:  5 K.O.s: AIR_BUFF_DOUBLE_SHIELD | neues Element: AIR_ARMOR_DRAFT_GUARD | Kopfgeld: AIR_PHYS_CYCLONE_CLAW
+  Meilenst.:  5 K.O.s: AIR_BUFF_WIND_MANTLE | neues Element: AIR_ARMOR_DRAFT_GUARD | Kopfgeld: AIR_PHYS_CYCLONE_CLAW
   Kopfgeld:   AIR_MAG_TEMPEST_RAY (Alpha Glutskorpion, ab Biom 2, +2 Stufen)
 
 #26 Aschwirbel  [Ungewöhnlich, FIRE]
   Werte: KP 12 | Ang 10 | Vert 12 | SpAng 26 | Init 22   Reihenfolge: Sp. Ang. > Vert. > Ang.
   Start:      FIRE_MAG_CANNON, FIRE_MAG_LIGHT_THRUST, FIRE_ARMOR_LIGHT
   Ei-Attacke: FIRE_PHYS_BACKHAND, FIRE_ARMOR_CINDER_PLATE, FIRE_MAG_FIREBALL, FIRE_BUFF_S_ATK
-  Meilenst.:  Boss 1: FIRE_BUFF_FIGHTING_SPIRIT | neues Element: FIRE_MAG_SPARK_SHOT | Boss 2 ohne K.O.: FIRE_ARMOR_FLAME_WALL
+  Meilenst.:  Boss 1: FIRE_BUFF_SPARK_STRIKE | neues Element: FIRE_MAG_SPARK_SHOT | Boss 2 ohne K.O.: FIRE_ARMOR_FLAME_WALL
   Kopfgeld:   FIRE_PHYS_BLAZE_RUSH (Alpha Glühzirpe, ab Biom 2, +2 Stufen)
 
 #36 Staubgreifer  [Ungewöhnlich, EARTH]
@@ -283,35 +283,35 @@ UNGEWÖHNLICH (17 Arten)
   Werte: KP 16 | Ang 24 | Vert 14 | SpAng 16 | Init 16   Reihenfolge: Ang. > Sp. Ang. > Vert.
   Start:      AIR_PHYS_PUNCH, AIR_PHYS_LIGHT_THRUST, AIR_MAG_LIGHT_STRIKE
   Ei-Attacke: AIR_ARMOR_PLAIN, AIR_MAG_WIND_BLADE, AIR_PHYS_CYCLONE_CLAW, AIR_BUFF_ATK
-  Meilenst.:  Boss 1: AIR_BUFF_FIGHTING_SPIRIT | Boss 3: AIR_PHYS_GUST_KICK | Dreier-Kombi: AIR_MAG_TEMPEST_RAY
+  Meilenst.:  Boss 1: AIR_BUFF_GUST | Boss 3: AIR_PHYS_GUST_KICK | Dreier-Kombi: AIR_MAG_TEMPEST_RAY
   Kopfgeld:   AIR_ARMOR_GALE_WALL (Alpha Sandgolem, ab Biom 2, +2 Stufen)
 
 #47 Schwertflosser  [Ungewöhnlich, WATER]
   Werte: KP 13 | Ang 27 | Vert 12 | SpAng 14 | Init 22   Reihenfolge: Ang. > Sp. Ang. > Vert.
   Start:      WATER_PHYS_PUNCH, WATER_PHYS_LIGHT_THRUST, WATER_MAG_LIGHT_STRIKE
   Ei-Attacke: WATER_ARMOR_PLAIN, WATER_MAG_BUBBLE_BEAM, WATER_PHYS_BREAKER, WATER_BUFF_ATK
-  Meilenst.:  Boss 1: WATER_BUFF_FIGHTING_SPIRIT | Boss 3: WATER_PHYS_TIDE_SLAP | Dreier-Kombi: WATER_MAG_HYDRO_LANCE
+  Meilenst.:  Boss 1: WATER_BUFF_CURRENT | Boss 3: WATER_PHYS_TIDE_SLAP | Dreier-Kombi: WATER_MAG_HYDRO_LANCE
   Kopfgeld:   WATER_ARMOR_CORAL_WALL (Alpha Glutskorpion, ab Biom 2, +2 Stufen)
 
 #50 Keulenschwanz  [Ungewöhnlich, EARTH]
   Werte: KP 22 | Ang 22 | Vert 28 | SpAng 6 | Init 8   Reihenfolge: Vert. > Ang. > Sp. Ang.
   Start:      EARTH_ARMOR_LIGHT, EARTH_PHYS_LIGHT_THRUST, EARTH_PHYS_LIGHT_STRIKE
   Ei-Attacke: EARTH_MAG_LIGHT_CANNON, EARTH_PHYS_BOULDER_BASH, EARTH_ARMOR_GRANITE_BASTION, EARTH_BUFF_DEF
-  Meilenst.:  5 K.O.s: EARTH_BUFF_DOUBLE_SHIELD | 10 K.O.s: EARTH_ARMOR_STONE_SKIN | Dreier-Kombi: EARTH_PHYS_QUAKE_STOMP
+  Meilenst.:  5 K.O.s: EARTH_BUFF_STONE_SKIN | 10 K.O.s: EARTH_ARMOR_STONE_SKIN | Dreier-Kombi: EARTH_PHYS_QUAKE_STOMP
   Kopfgeld:   EARTH_MAG_GEO_PULSE (Alpha Frostklumpen, ab Biom 2, +2 Stufen)
 
 #59 Sandseelen  [Ungewöhnlich, EARTH]
   Werte: KP 20 | Ang 14 | Vert 16 | SpAng 26 | Init 10   Reihenfolge: Sp. Ang. > Vert. > Ang.
   Start:      EARTH_MAG_CANNON, EARTH_MAG_LIGHT_THRUST, EARTH_ARMOR_LIGHT
   Ei-Attacke: EARTH_PHYS_BACKHAND, EARTH_ARMOR_STONE_SKIN, EARTH_MAG_GEO_PULSE, EARTH_BUFF_S_ATK
-  Meilenst.:  Boss 1: EARTH_BUFF_FIGHTING_SPIRIT | 2x letzter Boss-Treffer: EARTH_MAG_PEBBLE_STORM | Dreier-Kombi: EARTH_ARMOR_GRANITE_BASTION
+  Meilenst.:  Boss 1: EARTH_BUFF_MOMENTUM | 2x letzter Boss-Treffer: EARTH_MAG_PEBBLE_STORM | Dreier-Kombi: EARTH_ARMOR_GRANITE_BASTION
   Kopfgeld:   EARTH_PHYS_QUAKE_STOMP (Alpha Nebelspuk, ab Biom 2, +2 Stufen)
 
 #63 Spaltknochen  [Ungewöhnlich, AIR]
   Werte: KP 14 | Ang 14 | Vert 12 | SpAng 24 | Init 18   Reihenfolge: Sp. Ang. > Ang. > Vert.
   Start:      AIR_MAG_CANNON, AIR_MAG_LIGHT_THRUST, AIR_PHYS_LIGHT_STRIKE
   Ei-Attacke: AIR_ARMOR_PLAIN, AIR_PHYS_GUST_KICK, AIR_MAG_TEMPEST_RAY, AIR_BUFF_S_ATK
-  Meilenst.:  Boss 1: AIR_BUFF_FIGHTING_SPIRIT | Boss 2 ohne K.O.: AIR_MAG_WIND_BLADE | Dreier-Kombi: AIR_PHYS_CYCLONE_CLAW
+  Meilenst.:  Boss 1: AIR_BUFF_UPDRAFT | Boss 2 ohne K.O.: AIR_MAG_WIND_BLADE | Dreier-Kombi: AIR_PHYS_CYCLONE_CLAW
   Kopfgeld:   AIR_ARMOR_GALE_WALL (Alpha Dampfhorn, ab Biom 2, +2 Stufen)
 
 #70 Scherenhorn  [Ungewöhnlich, EARTH]

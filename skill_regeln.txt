@@ -124,7 +124,12 @@ Mehrere Extras auf einer Karte nur bei seltenen Quellen (Couvert, Trophäen, Stu
   Feste Buffs pro Grundelement (_flat_buff_skill, Monster._flat_mods), auf ein eigenes Monster:
 	Stufe 1  Doppelter Schild: Schilde +8 (1 Zug, CD 2)      Kampfgeist: Angriffe +5 Schaden (1 Zug, CD 2)
 	Stufe 2  Extra Schild: Schilde +12 (2 Züge, CD 3)        Kampfrausch: Angriffe +8 Schaden (2 Züge, CD 3)
-	Stufe 2  Element-Buffs (1 Zug, CD 1): Luft Rückenwind +10 INI, Feuer Gluthitze +20 SAN, Erde Zusatzkeule +20 ANG
+	Stufe 1  weitere schwache (Meilenstein leicht der Ungewöhnlichen, der Reihe nach): Funkenschlag / Böe +9 Schaden
+			 (1 Zug, CD 3), Strömung / Wucht / Aufwind +6 Schaden (2 Züge, CD 4), Wellenschild / Steinhaut Schilde +9
+			 (1 Zug, CD 3), Hitzeschleier / Windmantel Schilde +6 (2 Züge, CD 3)
+	Stufe 2  Element-Buffs (1 Zug, CD 1), wachsen mit der Stufe des Anwenders ("per_level", Skills.level_value):
+			 Luft Rückenwind +0,5 INI pro Stufe, Feuer Gluthitze +1 SAN pro Stufe, Erde Zusatzkeule +1 ANG pro Stufe
+			 (Stufe 5: +5 / Stufe 20: +20 / Stufe 35: +35, Rückenwind die Hälfte)
   Universelle Buffs:
 	Stufe 3  Starker Schild +60 % VER (1 Zug, CD 2), Mut & Wille: sofort +1 Aktion, höchstens 4 (CD 3)
 	Stufe 4  Goldener Schild +100 % VER (2 Züge, CD 3, 1 Aktion), Buddhas Faust +60 % ANG (2 Züge, CD 4, 3 Aktionen),

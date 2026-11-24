@@ -347,7 +347,9 @@ func _update_turn_arrow(delta: float) -> void:
 	_turn_arrow_time += delta
 	var rect_size := texture_rect.size
 	var tex_size := texture_rect.texture.get_size()
-	var scale_factor := minf(rect_size.x / tex_size.x, rect_size.y / tex_size.y)
+	# Keep Centered zeichnet das Bild in Originalgröße (darf über das Rechteck hinausragen), sonst eingepasst
+	var scale_factor := 1.0 if texture_rect.stretch_mode == TextureRect.STRETCH_KEEP_CENTERED \
+		else minf(rect_size.x / tex_size.x, rect_size.y / tex_size.y)
 	var drawn := tex_size * scale_factor
 	var origin := _texture_offset() + (rect_size - drawn) / 2
 	var bob := sin(_turn_arrow_time * 5.0) * TURN_ARROW_BOB
