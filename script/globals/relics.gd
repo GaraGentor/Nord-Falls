@@ -13,7 +13,8 @@ extends Node
 ## - "battle_ep": EP für einen gewonnenen Kampf, kontext = null
 ## - "key_chance": Chance 0..1 auf einen Schlüssel als Beute, kontext = null
 ## - "first_round_order": Zugreihenfolge der ersten Kampfrunde (Array von Monstern), kontext = null
-## - "battle_progress": halbe Stufen extra pro gewonnenem Kampf (normal 0, ein K.O. = 1 halbe Stufe), kontext = Monster
+## - "boss_kill_progress": halbe Stufen extra pro besiegtem Boss (Biom-Boss oder Boss-Feld, normal 0,
+##   ein K.O. = 1 halbe Stufe), kontext = Monster
 ## - "trophy_bonus": Extra-Punkte pro Trophäe, auch für schon gesammelte, kontext = null
 ## - "element_multiplier": Element-Faktor eines magischen Treffers, kontext = Element-Wertung (Skills.element_score)
 ##
@@ -29,8 +30,8 @@ signal relics_changed
 enum Rarity { COMMON, RARE }
 
 const KEY_FINDER_FACTOR := 1.5
-## Doppeltes Wachstum: eine halbe Stufe extra pro Kampf
-const BATTLE_PROGRESS_BONUS := 1
+## Doppeltes Wachstum: eine halbe Stufe extra pro besiegtem Boss (Biom-Boss und Boss-Felder), Bosse zählen also doppelt
+const BOSS_KILL_BONUS := 1
 const TROPHY_EXTRA_BONUS := 2
 const KEY_RING_KEYS := 2
 ## Schatzjäger: Chance auf Couvert bzw. Trophäe in einer Schatzkiste, wie die auf einen Schlüssel (battle.gd KEY_LOOT_CHANCE)
@@ -128,7 +129,7 @@ var RELICS := {
 		"icon": "res://assets/global_relics/double_level.png",
 		"rarity": Rarity.COMMON,
 		"hooks": {
-			"battle_progress": func(value: int, _mon: Monster) -> int: return value + BATTLE_PROGRESS_BONUS,
+			"boss_kill_progress": func(value: int, _mon: Monster) -> int: return value + BOSS_KILL_BONUS,
 		},
 	},
 	"trophy_bonus": {

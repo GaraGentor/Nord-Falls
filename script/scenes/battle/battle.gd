@@ -600,35 +600,35 @@ func _refresh_skill_points() -> void:
 		if mon.is_alive():
 			mon.reset_to_new_round()
 
-## Monster und Anzahl stehen seit dem Betreten des Bioms fest (Map.generate_encounters).
-## Erst hier kommt dazu, was vom Fortschritt im Biom abhängt: Stufe und Aktionen.
+## Monster und Anzahl stehen seit dem Betreten des Bioms fest (Map.generate_encounters), die Stufe folgt der
+## Referenzstufe des Felds (Map._plan_ref_levels). Hier kommen nur noch die Aktionen nach Fortschritt im Biom dazu.
 func _generate_battle():
 	var depth = Map.encounter_depth()
 	var encounter: Dictionary = Map.ENCOUNTERS[depth]
 	var fight_index: int = State.biome_fight_index
-	var level: int
+	var ref_half: int = Map.take_pending_ref_half()
+	var level: int = Map.ref_level(ref_half)
 	var min_moves: int = 1
 	is_boss_battle = State.is_boss_fight or State.is_map_boss
 	var t = Map.fight_progress(fight_index)
 	if State.is_boss_fight:
 		var boss: Dictionary = Map.BOSS_ENCOUNTERS[depth]
-		level = encounter.level[1] + boss.level_bonus
+		level = Map.ref_level(Map.boss_ref_half) + boss.level_bonus
 		min_moves = boss.min_moves
 		t = 1.0
 	elif State.is_map_boss:
-		# Boss-Feld auf der Karte: Boss-Anzahl, aber auf der aktuellen Stufe des Bioms
+		# Boss-Feld auf der Karte: Boss-Anzahl auf der Referenzstufe des Felds
 		var boss: Dictionary = Map.BOSS_ENCOUNTERS[depth]
-		level = roundi(lerpf(encounter.level[0], encounter.level[1], t)) + boss.level_bonus
+		level += boss.level_bonus
 		min_moves = boss.min_moves
 		State.is_map_boss = false
 	else:
-		level = roundi(lerpf(encounter.level[0], encounter.level[1], t))
 		State.biome_fight_index += 1
 	var ms := _take_enemies(fight_index)
 	# nie unter der Startstufe des eigenen Teams
 	for mon in ms:
 		mon._is_boss = is_boss_battle
-		mon._level = maxi(State.INITIAL_LEVEL, level + randi_range(encounter.offset[0], encounter.offset[1]))
+		mon._level = maxi(State.INITIAL_LEVEL, level + randi_range(Map.LEVEL_OFFSET[0], Map.LEVEL_OFFSET[1]))
 		if mon._bounty != "":
 			mon._level += Skills.get_bounty(mon._bounty).level_bonus
 		mon._initial_moves = maxi(Map.roll_weighted(encounter.moves, t), min_moves)
@@ -781,6 +781,8 @@ func _credit_enemy_kill(defeated: Monster) -> void:
 		return
 	_credited_kills.append(defeated)
 	State.killed_monsters += 1
+	if defeated._is_boss and not defeated._minion:
+		State.killed_bosses += 1
 	State.run_kills += 1
 	State.mark_mon_defeated(defeated._name)
 	_roll_kill_loot()

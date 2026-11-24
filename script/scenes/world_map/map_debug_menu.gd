@@ -905,9 +905,20 @@ func _end_run(won: bool) -> void:
 func _switch_biome(depth: int) -> void:
 	State.map_level = depth
 	State.biome_fight_index = 0
+	# Referenzstufe ab der Stufe des Teams, sonst stünden die Gegner nach dem Sprung noch auf dem alten Biom
+	State.level_ref_half = _team_ref_half()
 	State.current_map_position = State.NO_MAP_POSITION
 	Map.generate_starting_points()
 	_change_scene(WORLD_MAP_PATH)
+
+## Referenzstufe (halbe Stufen ab State.INITIAL_LEVEL) zur Durchschnittsstufe des Teams
+func _team_ref_half() -> int:
+	if State.mons.is_empty():
+		return 0
+	var total := 0
+	for mon in State.mons:
+		total += mon._level
+	return maxi(roundi(float(total) / State.mons.size()) - State.INITIAL_LEVEL, 0) * 2
 
 func _add_essence() -> void:
 	State.ep += DEBUG_ESSENCE
@@ -1552,6 +1563,8 @@ func _start_final_test() -> void:
 	State.map_level = Map.map_settings.size() - 1
 	State.biome_fight_index = 0
 	State.current_map_position = State.NO_MAP_POSITION
+	# Endboss auf der gewählten Stufe (+ level_bonus), wie am Ende eines Runs, in dem man gleichauf liegt
+	Map.boss_ref_half = (_final_level - State.INITIAL_LEVEL) * 2
 	for mon in State.mons:
 		Items.return_items(mon)
 	var team: Array[Monster] = []

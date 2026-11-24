@@ -23,8 +23,10 @@ var relics: Array[String] = []
 var overall_progress_level := 0
 var map_progress_level := 0
 var map_level := 0
-# normale Kämpfe im aktuellen Biom, bestimmt Stufe und Aktionen der Gegner (siehe Map.ENCOUNTERS)
+# normale Kämpfe im aktuellen Biom, bestimmt die Aktionen der Gegner (siehe Map.ENCOUNTERS)
 var biome_fight_index := 0
+# Referenzstufe beim Betreten des aktuellen Bioms in halben Stufen ab INITIAL_LEVEL (siehe Map._plan_ref_levels)
+var level_ref_half := 0
 # Element-Masken der Biome pro Tiefe, einmal pro Run gewürfelt (siehe Map.generate_biome_path)
 var biome_path: Array[int] = []
 # Monster-Arten, die pro Tiefe wild auftauchen können, zusammen mit biome_path gewürfelt (siehe Map.generate_biome_pools)
@@ -94,6 +96,8 @@ var coupons: int = 0:
 
 
 var killed_monsters: int = 0
+# davon Bosse (Biom-Boss und Boss-Felder, ohne Buddy-Helfer), für Doppeltes Wachstum (Relics "boss_kill_progress")
+var killed_bosses: int = 0
 # im Kampf verdiente Monster Essenz: liegt auf dem Schlachtfeld, bis sie im Level-Up-Screen in die Tasche gezogen wird
 var pending_ep: int = 0
 # im Kampf gefundene Schlüssel, liegen genauso auf dem Schlachtfeld wie die Essenz
@@ -165,6 +169,7 @@ func reset() -> void:
 	coupons = 0
 	map_level = 0
 	biome_fight_index = 0
+	level_ref_half = 0
 	biome_path = []
 	map_progress_level = 0
 	overall_progress_level = 0
@@ -178,6 +183,7 @@ func reset() -> void:
 	fainted_own_mons = []
 	fainted_enemy_mons = []
 	killed_monsters = 0
+	killed_bosses = 0
 	used_boss_relics = []
 	clear_pending_loot()
 	current_map_position = NO_MAP_POSITION

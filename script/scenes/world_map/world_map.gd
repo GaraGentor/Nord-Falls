@@ -437,6 +437,7 @@ func call_map_event(path_type) -> void:
 		if State.current_map_position == State.NO_MAP_POSITION and path_type._pos.y == 0:
 			Map.pending_enemies = path_type._enemies
 			Map.pending_relics = path_type._boss_relics
+			Map.pending_ref_half = Map.ref_half_for_row(int(path_type._pos.y))
 			call_event_by_type(path_type._type)
 			State.current_map_position = path_type._pos
 			#reset_animation_state(path_type)
@@ -444,6 +445,8 @@ func call_map_event(path_type) -> void:
 		if can_walk_to(path_type, State.current_map_position):
 			Map.pending_enemies = path_type._enemies
 			Map.pending_relics = path_type._boss_relics
+			# auch für Auseinandersetzungen auf Event-Feldern
+			Map.pending_ref_half = Map.ref_half_for_row(int(path_type._pos.y))
 			call_event_by_type(path_type._type)
 			State.current_map_position = path_type._pos
 			#reset_animation_state(path_type)
@@ -539,6 +542,8 @@ func _finish_biome() -> void:
 		State.run_flawless_bosses += 1
 	Skills.check_milestones()
 	State.biome_fight_index = 0
+	# die Referenzstufe läuft über die Biome weiter: alle möglichen K.O.s des besten Pfads samt Biom-Boss
+	State.level_ref_half += Map.biome_ref_kills
 	if State.map_level == Map.map_settings.size():
 		State.end_run(true)
 		get_tree().change_scene_to_file("res://script/scenes/run_end/run_end.tscn")

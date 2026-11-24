@@ -513,7 +513,7 @@ RELIC_ALL_SKILLS_DESC,All enemy attacks are visible from the start of battle.,Al
 RELIC_ENEMY_HP,Stethoscope,Stethoskop
 RELIC_ENEMY_HP_DESC,The HP bars in battle show the exact HP of enemies too.,Die HP-Balken im Kampf zeigen auch bei Gegnern die genauen HP.
 RELIC_DOUBLE_LEVEL,Double Growth,Doppeltes Wachstum
-RELIC_DOUBLE_LEVEL_DESC,Every won battle grants an extra half level.,Jeder gewonnene Kampf bringt eine halbe Stufe extra.
+RELIC_DOUBLE_LEVEL_DESC,Every defeated boss (also on boss fields) grants an extra half level: bosses count double.,"Jeder besiegte Boss (auch auf Boss-Feldern) bringt eine halbe Stufe extra: Bosse zählen doppelt."
 RELIC_TROPHY_BONUS,Trophy Polish,Trophäenpolitur
 RELIC_TROPHY_BONUS_DESC,"Every trophy gives +2 extra, including the ones you already have.","Jede Trophäe gibt +2 zusätzlich, auch die, die du schon hast."
 RELIC_KEY_RING,Key Ring,Schlüsselring

@@ -162,10 +162,12 @@ func _update_cloud_size() -> void:
 ## der OK-Knopf verbucht, was noch nicht animiert wurde (_on_button_pressed).
 func _start() -> void:
 	var kills := State.killed_monsters
+	var boss_kills := State.killed_bosses
 	State.killed_monsters = 0
+	State.killed_bosses = 0
 	go_button.disabled = false
 	for scene in _monster_scenes():
-		scene.play_kills(kills)
+		scene.play_kills(kills, boss_kills)
 
 func _monster_scenes() -> Array:
 	return [monster_scene1, monster_scene2].filter(func(scene): return scene.mon != null)

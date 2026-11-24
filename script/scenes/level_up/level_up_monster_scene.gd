@@ -113,12 +113,10 @@ var _finished := false
 ## Spielt die K.O.s nacheinander ab. Jeder K.O. wird zuerst verbucht (Fortschritt, Level-Up), dann animiert:
 ## so kann finish_now jederzeit den Rest ohne Animation verbuchen (OK-Knopf während der Animation).
 ## Beide Monster laufen parallel (level_up.gd wartet nicht auf das erste).
-## Jeder K.O. ist eine halbe Stufe, "battle_progress" gibt pro Kampf halbe Stufen extra (Doppeltes Wachstum),
-## die wie ein weiterer K.O. abgespielt werden.
-func play_kills(kills: int) -> void:
-	_remaining = kills
-	if kills > 0:
-		_remaining += Relics.modify("battle_progress", 0, mon)
+## Jeder K.O. ist eine halbe Stufe, "boss_kill_progress" gibt pro besiegtem Boss halbe Stufen extra
+## (Doppeltes Wachstum), die wie weitere K.O.s abgespielt werden.
+func play_kills(kills: int, boss_kills := 0) -> void:
+	_remaining = kills + boss_kills * Relics.modify("boss_kill_progress", 0, mon)
 	while _remaining > 0 and not _finished:
 		_remaining -= 1
 		var gains := _apply_kill()
