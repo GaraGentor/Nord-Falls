@@ -339,7 +339,12 @@ func _ready() -> void:
 	State.ep_changed.connect(_ep_changed)
 	_refresh_bag()
 	_ep_changed(State.ep)
+	# Tutorial (Feld 7): geliehene Boss Tränen für die billigste Kette (fallen mit dem Ende des Tutorials weg)
+	if Tutorial.run_active and State.boss_shards == 0:
+		State.boss_shards = 1
 	_roll_offers()
+	if Tutorial.run_active and not _slots.is_empty():
+		State.boss_shards = maxi(State.boss_shards, _slots.map(func(slot): return upgrade_cost(slot.mon_name)).min())
 
 func _exit_tree() -> void:
 	State.boss_shards_changed.disconnect(_shards_changed)

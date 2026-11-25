@@ -57,6 +57,9 @@ var INVENTORY_DIALOG: GDScript:
 const BATTLE_SCENE := "res://script/scenes/battle/battle.tscn"
 ## Boss-Felder sind halb so groß wie der Biom-Boss (64 statt 128 px), ihre Relikt-Bahn auch
 const MAP_BOSS_ORBIT_SCALE := 0.55
+## Tutorial: Pfeil über dem nächsten Feld (_point_to_next)
+const TutorialPointerScript = preload("res://script/ui/tutorial/tutorial_pointer.gd")
+var _pointer: Control
 
 @export var view_container: Panel
 
@@ -132,16 +135,21 @@ func _ready() -> void:
 	if State.killed_monsters >= 1 or State.has_pending_loot():
 		get_tree().change_scene_to_file("res://script/scenes/level_up/level_up.tscn")
 		return 
-	if State.is_boss_fight:
+	# Tutorial: nach dem Biom-Boss baut sich die Karte auf, Reliktkiste und Couvert gehen auf, dann endet das
+	# Tutorial (_tutorial_after_rewards)
+	if State.is_boss_fight and not Tutorial.run_active:
 		_finish_biome()
 		return
 	#Events.map_event_pressed.connect(_call_map_event)
 	if not State.current_map:
-		Map.generate_starting_points()
+		if Tutorial.run_active:
+			Map.generate_tutorial_map()
+		else:
+			Map.generate_starting_points()
 	set_map()
 	apply_biome_look()
 	# Fahrt von oben nach unten nur bei Run-Start oder neuem Biom, sonst direkt an die alte Stelle
-	scroll_container_to_bottom(State.current_map_position == State.NO_MAP_POSITION)
+	var scroll := scroll_container_to_bottom(State.current_map_position == State.NO_MAP_POSITION)
 	map_ui.modulate.a = 1.0
 	if State.current_map_position == State.NO_MAP_POSITION:
 		change_position(Vector3.ZERO, true)
@@ -158,8 +166,21 @@ func _ready() -> void:
 	_setup_bag_button()
 	team_bar.add_to_group("tut_map_team")
 	$HBoxContainer/Panel/LegendButton.add_to_group("tut_map_legend")
-	# zu Beginn eines Runs oder direkt nach dem Übungskampf, nie über Belohnungen hinweg
-	if State.current_map_position == State.NO_MAP_POSITION or Tutorial.take_back_from_practice():
+	_add_currency_targets()
+	# zu Beginn eines Runs, nie über Belohnungen hinweg. Erst nach der Fahrt über die Karte: während sie läuft,
+	# wandern Felder und Ziele über den Bildschirm, Trainer und Blase würden ihnen hinterherspringen
+	if State.current_map_position == State.NO_MAP_POSITION and Tutorial.should_show("map"):
+		if scroll:
+			# solange die Fahrt läuft, nimmt die Karte keine Klicks an: sonst wählt man ein Feld vor dem Tutorial
+			var input_block := CanvasLayer.new()
+			input_block.layer = TutorialOverlay.LAYER - 1
+			var catcher := Control.new()
+			catcher.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+			catcher.mouse_filter = Control.MOUSE_FILTER_STOP
+			input_block.add_child(catcher)
+			add_child(input_block)
+			await scroll.finished
+			input_block.queue_free()
 		Tutorial.trigger("map")
 
 # ─────────────────────────
@@ -402,19 +423,22 @@ func _call_map_event(map_node) -> void:
 		print("same level, go!")
 		SceneLoader.change_scene(BATTLE_SCENE)
 
-func scroll_container_to_bottom(animate := true) -> void:
+## Fahrt zur aktuellen Reihe; mit animate kommt der Tween zurück (sonst null)
+func scroll_container_to_bottom(animate := true) -> Tween:
 	var cur_pos = State.current_map_position
 	var map_height = grid_container.get_child_count() / grid_container.columns
 	var damn_bro = scroll_container.get_v_scroll_bar().max_value - scroll_container.size.y
 	var scroll_pos = damn_bro - ((damn_bro / map_height) * cur_pos.y)
 	if not animate:
 		scroll_container.scroll_vertical = int(scroll_pos)
-		return
-	var tween = get_tree().create_tween()
+		return null
+	# an die Karte gebunden: verlässt man sie vorher, endet die Fahrt mit ihr
+	var tween = create_tween()
 	tween.tween_property(
 		scroll_container, "scroll_vertical",
 		scroll_pos, map_height * .1 + 1
 	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	return tween
 
 func call_map_event(path_type) -> void:
 	if path_type:
@@ -483,7 +507,8 @@ func call_event_by_type(type) -> void:
 
 # EVENT-Feld: welches Ereignis kommt, wird über Map.event_chances ausgewürfelt
 func call_random_event() -> void:
-	var event = Map.roll_event()
+	# Tutorial: immer das Glücksrad (Variante "Ewiges Pech", wheel_event.gd)
+	var event = Map.EVENT_TYPE.WHEEL if Tutorial.run_active else Map.roll_event()
 	print("random event", event)
 	match event:
 		Map.EVENT_TYPE.CAMP:
@@ -518,6 +543,10 @@ func _on_boss_button_pressed() -> void:
 ## Biom-Boss besiegt und Beute abgehandelt: weiter ins nächste Biom, nach dem letzten endet der Run mit einem Sieg.
 ## Boss-Felder auf der Karte zählen nicht für die Meilensteine und die Faule-Eier-Ladung.
 func _finish_biome() -> void:
+	# Tutorial: der Biom-Boss ist das letzte Feld, danach endet das Tutorial
+	if Tutorial.run_active:
+		Tutorial.finish()
+		return
 	State.is_boss_fight = false
 	SaveManager.add_reroll_charge()
 	State.map_level += 1
@@ -569,6 +598,46 @@ func change_position(pos, initial = false) -> void:
 			tween.tween_property(ub, "scale", Vector2(1, 1), 3)
 			tweens.append(tween)
 			ub.modulate = Color.WHITE
+	_point_to_next(possible_walkable_nodes, pos)
+
+## Vorräte oben im Header (Symbol + Zahl) für das Tutorial; nach dem ersten Schlüssel (Glücksrad, Feld 3) werden sie
+## erklärt, sobald kein Dialog mehr über der Karte liegt
+func _add_currency_targets() -> void:
+	for pair in [["map_cur_essence", money_label, "EssenceIcon"], ["map_cur_tears", boss_shard_label, "ShardIcon"],
+			["map_cur_keys", key_label, "KeyIcon"], ["map_cur_coupons", coupon_label, "CouponIcon"]]:
+		var label: Label = pair[1]
+		for node: Control in [label.get_parent().get_node(pair[2]), label]:
+			node.add_to_group("tut_" + pair[0])
+			node.add_to_group("tut_map_currencies")
+	if not Tutorial.should_show("currencies"):
+		return
+	view_container.child_exiting_tree.connect(func(_child): _tutorial_currencies.call_deferred())
+
+func _tutorial_currencies() -> void:
+	if State.keys <= 0 or not Tutorial.should_show("currencies") or Tutorial.is_running():
+		return
+	if view_container.get_children().any(func(child): return not child.is_queued_for_deletion() and child.visible):
+		return
+	Tutorial.trigger("currencies")
+
+## Tutorial-Lauf: ein Pfeil zeigt immer auf das nächste Feld (nach dem letzten Feld auf den Biom-Boss),
+## damit nach einer Erklärung niemand rätselt, wohin es weitergeht
+func _point_to_next(walkable: Array, pos: Vector3) -> void:
+	if is_instance_valid(_pointer):
+		_pointer.queue_free()
+	_pointer = null
+	if not Tutorial.run_active:
+		return
+	var target: Control = null
+	for node in walkable:
+		if node._ui_item:
+			target = node._ui_item
+			break
+	if target == null and State.current_map.size() > 0 and pos.y + 1 == State.current_map[0].size():
+		target = boss_button
+	if target:
+		_pointer = TutorialPointerScript.new()
+		target.add_child(_pointer)
 
 ## Kommt der Fliegende Teppich auf der Karte dazu oder geht er (Shop, Void), ändern sich die begehbaren Felder.
 ## Vor dem ersten Feld ist ohnehin die ganze erste Reihe frei.
@@ -666,10 +735,28 @@ func reset_animation_state(ele) -> void:
 func show_pending_rewards() -> void:
 	var dialog := _next_pending_reward()
 	if dialog == null:
+		_tutorial_after_rewards()
 		return
 	dialog.tree_exited.connect(show_pending_rewards, CONNECT_DEFERRED | CONNECT_ONE_SHOT)
 	view_container.add_child(dialog)
 	dialog.visible = true
+
+## Tutorial, alle Belohnungen erledigt: nach dem Biom-Boss endet das Tutorial (Tutorial.finish),
+## nach dem Schatz (Feld 4) geht das Inventar auf und wird erklärt
+func _tutorial_after_rewards() -> void:
+	if not Tutorial.run_active:
+		return
+	if State.is_boss_fight:
+		State.is_boss_fight = false
+		Tutorial.finish()
+		return
+	if int(State.current_map_position.y) != 3 or not Tutorial.should_show("inventory"):
+		return
+	if State.bag.all(func(item): return item == null):
+		return
+	if not _inventory:
+		toggle_inventory()
+	Tutorial.trigger("inventory")
 
 func _next_pending_reward() -> Control:
 	if State.pending_relic_reward:

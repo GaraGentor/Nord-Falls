@@ -1,71 +1,9 @@
-Tutorial Aktualisieren
+1. Beim Initialen Tutorial Modal (erster Spiel Start) auch die Sprache initial anbieten
+2. Beim Level Up, vill kann man die Liste weg nehmen und die dort platzieren wo auch die Symbole sind. Sodass die Icons mit dem Inhalt der einzelnen Listen ersetzt wird. Dann bricht auch nix aus dem Grid und der Platz ist gut investert. Die Bes: Punkte sollten dann unter dem Diagramm stehen.
 
-D.h. wir machen folgendes:
-	Beim Start des spiels fragen wir den Spieler mit einem Modal
-	[Erstes mal dabei? Spiele das erste mal begleitet mit Hilfe oder Hilfe Überspringen? (Du kannst in den Einstellungen die Hilfe jederzeit wieder einschalten)]
-	Hier hat dann der User die möglichkeit Ja zu drücken oder das Tutorial zu skippen.
-
-Wenn das Tutorial dann Startet bleibt der Anfang erstmal wie es. Genau erklären muss man dann foglendes:
-	> Tipps
-	> Genaue erklärung des Pfades und dass man mit einem klick drauf, die schwächen und stärken sehen kann, damit man sich einen vorteil verschaffen kann
-	> EI werfen...
-
-Wenn ein Monster da ist:
-	> Die Fähigkeiten anzeige erklären, dass diese derzeit zur verfügung stehen und weiter freigespielt werden müsse
-	> Den Graphen, dass das die Growth ist pro errungene Level
-	> Die Stats (KP, Ang, SAng, Ver, Ini, Ges) und dass bei Seltenen monstern die Stats höher sind
-	> Wo das Element sichtbar ist von dem Monster, das zu sehen ist
-
-Danach muss man alle weiteren ziehen
-Wenn alle Monster da sind:
-	> Nun kannst du dir ein Monster aussuchen mit hinweis, dass man das Monster Empfehlen würde, dass stark gegen das erste Biom ist (ein passendes Starter muss immer vorhanden sein im Tutorial)
-
-Danach geht es zu den EI Attacken
-	> Hier kurz erkären, was es mit den fliegenden Fähigkeiten auf sich hat, und was dafür zu tun ist
-	> Wie man sich seine Karten auswählen kann
-	> Wie man den Lauf Startet
-
-Danach geht es in eine Tutorial Map:
-Zuerst wird erklärt was die Map ist, und wo man hin muss. Sowie die Lebens anzeige, von den Monstern und das dort die Details sind, die Legende und der Pfad.
-Dann Folgt ein Klick aufs erste Feld.
-	> Eine Lane in der Mitte
-	> Erstes Tile ein Kampf
-		> Das monster muss ein gegengesetztes Basis element sein wie das ausgewählte monster
-		> Hier wird erklärt, was das Initiativen Rad ist (auch mit dem Gelben Pfeil, wie es sich dreht und die die oben stehen immer am Zug sind)
-		> Wie man die Aktionen der Monster ließt und wie man erkennt wann und wer dran ist
-		> Wie man Fähigkeiten einsetzt
-		> Wie man Züge beendet
-		> Wie man sich die Stats von den Gegner anschaut und die Fähigkeiten und wieso das wichtig ist! (variable stats und stärkere fähigkeiten kann man sich einverleiben)
-		> Was die Hypnose macht (100% fang chance)
-		> Danach Startet das Judgement mit Ziel: Monster zu sich ziehen und Bestätigen. Eine andere Option gibt es nicht. 
-	> Zweites Tile ein Kampf
-		> Hier wird erklärt wie man die elemente der Freunde einsetzt und was das für große Vorteile haben kann
-		> Wie man speed höher macht und wofür "auto" steht
-		> Gegner hat nur 1 hp und stirbt instant nach einem hit
-	> Drittes Tile ein Ereignis, wo man ein Schlüssel geschenkt bekommt (das soll nur im Tutorial so sein) Das soll so aussehen wie die + - chance für ME das jetzt schon existiert allerdings soll dann ein sehr großes feld sein rot mit dem Text "Ewiges Pech" und auf einem mini fleck das grüne, wo der spin natürlich auf das grüne geht und man dann den schlüssel bekommt xD
-	> Viertes Tile ein Schatz (hier bekommt man Viiieeeelll Cash 99999 und ein Trank und ein Item)
-		> Da Tränke direkt verarbeitet werden müssen müssen wir danach nichts mehr machen
-		> Wenn wir das Item gelootet haben werden wir ins Inventory gelotst.
-			> Hier dann das Inventory erklären und dass man ein Item zu einem Monster ziehen kann
-	> Fünftes Tile der Trainer
-	> Sechstes Tile der Laden
-	> Siebtes Tile der Kerkermeister
-		> Betonen, dass das hier extrem wichtig ist und key
-	> Achtes Tile ein Kampf (wo Garantiert ein Freundliches Monster Stirbt und es wieder belebt werden muss)
-		> Wenn der Nutzer ein Item ausgerüstet hat, wird das erklärt, wie man items nutzt
-		> Danach stirbt ein Monster direkt mit einem Hit und der Kampf endet mit einem "Random Monster als Fang"
-		> Freundliche Monster haben alle nur 1 hp
-		> Gegner hat nur eine Fähigkeit, damit er eine Attacke auf ein monster spielt es killt und danach endet der Kampf (mit sieg und Fang des Monsters)
-	> Hier passiert dann die Wieder belebung und das aufdecken der Items (items zu erst dann wieder belebung mit dem Random monster)
-	> Neuntes Feld Trophaen auswahl
-	> Zehntes Feld Hier ein normales Lager machen
-	> 11. Feld das Rastlager
-		> Hier erklären, dass man alles nur 1x besuchen kann
-	> 12. Feld ein Boss fight
-		> Boss hat auch nur 1hp der kampf kann nur gewonnen werden. Boss attackiert nicht (hat nur einen unnötigen Buff skill)
-		> Was sind Boss Relikte und was macht einen Boss fight besonders? (Higher Chance of rarity monsters and boss reliks with modifiers)
-		> Nach dem Fight mit win triggert das Looten hier wird die relikt kiste gezeigt, ein EI und das couver. Das EI Wird im Tutorial nicht freigeschaltet und soll nur erklären, dass man so neue Monster Permanent Freischaltet
-		> Egal was der Nutzer lootet: Alles wird getriggert (relikt kiste und couver)
-
-Wenn das Tutorial so beendet wird, geht man direkt wieder zum Start des Games und das Tutorial ist abgeschlossen und es kommt danach nichts mehr vom tutorial vor.
-In den Einstellungen haben wir somit kein Toggle mehr, sondern ein Button: "Tutorial Starten" und alles geht wieder von vorne Los. Sollte ich in der Mitte das Tutorial Starten wird alles neu resettet (der alte speicher sollte dadurch nicht überschrieben werden, sonst wäre das ein hack um die monster neu zu rollen)
+Einstellungen:
+	> Fliegender Teppich verstecken (wird nicht gebraucht im release build)
+	> Kampf wiederholen verstecken (wird nicht gebraucht im release build)
+	> Schlummernde Fähigkeiten verstecken (wird nicht gebraucht im release build)
+	> Gegner leihen ELemente verstecken (wird nicht gebraucht im release build)
+	> Easy Mode umbenennen zu Hard Mode und den Easy Mode Standard mäßig drin lassen

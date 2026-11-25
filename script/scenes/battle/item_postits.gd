@@ -210,7 +210,7 @@ func refresh() -> void:
 		var postit := Postit.new(self, mon)
 		add_child(postit)
 		_postits.append(postit)
-		# das Tutorial im Übungskampf hebt die Postits hervor (nicht die ganze Fläche)
+		# das Tutorial (Feld 8) hebt die Postits hervor (nicht die ganze Fläche)
 		postit.add_to_group("tut_bat_items")
 		var before: Dictionary = was_open.get(mon, {})
 		var count := mon._items.filter(func(i): return i != null).size()

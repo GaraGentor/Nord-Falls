@@ -71,7 +71,7 @@ func _build(content: VBoxContainer) -> void:
 	# Titel und Schließen-Button bleiben stehen, die Abschnitte dazwischen scrollen
 	content = _scroll_list(content)
 	content.add_child(_section(tr("SETTINGS_LANGUAGE")))
-	content.add_child(_language_row())
+	content.add_child(language_row(_switch_language))
 	content.add_child(_section(tr("SETTINGS_DISPLAY")))
 	if GameSettings.has_window_mode():
 		var row := HBoxContainer.new()
@@ -95,31 +95,15 @@ func _build(content: VBoxContainer) -> void:
 	content.add_child(watermark_check)
 	content.add_child(_note(tr("SETTINGS_CARD_WATERMARK_HINT"), IronPlate.TEXT_COLOR))
 	content.add_child(_section(tr("SETTINGS_GAMEPLAY")))
-	var easy_check := make_check(tr("SETTINGS_EASY_MODE"), GameSettings.easy_mode, GameSettings.set_easy_mode)
-	easy_check.size_flags_horizontal = SIZE_SHRINK_BEGIN
-	content.add_child(easy_check)
-	content.add_child(_note(tr("SETTINGS_EASY_MODE_HINT"), IronPlate.TEXT_COLOR))
-	# Test-Schalter direkt unter dem Easy Mode: Gegner nutzen die Element-Leihgabe (ElementLoan)
-	var loans_check := make_check(tr("SETTINGS_ENEMY_LOANS"), GameSettings.enemy_loans, GameSettings.set_enemy_loans)
-	loans_check.size_flags_horizontal = SIZE_SHRINK_BEGIN
-	content.add_child(loans_check)
-	content.add_child(_note(tr("SETTINGS_ENEMY_LOANS_HINT"), IronPlate.TEXT_COLOR))
-	var dormant_check := make_check(tr("SETTINGS_DORMANT_SKILLS"), GameSettings.dormant_skills, GameSettings.set_dormant_skills)
-	dormant_check.size_flags_horizontal = SIZE_SHRINK_BEGIN
-	content.add_child(dormant_check)
-	content.add_child(_note(tr("SETTINGS_DORMANT_SKILLS_HINT"), IronPlate.TEXT_COLOR))
-	var enemy_hp_check := make_check(tr("SETTINGS_ENEMY_HP"), GameSettings.show_enemy_hp, GameSettings.set_show_enemy_hp)
-	enemy_hp_check.size_flags_horizontal = SIZE_SHRINK_BEGIN
-	content.add_child(enemy_hp_check)
-	content.add_child(_note(tr("SETTINGS_ENEMY_HP_HINT"), IronPlate.TEXT_COLOR))
-	var carpet_check := make_check(tr("SETTINGS_FLYING_CARPET"), GameSettings.flying_carpet, GameSettings.set_flying_carpet)
-	carpet_check.size_flags_horizontal = SIZE_SHRINK_BEGIN
-	content.add_child(carpet_check)
-	content.add_child(_note(tr("SETTINGS_FLYING_CARPET_HINT"), IronPlate.TEXT_COLOR))
-	var retry_check := make_check(tr("SETTINGS_RETRY_BATTLE"), GameSettings.retry_battle, GameSettings.set_retry_battle)
-	retry_check.size_flags_horizontal = SIZE_SHRINK_BEGIN
-	content.add_child(retry_check)
-	content.add_child(_note(tr("SETTINGS_RETRY_BATTLE_HINT"), IronPlate.TEXT_COLOR))
+	# Hard Mode: ohne die Relikte des Easy Mode, der sonst immer gilt (GameSettings.hard_mode)
+	_add_check(content, "SETTINGS_HARD_MODE", GameSettings.hard_mode, GameSettings.set_hard_mode)
+	_add_check(content, "SETTINGS_ENEMY_HP", GameSettings.show_enemy_hp, GameSettings.set_show_enemy_hp)
+	# Test-Schalter nur in Debug-Builds, im fertigen Spiel bleiben sie aus (GameSettings.has_test_settings)
+	if GameSettings.has_test_settings():
+		_add_check(content, "SETTINGS_ENEMY_LOANS", GameSettings.enemy_loans, GameSettings.set_enemy_loans)
+		_add_check(content, "SETTINGS_DORMANT_SKILLS", GameSettings.dormant_skills, GameSettings.set_dormant_skills)
+		_add_check(content, "SETTINGS_FLYING_CARPET", GameSettings.flying_carpet, GameSettings.set_flying_carpet)
+		_add_check(content, "SETTINGS_RETRY_BATTLE", GameSettings.retry_battle, GameSettings.set_retry_battle)
 	content.add_child(_section(tr("SETTINGS_TUTORIAL")))
 	# nur in der Ei-Auswahl, nie mitten in einem Lauf (Tutorial.can_start)
 	var can_start := Tutorial.can_start()
@@ -139,12 +123,12 @@ func _build(content: VBoxContainer) -> void:
 		hint = "SETTINGS_TUTORIAL_LOCKED"
 	content.add_child(_note(tr(hint), IronPlate.TEXT_COLOR))
 
-## Sprache: je Sprache ein Knopf mit Flagge und ihrem Namen in der eigenen Sprache. Nach dem Umschalten
-## lädt die Szene neu, damit alles in der neuen Sprache steht.
-func _language_row() -> HBoxContainer:
+## Sprache: je Sprache ein Knopf mit Flagge und ihrem Namen in der eigenen Sprache, die aktive hell mit goldener
+## Schrift. on_pick bekommt die gewählte Sprache. Auch in der Startabfrage des Tutorials (ChoiceDialog with_language).
+static func language_row(on_pick: Callable) -> HBoxContainer:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 10)
-	var current := TranslationServer.get_locale().substr(0, 2)
+	var buttons := {}
 	for locale: String in GameSettings.LANGUAGES:
 		var button := RewardDialog.plate_button(GameSettings.LANGUAGES[locale])
 		button.add_theme_font_size_override("font_size", ROW_FONT_SIZE)
@@ -153,13 +137,29 @@ func _language_row() -> HBoxContainer:
 		button.mouse_default_cursor_shape = CURSOR_POINTING_HAND
 		button.icon = LanguageFlag.texture(locale)
 		button.add_theme_constant_override("h_separation", 10)
-		var active := locale == current
-		button.modulate = Color.WHITE if active else UNPICKED_COLOR
-		button.add_theme_color_override("font_color", SkillDetailPopup.GOLD if active else IronPlate.TEXT_COLOR)
-		button.pressed.connect(_switch_language.bind(locale))
+		buttons[locale] = button
 		row.add_child(button)
+	var refresh := func():
+		var current := TranslationServer.get_locale().substr(0, 2)
+		for locale: String in buttons:
+			var active := locale == current
+			buttons[locale].modulate = Color.WHITE if active else UNPICKED_COLOR
+			buttons[locale].add_theme_color_override("font_color", SkillDetailPopup.GOLD if active else IronPlate.TEXT_COLOR)
+	for locale: String in buttons:
+		buttons[locale].pressed.connect(func():
+			on_pick.call(locale)
+			refresh.call())
+	refresh.call()
 	return row
 
+## Checkbox mit Erklärung darunter; key ist der Übersetzungsschlüssel, der Hinweis steht unter key + "_HINT"
+func _add_check(content: VBoxContainer, key: String, on: bool, on_toggled: Callable) -> void:
+	var check := make_check(tr(key), on, on_toggled)
+	check.size_flags_horizontal = SIZE_SHRINK_BEGIN
+	content.add_child(check)
+	content.add_child(_note(tr(key + "_HINT"), IronPlate.TEXT_COLOR))
+
+## Nach dem Umschalten lädt die Szene neu, damit alles in der neuen Sprache steht
 func _switch_language(locale: String) -> void:
 	if locale == TranslationServer.get_locale().substr(0, 2):
 		return

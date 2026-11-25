@@ -214,9 +214,12 @@ func _on_dropped(data: Dictionary, zone: int) -> void:
 		return
 	if data.has("judgement_mon"):
 		var mon: Monster = data.judgement_mon
+		var joined := not State.mons.has(mon)
 		match zone:
 			Zone.SLOT_1, Zone.SLOT_2:
 				_place(mon, zone - Zone.SLOT_1)
+				if joined:
+					Events.judgement_team_joined.emit()
 			Zone.BENCH:
 				_bench(mon)
 	else:
@@ -229,6 +232,10 @@ func _on_dropped(data: Dictionary, zone: int) -> void:
 
 func _on_confirm_pressed() -> void:
 	if dialog.visible or State.mons.is_empty():
+		return
+	# Tutorial (Feld 1): erst kommt der Fang ins Team
+	if Tutorial.judgement_join_only() and not _pool.is_empty():
+		Helper.show_unlock_message(tr("TUT_JUD_JOIN_FIRST"))
 		return
 	if _pool.any(_is_guarded_starter):
 		var ok = await dialog.confirm(tr("JUDGEMENT_RELEASE_STARTER_TITLE"), _starter_warning(), tr("JUDGEMENT_RELEASE_CONFIRM"))
@@ -246,6 +253,11 @@ func _on_confirm_pressed() -> void:
 
 # "" wenn data hier abgelegt werden darf, sonst "-" oder ein Grund, der beim Ablegen angezeigt wird
 func _reason(zone: int, data: Dictionary) -> String:
+	# Tutorial (Feld 1): einzig erlaubt ist, den Fang auf den freien Platz zu ziehen
+	if Tutorial.judgement_join_only():
+		var joins: bool = data.has("judgement_mon") and not State.mons.has(data.judgement_mon) \
+			and zone in [Zone.SLOT_1, Zone.SLOT_2] and zone - Zone.SLOT_1 >= State.mons.size()
+		return "" if joins else "-"
 	if data.has("judgement_mon"):
 		var mon: Monster = data.judgement_mon
 		var in_team := State.mons.has(mon)
@@ -419,7 +431,9 @@ func _refresh() -> void:
 	_refresh_skills()
 	_refresh_radar()
 	_bag.show_items(_eggs_unlocked)
-	_show_bag(_selected != null and not _selected.get_unlockable_egg_skill().is_empty() and _new_mons.has(_selected))
+	# im Tutorial (Feld 1) immer zu sehen: der Trainer erklärt sie, auch wenn der Fang keine Ei-Attacke mitbringt
+	_show_bag(Tutorial.judgement_join_only()
+		or (_selected != null and not _selected.get_unlockable_egg_skill().is_empty() and _new_mons.has(_selected)))
 	_confirm_button.disabled = State.mons.is_empty()
 	_confirm_button.modulate.a = 0.45 if _confirm_button.disabled else 1.0
 	_confirm_button.tooltip_text = tr("JUDGEMENT_REASON_LAST") if _confirm_button.disabled else ""

@@ -224,7 +224,10 @@ func _refresh_status() -> void:
 	_clear_box(status_box)
 	if not home_mons and not mon._minion:
 		var chance := "%d%%" % roundi(Helper.catch_chance(mon) * 100)
-		status_box.add_child(_icon_row([ICON_CATCH, chance], CATCH_COLOR, STATUS_FONT_SIZE))
+		var catch_row := _icon_row([ICON_CATCH, chance], CATCH_COLOR, STATUS_FONT_SIZE)
+		# das Tutorial hebt die Fangchance beim Erklären der Hypnose hervor
+		catch_row.add_to_group("tut_bat_catch_chance")
+		status_box.add_child(catch_row)
 	if mon.shield() > 0:
 		status_box.add_child(_icon_row([ICON_SHIELD, str(roundi(mon.shield()))], STATUS_COLOR, STATUS_FONT_SIZE))
 	# Verstärkungen als Pfeil hoch, Schwächungen als Pfeil runter, dahinter die Symbole der betroffenen Werte.

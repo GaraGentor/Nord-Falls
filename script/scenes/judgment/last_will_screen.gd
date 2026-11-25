@@ -205,6 +205,7 @@ func run(fallen: Monster, team: Array, catches: Array, dialog: JudgementDialog, 
 	await tween.finished
 	_say(_intro_text())
 	_busy = false
+	Tutorial.trigger("last_will")
 	return await _finished
 
 ## Blendet den Screen aus und entfernt ihn
@@ -225,6 +226,9 @@ func _intro_text() -> String:
 
 func _finish(result: Dictionary) -> void:
 	_busy = true
+	# das Tutorial (Feld 8) wartet auf die Wiederbelebung
+	if result.has("revive"):
+		Events.last_will_revived.emit()
 	_finished.emit(result)
 
 # ─────────────────────────
@@ -946,6 +950,7 @@ func _build_soul() -> void:
 	_soul.modulate.a = SOUL_TINT.a
 	_soul.size = Vector2.ONE * SOUL_SIZE
 	_soul.position = Vector2(size.x * SOUL_CENTER.x - SOUL_SIZE / 2, _soul_home_y())
+	_soul.add_to_group("tut_will_soul")
 	_depth.add_child(_soul)
 	_measure_figure(_soul)
 
@@ -979,6 +984,7 @@ func _build_piles() -> void:
 		item.visible = false
 		item.position = (SPOT_SIZE - GIFT_VIEW_SIZE) / 2 + Vector2(0, -16)
 		spot.add_child(item)
+		spot.add_to_group("tut_will_piles")
 		_piles.append({"gift": gifts[i], "spot": spot, "item": item, "heap": null, "revealed": false,
 			"possible": _heir_mons.any(func(mon): return gift_reason(gifts[i], mon) == "")})
 	for entry in _piles:
@@ -1036,6 +1042,9 @@ func _add_heir(mon: Monster, is_catch: bool, slot_index: int) -> void:
 	picture.pivot_offset = Vector2(HEIR_PICTURE / 2, HEIR_PICTURE)
 	picture.rotation_degrees = MOURN_TILT * -side
 	picture.modulate = MOURN_TINT
+	# das Tutorial (Feld 8) zeigt auf den neuen Fang
+	if is_catch:
+		picture.add_to_group("tut_will_catch")
 	_depth.add_child(picture)
 	_measure_figure(picture)
 	# leises Schluchzen

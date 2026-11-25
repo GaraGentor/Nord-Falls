@@ -98,6 +98,8 @@ func _rebuild() -> void:
 		var lent := _lent_elements(mon)
 		for element in ElementGlyph.elements_of(mon._type):
 			var orb := Orb.new(element, mon)
+			# das Tutorial (Feld 2) hebt die Kugeln des Partners hervor
+			orb.add_to_group("tut_bat_orbs")
 			orb.ghost = lent.has(element)
 			orbs.append(orb)
 	elif role == "active":

@@ -91,26 +91,12 @@ func generate_mons(props: Dictionary = {
 		mons_to_pick = State.biome_pools[State.map_level]
 	var mons: Array[Monster] = []
 	if default_props.initial:
-		# jede Art höchstens einmal zur Wahl
-		var comp_mons = get_all_owned_monster_names()
+		# jede Art höchstens einmal zur Wahl, im Tutorial nur die Start-Monster
+		var comp_mons = State.INITIAL_MONS.duplicate() if Tutorial.run_active else get_all_owned_monster_names()
 		comp_mons.shuffle()
 		var initial_mons = comp_mons.slice(0, default_props.count)
 		for i in initial_mons:
-			var mon_meta_data = Monmap.mon_metainfos_by_name(i)
-			var newMon = Monster.new(default_props.level, mon_meta_data)
-			# Vorschlag aus den verfügbaren Ei-Attacken, im Konfigurator noch änderbar
-			# wache Attacken zuerst, schlummernde und nicht spielbare nur zum Auffüllen
-			var available = Skills.get_available_egg_skills(i)
-			var usable = available.filter(func(skill_name): return Skills.is_awake_name(newMon, skill_name))
-			var proposal = Skills.pick_weighted_unique(usable, 3)
-			proposal.append_array(Skills.pick_weighted_unique(available.filter(func(skill_name): return not proposal.has(skill_name)), 3 - proposal.size()))
-			for skill_name in proposal:
-				var skill = Skills.carried_egg_skill(skill_name)
-				if skill.is_empty():
-					continue
-				skill.scouted = true
-				newMon._skills.append(skill)
-			mons.append(newMon)
+			mons.append(initial_mon(i, default_props.level))
 		return mons
 
 	# optional ein Kopfgeld-Monster (Eintrag aus Skills.BOUNTIES) als erster Gegner
@@ -353,6 +339,22 @@ func _inactive(text: String) -> String:
 
 func between(v, min, max) -> bool:
 	return v >= min and v <= max
+
+## Start-Monster der Ei-Auswahl mit einem Vorschlag aus den verfügbaren Ei-Attacken (im Konfigurator noch änderbar):
+## wache Attacken zuerst, schlummernde und nicht spielbare nur zum Auffüllen
+func initial_mon(mon_name: String, level := -1) -> Monster:
+	var mon := Monster.new(level if level >= 0 else State.INITIAL_LEVEL, Monmap.mon_metainfos_by_name(mon_name))
+	var available = Skills.get_available_egg_skills(mon_name)
+	var usable = available.filter(func(skill_name): return Skills.is_awake_name(mon, skill_name))
+	var proposal = Skills.pick_weighted_unique(usable, 3)
+	proposal.append_array(Skills.pick_weighted_unique(available.filter(func(skill_name): return not proposal.has(skill_name)), 3 - proposal.size()))
+	for skill_name in proposal:
+		var skill = Skills.carried_egg_skill(skill_name)
+		if skill.is_empty():
+			continue
+		skill.scouted = true
+		mon._skills.append(skill)
+	return mon
 
 func get_all_owned_monster_names() -> Array:
 	# Start-Monster und gefangene Arten, jede Art nur einmal

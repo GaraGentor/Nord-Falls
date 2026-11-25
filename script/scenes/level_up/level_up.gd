@@ -151,7 +151,7 @@ func _ready() -> void:
 	battlefield.add_to_group("tut_loot_field")
 	# die Sequenz erklärt vor allem die Beute, ohne Beute wartet sie auf den nächsten Kampf
 	if _loot_field.get_child_count() > 0:
-		Tutorial.trigger("loot")
+		Tutorial.trigger("boss_loot" if State.is_boss_fight and Tutorial.run_active else "loot")
 	_start()
 
 ## Der Wolkenrand rechnet in Pixeln und braucht dafür die Größe des Bildes
@@ -214,9 +214,9 @@ func _build_battlefield() -> void:
 	if State.pending_coupons > 0:
 		_add_loot(COUPON_ICON, tr("COUPON_LOOT_AMOUNT").format({"amount": State.pending_coupons}), _take_coupons)
 	if State.pending_relic_chest:
-		_add_loot(BOX_ICON, tr("RELIC_CHEST_LOOT"), _take_relic_chest)
+		_add_loot(BOX_ICON, tr("RELIC_CHEST_LOOT"), _take_relic_chest).add_to_group("tut_loot_chest")
 	if State.pending_skill_envelope:
-		_add_loot(ENVELOPE_ICON, tr("SKILL_ENVELOPE_LOOT"), _take_skill_envelope)
+		_add_loot(ENVELOPE_ICON, tr("SKILL_ENVELOPE_LOOT"), _take_skill_envelope).add_to_group("tut_loot_envelope")
 	if State.pending_boss_shards > 0:
 		var shard_text := "JAILER_TEAR_COUNT_ONE" if State.pending_boss_shards == 1 else "JAILER_TEAR_COUNT_MANY"
 		_add_loot(BOSS_SHARD_ICON, "+" + tr(shard_text).format({"amount": State.pending_boss_shards}), _take_boss_shards)
@@ -235,6 +235,9 @@ func _add_egg_loot() -> void:
 	unlocked.append_array(State.INITIAL_MONS)
 	# ein gerade gefangener Boss bringt nicht direkt sein eigenes Ei, das fühlt sich geschenkt an
 	var missing := State.mons.filter(func(mon: Monster): return not unlocked.has(mon._name) and not mon._is_boss)
+	# Tutorial: immer ein Ei, es erklärt nur das Freischalten (der Spielstand kommt am Ende zurück)
+	if missing.is_empty() and Tutorial.run_active:
+		missing = State.mons.duplicate()
 	# ab jetzt zählt er als normales Team-Monster: sein Ei kann ein späterer Boss-Kampf bringen
 	for mon: Monster in State.mons:
 		mon._is_boss = false
@@ -243,6 +246,7 @@ func _add_egg_loot() -> void:
 	var mon_name: String = missing.pick_random()._name
 	var loot := _add_loot(EGG_ICON, tr("EGG_LOOT"), SaveManager.add_catched_monster_mon.bind(mon_name), Monmap.egg_material(Monmap.rarity_of(mon_name)))
 	loot.tooltip_text = tr("EGG_LOOT_DESC")
+	loot.add_to_group("tut_loot_egg")
 
 ## One-Way-Item in der Farbe seiner Seltenheit, in die Tasche gezogen landet es im Inventar
 func _add_item_loot(item: Dictionary) -> void:
@@ -372,6 +376,12 @@ func _on_button_pressed() -> void:
 	# noch laufende Level-Ups sofort verbuchen
 	for scene in _monster_scenes():
 		scene.finish_now()
+	# Tutorial: Reliktkiste und Couvert gehen in jedem Fall auf
+	if Tutorial.run_active:
+		if State.pending_relic_chest:
+			_take_relic_chest()
+		if State.pending_skill_envelope:
+			_take_skill_envelope()
 	# was nicht in der Tasche liegt, bleibt auf dem Schlachtfeld
 	State.clear_pending_loot()
 	get_tree().change_scene_to_file("res://script/scenes/world_map/world_map.tscn")

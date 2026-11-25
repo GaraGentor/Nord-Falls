@@ -73,8 +73,6 @@ var _relic_bar: BossRelicBar
 var _battle_over := false
 ## Boss-Relikte, die gerade zerbrechen oder darauf warten
 var _pending_breaks := 0
-## Übungskampf (Tutorial.practice): Stand des Runs vorher, damit danach alles wie zuvor ist
-var _practice_snapshot := {}
 ## zählt jeden Zug mit: ein verzögertes Auto-Zugende greift nur im Zug, in dem es angestoßen wurde
 var _turn_serial := 0
 ## One-Way-Items der eigenen Monster als Postits am linken Rand (ItemPostits)
@@ -89,15 +87,15 @@ var _catch_keeps_turn := false
 const ItemPostitsScript := preload("res://script/scenes/battle/item_postits.gd")
 
 func _enter_tree() -> void:
-	if Tutorial.practice:
-		_generate_practice()
-		return
+	var tutorial_fight := Tutorial.fight_for_battle()
 	# Kampf wiederholen (BattleRetry): Gegner und Zustand sind schon wiederhergestellt, nichts neu würfeln
 	var replay = BattleRetry.take_replay()
 	if replay != null:
 		is_boss_battle = replay
 	else:
 		_generate_battle()
+		if not tutorial_fight.is_empty():
+			_setup_tutorial_fight(tutorial_fight)
 	BattleRetry.capture(is_boss_battle)
 
 # Called when the node enters the scene tree for the first time.
@@ -129,8 +127,11 @@ func _ready() -> void:
 
 	if State.mons.size() > 1:
 		$GameWindow/HBoxContainer2/MonsterScene1.visible = true
-	if State.is_final_boss:
+	if State.is_final_boss or Tutorial.fight.get("no_catch", false):
 		catch_button.visible = false
+	# Tutorial (Feld 8): auch der Rahmen mit der Spirale verschwindet, die Leiste behält ihre Aufteilung
+	if Tutorial.fight.get("no_catch", false):
+		catch_button.get_parent().modulate.a = 0.0
 
 	# unsichtbar, blockiert aber Eingaben während der Gegner am Zug ist
 	$UI_Blocker.self_modulate = Color(1, 1, 1, 0)
@@ -163,7 +164,9 @@ func _ready() -> void:
 		if scene.home_mons:
 			orb_layer.add_child(ElementOrbs.new(scene))
 	card_hand.reparent(top_layer, false)
-	card_hand.can_play = func() -> bool: return not $UI_Blocker.visible and _is_own_turn() and not _battle_over
+	# Tutorial: Karten nur, wenn der Schritt gerade die Hand freigibt (sonst killt man z. B. beim Leihen schon den Gegner)
+	card_hand.can_play = func() -> bool: return not $UI_Blocker.visible and _is_own_turn() and not _battle_over \
+		and Tutorial.allows("bat_hand")
 	_build_bottom_bar()
 	_relic_bar.pressed.connect(func(): _relic_overlay.play_intro(BossRelics.active, false))
 	_item_postits = ItemPostitsScript.new($GameWindow)
@@ -186,9 +189,9 @@ func _ready() -> void:
 	turn_wheel.round_started.connect(_on_round_started)
 	turn_wheel.turn_for.connect(_on_turn_for)
 	turn_wheel.start()
-	if Tutorial.practice:
+	if Tutorial.is_fight():
 		_add_tutorial_targets()
-		Tutorial.trigger("battle")
+		Tutorial.trigger(Tutorial.fight.sequence)
 
 ## Untere Leiste des Infobereichs: rechts Hypnose und Zugende als rechteckige Bildknöpfe (battle.tscn UI/BottomBar,
 ## *_button_rect.svg),
@@ -221,7 +224,7 @@ func _build_bottom_bar() -> void:
 	row.add_child(controls)
 	controls.auto_end_toggled.connect(func(_enabled): _try_auto_end())
 	# Kampf-Cheats aus dem Debug-Menü, nicht im Übungskampf
-	if BattleDebugButtons.wanted() and not Tutorial.practice:
+	if BattleDebugButtons.wanted() and not Tutorial.is_fight():
 		var debug_buttons := BattleDebugButtons.new()
 		row.add_child(debug_buttons)
 		debug_buttons.win_pressed.connect(_debug_win)
@@ -232,10 +235,20 @@ func _add_tutorial_targets() -> void:
 	card_hand.add_to_group("tut_bat_hand")
 	catch_button.add_to_group("tut_bat_catch")
 	$UI/BottomBar/EndTurnFrame/EndTurn.add_to_group("tut_bat_end_turn")
+	_relic_bar.add_to_group("tut_bat_relics")
+	# übrige Aktionen in der Mitte des Zugrads (funkelnde Raute)
+	turn_wheel.moves_badge.add_to_group("tut_bat_moves")
+	# die Element-Kugeln tragen ihre Gruppe selbst (ElementOrbs), die Fangchance über dem Gegner auch (MonsterScene)
+	for node in find_children("*", "", true, false):
+		if node is BattleControls:
+			node.add_to_group("tut_bat_controls")
 	for scene in _monster_scenes():
 		if State.enemy_mons.has(scene.mon):
 			scene.add_to_group("tut_bat_enemies")
 			scene.intent_box.add_to_group("tut_bat_intent")
+		elif State.mons.has(scene.mon):
+			# eigene Monster einzeln: Ziel beim Leihen eines Elements (Feld 2), die Kugel wird auf eines gezogen
+			scene.add_to_group("tut_bat_own_%d" % scene.mon_slot)
 
 func _on_round_started(round_number: int) -> void:
 	BossRelics.current_round = round_number
@@ -294,6 +307,8 @@ func _is_own_turn() -> bool:
 func _on_turn_for(mon: Monster) -> void:
 	active_mon = mon
 	_turn_serial += 1
+	if State.enemy_mons.has(mon):
+		Events.enemy_turn_started.emit()
 	# Element-Leihgabe erst, wenn der eigene Zug wirklich losgeht (unten)
 	ElementLoan.active = null
 	ElementLoan.set_preview(0)
@@ -458,8 +473,8 @@ func _reselect_if_gone(gone: Monster) -> void:
 		_select_mon(alive[0])
 
 func _exit_tree() -> void:
-	if not _practice_snapshot.is_empty():
-		_restore_practice_snapshot()
+	Tutorial.fight = {}
+	_restore_tutorial_skills()
 	Events.mouse_event.disconnect(_catch_mouse_event)
 	Events.monster_faints.disconnect(_check_game_over)
 	Events.finish_catching.disconnect(_finish_catching)
@@ -678,86 +693,66 @@ func _generate_battle():
 	State.enemy_mons = ms
 
 # ─────────────────────────
-# Übungskampf (Tutorial.practice): ein einzelner Gegner aus dem aktuellen Biom auf Startstufe mit einer Aktion.
-# Niemand geht K.O. und der Fang klappt sicher (Tutorial.cap_damage, Tutorial.catches_for_sure).
-# Er zählt nicht: kein Fortschritt im Biom, keine Beute, kein Fang, und das Team ist danach wie vorher.
+# Tutorial-Kämpfe (Tutorial.FIGHTS): der Kampf entsteht wie sonst, danach passt der Aufbau ihn an
 
-func _generate_practice() -> void:
-	_practice_snapshot = {
-		"lost_hp": State.mons.map(func(mon: Monster): return mon._lost_hp),
-		"run_catches": State.run_catches,
-		"caught_mon_names": State.caught_mon_names.duplicate(),
-		"defeated_mon_names": State.defeated_mon_names.duplicate(),
-		"revealed_mon_stats": State.revealed_mon_stats.duplicate(true),
-		"skills": State.mons.map(func(mon: Monster): return mon._skills.duplicate()),
-		# im Übungskampf eingesetzte Items kommen zurück, der geliehene Köder geht wieder
-		"items": State.mons.map(func(mon: Monster): return mon._items.duplicate()),
-		"bag": State.bag.duplicate(),
-	}
+func _setup_tutorial_fight(setup: Dictionary) -> void:
+	if setup.get("enemy_weak", false):
+		var enemy: Monster = Helper.generate_mons({"count": 1, "species": [Tutorial.weak_enemy_species()]})[0]
+		enemy._level = State.INITIAL_LEVEL
+		var ms: Array[Monster] = [enemy]
+		State.enemy_mons = ms
+	# Tutorial-Kämpfe haben immer genau einen Gegner
+	State.enemy_mons = State.enemy_mons.slice(0, 1)
+	for emon: Monster in State.enemy_mons:
+		if setup.has("enemy_moves"):
+			emon._initial_moves = setup.enemy_moves
+		var only := {}
+		if setup.get("enemy_attack", false):
+			only = Tutorial.element_skill(emon, "SKILL_%s_PHYS_LIGHT_THRUST")
+		elif setup.get("enemy_useless", false):
+			only = Tutorial.element_skill(emon, "SKILL_%s_ARMOR_WEAK")
+		if not only.is_empty():
+			emon._skills = [only]
+		if setup.has("enemy_hp"):
+			emon._lost_hp = maxf(emon.hp() - setup.enemy_hp, 0.0)
 	for mon: Monster in State.mons:
-		_add_practice_attacks(mon)
-		# das Tutorial zeigt am Köder, wie One-Way-Items funktionieren: jedes Monster bekommt einen geliehen
-		mon._items[0] = Items.make("bait")
-	var enemy: Monster = Helper.generate_mons({"count": 1, "species": [_practice_species()]})[0]
-	enemy._level = State.INITIAL_LEVEL
-	enemy._initial_moves = Monster.BASE_MOVES
-	var ms: Array[Monster] = [enemy]
-	BossRelics.active = []
-	State.enemy_mons = ms
+		if setup.has("own_hp"):
+			mon._lost_hp = maxf(mon.hp() - setup.own_hp, 0.0)
+		if setup.get("attacks", false):
+			_add_tutorial_attacks(mon)
 
-## Eine möglichst gewöhnliche Art aus dem Pool des aktuellen Bioms (ohne Pool aus allen Arten)
-func _practice_species() -> String:
-	var names: Array = Monmap.mons.filter(func(meta): return not meta.has("bounty_target")).map(func(meta): return meta.name)
-	if State.map_level < State.biome_pools.size() and not State.biome_pools[State.map_level].is_empty():
-		names = State.biome_pools[State.map_level].duplicate()
-	var lowest: int = names.map(Monmap.rarity_of).min()
-	return names.filter(func(mon_name): return Monmap.rarity_of(mon_name) == lowest).pick_random()
+## Skills der eigenen Monster vor einem Tutorial-Kampf mit "attacks", kommen beim Verlassen zurück (_exit_tree)
+var _tutorial_skills := {}
 
-## Grundelement -> Namensteil der Starter-Skills (Skills.starter_skills)
-const PRACTICE_ELEMENTS := {
-	Enums.MON_TYPES.EARTH: "EARTH",
-	Enums.MON_TYPES.FIRE: "FIRE",
-	Enums.MON_TYPES.WATER: "WATER",
-	Enums.MON_TYPES.AIR: "AIR",
-}
+## Das Tutorial verlangt Angriffe auf den Gegner: für diesen Kampf nur Angriffe, vorn eine physische und eine
+## magische Attacke des eigenen Elements. Schilde und Buffs fallen weg, sonst spielt man sie und steckt fest.
+func _add_tutorial_attacks(mon: Monster) -> void:
+	_tutorial_skills[mon] = mon._skills
+	var attacks := []
+	for kind in ["PHYS", "MAG"]:
+		var skill := Tutorial.element_skill(mon, "SKILL_%s_" + kind + "_LIGHT_THRUST")
+		if not skill.is_empty() and not mon._skills.any(func(own): return own.name == skill.name):
+			attacks.append(skill)
+	mon._skills = attacks + mon._skills.filter(Skills.is_damage_skill)
 
-## Das Tutorial verlangt Angriffe auf den Gegner, die gewählten Ei-Attacken können aber nur Schilde oder Buffs sein:
-## für den Übungskampf vorn eine physische und eine magische Attacke des eigenen Elements (danach wieder weg)
-func _add_practice_attacks(mon: Monster) -> void:
-	for element: int in PRACTICE_ELEMENTS:
-		if not Skills.shares_element(mon._type, element):
+func _restore_tutorial_skills() -> void:
+	for mon: Monster in _tutorial_skills:
+		mon._skills = _tutorial_skills[mon]
+	_tutorial_skills = {}
+
+## Tutorial-Kampf mit "faint_wins": ein eigenes Monster ist gefallen, alle Gegner gelten als gefangen
+func _tutorial_catch_all() -> void:
+	for emon: Monster in State.enemy_mons.duplicate():
+		if not emon.is_alive():
 			continue
-		var attacks := []
-		for kind in ["PHYS", "MAG"]:
-			var skill := Skills.get_skill("SKILL_%s_%s_LIGHT_THRUST" % [PRACTICE_ELEMENTS[element], kind])
-			if not skill.is_empty() and not mon._skills.any(func(own): return own.name == skill.name):
-				skill.scouted = true
-				attacks.append(skill)
-		mon._skills = attacks + mon._skills
-		return
-
-func _restore_practice_snapshot() -> void:
-	for i in mini(State.mons.size(), _practice_snapshot.lost_hp.size()):
-		State.mons[i]._lost_hp = _practice_snapshot.lost_hp[i]
-		State.mons[i]._skills = _practice_snapshot.skills[i]
-		State.mons[i]._items = _practice_snapshot.items[i]
-	State.bag = _practice_snapshot.bag
-	State.run_catches = _practice_snapshot.run_catches
-	State.caught_mon_names = _practice_snapshot.caught_mon_names
-	State.defeated_mon_names = _practice_snapshot.defeated_mon_names
-	State.revealed_mon_stats = _practice_snapshot.revealed_mon_stats
-	State.catched_mons = []
-	State.enemy_mons = []
-	_practice_snapshot = {}
-
-## Gefangen oder Tutorial ausgeschaltet: zurück zur Karte, der Kampf hinterlässt nichts
-func _end_practice() -> void:
-	if _battle_over:
-		return
-	_battle_over = true
-	# noch im Kampf zurücksetzen, die Lebensbalken hören dabei noch zu
-	_restore_practice_snapshot()
-	Tutorial.end_practice()
+		Events.mon_is_catched.emit(emon)
+		emon.unlock_skills()
+		emon._initial_moves = Monster.BASE_MOVES
+		State.catched_mons.append(emon)
+		State.mark_mon_caught(emon._name)
+		State.run_catches += 1
+		State.enemy_mons.erase(emon)
+		turn_wheel.remove_mon(emon)
 
 ## Im Debug-Menü gewählte Relikte (für den Kampf) und Trophäen (für jeden Boss) ersetzen die gewürfelten
 func _apply_debug_boss_setup(bosses: Array[Monster]) -> void:
@@ -795,7 +790,7 @@ func upgrade_mons():
 ## Meilenstein-Zähler, wenn das Start-Monster den letzten Treffer gelandet hat (nicht im Übungskampf):
 ## K.O.s, Kopfgelder und der letzte Treffer eines Biom-Boss-Kampfs (Boss-Felder auf der Karte zählen nicht).
 func _count_starter_kill(defeated: Monster) -> void:
-	if not _practice_snapshot.is_empty() or State.starter == null or defeated._last_hit_by != State.starter:
+	if State.starter == null or defeated._last_hit_by != State.starter:
 		return
 	State.run_starter_kills += 1
 	if defeated._bounty != "":
@@ -858,8 +853,12 @@ func _check_game_over(last_fainted:Monster) -> void:
 			return not mon.is_alive()
 			)
 	)
+	# Tutorial (Feld 8): fällt ein eigenes Monster, ist der Kampf gewonnen und die Gegner sind gefangen
+	var tutorial_win: bool = not is_enemy and Tutorial.fight.get("faint_wins", false)
+	if tutorial_win:
+		_tutorial_catch_all()
 	# vom Todes-Totem gerettete Monster zählen schon als lebendig
-	if State.mons.all(
+	if not tutorial_win and State.mons.all(
 			func(mon: Monster):
 			return not mon.is_alive() and not _pending_revives.has(mon)
 			):
@@ -1300,9 +1299,6 @@ func _finish_catching(catched: bool, mon: Monster) -> void:
 	# Wurfnetz: der Fangversuch kostet nichts und beendet den Zug nicht
 	var keeps_turn := _catch_keeps_turn
 	_catch_keeps_turn = false
-	if Tutorial.practice and catched:
-		_end_practice()
-		return
 	if catched:
 		# war es der letzte Gegner, gehen die Relikte verloren: zerbrochen, oder bei vollen KP einfach liegen gelassen
 		var last_enemy: bool = State.enemy_mons.all(func(m: Monster): return m == mon or not m.is_alive())
@@ -1413,7 +1409,7 @@ func _apply_item(carrier: Monster, item: Dictionary, target: Monster) -> void:
 ## Todes-Totem: fällt ein eigenes Monster und trägt irgendein Team-Monster das Totem, steht es am Ende
 ## des laufenden Zuges (also nach den Aktionen des Gegners) mit wenigen KP wieder auf
 func _try_death_totem(mon: Monster) -> void:
-	if _pending_revives.has(mon) or Tutorial.practice:
+	if _pending_revives.has(mon) or Tutorial.is_fight():
 		return
 	var slot := Items.find_equipped("death_totem", State.mons)
 	if slot.is_empty():

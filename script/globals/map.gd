@@ -563,6 +563,30 @@ func _roll_bounty() -> Dictionary:
 		return {}
 	return open.pick_random()
 
+## Tutorial-Karte (Tutorial.run_active): eine Spur in der Mitte, die Felder 1-11 in fester Reihenfolge,
+## Feld 12 ist der Biom-Boss oben (tutorial_plan.txt, Abschnitt 4 D)
+const TUTORIAL_LANE := 3
+const TUTORIAL_ROWS := [
+	PATH_TYPE.COMBAT, PATH_TYPE.COMBAT, PATH_TYPE.EVENT, PATH_TYPE.TREASURE, PATH_TYPE.TRAINER, PATH_TYPE.SHOP,
+	PATH_TYPE.JAILER, PATH_TYPE.COMBAT, PATH_TYPE.GEM, PATH_TYPE.CAMP, PATH_TYPE.HUB,
+]
+
+func generate_tutorial_map() -> void:
+	all_nodes = []
+	starting_nodes = [TUTORIAL_LANE]
+	var grid := []
+	for column in 8:
+		var rows := []
+		rows.resize(TUTORIAL_ROWS.size())
+		grid.append(rows)
+	for row in TUTORIAL_ROWS.size():
+		var node := path.new(Vector3(TUTORIAL_LANE, row, TUTORIAL_LANE))
+		node._type = TUTORIAL_ROWS[row]
+		grid[TUTORIAL_LANE][row] = node
+		all_nodes.append(node)
+	generate_encounters(grid)
+	State.current_map = grid
+
 func generate_starting_points():
 	all_nodes = []
 	starting_nodes = []

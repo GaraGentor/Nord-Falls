@@ -93,6 +93,7 @@ static func lend(borrower: Monster, lender: Monster, element: int) -> void:
 	borrower._loans.append({"element": element, "from": lender})
 	lender._loan_debt += 1
 	_changed(borrower, lender)
+	Events.element_borrowed.emit()
 
 ## Kugel zurückgeben, bevor eine Fähigkeit sie verbraucht hat: der Partner bekommt seine Aktion zurück
 static func cancel(borrower: Monster, element: int) -> void:

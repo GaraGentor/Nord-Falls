@@ -46,6 +46,14 @@ func _ready() -> void:
 	# nur Elemente, die noch jemand im Team trinken kann
 	var drinkable := ELEMENTS.filter(func(element): return not mons_without(element).is_empty())
 	var with_potion := not drinkable.is_empty() and randf() < POTION_CHANCE
+	# Tutorial (Feld 4): fester Inhalt, danach erklärt die Karte das Inventar (world_map.gd)
+	if Tutorial.run_active:
+		_add_tutorial_loot(drinkable)
+		_build_buttons()
+		play_chest_intro()
+		_buttons.add_to_group("tut_treasure_buttons")
+		Tutorial.trigger("treasure")
+		return
 	# auf dem Teppich nur Bild und Name, ohne Beschreibung
 	for i in randi_range(PILES_MIN, PILES_MAX):
 		var gold := randi_range(PILE_GOLD_MIN, PILE_GOLD_MAX) + State.map_level * PILE_GOLD_PER_DEPTH
@@ -74,7 +82,12 @@ func _build_buttons() -> void:
 	open_button.add_theme_constant_override("icon_max_width", 28)
 	open_button.disabled = State.keys <= 0
 	open_button.pressed.connect(_open)
+	open_button.add_to_group("tut_treasure_open")
 	_buttons.add_child(open_button)
+	# Tutorial (Feld 4): nur öffnen, Weiterziehen gibt es nicht
+	if Tutorial.run_active:
+		add_footer(_buttons)
+		return
 	var leave_button := plate_button(tr("TREASURE_LEAVE"))
 	leave_button.pressed.connect(close)
 	_buttons.add_child(leave_button)
@@ -92,6 +105,17 @@ func _wait_before_burst() -> void:
 	# schon offen, wenn der Schlüssel benutzt wurde, bevor die Kiste fertig aufgesprungen ist: dann kommt kein Signal mehr
 	if not _is_open:
 		await _opened
+
+## Tutorial: ein riesiger Haufen Essenz (für Trainer und Laden), ein Element-Trank und ein Köder (Fangchance, Feld 8)
+const TUTORIAL_GOLD := 99999
+
+func _add_tutorial_loot(drinkable: Array) -> void:
+	add_bag_card(Helper.me_text(TUTORIAL_GOLD), "", texture_icon(ESSENCE_ICON), _on_gold_taken.bind(TUTORIAL_GOLD))
+	if not drinkable.is_empty():
+		var element: int = pick_potion_element(drinkable)
+		var potion := add_bag_card(potion_title(self, element), "", potion_art(element), func(): State.pending_potions.append(element))
+		potion.tooltip_text = tr("TREASURE_POTION_BAG_DESC")
+	_add_item_card(Items.make("bait"))
 
 ## One-Way-Item: Name in der Farbe seiner Seltenheit, in die Tasche gezogen landet es im Inventar
 func _add_item_card(item: Dictionary) -> void:

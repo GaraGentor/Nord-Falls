@@ -722,9 +722,5 @@ func _on_go_pressed() -> void:
 			continue
 		skill.scouted = true
 		_mon._skills.append(skill)
-	# mit Tutorial erst der Übungskampf, er führt danach zur Karte
-	if Tutorial.wants_practice():
-		Tutorial.start_practice()
-		return
 	# die Karte braucht beim ersten Mal etwas: solange füllen sich die Wellen als Lade-Anzeige
 	SceneLoader.change_scene("res://script/scenes/world_map/world_map.tscn")

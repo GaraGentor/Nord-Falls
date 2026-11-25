@@ -144,6 +144,8 @@ func _ready() -> void:
 	Items.normalize_bag()
 	Items.items_changed.connect(_rebuild)
 	_rebuild()
+	_left.add_to_group("tut_inv_team")
+	_grid.add_to_group("tut_inv_bag")
 
 func _exit_tree() -> void:
 	if Items.items_changed.is_connected(_rebuild):
@@ -154,6 +156,9 @@ func move(from: Dictionary, to: Dictionary) -> void:
 	Items.swap(from, to)
 	_selected = to if Items.get_at(to) != null else {}
 	_rebuild()
+	# Tutorial (nach Feld 4) wartet darauf, dass ein Item an ein Monster kommt
+	if to.get("mon") != null and Items.get_at(to) != null:
+		Events.item_equipped.emit()
 
 func select(ref: Dictionary) -> void:
 	_selected = ref

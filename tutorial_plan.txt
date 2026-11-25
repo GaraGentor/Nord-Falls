@@ -100,27 +100,27 @@ Kurz:
 
 	D) Die 12 Felder
 		 1  Kampf     Gegner mit dem Gegen-Grundelement des Starters. Erklärt: Initiative-Rad (gelber Pfeil, wer
-		              oben steht, ist dran), Absichten lesen, Fähigkeiten einsetzen, Zug beenden, Gegner-Werte und
-		              -Skills ansehen (und warum: Werte schwanken, starke Skills kann man übernehmen), Hypnose
-		              (100 % Fangchance). Danach das Urteil, nur eine Möglichkeit: Monster ins Team ziehen, bestätigen.
+					  oben steht, ist dran), Absichten lesen, Fähigkeiten einsetzen, Zug beenden, Gegner-Werte und
+					  -Skills ansehen (und warum: Werte schwanken, starke Skills kann man übernehmen), Hypnose
+					  (100 % Fangchance). Danach das Urteil, nur eine Möglichkeit: Monster ins Team ziehen, bestätigen.
 		 2  Kampf     Gegner hat 1 KP. Erklärt: Element vom Partner leihen (Element-Kugeln) und den Vorteil,
-		              Tempo und "Auto".
+					  Tempo und "Auto".
 		 3  Ereignis  Glücksrad "Ewiges Pech" -> Schlüssel geschenkt (nur im Tutorial).
 		 4  Schatz    99999 Gold, ein Trank (wird sofort verarbeitet), ein Item. Nach dem Item geht es ins Inventar:
-		              Inventar erklären, Item auf ein Monster ziehen.
+					  Inventar erklären, Item auf ein Monster ziehen.
 		 5  Trainer   vorhandene Sequenz "trainer"
 		 6  Laden     vorhandene Sequenz "shop"
 		 7  Kerker    vorhandene Sequenz "jailer" + Betonung: extrem wichtig, dauerhaft
 		 8  Kampf     Eigene Monster 1 KP, Gegner hat nur einen Angriff. Hat ein Monster ein Item: Items im Kampf
-		              erklären. Ein eigenes Monster stirbt sofort, der Kampf endet mit Sieg und Fang eines
-		              zufälligen Monsters. Danach: zuerst Items aufdecken, dann Wiederbelebung / Letzter Wille mit
-		              dem neuen Fang.
+					  erklären. Ein eigenes Monster stirbt sofort, der Kampf endet mit Sieg und Fang eines
+					  zufälligen Monsters. Danach: zuerst Items aufdecken, dann Wiederbelebung / Letzter Wille mit
+					  dem neuen Fang.
 		 9  Trophäen  vorhandene Sequenz "gems"
 		10  Lager     vorhandene Sequenz "camp"
 		11  Rastlager vorhandene Sequenz "hub" + "Alles nur einmal besuchbar"
 		12  Boss      1 KP, greift nicht an (nur ein nutzloser Buff). Erklärt: Boss-Relikte, was Bosskämpfe besonders
-		              macht (seltenere Monster, Relikte mit Modifikatoren). Beute: Reliktkiste, Ei, Couvert. Die
-		              Kiste und das Couvert gehen immer auf, das Ei erklärt nur das dauerhafte Freischalten.
+					  macht (seltenere Monster, Relikte mit Modifikatoren). Beute: Reliktkiste, Ei, Couvert. Die
+					  Kiste und das Couvert gehen immer auf, das Ei erklärt nur das dauerhafte Freischalten.
 
 	E) Ende
 		> Kurzer Abschluss-Satz vom Trainer, Spielstand zurücksetzen (2.2), tutorial_done = true, zurück zur Ei-Auswahl.
@@ -131,14 +131,14 @@ Kurz:
 	Jeder Schritt ist für sich spielbar und testbar. (Größe: S klein, M mittel, L groß)
 
 	 1  Gerüst + Start (M)
-	    Tutorial.run_active / step, Spielstand-Schutz, Startabfrage, Button in den
-	    Einstellungen, echte Runs ohne Sequenzen. Der Übungskampf bleibt bis Schritt 4 im Tutorial-Lauf.
+		Tutorial.run_active / step, Spielstand-Schutz, Startabfrage, Button in den
+		Einstellungen, echte Runs ohne Sequenzen. Der Übungskampf bleibt bis Schritt 4 im Tutorial-Lauf.
 	 2  Ei-Auswahl und Ei-Attacken (M)
-	    Sequenzen A und B, garantierter passender Starter, Ziel-Gruppen an Graph, Werten, Element, Tipps.
+		Sequenzen A und B, garantierter passender Starter, Ziel-Gruppen an Graph, Werten, Element, Tipps.
 	 3  Tutorial-Karte (M)
-	    Feste Karte mit 12 Feldern, Sequenz C, Feldtypen anklickbar in der festen Reihenfolge.
+		Feste Karte mit 12 Feldern, Sequenz C, Feldtypen anklickbar in der festen Reihenfolge.
 	 4  Kampf-Gerüst (L)
-	    Tutorial-Kämpfe aus Daten (Gegner, KP, festgelegte Gegner-Skills, Ausgang), alter Übungskampf raus.
+		Tutorial-Kämpfe aus Daten (Gegner, KP, festgelegte Gegner-Skills, Ausgang), alter Übungskampf raus.
 	 5  Feld 1 + Urteil (M)
 	 6  Feld 2: Element-Leihgabe, Tempo, Auto (S)
 	 7  Feld 3: Glücksrad "Ewiges Pech" (S)
@@ -168,11 +168,22 @@ Kurz:
 
 7. STAND
 ========
-	Schritt 1 umgesetzt:
-	> Tutorial.run_active, start_run / end_run / ask_skip / decline (script/globals/tutorial.gd)
-	> SaveManager.suspended: während des Tutorials wird nichts gespeichert, am Ende Stand von vorher zurück
-	> Startabfrage in der Ei-Auswahl, solange tutorial_done false ist (ChoiceDialog)
-	> Einstellungen: Button "Tutorial starten" statt Schalter, nur in der Ei-Auswahl aktiv
-	> Sequenzen nur noch im Tutorial-Lauf, nicht mehr in echten Runs
-	> Übergang: Bis die Tutorial-Karte steht (Schritt 3), ist der Tutorial-Lauf ein normaler Lauf mit den
-	  bisherigen Sequenzen und dem Übungskampf. Er endet beim Run-Ende oder über Überspringen.
+	Alle Schritte 1-12 umgesetzt (Ende November 2026), im Spiel per Skript durchgespielt. Offen: Schritt 13 (von Hand
+	durchspielen, Texte feilen).
+
+	Wo was steht:
+	> script/globals/tutorial.gd: Tutorial-Lauf (start_run, end_run, finish, ask_skip), Sequenzen (SEQUENCES),
+	  feste Kämpfe (FIGHTS), Starter-Garantie (prepare_starters), Platzhalter {mon}/{biome} (text_values)
+	> SaveManager.suspended: während des Tutorials wird nichts gespeichert
+	> Map.generate_tutorial_map: eine Spur, Felder 1-11 (TUTORIAL_ROWS), Feld 12 = Biom-Boss
+	> battle.gd _setup_tutorial_fight, turn_wheel.gd (eigene Monster in Runde 1 zuerst), judgement.gd
+	  (judgement_join_only), wheel_event.gd ("Ewiges Pech"), treasure.gd (99999 ME, Trank, Köder),
+	  world_map.gd (_tutorial_after_rewards: Inventar nach dem Schatz, Ende nach dem Boss), jailer.gd (geliehene
+	  Tränen), last_will_screen.gd, level_up.gd (Boss-Beute: Ei immer, Kiste und Couvert gehen immer auf)
+	> ChoiceDialog (script/ui/choice_dialog): Startabfrage und Rückfrage beim Überspringen
+	> Der alte Übungskampf ist entfernt.
+
+	Bekannte Kleinigkeiten:
+	> Feld 1: Gegner ist das Grundelement, gegen das der Starter stark ist ("gegengesetzt" so gedeutet).
+	> Boss-Relikte bleiben im Tutorial aktiv (z. B. Bongos: Schild jede Runde), der Boss kann also kurz zäh sein.
+	> Die Beute nach Feld 8 kommt wie sonst erst nach dem Letzten Willen.

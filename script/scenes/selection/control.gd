@@ -71,14 +71,19 @@ func _ready() -> void:
 		Tutorial.trigger("selection")
 
 ## Neuer Spielstand: mit Hilfe spielen (Tutorial-Lauf, die Ei-Auswahl startet neu) oder überspringen.
-## Man muss sich entscheiden, ein Klick daneben zählt nicht.
+## Man muss sich entscheiden, ein Klick daneben zählt nicht. Darüber gleich die Sprachwahl (erster Spielstart);
+## die Frage übersetzt sich beim Umschalten selbst, die Ei-Auswahl dahinter lädt danach neu.
 func _ask_for_tutorial() -> void:
-	var dialog := ChoiceDialog.ask(self, tr("TUTORIAL_ASK_TITLE"), tr("TUTORIAL_ASK_TEXT"),
-		tr("TUTORIAL_ASK_YES"), tr("TUTORIAL_ASK_NO"), false)
+	var locale := TranslationServer.get_locale()
+	var dialog := ChoiceDialog.ask(self, "TUTORIAL_ASK_TITLE", "TUTORIAL_ASK_TEXT",
+		"TUTORIAL_ASK_YES", "TUTORIAL_ASK_NO", false, true)
 	if await dialog.chosen:
+		# lädt die Ei-Auswahl ohnehin neu
 		Tutorial.start_run()
-	else:
-		Tutorial.decline()
+		return
+	Tutorial.decline()
+	if TranslationServer.get_locale() != locale:
+		get_tree().reload_current_scene.call_deferred()
 
 ## Gruppen, die das interaktive Tutorial hervorhebt (siehe Tutorial.SEQUENCES)
 func _add_tutorial_targets() -> void:
@@ -87,6 +92,10 @@ func _add_tutorial_targets() -> void:
 	_throw_button.add_to_group("tut_draw_egg")
 	_details.add_to_group("tut_starter_info")
 	_go_button.add_to_group("tut_begin_journey")
+	_tips.add_to_group("tut_sel_tips")
+	_chips.add_to_group("tut_sel_chips")
+	_radar.add_to_group("tut_sel_radar")
+	_stats.add_to_group("tut_sel_stats")
 
 ## Symbol-Knöpfe unten links übereinander: Einstellungen, darüber Sammlung und Anleitung
 func _add_corner_buttons() -> void:
@@ -132,9 +141,14 @@ func load_eggs() -> void:
 		roll_eggs()
 		return
 	mons = saved_eggs.map(Helper.mon_from_egg)
+	if Tutorial.run_active:
+		Tutorial.prepare_starters(mons, false)
 
 func roll_eggs() -> void:
 	mons = Helper.generate_mons({"count": EGG_COUNT, "initial": true})
+	# Tutorial: mindestens ein Starter ist stark gegen das erste Biom, der Trainer empfiehlt ihn
+	if Tutorial.run_active:
+		mons = Tutorial.prepare_starters(mons, true)
 	SaveManager.set_starter_eggs(mons.map(Helper.egg_to_save))
 
 func _on_throw_pressed() -> void:
@@ -158,6 +172,7 @@ func _throw_next() -> void:
 	_thrown += 1
 
 func _on_throw_finished() -> void:
+	Events.starter_egg_landed.emit()
 	if _queued > 0:
 		_queued -= 1
 		_throw_next()
@@ -169,7 +184,8 @@ func _on_throw_finished() -> void:
 		return
 	stage.speed_scale = 1.0
 	_fade(_go_button, true)
-	_reroll_button.visible = SaveManager.has_full_reroll_charges()
+	# im Tutorial nicht: die Ladungen gehören zum echten Spielstand
+	_reroll_button.visible = SaveManager.has_full_reroll_charges() and not Tutorial.run_active
 
 ## Neues Monster vorne: rechts seine Werte, unten seine Ei-Attacken
 func _on_front_changed(index: int, clicked: bool) -> void:

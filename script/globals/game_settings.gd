@@ -14,9 +14,12 @@ var fullscreen := false
 var card_effects := true
 ## großes Art-Symbol als Wasserzeichen auf den Skill-Karten (SkillCardPaper)
 var card_watermark := true
-## Easy Mode: die Relikte aus Relics.EASY_MODE_RELICS (alle Werte und Fähigkeiten der Gegner) gelten in jedem Run
-## als gesammelt und werden deshalb nirgends mehr angeboten
-var easy_mode := false
+## Hard Mode aus (Standard) = Easy Mode: die Relikte aus Relics.EASY_MODE_RELICS (alle Werte und Fähigkeiten der Gegner)
+## gelten in jedem Run als gesammelt und werden deshalb nirgends mehr angeboten. Im Hard Mode muss man sie finden.
+var hard_mode := false
+var easy_mode: bool:
+	get:
+		return not hard_mode
 ## Das Relikt Relics.ENEMY_HP_RELIC (genaue HP der Gegner) gilt in jedem Run als gesammelt, unabhängig vom Easy Mode
 var show_enemy_hp := false
 ## Das Relikt Relics.CARPET_RELIC (jede Lane der nächsten Reihe) gilt in jedem Run als gesammelt. Es ist für normale
@@ -49,6 +52,11 @@ func _ready() -> void:
 func has_window_mode() -> bool:
 	return OS.has_feature("pc")
 
+## Test-Schalter (Fliegender Teppich, Kampf wiederholen, Schlummernde Skills, Gegner leihen Elemente) gibt es nur in
+## Debug-Builds: im fertigen Spiel stehen sie nicht in den Einstellungen und bleiben aus
+func has_test_settings() -> bool:
+	return OS.is_debug_build()
+
 func set_fullscreen(on: bool) -> void:
 	if fullscreen == on:
 		return
@@ -71,10 +79,10 @@ func set_card_watermark(on: bool) -> void:
 	_save()
 	changed.emit()
 
-func set_easy_mode(on: bool) -> void:
-	if easy_mode == on:
+func set_hard_mode(on: bool) -> void:
+	if hard_mode == on:
 		return
-	easy_mode = on
+	hard_mode = on
 	_save()
 	changed.emit()
 	Relics.relics_changed.emit()
@@ -172,12 +180,14 @@ func _load() -> void:
 	fullscreen = config.get_value("display", "fullscreen", false)
 	card_effects = config.get_value("display", "card_effects", true)
 	card_watermark = config.get_value("display", "card_watermark", true)
-	easy_mode = config.get_value("gameplay", "easy_mode", false)
+	hard_mode = config.get_value("gameplay", "hard_mode", false)
 	show_enemy_hp = config.get_value("gameplay", "show_enemy_hp", false)
-	flying_carpet = config.get_value("gameplay", "flying_carpet", false)
-	retry_battle = config.get_value("gameplay", "retry_battle", false)
-	dormant_skills = config.get_value("gameplay", "dormant_skills", false)
-	enemy_loans = config.get_value("gameplay", "enemy_loans", false)
+	# Test-Schalter: fertige Builds ignorieren sie und lassen sie aus (has_test_settings)
+	if has_test_settings():
+		flying_carpet = config.get_value("gameplay", "flying_carpet", false)
+		retry_battle = config.get_value("gameplay", "retry_battle", false)
+		dormant_skills = config.get_value("gameplay", "dormant_skills", false)
+		enemy_loans = config.get_value("gameplay", "enemy_loans", false)
 	battle_speed_index = config.get_value("battle", "speed_index", 0)
 	battle_auto_end = config.get_value("battle", "auto_end", false)
 	language = config.get_value("display", "language", "")
@@ -187,7 +197,7 @@ func _save() -> void:
 	config.set_value("display", "fullscreen", fullscreen)
 	config.set_value("display", "card_effects", card_effects)
 	config.set_value("display", "card_watermark", card_watermark)
-	config.set_value("gameplay", "easy_mode", easy_mode)
+	config.set_value("gameplay", "hard_mode", hard_mode)
 	config.set_value("gameplay", "show_enemy_hp", show_enemy_hp)
 	config.set_value("gameplay", "flying_carpet", flying_carpet)
 	config.set_value("gameplay", "retry_battle", retry_battle)

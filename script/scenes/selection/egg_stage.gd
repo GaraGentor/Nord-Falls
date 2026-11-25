@@ -316,6 +316,7 @@ func _build_cards_row() -> void:
 	_cards = HBoxContainer.new()
 	_cards.add_theme_constant_override("separation", maxi(CARD_GAP, SkillCardPaper.FLAME_GAP_X))
 	_cards.mouse_filter = MOUSE_FILTER_IGNORE
+	_cards.add_to_group("tut_sel_skills")
 	center.add_child(_cards)
 
 ## Alle freigeschalteten Ei-Attacken der Art als Karten (null: keine)

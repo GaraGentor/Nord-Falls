@@ -4,6 +4,8 @@ extends InfoDialog
 ## Frage mit zwei Antworten im Rahmen der Info-Dialoge: Titel, Text, links "Nein", rechts "Ja" (gold).
 ## Das Ergebnis kommt über chosen (true = Ja). Startabfrage und Überspringen des Tutorials (Tutorial).
 ## dismissable: Klick daneben und Esc zählen als Nein; sonst muss man eine Antwort wählen.
+## with_language: über der Frage die Sprachwahl (Startabfrage beim ersten Spielstart). Dann Übersetzungsschlüssel
+## statt fertiger Texte übergeben: die Labels übersetzen sich beim Umschalten selbst neu.
 
 signal chosen(yes: bool)
 
@@ -14,24 +16,31 @@ var _question_text: String
 var _yes_text: String
 var _no_text: String
 var _dismissable: bool
+var _with_language: bool
 var _answered := false
 
 ## Hängt die Frage an host (eine Ebene über dessen CanvasLayer) und liefert den Dialog zurück: await dialog.chosen
-static func ask(host: Node, title: String, text: String, yes: String, no: String, dismissable := true) -> ChoiceDialog:
-	return InfoDialog.present(host, ChoiceDialog.new(title, text, yes, no, dismissable))
+static func ask(host: Node, title: String, text: String, yes: String, no: String, dismissable := true,
+		with_language := false) -> ChoiceDialog:
+	return InfoDialog.present(host, ChoiceDialog.new(title, text, yes, no, dismissable, with_language))
 
-func _init(title: String, text: String, yes: String, no: String, dismissable: bool) -> void:
+func _init(title: String, text: String, yes: String, no: String, dismissable: bool, with_language := false) -> void:
 	super()
 	_question_title = title
 	_question_text = text
 	_yes_text = yes
 	_no_text = no
 	_dismissable = dismissable
+	_with_language = with_language
 
 func _has_close_button() -> bool:
 	return false
 
 func _build(content: VBoxContainer) -> void:
+	if _with_language:
+		var language := SettingsDialog.language_row(GameSettings.set_language)
+		language.alignment = BoxContainer.ALIGNMENT_CENTER
+		content.add_child(language)
 	content.add_child(_title(_question_title, SkillDetailPopup.GOLD))
 	var text := _note(_question_text, IronPlate.TEXT_COLOR)
 	text.modulate.a = 1.0
