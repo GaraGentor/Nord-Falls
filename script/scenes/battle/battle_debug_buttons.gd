@@ -1,7 +1,7 @@
 class_name BattleDebugButtons
-extends HBoxContainer
+extends VBoxContainer
 
-## Kampf-Cheats aus dem Debug-Menü (DebugSettings), oben rechts links neben den BattleControls im selben Stil:
+## Kampf-Cheats aus dem Debug-Menü (DebugSettings), als Spalte rechts neben den BattleControls im selben Stil:
 ##   Sofortsieg: ein Klick besiegt alle Gegner (battle.gd _debug_win)
 ##   Fang 100 %: schaltet die Fangchance auf 100 % und wieder zurück (DebugSettings.sure_catch, Helper.catch_chance)
 ## Jeder Knopf erscheint nur, wenn sein Schalter im Debug-Menü an ist.
@@ -24,17 +24,7 @@ static func wanted() -> bool:
 func _ready() -> void:
 	add_theme_constant_override("separation", 6)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	# rechts oben, links neben der Spalte der BattleControls
-	var right := -(SIZE.x + BattleControls.MARGIN * 2)
-	anchor_left = 1.0
-	anchor_right = 1.0
-	anchor_top = 0.0
-	anchor_bottom = 0.0
-	grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	offset_right = right
-	offset_left = right
-	offset_top = BattleControls.MARGIN
-	offset_bottom = BattleControls.MARGIN
+	alignment = BoxContainer.ALIGNMENT_CENTER
 	if DebugSettings.catch_button_enabled():
 		var catch_slot := _slot(tr("BATTLE_DEBUG_CATCH_TOOLTIP"), CATCH_ICON, "100%", _on_catch_input)
 		_catch_style = catch_slot.get_theme_stylebox("panel")

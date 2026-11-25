@@ -345,13 +345,9 @@ func _update_turn_arrow(delta: float) -> void:
 	if _turn_arrow == null or not _turn_arrow.visible or texture_rect.texture == null:
 		return
 	_turn_arrow_time += delta
-	var rect_size := texture_rect.size
-	var tex_size := texture_rect.texture.get_size()
-	# Keep Centered zeichnet das Bild in Originalgröße (darf über das Rechteck hinausragen), sonst eingepasst
-	var scale_factor := 1.0 if texture_rect.stretch_mode == TextureRect.STRETCH_KEEP_CENTERED \
-		else minf(rect_size.x / tex_size.x, rect_size.y / tex_size.y)
-	var drawn := tex_size * scale_factor
-	var origin := _texture_offset() + (rect_size - drawn) / 2
+	var image := drawn_image_rect()
+	var drawn := image.size
+	var origin := image.position
 	var bob := sin(_turn_arrow_time * 5.0) * TURN_ARROW_BOB
 	# etwas über der Mitte, damit der Pfeil die Statusanzeige nicht verdeckt
 	_turn_arrow.position = origin + Vector2(drawn.x + 4 + bob, drawn.y * 0.3)
@@ -360,7 +356,7 @@ func _process(delta: float) -> void:
 	_update_turn_arrow(delta)
 	# gültiges Ziel unter einer gezogenen Karte hervorheben
 	var drag_data = get_viewport().gui_get_drag_data() if get_viewport().gui_is_dragging() else null
-	var hovered = drag_data != null and get_global_rect().has_point(get_global_mouse_position()) \
+	var hovered = drag_data != null and _has_point(get_local_mouse_position()) \
 		and _can_drop_data(Vector2.ZERO, drag_data)
 	modulate = Color(1.3, 1.3, 1.0) if hovered else Color.WHITE
 	_update_drag_preview(drag_data)
@@ -488,3 +484,20 @@ func _on_gui_input(event: InputEvent) -> void:
 # Position des Monster-Bilds relativ zu dieser Szene (es liegt in einem VBoxContainer).
 func _texture_offset() -> Vector2:
 	return texture_rect.global_position - global_position
+
+## Tatsächlich gezeichnetes Monsterbild relativ zu dieser Szene. Keep Centered zeichnet das Bild in Originalgröße
+## (darf über das Rechteck hinausragen, bei Gegnern nach unten bis zu den eigenen Monstern), sonst eingepasst.
+func drawn_image_rect() -> Rect2:
+	if texture_rect == null or texture_rect.texture == null:
+		return Rect2()
+	var rect_size := texture_rect.size
+	var tex_size := texture_rect.texture.get_size()
+	var scale_factor := 1.0 if texture_rect.stretch_mode == TextureRect.STRETCH_KEEP_CENTERED \
+		else minf(rect_size.x / tex_size.x, rect_size.y / tex_size.y)
+	var drawn := tex_size * scale_factor
+	return Rect2(_texture_offset() + (rect_size - drawn) / 2, drawn)
+
+## Klick- und Ablagefläche: die Szene selbst plus das ganze gezeichnete Bild, damit sich Karten auch auf den Teil des
+## Monsters ziehen lassen, der über die Szene hinausragt
+func _has_point(point: Vector2) -> bool:
+	return Rect2(Vector2.ZERO, size).has_point(point) or (visible and drawn_image_rect().has_point(point))

@@ -82,7 +82,8 @@ func _init_card() -> void:
 	name_label.self_modulate = SkillCardPaper.readable_color(Helper.color_by_type(face.nature))
 	# Kosten, wie das Monster sie zahlt (Bollwerkmeister verbilligt teure Schilde)
 	_top_row.show_skill(face, true, Skills.skill_cost(mon, skill) if mon != null else -1)
-	_bottom_row.show_skill(skill, mon)
+	# Werte vom Skill selbst, Farbe von der Karte (Kombi-Element bei Leihgabe)
+	_bottom_row.show_skill(skill, mon, true, face.nature)
 	# schlummert der Skill bei seinem Monster: abgeschwächte Werte, Element-Effekt durchgestrichen
 	_set_description(Helper.skill_description(face, true, mon), Color.WHITE)
 

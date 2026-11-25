@@ -129,14 +129,8 @@ func _ready() -> void:
 
 	if State.mons.size() > 1:
 		$GameWindow/HBoxContainer2/MonsterScene1.visible = true
-	# Element-Kugeln neben den eigenen Monstern (Element-Leihgabe, ElementLoan)
-	# Gegner haben keine: ihre Leihgaben stehen in der Absicht (monster_scene.gd _add_loan_tag)
-	for scene in _monster_scenes():
-		if scene.home_mons:
-			scene.add_child(ElementOrbs.new(scene))
-
 	if State.is_final_boss:
-		$UI/HBoxContainer/TextureRect/Catch.visible = false
+		catch_button.visible = false
 
 	# unsichtbar, blockiert aber Eingaben während der Gegner am Zug ist
 	$UI_Blocker.self_modulate = Color(1, 1, 1, 0)
@@ -155,16 +149,22 @@ func _ready() -> void:
 	top_layer.offset_top = $GameWindow.offset_top
 	top_layer.offset_right = $GameWindow.offset_right
 	top_layer.offset_bottom = $GameWindow.offset_bottom
+	# Element-Kugeln über den eigenen Monstern (Element-Leihgabe, ElementLoan). Auf dieser Ebene liegen sie über den
+	# Gegnern (deren Bilder ragen nach unten bis zu den eigenen Monstern), aber unter der Kartenhand.
+	# Gegner haben keine: ihre Leihgaben stehen in der Absicht (monster_scene.gd _add_loan_tag)
+	# beim Ein- und Ausfliegen am Rand des Kampffelds abgeschnitten, nicht über dem Infobereich
+	var orb_layer := Control.new()
+	orb_layer.name = "ElementOrbLayer"
+	orb_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	orb_layer.clip_contents = true
+	top_layer.add_child(orb_layer)
+	orb_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	for scene in _monster_scenes():
+		if scene.home_mons:
+			orb_layer.add_child(ElementOrbs.new(scene))
 	card_hand.reparent(top_layer, false)
 	card_hand.can_play = func() -> bool: return not $UI_Blocker.visible and _is_own_turn() and not _battle_over
-	var controls := BattleControls.new()
-	top_layer.add_child(controls)
-	controls.auto_end_toggled.connect(func(_enabled): _try_auto_end())
-	# Kampf-Cheats aus dem Debug-Menü links neben den Knöpfen, nicht im Übungskampf
-	if BattleDebugButtons.wanted() and not Tutorial.practice:
-		var debug_buttons := BattleDebugButtons.new()
-		$GameWindow.add_child(debug_buttons)
-		debug_buttons.win_pressed.connect(_debug_win)
+	_build_bottom_bar()
 	_relic_bar.pressed.connect(func(): _relic_overlay.play_intro(BossRelics.active, false))
 	_item_postits = ItemPostitsScript.new($GameWindow)
 	_item_postits.can_use = func(mon: Monster) -> bool:
@@ -174,6 +174,7 @@ func _ready() -> void:
 	move_child(_item_postits, $UI_Blocker.get_index() + 1)
 	# Hand und Knöpfe über dem Blocker, die Postits noch darüber
 	move_child(top_layer, _item_postits.get_index())
+	move_child(_ui_top, _item_postits.get_index())
 	_apply_start_items()
 	_relic_overlay = BossRelicOverlayScript.new()
 	add_child(_relic_overlay)
@@ -191,12 +192,48 @@ func _ready() -> void:
 		Tutorial.enabled_changed.connect(_on_tutorial_enabled_changed)
 		Tutorial.trigger("battle")
 
+## Untere Leiste des Infobereichs: rechts Hypnose und Zugende als rechteckige Bildknöpfe (battle.tscn UI/BottomBar,
+## *_button_rect.svg),
+## links davon Geschwindigkeit/Auto (BattleControls) und daneben die Debug-Knöpfe, je zwei übereinander.
+## So verdeckt nichts mehr die Absichten der Gegner im Kampffeld.
+## Die linke Gruppe liegt auf einer eigenen Ebene über dem Eingabe-Blocker: sie lässt sich auch im Zug der Gegner umstellen.
+const BOTTOM_BAR_MARGIN := 12
+var _ui_top: Control
+
+func _build_bottom_bar() -> void:
+	_ui_top = Control.new()
+	_ui_top.name = "UITop"
+	_ui_top.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_ui_top)
+	for property in ["anchor_left", "anchor_top", "anchor_right", "anchor_bottom",
+			"offset_left", "offset_top", "offset_right", "offset_bottom"]:
+		_ui_top.set(property, $UI.get(property))
+	var row := HBoxContainer.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_theme_constant_override("separation", 6)
+	_ui_top.add_child(row)
+	# gleiche Höhe wie die Leiste mit Hypnose und Zugende
+	var bar: Control = $UI/BottomBar
+	row.anchor_top = bar.anchor_top
+	row.anchor_bottom = bar.anchor_bottom
+	row.offset_left = BOTTOM_BAR_MARGIN
+	row.offset_top = bar.offset_top
+	row.offset_bottom = bar.offset_bottom
+	var controls := BattleControls.new()
+	row.add_child(controls)
+	controls.auto_end_toggled.connect(func(_enabled): _try_auto_end())
+	# Kampf-Cheats aus dem Debug-Menü, nicht im Übungskampf
+	if BattleDebugButtons.wanted() and not Tutorial.practice:
+		var debug_buttons := BattleDebugButtons.new()
+		row.add_child(debug_buttons)
+		debug_buttons.win_pressed.connect(_debug_win)
+
 ## Gruppen, die das interaktive Tutorial hervorhebt (siehe Tutorial.SEQUENCES)
 func _add_tutorial_targets() -> void:
 	turn_wheel.add_to_group("tut_bat_wheel")
 	card_hand.add_to_group("tut_bat_hand")
 	catch_button.add_to_group("tut_bat_catch")
-	$UI/HBoxContainer/TextureRect3/EndTurn.add_to_group("tut_bat_end_turn")
+	$UI/BottomBar/EndTurnFrame/EndTurn.add_to_group("tut_bat_end_turn")
 	for scene in _monster_scenes():
 		if State.enemy_mons.has(scene.mon):
 			scene.add_to_group("tut_bat_enemies")
@@ -388,8 +425,8 @@ func _select_mon(mon: Monster) -> void:
 
 ## "Neu!" am Hypnose-Knopf: der ausgewählte Gegner (das Ziel der Hypnose) ist eine Art, die man noch nicht besitzt
 const CATCH_BADGE_FONT_SIZE := 32
-## Lage des Schilds relativ zur oberen Mitte des Knopfs
-const CATCH_BADGE_OFFSET := Vector2(42, 0)
+## Lage des Schilds relativ zur oberen rechten Ecke des Knopfs
+const CATCH_BADGE_OFFSET := Vector2(10, -16)
 var _catch_badge: Label
 
 func _refresh_catch_badge() -> void:
@@ -398,8 +435,8 @@ func _refresh_catch_badge() -> void:
 	if _catch_badge == null:
 		_catch_badge = SpeciesMark.make_new_tag(tr("BATTLE_CATCH_NEW"), CATCH_BADGE_FONT_SIZE)
 		catch_button.add_child(_catch_badge)
-		# wie ein Aufkleber schräg oben rechts an der Spirale (das Symbol sitzt mittig im breiteren Knopf)
-		_catch_badge.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP, Control.PRESET_MODE_MINSIZE)
+		# wie ein Aufkleber schräg an der oberen rechten Ecke des Knopfs
+		_catch_badge.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT, Control.PRESET_MODE_MINSIZE)
 		_catch_badge.position += CATCH_BADGE_OFFSET
 	var target := currently_selected_enemy_mon
 	_catch_badge.visible = target != null and target.is_alive() and not target._minion \

@@ -401,9 +401,11 @@ class BottomRow extends MarginContainer:
 
 	## mon: Besitzer für den Wert (null = Formel).
 	## known = false: unbekannter Skill eines Gegners, Wert, Symbol und Abklingzeit bleiben verborgen.
-	func show_skill(skill: Dictionary, mon: Monster = null, known := true) -> void:
+	## nature: Element für die Farbe, falls die Karte anders aussieht als der Skill (Element-Leihgabe, auch die Vorschau
+	## beim Ziehen einer Kugel); -1 = Element des Skills
+	func show_skill(skill: Dictionary, mon: Monster = null, known := true, nature := -1) -> void:
 		show_missing("")
-		_nature_color = SkillCardPaper.readable_color(Helper.color_by_type(skill.nature))
+		_nature_color = SkillCardPaper.readable_color(Helper.color_by_type(skill.nature if nature < 0 else nature))
 		# Passive wirken dauerhaft, eine Abklingzeit gibt es dort nicht; ohne Abklingzeit bleibt die Uhr ebenfalls weg
 		_cooldown.modulate.a = 0.0 if Skills.is_passive(skill) or not known or int(skill.get("cooldown", 0)) <= 0 else 1.0
 		_cooldown_label.text = str(skill.get("cooldown", 0))

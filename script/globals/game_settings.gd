@@ -29,6 +29,9 @@ var retry_battle := false
 var dormant_skills := false
 ## Zum Testen: Gegner nutzen die Element-Leihgabe (ElementLoan, battle.gd _plan_loans). Aus: nur der Spieler leiht.
 var enemy_loans := false
+## Kampf-Geschwindigkeit (Index in BattleControls.SPEEDS) und Auto-Zugende, bleiben über Neustarts erhalten
+var battle_speed_index := 0
+var battle_auto_end := false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -108,6 +111,18 @@ func set_enemy_loans(on: bool) -> void:
 	_save()
 	changed.emit()
 
+func set_battle_speed_index(index: int) -> void:
+	if battle_speed_index == index:
+		return
+	battle_speed_index = index
+	_save()
+
+func set_battle_auto_end(on: bool) -> void:
+	if battle_auto_end == on:
+		return
+	battle_auto_end = on
+	_save()
+
 func toggle_fullscreen() -> void:
 	set_fullscreen(not fullscreen)
 
@@ -146,6 +161,8 @@ func _load() -> void:
 	retry_battle = config.get_value("gameplay", "retry_battle", false)
 	dormant_skills = config.get_value("gameplay", "dormant_skills", false)
 	enemy_loans = config.get_value("gameplay", "enemy_loans", false)
+	battle_speed_index = config.get_value("battle", "speed_index", 0)
+	battle_auto_end = config.get_value("battle", "auto_end", false)
 
 func _save() -> void:
 	var config := ConfigFile.new()
@@ -158,4 +175,6 @@ func _save() -> void:
 	config.set_value("gameplay", "retry_battle", retry_battle)
 	config.set_value("gameplay", "dormant_skills", dormant_skills)
 	config.set_value("gameplay", "enemy_loans", enemy_loans)
+	config.set_value("battle", "speed_index", battle_speed_index)
+	config.set_value("battle", "auto_end", battle_auto_end)
 	config.save(PATH)
