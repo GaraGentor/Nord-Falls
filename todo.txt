@@ -1,6 +1,71 @@
-> Speicher mir die Settings für die Geschwindigkeit und Auto End Turn
-> Im Kampf dürfen die gegnerischen Monster sich nicht über die eigenen Elemente legen, die man einem anderen geben kann.
-> Die Boxen / Container für die gegnerischen Monster müssen so groß sein, wie die Icons, damit ich darauf die fähigkeiten draggen kann.
-> Resolution und Aspekt Ratio klappt nicht so ganz. Das muss auf 1280x720 bleiben egal was passiert auf einem Wide Screen sieht alles nämlich kagge aus :( oder zumindest muss das Seitenverhältniss immer fest sein. Egal ob dann ränder rechts, links oben oder unten entstehen können.
-> Im Kampf ändere Mir den Zugende Button und die Hypnose zu Rechteckigen Buttons und Aligne diese ganz Rechts an. Danach muss das Speed, Auto, 100% Fangchance und Instant Win auch unten Links zur Hypnose und Zugende, allerdings Links aligned. 1x und auto kann übereinander, danach rechts daneber die Debug buttons (auch untereinander). So verdeckt die UI dann keine Absichten mehr.
-> Im Kampf die Elemente sollen sich so verhalten: Wenn mein monster 1 dran ist, sollen die Elemente von Monster 2 von rechts rein fliegen und ruhig in einem Dreieck über dem Monster platziert sein, sodass ich weiß, dass ich mir ein element von ihm nehmen kann. Solange bleiben die Elemente von meinem Monster 1 versteckt. Wenn dann mein Monster 2 dran ist, verschwinden seine eigenen elemente wieder und die von monster 1 kommen von links rein geflogen. Es kann ungefähr so Aussehen: C:\Users\sheni\Downloads\Unbenannt (28).png Das ist ein beispiel von meinem Mooswürfel mit - züge und drei elementen. 
+Tutorial Aktualisieren
+
+D.h. wir machen folgendes:
+	Beim Start des spiels fragen wir den Spieler mit einem Modal
+	[Erstes mal dabei? Spiele das erste mal begleitet mit Hilfe oder Hilfe Überspringen? (Du kannst in den Einstellungen die Hilfe jederzeit wieder einschalten)]
+	Hier hat dann der User die möglichkeit Ja zu drücken oder das Tutorial zu skippen.
+
+Wenn das Tutorial dann Startet bleibt der Anfang erstmal wie es. Genau erklären muss man dann foglendes:
+	> Tipps
+	> Genaue erklärung des Pfades und dass man mit einem klick drauf, die schwächen und stärken sehen kann, damit man sich einen vorteil verschaffen kann
+	> EI werfen...
+
+Wenn ein Monster da ist:
+	> Die Fähigkeiten anzeige erklären, dass diese derzeit zur verfügung stehen und weiter freigespielt werden müsse
+	> Den Graphen, dass das die Growth ist pro errungene Level
+	> Die Stats (KP, Ang, SAng, Ver, Ini, Ges) und dass bei Seltenen monstern die Stats höher sind
+	> Wo das Element sichtbar ist von dem Monster, das zu sehen ist
+
+Danach muss man alle weiteren ziehen
+Wenn alle Monster da sind:
+	> Nun kannst du dir ein Monster aussuchen mit hinweis, dass man das Monster Empfehlen würde, dass stark gegen das erste Biom ist (ein passendes Starter muss immer vorhanden sein im Tutorial)
+
+Danach geht es zu den EI Attacken
+	> Hier kurz erkären, was es mit den fliegenden Fähigkeiten auf sich hat, und was dafür zu tun ist
+	> Wie man sich seine Karten auswählen kann
+	> Wie man den Lauf Startet
+
+Danach geht es in eine Tutorial Map:
+Zuerst wird erklärt was die Map ist, und wo man hin muss. Sowie die Lebens anzeige, von den Monstern und das dort die Details sind, die Legende und der Pfad.
+Dann Folgt ein Klick aufs erste Feld.
+	> Eine Lane in der Mitte
+	> Erstes Tile ein Kampf
+		> Das monster muss ein gegengesetztes Basis element sein wie das ausgewählte monster
+		> Hier wird erklärt, was das Initiativen Rad ist (auch mit dem Gelben Pfeil, wie es sich dreht und die die oben stehen immer am Zug sind)
+		> Wie man die Aktionen der Monster ließt und wie man erkennt wann und wer dran ist
+		> Wie man Fähigkeiten einsetzt
+		> Wie man Züge beendet
+		> Wie man sich die Stats von den Gegner anschaut und die Fähigkeiten und wieso das wichtig ist! (variable stats und stärkere fähigkeiten kann man sich einverleiben)
+		> Was die Hypnose macht (100% fang chance)
+		> Danach Startet das Judgement mit Ziel: Monster zu sich ziehen und Bestätigen. Eine andere Option gibt es nicht. 
+	> Zweites Tile ein Kampf
+		> Hier wird erklärt wie man die elemente der Freunde einsetzt und was das für große Vorteile haben kann
+		> Wie man speed höher macht und wofür "auto" steht
+		> Gegner hat nur 1 hp und stirbt instant nach einem hit
+	> Drittes Tile ein Ereignis, wo man ein Schlüssel geschenkt bekommt (das soll nur im Tutorial so sein) Das soll so aussehen wie die + - chance für ME das jetzt schon existiert allerdings soll dann ein sehr großes feld sein rot mit dem Text "Ewiges Pech" und auf einem mini fleck das grüne, wo der spin natürlich auf das grüne geht und man dann den schlüssel bekommt xD
+	> Viertes Tile ein Schatz (hier bekommt man Viiieeeelll Cash 99999 und ein Trank und ein Item)
+		> Da Tränke direkt verarbeitet werden müssen müssen wir danach nichts mehr machen
+		> Wenn wir das Item gelootet haben werden wir ins Inventory gelotst.
+			> Hier dann das Inventory erklären und dass man ein Item zu einem Monster ziehen kann
+	> Fünftes Tile der Trainer
+	> Sechstes Tile der Laden
+	> Siebtes Tile der Kerkermeister
+		> Betonen, dass das hier extrem wichtig ist und key
+	> Achtes Tile ein Kampf (wo Garantiert ein Freundliches Monster Stirbt und es wieder belebt werden muss)
+		> Wenn der Nutzer ein Item ausgerüstet hat, wird das erklärt, wie man items nutzt
+		> Danach stirbt ein Monster direkt mit einem Hit und der Kampf endet mit einem "Random Monster als Fang"
+		> Freundliche Monster haben alle nur 1 hp
+		> Gegner hat nur eine Fähigkeit, damit er eine Attacke auf ein monster spielt es killt und danach endet der Kampf (mit sieg und Fang des Monsters)
+	> Hier passiert dann die Wieder belebung und das aufdecken der Items (items zu erst dann wieder belebung mit dem Random monster)
+	> Neuntes Feld Trophaen auswahl
+	> Zehntes Feld Hier ein normales Lager machen
+	> 11. Feld das Rastlager
+		> Hier erklären, dass man alles nur 1x besuchen kann
+	> 12. Feld ein Boss fight
+		> Boss hat auch nur 1hp der kampf kann nur gewonnen werden. Boss attackiert nicht (hat nur einen unnötigen Buff skill)
+		> Was sind Boss Relikte und was macht einen Boss fight besonders? (Higher Chance of rarity monsters and boss reliks with modifiers)
+		> Nach dem Fight mit win triggert das Looten hier wird die relikt kiste gezeigt, ein EI und das couver. Das EI Wird im Tutorial nicht freigeschaltet und soll nur erklären, dass man so neue Monster Permanent Freischaltet
+		> Egal was der Nutzer lootet: Alles wird getriggert (relikt kiste und couver)
+
+Wenn das Tutorial so beendet wird, geht man direkt wieder zum Start des Games und das Tutorial ist abgeschlossen und es kommt danach nichts mehr vom tutorial vor.
+In den Einstellungen haben wir somit kein Toggle mehr, sondern ein Button: "Tutorial Starten" und alles geht wieder von vorne Los. Sollte ich in der Mitte das Tutorial Starten wird alles neu resettet (der alte speicher sollte dadurch nicht überschrieben werden, sonst wäre das ein hack um die monster neu zu rollen)

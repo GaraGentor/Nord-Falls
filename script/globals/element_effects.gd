@@ -6,10 +6,10 @@ extends Node
 ## Zweier-Kombis, lösen nur mit einer Chance aus (TRIGGER_CHANCES), Schwächungen halten EFFECT_TURNS Züge:
 ##   Dampf:   Ziel -20 % Verteidigung (10 %)
 ##   Staub:   Ziel -20 % Angriff und Sp. Angriff (10 %)
-##   Blitz:   Fähigkeiten des Ziels schlagen zu 10 % fehl (10 %)
-##   Eis:     Wirker bekommt 25 % des verursachten Schadens als Schild (25 %)
-##   Magma:   Treffer geht durch den Schild (20 %)
-##   Schlamm: wie Magma (Platzhalter, bis es einen eigenen Effekt gibt)
+##   Blitz:   Fähigkeiten des Ziels schlagen zu 25 % fehl (10 %)
+##   Eis:     jedes Monster im Team des Wirkers bekommt 60 % des verursachten Schadens als Schild (25 %)
+##   Magma:   Treffer geht durch den Schild, ohne Schild 30 % der Verteidigung des Ziels als Zusatzschaden (20 %)
+##   Schlamm: Ziel verliert 1 Aktion im nächsten Zug, nur wenn es noch mindestens 2 hätte (15 %)
 ## Dreier-Kombis: Sumpf = Gift bis Kampfende (10 % pro Treffer auf einen Stapel), Aschesturm = wahrer Zusatzschaden
 ## (10 %), Gewitter = Paralyse bis Kampfende, Vulkan = Chance auf doppelte Wirkung.
 ## Chaos: höherer Element-Faktor gegen alle Nicht-Chaos-Ziele. Hat nur der Endboss (Monster.MAX_ELEMENTS = 3).
@@ -52,12 +52,17 @@ const DEBUFF_CHANCE := 0.1
 const DEBUFF_FACTOR := 0.2
 ## Blitz: Chance, dass das Ziel geschwächt wird, und Fehlschlag-Chance seiner Fähigkeiten
 const FAIL_TRIGGER_CHANCE := 0.1
-const FAIL_CHANCE := 0.1
-## Eis: Chance und Anteil des verursachten Schadens, der als Schild zurückkommt
+const FAIL_CHANCE := 0.25
+## Eis: Chance und Anteil des verursachten Schadens, der als Schild zurückkommt (für jedes Monster im Team des Wirkers)
 const ICE_CHANCE := 0.25
-const ICE_SHIELD_SHARE := 0.25
-## Magma / Schlamm: Chance, dass der Treffer durch den Schild geht
+const ICE_SHIELD_SHARE := 0.6
+## Magma: Chance, dass der Treffer durch den Schild geht. Ohne Schild beim Ziel: Zusatzschaden aus dessen Verteidigung
 const PIERCE_CHANCE := 0.2
+const MELT_SHARE := 0.3
+## Schlamm: Chance, dass das Ziel im nächsten Zug 1 Aktion verliert (Monster._mud_debt).
+## Nur wenn ihm danach noch mindestens 1 Aktion bleibt (also ab 2 Aktionen pro Zug), stapelt nicht.
+const MUD_CHANCE := 0.15
+const MUD_MIN_MOVES := 2
 ## Sumpf: Chance pro Treffer auf einen Stapel Gift, Gift-Schaden pro Stapel (Anteil der max. KP) vor jedem Zug des Ziels
 const POISON_CHANCE := 0.1
 const POISON_SHARE := 0.03
@@ -75,7 +80,7 @@ const CHAOS_BONUS := 0.25
 ## Auslösechance pro Element (ohne Eintrag: löst immer aus)
 const TRIGGER_CHANCES := {
 	STEAM: DEBUFF_CHANCE, DUST: DEBUFF_CHANCE, LIGHTNING: FAIL_TRIGGER_CHANCE, ICE: ICE_CHANCE,
-	MAGMA: PIERCE_CHANCE, MUD: PIERCE_CHANCE, SWAMP: POISON_CHANCE, ASH_STORM: ASH_CHANCE,
+	MAGMA: PIERCE_CHANCE, MUD: MUD_CHANCE, SWAMP: POISON_CHANCE, ASH_STORM: ASH_CHANCE,
 }
 
 ## Schlüssel pro Element: Übersetzung EFFECT_<KEY>_DESC
@@ -93,6 +98,7 @@ const DEBUFF_COLOR := Color(1.0, 0.45, 0.4)
 const ERUPTION_COLOR := Color(1.0, 0.35, 0.15)
 const ASH_COLOR := Color(1.0, 0.5, 0.2)
 const PIERCE_COLOR := Color(1.0, 0.65, 0.3)
+const MUD_COLOR := Color(0.75, 0.6, 0.45)
 const FAIL_COLOR := Color(1.0, 0.9, 0.3)
 ## Schwächungs-Quelle und Pseudo-Wert für Blitz (Monster._debuffs), zählt nicht auf echte Werte
 const FAIL_DEBUFF := "lightning"
@@ -104,7 +110,7 @@ const FAIL_STAT := "fail"
 ## Pro getroffenem Gegner, nach dem Schaden: Schwächungen, Statuseffekte und Zusatzschaden aufs Ziel.
 func on_hit(from: Monster, target: Monster, skill: Dictionary) -> void:
 	var nature := effect_nature(skill)
-	if not Skills.is_damage_skill(skill) or not target.is_alive() or not nature in [STEAM, DUST, LIGHTNING, SWAMP, ASH_STORM, THUNDERSTORM]:
+	if not Skills.is_damage_skill(skill) or not target.is_alive() or not nature in [STEAM, DUST, LIGHTNING, MUD, SWAMP, ASH_STORM, THUNDERSTORM]:
 		return
 	if not _triggers(skill, from):
 		return
@@ -120,6 +126,8 @@ func on_hit(from: Monster, target: Monster, skill: Dictionary) -> void:
 		LIGHTNING:
 			target.add_debuff(FAIL_DEBUFF, FAIL_STAT, FAIL_CHANCE * power, EFFECT_TURNS + 1)
 			Events.status_vfx.emit(target, "debuff")
+		MUD:
+			_apply_mud(target)
 		SWAMP:
 			_apply_status(target, POISON, from, power, POISON_MAX_STACKS)
 		ASH_STORM:
@@ -127,15 +135,36 @@ func on_hit(from: Monster, target: Monster, skill: Dictionary) -> void:
 		THUNDERSTORM:
 			_apply_status(target, PARALYSIS, from, power)
 
-## Einmal pro Einsatz, nach allen Treffern: Eis gibt dem Wirker einen Schild aus dem Schaden.
+## Schlamm: das Ziel verliert 1 Aktion in seinem nächsten Zug, wenn ihm danach noch eine bleibt (stapelt nicht).
+## Gegner kürzen ihren schon angekündigten Zug (battle.gd _use_skill ruft danach _trim_intent).
+func _apply_mud(target: Monster) -> void:
+	if target._mud_debt > 0 or ElementLoan.moves_per_turn(target) - target._loan_debt < MUD_MIN_MOVES:
+		return
+	target._mud_debt = 1
+	Events.monster_effect_text.emit(target, tr("EFFECT_TEXT_MUD"), MUD_COLOR)
+	Events.monster_status_changed.emit(target)
+
+## Einmal pro Einsatz, nach allen Treffern: Eis gibt jedem lebenden Monster im Team des Wirkers einen Schild aus dem
+## Schaden (auch dem Partner, der das Element geliehen hat). Der Schild hält, bis der Wirker wieder am Zug ist.
 func on_cast(from: Monster, skill: Dictionary, dealt: float) -> void:
 	if not from.is_alive() or effect_nature(skill) != ICE or dealt <= 0 or not _triggers(skill, from):
 		return
-	from.add_shield(ceilf(dealt * ICE_SHIELD_SHARE * effect_power(skill)))
+	var amount := ceilf(dealt * ICE_SHIELD_SHARE * effect_power(skill))
+	var team: Array = State.mons if State.mons.has(from) else State.enemy_mons
+	for mon: Monster in team:
+		if mon.is_alive():
+			mon.add_shield(amount, from)
 
-## Magma / Schlamm: geht dieser Treffer durch den Schild?
+## Magma: löst der Effekt bei diesem Treffer aus? Mit Schild geht der Treffer durch, ohne gibt es melt_damage dazu.
 func rolls_pierce(skill: Dictionary, from: Monster = null) -> bool:
-	return effect_nature(skill) in [MAGMA, MUD] and _triggers(skill, from)
+	return effect_nature(skill) == MAGMA and _triggers(skill, from)
+
+## Magma ohne Schild beim Ziel: Zusatzschaden aus der Verteidigung des Ziels (zeigt "Schmelze +X")
+func melt_damage(target: Monster, skill: Dictionary) -> float:
+	var extra := ceilf(target.defense() * MELT_SHARE * effect_power(skill))
+	if extra > 0:
+		Events.monster_effect_text.emit(target, tr("EFFECT_TEXT_MELT") + " +%d" % roundi(extra), PIERCE_COLOR)
+	return extra
 
 ## Zeigt "Durchschlag!" über dem Ziel, wenn es einen Schild hatte
 func show_pierce(target: Monster) -> void:
@@ -297,6 +326,7 @@ func element_effect_text(mask: int, power := 1.0, card_chance := 1.0) -> String:
 		"debuff": _percent(DEBUFF_FACTOR * power),
 		"fail": _percent(FAIL_CHANCE * power),
 		"ice": _percent(ICE_SHIELD_SHARE * power),
+		"melt": _percent(MELT_SHARE * power),
 		"poison": _percent(POISON_SHARE * power),
 		"stacks": POISON_MAX_STACKS,
 		"ash": _percent(ASH_SHARE * power),

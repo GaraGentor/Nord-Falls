@@ -977,6 +977,24 @@ func _after_reading(text: String, then: Callable) -> Tween:
 func _input(event: InputEvent) -> void:
 	if _explaining and event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		_next_line()
+	_close_mon_outside(event)
+
+## Wie beim Letzten Willen: ein Klick neben Übersicht und Monster fährt den Laden zurück
+## (ein Monster selbst wechselt die Übersicht über _toggle_mon)
+func _close_mon_outside(event: InputEvent) -> void:
+	if _open_field == null or not event is InputEventMouseButton or not event.pressed or event.button_index != MOUSE_BUTTON_LEFT:
+		return
+	# ein Dialog darüber (z. B. Element-Info): der Klick gehört ihm
+	if InfoDialog.any_open(get_tree()):
+		return
+	var pos: Vector2 = event.global_position
+	if _modal_holder.get_global_rect().has_point(pos):
+		return
+	for field in _mon_fields:
+		if field.covers(pos):
+			return
+	_close_mon()
+	get_viewport().set_input_as_handled()
 
 ## Die Kasse hüpft zweimal vor Freude
 func _jump_for_joy() -> void:

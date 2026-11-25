@@ -270,9 +270,13 @@ func _next() -> void:
 		_close()
 		finished.emit()
 
+## Tutorial.ask_skip fragt nach; bleibt man, läuft die Sequenz an derselben Stelle weiter
 func _on_skip_pressed() -> void:
-	_close()
 	skipped.emit()
+
+## Dialoge aus dem Tutorial (Rückfrage beim Überspringen) liegen eine Ebene über dem Overlay
+func dialog_host() -> Node:
+	return _blocker
 
 func _close() -> void:
 	_stop_waiting()

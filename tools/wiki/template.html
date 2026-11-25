@@ -368,7 +368,7 @@ const chip = (mask) => `<span class="chip"><i style="background:${esc(elementCol
 // Spiegelt ElementEffects.element_effect_text: Text mit den Werten und der Auslösechance (TRIGGER_CHANCES) davor
 const effectPct = (share) => fmtNum(Math.round(share * 1000) / 10);
 const TRIGGER_CHANCE_KEYS = { STEAM: "DEBUFF_CHANCE", DUST: "DEBUFF_CHANCE", LIGHTNING: "FAIL_TRIGGER_CHANCE", ICE: "ICE_CHANCE",
-	MAGMA: "PIERCE_CHANCE", MUD: "PIERCE_CHANCE", SWAMP: "POISON_CHANCE", ASH_STORM: "ASH_CHANCE" };
+	MAGMA: "PIERCE_CHANCE", MUD: "MUD_CHANCE", SWAMP: "POISON_CHANCE", ASH_STORM: "ASH_CHANCE" };
 function effectText(key, power = 1, cardChance = 1, stripName = false) {
 	const c = DATA.elements.effects;
 	let text = tr(`EFFECT_${key}_DESC`, {
@@ -376,6 +376,7 @@ function effectText(key, power = 1, cardChance = 1, stripName = false) {
 		debuff: effectPct(c.DEBUFF_FACTOR * power),
 		fail: effectPct(c.FAIL_CHANCE * power),
 		ice: effectPct(c.ICE_SHIELD_SHARE * power),
+		melt: effectPct(c.MELT_SHARE * power),
 		poison: effectPct(c.POISON_SHARE * power),
 		stacks: c.POISON_MAX_STACKS,
 		ash: effectPct(c.ASH_SHARE * power),

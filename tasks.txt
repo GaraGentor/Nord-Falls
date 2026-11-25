@@ -1,35 +1,25 @@
 Tasks:
-	
-> Am Ende hab ich Viel Geld gehabt
-	> Lösung: Alles an Loot im Shop pro Biom immer Teurer machen?
-		> Oder Items etc. immer nach Kauf teurer machen?
-	> Lösung: Starke skills beim Trainer vieeeel teurer machen?
+
+
+Ideen:
+> Neue Passive für Magier?
+	> Abklingzeit verringern
 > Endless Run nach Finishen des Games 1x.?
 > Randomizer Mod?
 > Run Speichern und am nächsten Tag weiter machen?
-> Wenn man Easy Mode ausschaltet, kann man den letzten Endboss fangen
-	> Schwarze Tür dropped beim Endboss als loot, beim aufheben wird direkt ein neuer Endboss kampf getriggert mit dem Clue, dass dort der Endboss gefangen werden kann und der Run beendet wird ohne loot.?
-> Bei den Element Boni checken, ob die Darstellung davon ausreichen ist (poison, paralyziert etc.)
-> Wide Screen
-> Exit Button bei Shop und Trainer
-> [erledigt] Harter Stopp bei max 3 Elementen, nur der Endboss ist Chaos, Meilenstein "Dreier-Kombi" statt "Chaos"
+> Shop mit Flohmarkt kiste ersetzen wo man sich durchsuchen muss? xD
+> Klon Maschine - gegner zum Fangen
 
-
-> Neue Passive für Magier?
-	> Wenn 2 Magier (Höchste S_ATK da ist), haben diese Lebenraus
-	> 
-
+Todos:
 > Tutorial besser machen...
 > Zweites Biom beim ersten Boss die monster schwächer machen
-> Map Balancen...
-> letzter Wille über alle Items?
-> Level Balancen!!
 
-> Endboss
-	> Hier ist das Relikt ziemlich cool, dass die immer als erstes und letzteres dran sind. Hat mir sehr gefallen
-	> Endboss Kampf im Debug Modus. Auswahl zwischen zwei Monster, Random Karten Deck, Chaos Stufe, Freie Level Auswahl, Freie Trophäen Wahl Pro Monster
-	> Zweites Endboss Relikt
-		> Mini Monster Spawnerm, halbe level, nicht catchable und immer 1 aktion. Spawnt immer alle 2 Runden ein neues Monster sobald noch keins da ist oder eins gestorben ist
+> Map Balancen...
+> Level Balancen...
+> Fähigkeiten Balancen...
+	- Physische Angriffe etwas weaker balanzieren und mehrere Treffer hinzufügen (für Aschesturm)
+	- Second element Bonis nochmal checken die sind nämlich kacke...
+
 
 Konzept durchgehen:
 	- Attacke vill nochmal auf nur einen typ Beschränken?
@@ -37,14 +27,11 @@ Konzept durchgehen:
 	- Bisschen neu Balancen
 	- Neue Fähigkeiten mit 0 SP aber CD (eher für schwachte buffs)
 
-Ideen:
-Shop mit Flohmarkt kiste ersetzen wo man sich durchsuchen muss? xD
-
 Nach Game Finish:
 - Tutorial Final Testen wenn Game Fertig ist
 - Tutorial Text bei Monster Auswahl updaten
 
-- Physische Angriffe etwas weaker balanzieren und mehrere Treffer hinzufügen (für Aschesturm)
+
 
 PT: 
 > Wenn ich mir die Elemente angucke, check ich da noch nicht sooo viel. Es wird kompliziert, wenn ich Aschesturm besitze und schauen will, wer hiergegen viel schaden macht, dann klick ich mich überall durch. D.h. hier müssen auch die ELement Kombinationen angezeigt werden, die Hart treffen und Weniger schaden machen (nicht nur die Basis elemente)

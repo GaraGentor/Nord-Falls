@@ -83,16 +83,7 @@ JUDGEMENT_RELEASE_STARTER_TITLE,Release your starter?,Start-Monster freilassen?
 JUDGEMENT_TEACH_PICK_REPLACE,{mon} already knows {max} moves. Which one should {skill} replace?,{mon} kennt schon {max} Attacken. Welche soll {skill} ersetzen?
 JUDGEMENT_TEACH_KNOWN_ALL,Your team already knows it,Dein Team kennt sie schon
 JUDGEMENT_TEACH_SKILL_COUNT,{count}/{max} moves,{count}/{max} Attacken
-JUDGEMENT_BACK,Back,Zurück
-REVIVE_TITLE,Who gives their life for {mon}?,Wer gibt sein Leben für {mon}?
-REVIVE_INTRO,"{mon} has fallen. A new catch can give its life: {mon} returns with {hp}% HP. Each monster can only be revived once per run.","{mon} ist gefallen. Ein neuer Fang kann sein Leben geben: {mon} kehrt mit {hp} % KP zurück. Jedes Monster kann pro Run nur einmal wiederbelebt werden."
-REVIVE_CARD_NOTE,Will be lost,Geht dafür verloren
-REVIVE_SKIP,Skip,Überspringen
-REVIVE_DONE,{mon} is back with {hp}% HP!,{mon} ist mit {hp} % KP zurück!
-LAST_WILL_INTRO,"{mon} has fallen. Pass on one thing, the rest is lost.","{mon} ist gefallen. Gib eine Sache weiter, der Rest geht verloren."
-LAST_WILL_PICK_GIFT,What should {mon} leave behind?,Was soll {mon} hinterlassen?
-LAST_WILL_PICK_HEIR,Who should inherit {gift}?,Wer soll {gift} erben?
-LAST_WILL_GEMS,Trophies,Trophäen
+REVIVE_DONE,{mon} is back with {hp}% HP!,{mon} ist mit {hp} % LP zurück!
 LAST_WILL_ELEMENT_DESC,Adds this element to the heir.,Gibt dem Erben dieses Element dazu.
 LAST_WILL_HAS_ELEMENT,Already has it,Hat es schon
 ELEMENT_LIMIT_REACHED,Already has three elements,Hat schon drei Elemente
@@ -102,6 +93,18 @@ LAST_WILL_DECLINE,Leave nothing,Nichts hinterlassen
 LAST_WILL_DECLINE_TITLE,Leave nothing behind?,Wirklich nichts hinterlassen?
 LAST_WILL_DECLINE_TEXT,Everything {mon} gathered will be lost.,"Alles, was {mon} gesammelt hat, geht verloren."
 LAST_WILL_INHERITED,{mon} inherited {gift}!,{mon} hat {gift} geerbt!
+LAST_WILL_TITLE,{mon} has fallen,{mon} ist gefallen
+LAST_WILL_SOUL_GIFT,"Before I go, I'll leave you one thing. Clear my bones aside and give it to one of you. Everything else fades with me.","Bevor ich gehe, überlasse ich dir eine Sache. Räum meine Knochen beiseite und gib sie einem von euch. Alles andere vergeht mit mir."
+LAST_WILL_SOUL_VESSEL,"Or give me a new vessel: bring a new catch to me and I'll live on with {hp}% HP.","Oder gib mir ein neues Gefäß: Bring einen neuen Fang zu mir, dann lebe ich mit {hp} % LP weiter."
+LAST_WILL_TIDY,"Tidying, tidying!","Ich räume, räume!"
+LAST_WILL_SOUL_NOTHING,I have nothing left that could help you.,"Ich habe nichts mehr, das dir helfen könnte."
+LAST_WILL_SOUL_ONCE,I've already come back once. This time I have to go.,Ich bin schon einmal zurückgekehrt. Diesmal muss ich gehen.
+LAST_WILL_SOUL_DRAG_VESSEL,Yes... that vessel will do!,Ja ... dieses Gefäß nehme ich!
+LAST_WILL_SOUL_THANKS,Take good care of it...,Pass gut darauf auf ...
+LAST_WILL_SOUL_REVIVED,I'm back!,Ich bin zurück!
+LAST_WILL_SOUL_FAREWELL,Then everything fades with me...,Dann vergeht alles mit mir ...
+LAST_WILL_REVIVE_DROP,Revive ({hp}% HP),Wiederbeleben ({hp} % LP)
+LAST_WILL_REPLACES,Must forget a move,Muss eine Attacke vergessen
 SKILL_NEEDS_ELEMENTS,Needs: {elements},Benötigt: {elements}
 SKILL_NEEDS_ONE_ELEMENT,"Needs one of: {elements}","Benötigt eins von: {elements}"
 SKILL_DORMANT,"Dormant: [hl]{power}% strength[/hl], hits as [hl]{element}[/hl]","Schlummert: [hl]{power}% Stärke[/hl], trifft als [hl]{element}[/hl]"
@@ -241,7 +244,7 @@ SKILL_MIST_VEIL,Mist Veil,Nebelschleier
 SKILL_SHIELD_DESC,Shields an ally with [hl]{value} shield + ({scaling}*DEF)[/hl] against [hl]physical and magical damage[/hl] until your next turn,Schützt ein eigenes Monster mit [hl]{value} Schild + ({scaling}*VER)[/hl] vor [hl]physischem und magischem Schaden[/hl] bis zu deinem nächsten Zug
 SKILL_BUFF_DEF_DESC,[hl]+{value}% DEF[/hl] for an ally for [hl]{buff_turns} turns[/hl],[hl]+{value}% VER[/hl] für ein eigenes Monster für [hl]{buff_turns} Züge[/hl]
 SKILL_LIFE_SPRING,Life Spring,Lebensquell
-SKILL_PASSIVE_HP_DESC,Passive: [hl]+{value} HP[/hl] for every monster in the team,Passiv: [hl]+{value} KP[/hl] für jedes Monster im Team
+SKILL_PASSIVE_HP_DESC,Passive: [hl]+{value} HP[/hl] for every monster in the team,Passiv: [hl]+{value} LP[/hl] für jedes Monster im Team
 SKILL_SQUALL,Squall,Sturmböe
 SKILL_FIRESTORM,Firestorm,Feuersturm
 SKILL_AREA_ABILITY_DESC,Deals [hl]{value}%[/hl] of your [hl]SPA[/hl] as [hl]magical damage[/hl] to [hl]all enemies[/hl],Verursacht [hl]{value}%[/hl] deines [hl]SAN[/hl] als [hl]magischen Schaden[/hl] an [hl]allen Gegnern[/hl]
@@ -311,7 +314,7 @@ SKILL_EARTHFIRE,Earthfire,Erdglut
 SKILL_SOOT_GALE,Soot Gale,Rußsturm
 SKILL_BOG_GRIP,Bog Grip,Sumpfgriff
 ELEMENT_UNKNOWN,Unknown,Unbekannt
-STAT_HP,HP:,KP:
+STAT_HP,HP:,LP:
 STAT_ATK,ATK:,ANG:
 STAT_DEF,DEF:,VER:
 STAT_SPA,SPA:,SAN:
@@ -528,7 +531,7 @@ RELIC_FINDER,Finder,Finder
 RELIC_FINDER_DESC,"Gives you 3 random items when you pick it up.","Gibt dir beim Einsammeln 3 zufällige Items."
 RELIC_BRUTAL_STRIKE,Brutal Strike,Brutaler Schlag
 RELIC_BRUTAL_STRIKE_DESC,"For all monsters: strong magic element hits deal +0.5x damage, weak ones -0.5x (x0.5 becomes no damage at all).","Für alle Monster: starke magische Element-Treffer machen +0,5x Schaden, schwache -0,5x (aus x0,5 wird gar kein Schaden)."
-CAMP_FIRE_ASK_ENDLESS,"Throw the Endless Fire in as often as you like, it always comes back! {hp} HP for each monster per throw.","Wirf das Endlose Feuer hinein, so oft du willst, es kommt immer zurück! {hp} KP für jedes Monster pro Wurf."
+CAMP_FIRE_ASK_ENDLESS,"Throw the Endless Fire in as often as you like, it always comes back! {hp} HP for each monster per throw.","Wirf das Endlose Feuer hinein, so oft du willst, es kommt immer zurück! {hp} LP für jedes Monster pro Wurf."
 RELIC_REWARD_CHOOSE,Choose a relic,Wähle ein Relikt
 MAP_NODE_GEM,TROPHIES,TROPHÄEN
 GEM_CHOOSE,Choose a trophy,Wähle eine Trophäe
@@ -616,11 +619,11 @@ JAILER_SAY_INTRO_LAST,"And finally {mon}. Caught {place}, costs {cost}.","Und zu
 JAILER_SAY_HOWTO,I see Boss Tears in your bag. Drag them to me to strengthen one of your monsters.,"Ich sehe da Boss Tränen in deiner Tasche. Zieh sie zu mir, um eines deiner Monster zu verstärken."
 RUN_END_KILLED_BY,Killing blow:,Tödlicher Treffer:
 RUN_END_FALLEN,Fallen along the way:,Unterwegs gefallen:
-RUN_END_DEATH_LINE,"{killer} (Lv. {killer_level}) took out {victim} (Lv. {victim_level}) with {skill}: -{damage} HP ({hp_left}/{max_hp} HP left)","{killer} (Lv. {killer_level}) besiegte {victim} (Lv. {victim_level}) mit {skill}: -{damage} KP ({hp_left}/{max_hp} KP übrig)"
+RUN_END_DEATH_LINE,"{killer} (Lv. {killer_level}) took out {victim} (Lv. {victim_level}) with {skill}: -{damage} HP ({hp_left}/{max_hp} HP left)","{killer} (Lv. {killer_level}) besiegte {victim} (Lv. {victim_level}) mit {skill}: -{damage} LP ({hp_left}/{max_hp} LP übrig)"
 RUN_END_ELEMENT,[Element x{mult}],[Element x{mult}]
 RUN_END_SEARCH_TITLE,Monster search per biome,Monster-Suche pro Biom
 RUN_END_SEARCH_PLACEHOLDER,Search monster...,Monster suchen...
-RUN_END_SEARCH_KILLS,"Knocked out {count} of your monsters, hardest hit: {skill} (-{damage} HP)","Hat {count} deiner Monster besiegt, härtester Treffer: {skill} (-{damage} KP)"
+RUN_END_SEARCH_KILLS,"Knocked out {count} of your monsters, hardest hit: {skill} (-{damage} HP)","Hat {count} deiner Monster besiegt, härtester Treffer: {skill} (-{damage} LP)"
 RUN_END_SEARCH_ALL,All,Alle
 RUN_END_SEARCH_BIOME,Biome {n}: {element},Biom {n}: {element}
 RUN_END_SEARCH_LOCKED,"Not in your collection yet. Keep it as an egg after a biome boss to see its stats.","Noch nicht in deinem Besitz. Sichere es dir nach einem Biom-Boss als Ei, um seine Werte zu sehen."
@@ -655,7 +658,7 @@ EVENT_VOID_SKIP,Move on,Weiterziehen
 MAP_HEADER_BIOME,{biome} · Depth {depth},{biome} · Tiefe {depth}
 MAP_HEADER_NO_RELICS,No relics yet,Noch keine Relikte
 MAP_TEAM_ENTRY,{name}  Lv {level},{name}  Lv {level}
-MAP_TEAM_HP,{hp} / {max} HP,{hp} / {max} KP
+MAP_TEAM_HP,{hp} / {max} HP,{hp} / {max} LP
 MAP_LEGEND,Legend,Legende
 MAP_LEGEND_HINT,Click an entry for details.,Klicke auf einen Eintrag für Details.
 MAP_NODE_COMBAT_DESC,"A fight against wild monsters of the current biome. Wins pay Monster Essence and experience, and weakened enemies can be caught. Every fight in a biome makes the next enemies a bit stronger.","Ein Kampf gegen wilde Monster aus dem aktuellen Biom. Siege bringen Monster Essenz und Erfahrung, geschwächte Gegner kannst du fangen. Mit jedem Kampf im Biom werden die nächsten Gegner etwas stärker."
@@ -666,10 +669,10 @@ MAP_NODE_TRAINER_DESC,"Teaches your monsters rare skills, half of them with seve
 MAP_NODE_JAILER_DESC,"The jailer keeps up to three monster species in chains. Every chain is a missing upgrade (+1 action per turn). Hand him a boss tear to break a chain, once the last one is gone the species is free and fully upgraded, permanently, also for future runs. Showing other prisoners costs Monster Essence.","Der Kerkermeister hält bis zu drei Monster-Arten in Ketten. Jede Kette ist eine fehlende Verbesserung (+1 Aktion pro Zug). Gib ihm eine Boss Träne, um eine Kette zu sprengen, ist die letzte weg, ist die Art frei und voll verbessert, dauerhaft, auch für spätere Runs. Andere Gefangene zeigen kostet Monster Essenz."
 MAP_NODE_EVENT_DESC,"A random event: a camp that heals your monsters, the wheel of fortune where you win or lose half of your Monster Essence, or the void that swaps a relic for another one of the same rarity.","Ein Zufallsereignis: ein Lager, das deine Monster heilt, das Glücksrad, bei dem du die Hälfte deiner Monster Essenz gewinnst oder verlierst, oder der Void, der ein Relikt gegen ein anderes gleicher Seltenheit tauscht."
 MAP_NODE_TREASURE_DESC,"A chest full of Monster Essence, you need a key to open it.","Eine Kiste voller Monster Essenz, zum Öffnen brauchst du einen Schlüssel."
-MAP_NODE_GEM_DESC,"Pick one of three trophies. It raises one stat of a monster (e.g. attack or HP) for the rest of the run. The deeper you are, the stronger the trophies.","Wähle eine von drei Trophäen. Sie erhöht einen Wert eines Monsters (z. B. Angriff oder KP) für den restlichen Run. Je tiefer du bist, desto stärker die Trophäen."
+MAP_NODE_GEM_DESC,"Pick one of three trophies. It raises one stat of a monster (e.g. attack or HP) for the rest of the run. The deeper you are, the stronger the trophies.","Wähle eine von drei Trophäen. Sie erhöht einen Wert eines Monsters (z. B. Angriff oder LP) für den restlichen Run. Je tiefer du bist, desto stärker die Trophäen."
 MAP_NODE_HUB,OUTPOST,RASTLAGER
 MAP_NODE_HUB_DESC,"The last stop of every path, right before the boss. Here you can rest (Monster Essence in the fire heals), visit the shop and the trainer, each once. Prepare your team for the boss fight!","Das letzte Feld jedes Pfads, direkt vor dem Boss. Hier kannst du dich ausruhen (Monster Essenz im Feuer heilt), den Laden und den Trainer besuchen, jedes einmal. Mach dein Team bereit für den Bosskampf!"
-CAMP_FIRE_ASK,"Feed me Monster Essence, and in return I'll credit it to you as health! 1 ME = {hp} HP for each monster.","Füttere mich mit Monster Essenzen, im Gegenzug schreibe ich euch das als Leben gut! 1 ME = {hp} KP für jedes Monster."
+CAMP_FIRE_ASK,"Feed me Monster Essence, and in return I'll credit it to you as health! 1 ME = {hp} HP for each monster.","Füttere mich mit Monster Essenzen, im Gegenzug schreibe ich euch das als Leben gut! 1 ME = {hp} LP für jedes Monster."
 CAMP_FIRE_EATING,"Omnomnom nom nom nomnom, yummy!","Omnomnom nom nom nomnom, lecker!"
 CAMP_FEED_POOR,"You don't have enough essence for that.","Dafür hast du nicht genug Essenz."
 SKILL_REWARD_CHOOSE,Choose a skill,Wähle einen Skill
@@ -696,7 +699,7 @@ HUB_DESC,"Last rest before the boss. Every station can be used once.","Letzte Ra
 HUB_REST,REST,AUSRUHEN
 HUB_DONE,{station} (done),{station} (erledigt)
 HUB_CONTINUE,Move on,Weiterziehen
-MAP_HEADER_ROUTE,Route:,Route:
+MAP_HEADER_ROUTE,Path:,Pfad:
 EGG_OVERVIEW_TITLE,Egg moves unlocked,Ei-Attacken freigeschaltet
 EGG_OVERVIEW_UNLOCKED,Unlocked,Freigeschaltet
 EGG_OVERVIEW_LOCKED,Locked,Gesperrt
@@ -769,6 +772,14 @@ TUTORIAL_LOOT_TITLE,Loot,Beute
 TUTORIAL_LOOT,"After every fight the loot lies on the battlefield. Drag it into the bag, whatever stays behind is lost when you move on. Boxes, envelopes and trophy bags open the next time you enter the map.","Nach jedem Kampf liegt die Beute auf dem Schlachtfeld. Zieh sie in die Tasche, was liegen bleibt, ist beim Weitergehen verloren. Kisten, Couverts und Trophäen-Beutel öffnen sich beim nächsten Betreten der Karte."
 TUTORIAL_NEXT,Next,Weiter
 TUTORIAL_SKIP,Skip tutorial,Tutorial überspringen
+TUTORIAL_SKIP_TITLE,End the tutorial?,Tutorial beenden?
+TUTORIAL_SKIP_TEXT,"You go back to the egg selection, your save is just like before the tutorial. You can start it again anytime in the settings.","Du kommst zurück zur Ei-Auswahl, dein Spielstand ist wie vor dem Tutorial. In den Einstellungen kannst du es jederzeit neu starten."
+TUTORIAL_SKIP_YES,End tutorial,Tutorial beenden
+TUTORIAL_SKIP_NO,Keep learning,Weiter lernen
+TUTORIAL_ASK_TITLE,First time here?,Zum ersten Mal dabei?
+TUTORIAL_ASK_TEXT,"Play your first run with the trainer at your side, who explains everything step by step. Or skip the help. You can start the tutorial again anytime in the settings.","Spiel deinen ersten Lauf mit dem Trainer an deiner Seite, er erklärt dir alles Schritt für Schritt. Oder überspring die Hilfe. In den Einstellungen kannst du das Tutorial jederzeit neu starten."
+TUTORIAL_ASK_YES,Play with help,Mit Hilfe spielen
+TUTORIAL_ASK_NO,Skip help,Hilfe überspringen
 TUT_SEL_WELCOME,"A new face! I'm the trainer. Let me show you how to survive up north.","Na, ein neues Gesicht! Ich bin der Trainer. Ich zeige dir, wie man im Norden überlebt."
 TUT_SEL_PATH,"This is your journey: five biomes, each with its own elements. At the very end the final boss is waiting.","Das ist deine Reise: fünf Biome, jedes mit eigenen Elementen. Ganz am Ende wartet der Endboss."
 TUT_SEL_DRAW,"First you need a partner. Throw three eggs!","Zuerst brauchst du einen Partner. Wirf drei Eier!"
@@ -841,12 +852,12 @@ ELEMENT_INFO_WEAK,Weak against,Schwach gegen
 ELEMENT_INFO_RESISTS,Holds up against,Hält stand gegen
 EFFECT_LIGHTNING_DESC,Lightning: the target's moves [hl]fail {fail}% of the time[/hl] for [hl]{turns} turns[/hl],Blitz: Die Fähigkeiten des Ziels [hl]schlagen zu {fail}% fehl[/hl] für [hl]{turns} Züge[/hl]
 EFFECT_STEAM_DESC,Steam: the target loses [hl]{debuff}% Defense[/hl] for [hl]{turns} turns[/hl],Dampf: Das Ziel verliert [hl]{debuff}% Verteidigung[/hl] für [hl]{turns} Züge[/hl]
-EFFECT_MUD_DESC,Mud: the hit [hl]goes through[/hl] the [hl]shield[/hl],Schlamm: Der Treffer [hl]geht durch[/hl] den [hl]Schild[/hl]
+EFFECT_MUD_DESC,"Mud: the target gets stuck and [hl]loses 1 action[/hl] on its next turn (only if it has [hl]at least 2[/hl])","Schlamm: Das Ziel steckt fest und [hl]verliert 1 Aktion[/hl] in seinem nächsten Zug (nur wenn es [hl]mindestens 2[/hl] hat)"
 EFFECT_DUST_DESC,Dust: the target loses [hl]{debuff}% Attack and Sp. Attack[/hl] for [hl]{turns} turns[/hl],Staub: Das Ziel verliert [hl]{debuff}% Angriff und Sp. Angriff[/hl] für [hl]{turns} Züge[/hl]
-EFFECT_MAGMA_DESC,Magma: the hit [hl]goes through[/hl] the [hl]shield[/hl],Magma: Der Treffer [hl]geht durch[/hl] den [hl]Schild[/hl]
-EFFECT_ICE_DESC,"Ice: the user gains a [hl]shield[/hl] worth [hl]{ice}%[/hl] of the damage dealt","Eis: Der Wirker erhält einen [hl]Schild[/hl] in Höhe von [hl]{ice}%[/hl] des verursachten Schadens"
-EFFECT_SWAMP_DESC,Swamp: [hl]poisons[/hl] the target (one stack). Before each of its turns it loses [hl]{poison}% max HP[/hl] per stack (up to [hl]{stacks}[/hl]) until the battle ends. Ignores all shields.,Sumpf: [hl]Vergiftet[/hl] das Ziel (ein Stapel). Vor jedem seiner Züge verliert es [hl]{poison}% max. KP[/hl] pro Stapel (bis [hl]{stacks}[/hl]) bis Kampfende. Ignoriert alle Schilde.
-EFFECT_ASH_STORM_DESC,Ash Storm: the hit deals an extra [hl]{ash}% of the target's max HP[/hl] as [hl]true damage[/hl] (ignores all shields),Aschesturm: Der Treffer macht zusätzlich [hl]{ash}% der max. KP[/hl] des Ziels als [hl]wahren Schaden[/hl] (ignoriert alle Schilde)
+EFFECT_MAGMA_DESC,"Magma: the hit [hl]goes through[/hl] the [hl]shield[/hl]. Without a shield it deals an extra [hl]{melt}% of the target's Defense[/hl] as damage","Magma: Der Treffer [hl]geht durch[/hl] den [hl]Schild[/hl]. Ohne Schild macht er zusätzlich [hl]{melt}% der Verteidigung[/hl] des Ziels als Schaden"
+EFFECT_ICE_DESC,"Ice: [hl]every monster on the user's team[/hl] gains a [hl]shield[/hl] worth [hl]{ice}%[/hl] of the damage dealt","Eis: [hl]Jedes Monster im Team[/hl] des Wirkers erhält einen [hl]Schild[/hl] in Höhe von [hl]{ice}%[/hl] des verursachten Schadens"
+EFFECT_SWAMP_DESC,Swamp: [hl]poisons[/hl] the target (one stack). Before each of its turns it loses [hl]{poison}% max HP[/hl] per stack (up to [hl]{stacks}[/hl]) until the battle ends. Ignores all shields.,Sumpf: [hl]Vergiftet[/hl] das Ziel (ein Stapel). Vor jedem seiner Züge verliert es [hl]{poison}% max. LP[/hl] pro Stapel (bis [hl]{stacks}[/hl]) bis Kampfende. Ignoriert alle Schilde.
+EFFECT_ASH_STORM_DESC,Ash Storm: the hit deals an extra [hl]{ash}% of the target's max HP[/hl] as [hl]true damage[/hl] (ignores all shields),Aschesturm: Der Treffer macht zusätzlich [hl]{ash}% der max. LP[/hl] des Ziels als [hl]wahren Schaden[/hl] (ignoriert alle Schilde)
 EFFECT_THUNDERSTORM_DESC,Thunderstorm: [hl]paralyzes[/hl] the target. Each turn it has a [hl]{paralysis}% chance[/hl] to be stunned and lose its turn until the battle ends.,Gewitter: [hl]Lähmt[/hl] das Ziel. Bis Kampfende ist es jeden Zug mit [hl]{paralysis}% Chance[/hl] betäubt und setzt aus.
 EFFECT_VOLCANO_DESC,Volcano: [hl]{volcano}% chance[/hl] to take effect [hl]twice[/hl],Vulkan: [hl]{volcano}% Chance[/hl] [hl]doppelt[/hl] zu wirken
 EFFECT_CHAOS_DESC,Chaos: [hl]+{chaos}[/hl] element multiplier against all non-Chaos targets,Chaos: [hl]+{chaos}[/hl] Element-Faktor gegen alle Nicht-Chaos-Ziele
@@ -857,12 +868,14 @@ EFFECT_TEXT_STUNNED,Stunned!,Betäubt!
 EFFECT_TEXT_ERUPTION,Eruption!,Ausbruch!
 EFFECT_TEXT_ASH,Ash,Asche
 EFFECT_TEXT_PIERCE,Pierced!,Durchschlag!
+EFFECT_TEXT_MELT,Melt,Schmelze
+EFFECT_TEXT_MUD,Stuck! -1 action,Steckt fest! -1 Aktion
 EFFECT_TEXT_FAILED,Failed!,Fehlgeschlagen!
 EFFECT_CHANCE_PREFIX,[hl]{chance}% chance[/hl] - ,[hl]{chance}% Chance[/hl] - 
 BOSS_RELIC_HEAL_MOSS,Healing Moss,Heilmösch
 BOSS_RELIC_HEAL_MOSS_DESC,Enemies heal for {value}% of the damage they deal.,"Gegner heilen sich um {value} % des Schadens, den sie zufügen."
 BOSS_RELIC_EMBER_FLOOR,Ember Floor,Glutboden
-BOSS_RELIC_EMBER_FLOOR_DESC,"At the start of every round, all your monsters lose {value}% of their max HP.","Zu Beginn jeder Runde verlieren alle deine Monster {value} % ihrer max. KP."
+BOSS_RELIC_EMBER_FLOOR_DESC,"At the start of every round, all your monsters lose {value}% of their max HP.","Zu Beginn jeder Runde verlieren alle deine Monster {value} % ihrer max. LP."
 BOSS_RELIC_FATE_MIRROR,Mirror of Fate,Fate-Spiegel
 BOSS_RELIC_FATE_MIRROR_DESC,"The damage an enemy deals becomes a shield on its next turn.","Der Schaden, den ein Gegner zufügt, wird in seinem nächsten Zug zum Schild."
 BOSS_RELIC_BONGOS,Bongos,Bongos
@@ -874,7 +887,7 @@ BOSS_RELIC_SWIFT_WEASEL_DESC,"Enemies alternately act first and last: first in o
 BOSS_RELIC_BUDDY,Buddy,Buddy
 BOSS_RELIC_BUDDY_DESC,"Every {value} rounds a helper joins the enemies while none is fighting (level {min}-{max}, always 1 action, cannot be caught).","Alle {value} Runden kommt den Gegnern ein Helfer zu Hilfe, solange gerade keiner kämpft (Stufe {min}-{max}, immer 1 Aktion, nicht fangbar)."
 BOSS_RELIC_MICROPHONE,Microphone,Mikrofon
-BOSS_RELIC_MICROPHONE_DESC,"In odd rounds every turn is skipped. Instead, every monster heals {value}% of its missing HP.","In ungeraden Runden fallen alle Züge aus. Stattdessen heilt sich jedes Monster um {value} % seiner fehlenden KP."
+BOSS_RELIC_MICROPHONE_DESC,"In odd rounds every turn is skipped. Instead, every monster heals {value}% of its missing HP.","In ungeraden Runden fallen alle Züge aus. Stattdessen heilt sich jedes Monster um {value} % seiner fehlenden LP."
 BOSS_RELIC_MAGIC_THORNS,Magic Thorns,Magische Dornen
 BOSS_RELIC_MAGIC_THORNS_DESC,"Enemies reflect {value}% of the damage they take back to the attacker: physical damage in odd rounds, magic damage in even rounds.","Gegner werfen {value} % des erlittenen Schadens auf den Angreifer zurück: in ungeraden Runden physischen, in geraden magischen Schaden."
 BOSS_RELIC_INTRO_TITLE,Boss Relics,Boss-Relikte
@@ -892,6 +905,7 @@ BOSS_RELIC_FORGOTTEN_MANY,The boss was so dumb it left its relics lying on the g
 BOSS_RELIC_MISS,Missed!,Verfehlt!
 BOSS_RELIC_SILENCED,Drowned out!,Übertönt!
 SETTINGS_TITLE,Settings,Einstellungen
+SETTINGS_LANGUAGE,Language,Sprache
 SETTINGS_DISPLAY,Display,Anzeige
 SETTINGS_WINDOW_MODE,Window mode,Fenstermodus
 SETTINGS_WINDOWED,Window,Fenster
@@ -913,8 +927,10 @@ SETTINGS_DORMANT_SKILLS_HINT,"Every skill can be used in a weakened form as soon
 SETTINGS_RETRY_BATTLE,Retry Battle,Kampf wiederholen
 SETTINGS_RETRY_BATTLE_HINT,"After a defeat, the end screen offers to restart the lost battle with the state from before it.","Nach einer Niederlage bietet der End-Screen an, den verlorenen Kampf mit dem Stand von davor neu zu starten."
 SETTINGS_TUTORIAL,Tutorial,Tutorial
-SETTINGS_TUTORIAL_TOGGLE,Show tutorial,Tutorial anzeigen
-SETTINGS_TUTORIAL_HINT,"When switched on, the trainer explains everything from the start, including a practice fight before the map.","Eingeschaltet erklärt dir der Trainer alles von Anfang an, auch in einem Übungskampf vor der Karte."
+SETTINGS_TUTORIAL_START,Start tutorial,Tutorial starten
+SETTINGS_TUTORIAL_HINT,"Play a guided run with the trainer, who explains everything step by step. Your save stays exactly as it is.","Spiel einen begleiteten Lauf mit dem Trainer, der dir alles Schritt für Schritt erklärt. Dein Spielstand bleibt dabei genau so, wie er ist."
+SETTINGS_TUTORIAL_LOCKED,"Only possible on the egg selection, not in the middle of a run.","Nur in der Ei-Auswahl möglich, nicht mitten in einem Lauf."
+SETTINGS_TUTORIAL_RUNNING,The tutorial is running right now.,Das Tutorial läuft gerade.
 SELECTION_GUIDE,How to play,Anleitung
 SELECTION_COLLECTION,Collection,Sammlung
 SELECTION_FAILURES,Failures: {count},Fehlschläge: {count}
@@ -929,8 +945,8 @@ COLLECTION_SKILLS_UNLOCKED,Unlocked,Freigeschaltet
 COLLECTION_SKILLS_LOCKED,Still locked,Noch gesperrt
 STAT_INFO_HINT,Click for an explanation of the stats,Klicken für eine Erklärung der Werte
 STAT_INFO_TITLE,Stats,Werte
-STAT_INFO_HP_NAME,Hit Points (HP),Kraftpunkte (KP)
-STAT_INFO_HP_DESC,"How much damage the monster can take. At 0 it is knocked out. Lost HP stay lost after the fight until you heal at a camp.","Wie viel Schaden das Monster aushält. Bei 0 ist es K.O. Verlorene KP bleiben auch nach dem Kampf weg, bis du sie im Lager heilst."
+STAT_INFO_HP_NAME,Hit Points (HP),Kraftpunkte (LP)
+STAT_INFO_HP_DESC,"How much damage the monster can take. At 0 it is knocked out. Lost HP stay lost after the fight until you heal at a camp.","Wie viel Schaden das Monster aushält. Bei 0 ist es K.O. Verlorene LP bleiben auch nach dem Kampf weg, bis du sie im Lager heilst."
 STAT_INFO_ATK_NAME,Attack (ATK),Angriff (ANG)
 STAT_INFO_ATK_DESC,"Strength of physical moves (fist symbol). Each move deals a fixed amount plus a share of your ATK. Physical moves always hit neutral, the element does not matter.","Stärke der physischen Attacken (Faust-Symbol). Jede Attacke macht einen festen Schaden plus einen Anteil deines ANG. Physische Attacken treffen immer neutral, das Element zählt nicht."
 STAT_INFO_DEF_NAME,Defense (DEF),Verteidigung (VER)
@@ -1062,17 +1078,17 @@ SKILL_PASSIVE_MAGIC_POWER_DESC,Passive: its [hl]magical attacks[/hl] deal [hl]+{
 SKILL_PASSIVE_SHIELD_POWER_DESC,Passive: its [hl]shields[/hl] are [hl]{value}% stronger[/hl],Passiv: seine [hl]Schilde[/hl] sind [hl]{value}% stärker[/hl]
 SKILL_PASSIVE_EFFECT_CHANCE_DESC,"Passive: its [hl]element effects[/hl] trigger [hl]{value}% more often[/hl] (cards with a trigger chance, Volcano)","Passiv: seine [hl]Element-Effekte[/hl] lösen [hl]{value}% öfter[/hl] aus (Karten mit Auslösechance, Vulkan)"
 SKILL_PASSIVE_LEECH_DESC,Passive: heals itself for [hl]{value}%[/hl] of the damage it deals,"Passiv: heilt sich um [hl]{value}%[/hl] des Schadens, den es verursacht"
-SKILL_PASSIVE_REGEN_DESC,Passive: heals [hl]{value}% of its max HP[/hl] at the start of each of its turns,"Passiv: heilt sich zu Beginn jedes eigenen Zuges um [hl]{value}% seiner max. KP[/hl]"
-SKILL_PASSIVE_KILL_HEAL_DESC,Passive: heals [hl]{value}% of its max HP[/hl] when it defeats an enemy,"Passiv: heilt [hl]{value}% seiner max. KP[/hl], wenn es einen Gegner besiegt"
+SKILL_PASSIVE_REGEN_DESC,Passive: heals [hl]{value}% of its max HP[/hl] at the start of each of its turns,"Passiv: heilt sich zu Beginn jedes eigenen Zuges um [hl]{value}% seiner max. LP[/hl]"
+SKILL_PASSIVE_KILL_HEAL_DESC,Passive: heals [hl]{value}% of its max HP[/hl] when it defeats an enemy,"Passiv: heilt [hl]{value}% seiner max. LP[/hl], wenn es einen Gegner besiegt"
 SKILL_EXTRA_DEBUFF,Target: [hl]-{value}% {stat}[/hl] for [hl]{turns} turns[/hl],Ziel: [hl]-{value}% {stat}[/hl] für [hl]{turns} Züge[/hl]
 SKILL_EXTRA_SELF_BUFF,User: [hl]+{value}% {stat}[/hl] for [hl]{turns} turns[/hl],Wirker: [hl]+{value}% {stat}[/hl] für [hl]{turns} Züge[/hl]
 SKILL_EXTRA_TEAM_BUFF,Every ally: [hl]+{value}% {stat}[/hl] for [hl]{turns} turns[/hl],Jedes eigene Monster: [hl]+{value}% {stat}[/hl] für [hl]{turns} Züge[/hl]
 SKILL_EXTRA_CHARGE_MAGIC,Allies: their next [hl]magical attack[/hl] deals [hl]+{value}%[/hl],Partner: ihre nächste [hl]magische Attacke[/hl] macht [hl]+{value}%[/hl]
 SKILL_EXTRA_CHARGE_PHYSICAL,Allies: their next [hl]physical attack[/hl] deals [hl]+{value}%[/hl],Partner: ihre nächste [hl]physische Attacke[/hl] macht [hl]+{value}%[/hl]
 SKILL_EXTRA_LEECH,Heals the user for [hl]{value}%[/hl] of the damage dealt,Heilt den Wirker um [hl]{value}%[/hl] des Schadens
-SKILL_EXTRA_HEAL,Heals the target for [hl]{value}% of its max HP[/hl],Heilt das Ziel um [hl]{value}% seiner max. KP[/hl]
+SKILL_EXTRA_HEAL,Heals the target for [hl]{value}% of its max HP[/hl],Heilt das Ziel um [hl]{value}% seiner max. LP[/hl]
 SKILL_EXTRA_BONUS_VS_WEAKENED,[hl]+{value}% damage[/hl] against weakened targets (debuff or status),[hl]+{value}% Schaden[/hl] gegen geschwächte Ziele (Schwächung oder Status)
-SKILL_EXTRA_BONUS_LOW_HP,[hl]+{value}% damage[/hl] against targets below [hl]{share}% HP[/hl],[hl]+{value}% Schaden[/hl] gegen Ziele unter [hl]{share}% KP[/hl]
+SKILL_EXTRA_BONUS_LOW_HP,[hl]+{value}% damage[/hl] against targets below [hl]{share}% HP[/hl],[hl]+{value}% Schaden[/hl] gegen Ziele unter [hl]{share}% LP[/hl]
 STATUS_POPUP_NONE,Nothing changed,Nichts verändert
 STATUS_BUFF_LINE,+{value}% {stat} ({turns}),+{value}% {stat} ({turns})
 STATUS_DEBUFF_LINE,-{value}% {stat} ({turns}),-{value}% {stat} ({turns})
@@ -1255,7 +1271,7 @@ ITEM_BLOOD_STONE_DESC,"The next hit on the chosen enemy deals {value}x damage (o
 ITEM_CUCKOO_CLOCK,Cuckoo Clock,Kuckucksuhr
 ITEM_CUCKOO_CLOCK_DESC,"All cooldowns of the chosen monster drop by {value}.","Alle Abklingzeiten des gewählten Monsters sinken um {value}."
 ITEM_DEATH_TOTEM,Death Totem,Todes-Totem
-ITEM_DEATH_TOTEM_DESC,"If one of your monsters falls, it stands up again with 1 HP after the enemy's actions. Works for every monster in the team as long as someone wears it. Only found once per run.","Fällt ein eigenes Monster, steht es nach den gegnerischen Aktionen mit 1 KP wieder auf. Gilt für jedes Monster im Team, solange einer es trägt. Kommt nur einmal pro Run vor."
+ITEM_DEATH_TOTEM_DESC,"If one of your monsters falls, it stands up again with 1 HP after the enemy's actions. Works for every monster in the team as long as someone wears it. Only found once per run.","Fällt ein eigenes Monster, steht es nach den gegnerischen Aktionen mit 1 LP wieder auf. Gilt für jedes Monster im Team, solange einer es trägt. Kommt nur einmal pro Run vor."
 ITEM_CLEAR_WATER,Clear Water,Klarwasser
 ITEM_CLEAR_WATER_DESC,"Removes poison, burn, paralysis and all weakenings from the chosen monster.","Entfernt Gift, Verbrennung, Paralyse und alle Schwächungen vom gewählten Monster."
 ITEM_BAN_SEAL,Ban Seal,Bannsiegel
@@ -1283,6 +1299,15 @@ BATTLE_ITEM_CARRIER,Carried by {mon},Getragen von {mon}
 BATTLE_ITEM_WAIT_TURN,Can only be used during {mon}'s turn.,Einsetzen geht nur im Zug von {mon}.
 TIPS_MORE,More tips,Mehr Tipps
 TIPS_TITLE,Tip,Tipp
+TIP_JAILER,You can permanently upgrade your monsters at the Jailer.,Beim Kerkermeister kannst du permanent deine Monster aufwerten.
+TIP_LOOT_BAG,"Loot after a battle only becomes yours once you drag it into the bag. Whatever is left behind is gone when you move on.","Beute nach dem Kampf gehört dir erst, wenn du sie in die Tasche ziehst. Was liegen bleibt, ist beim Weitergehen weg."
+TIP_NEW_BADGE,"Enemies of a species you don't own yet are marked NEW in battle. If you already own the species, arrows behind the star show how many actions it has per turn.","Gegner einer Art, die du noch nicht besitzt, sind im Kampf mit NEU markiert. Besitzt du die Art schon, zeigen Pfeile hinter dem Stern, wie viele Aktionen sie pro Zug hat."
+TIP_BATTLE_SPEED,"In the top right of a battle you can change the speed (right click: slower) and turn on the automatic end of turn.","Rechts oben im Kampf stellst du die Geschwindigkeit um (Rechtsklick: langsamer) und schaltest das automatische Zugende ein."
+TIP_ENEMY_HP,"If you have a species in your team or caught it this run, you see the exact HP of enemies of that species.","Hast du eine Art im Team oder in diesem Run gefangen, siehst du die genauen LP der Gegner dieser Art."
+TIP_BOSS_EGG,"After a boss battle, the egg of a team monster can be among the loot. It unlocks the species permanently.","Nach einem Boss-Kampf kann das Ei eines Team-Monsters in der Beute liegen. Damit schaltest du die Art dauerhaft frei."
+TIP_POISON,Poison takes effect at the start of the turn and goes through all shields.,Gift wirkt zu Beginn des Zuges und geht durch alle Schilde.
+TIP_COLLECTION,"In the bottom left you'll find the collection: it shows every species you have discovered so far.","Unten links findest du die Sammlung: Dort siehst du alle Arten, die du schon entdeckt hast."
+TIP_FLYING_CARPET,The Flying Carpet lets you switch lanes on the map.,Mit dem Fliegenden Teppich darfst du auf der Karte die Spur wechseln.
 BATTLE_MON_CHAINS_SOME,"Jailer: {broken} of {max} chains broken for this species","Kerkermeister: {broken} von {max} Ketten dieser Art gesprengt"
 BATTLE_MON_CHAINS_MAX,"Jailer: all {max} chains broken, this species is fully upgraded","Kerkermeister: alle {max} Ketten gesprengt, diese Art ist voll verbessert"
 BATTLE_MON_NEW,NEW,NEU
@@ -1337,6 +1362,13 @@ SKILL_THUNDERSTORM_DEBUFF_STORM_FRONT,Storm Front,Gewitterfront
 SKILL_SWAMP_DEBUFF_VENOM,Swamp Venom,Sumpfgift
 SKILL_SWAMP_DEBUFF_TOXIC_FOG,Toxic Fog,Giftnebel
 SKILL_ASH_STORM_PHYS_PUNCH_SERIES,Punch Series,Punch-Serie
+SKILL_LIGHTNING_PHYS_SPARK_HAIL,Spark Hail,Funkenhagel
+SKILL_STEAM_PHYS_SCALD_FLURRY,Scald Flurry,Brühhiebe
+SKILL_LIGHTNING_MAG_TWIN_SPARK,Twin Spark,Zwillingsfunke
+SKILL_MAGMA_PHYS_CINDER_JABS,Cinder Jabs,Glutstöße
+SKILL_ICE_MAG_HAILSTONES,Hailstones,Hagelkörner
+SKILL_DUST_MAG_GRIT_GUSTS,Grit Gusts,Sandböen
+SKILL_MUD_PHYS_MUD_SPLATTER,Mud Splatter,Schlammspritzer
 SKILL_VOLCANO_MAG_ERUPTION,Volcanic Eruption,Vulkanausbruch
 SKILL_PASSIVE_BIG_BROTHER,Big Brother,Großer Bruder
 SKILL_PASSIVE_TRUE_MAGI,True Magi,True Magi
@@ -1354,6 +1386,8 @@ SKILL_DEBUFF_FLAT_DESC,Target: [hl]-{value} {stat}[/hl] (fixed) for [hl]{buff_tu
 SKILL_STATUS_POISON_DESC,Deals no damage. [hl]{chance}% chance[/hl] to [hl]poison[/hl] each target hit with [hl]{value} stack(s)[/hl] (poison lasts until the battle ends),Macht keinen Schaden. Vergiftet jedes getroffene Ziel mit [hl]{chance}% Chance[/hl] um [hl]{value} Stapel[/hl] (Gift bis Kampfende)
 SKILL_STATUS_PARALYSIS_DESC,Deals no damage. [hl]{chance}% chance[/hl] to [hl]paralyze[/hl] each target hit (paralysis lasts until the battle ends),Macht keinen Schaden. [hl]Lähmt[/hl] jedes getroffene Ziel mit [hl]{chance}% Chance[/hl] (Paralyse bis Kampfende)
 SKILL_DAMAGE_PHYSICAL_MULTI_DESC,Hits [hl]{hits} times[/hl] with [hl]{value} damage + ({scaling}*ATK)[/hl] [hl]physical damage[/hl] each. Every hit triggers the element effect on its own,Trifft [hl]{hits}x[/hl] mit je [hl]{value} Schaden + ({scaling}*ANG)[/hl] als [hl]physischer Schaden[/hl]. Jeder Treffer löst den Element-Effekt einzeln aus
+SKILL_DAMAGE_ABILITY_MULTI_DESC,Hits [hl]{hits} times[/hl] with [hl]{value} damage + ({scaling}*SPA)[/hl] [hl]magical damage[/hl] each. Every hit triggers the element effect on its own,Trifft [hl]{hits}x[/hl] mit je [hl]{value} Schaden + ({scaling}*SAN)[/hl] als [hl]magischer Schaden[/hl]. Jeder Treffer löst den Element-Effekt einzeln aus
+SKILL_EFFECT_MULTI_DESC,"Hits [hl]{hits} times[/hl] with almost no damage (1 each). Every hit triggers the element effect on its own, great with borrowed elements","Trifft [hl]{hits}x[/hl] fast ohne Schaden (je 1). Jeder Treffer löst den Element-Effekt einzeln aus, stark mit geliehenen Elementen"
 SKILL_PASSIVE_BIG_BROTHER_DESC,"Passive: its [hl]partner[/hl] (the next monster in the team) uses this monster's [hl]ATK, SPA, DEF and SPE[/hl] wherever they are higher","Passiv: sein [hl]Partner[/hl] (das nächste Monster im Team) übernimmt [hl]ANG, SAN, VER und INI[/hl] dieses Monsters, wo sie höher sind"
 SKILL_PASSIVE_MAGIC_ERUPTION_DESC,Passive: its [hl]magical Volcano attacks[/hl] take effect twice with at least [hl]{value}% chance[/hl],Passiv: seine [hl]magischen Vulkan-Attacken[/hl] wirken mit mindestens [hl]{value}% Chance[/hl] doppelt
 SKILL_PASSIVE_POISON_POWER_DESC,Passive: poison it inflicts is [hl]{value}% stronger[/hl],"Passiv: Gift, das es verursacht, wirkt [hl]{value}% stärker[/hl]"
@@ -1373,3 +1407,5 @@ STATUS_MOVES_CAP_LINE,At most {value} action per turn ({turns}),Höchstens {valu
 STATUS_BOON_DOUBLE_HIT,Physical attacks hit twice ({turns}),Physische Angriffe treffen doppelt ({turns})
 JUDGEMENT_ALREADY_HAS_SKILL,{mon} already has {skill} and therefore can't learn it again.,{mon} besitzt {skill} schon und kann die Attacke deshalb nicht mehr lernen.
 JUDGEMENT_LEARN_KNOWN_LONG,"Already has this move, so it can't learn it again",Besitzt die Attacke schon und kann sie deshalb nicht mehr lernen
+MAP_PATH_TITLE,Path of this run,Pfad dieses Runs
+MAP_PATH_HINT,Click: show the whole path,Klicken: ganzen Pfad anzeigen

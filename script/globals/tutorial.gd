@@ -1,12 +1,14 @@
 extends Node
 
-## Interaktives Tutorial: Szenen rufen trigger("<id>") auf, beim ersten Mal spielt ein TutorialOverlay die Sequenz ab.
-## Jede Sequenz läuft nur einmal (SaveManager "tutorial_seen"). Sind alle gesehen oder hat der Spieler
-## übersprungen, ist das Tutorial abgeschlossen ("tutorial_done") und erscheint nicht mehr.
-## Neue Spielstände starten mit Tutorial; ein- und ausschalten lässt es sich im Einstellungen-Dialog (set_enabled).
+## Interaktives Tutorial als eigener Lauf (Plan: tutorial_plan.txt). Solange "tutorial_done" false ist, fragt die
+## Ei-Auswahl beim Start, ob man mit Hilfe spielen will (start_run) oder nicht (decline). Später startet es nur
+## über den Button in den Einstellungen, und nur in der Ei-Auswahl (can_start), nie mitten in einem Lauf.
+## Während des Tutorial-Laufs (run_active) wird nichts gespeichert (SaveManager.suspended), am Ende oder beim
+## Überspringen kommt der Spielstand von vorher zurück (end_run): aus dem Tutorial bleibt nichts.
 ##
-## Echte Kämpfe bleiben frei vom Tutorial: der Kampf wird in einem eigenen Übungskampf erklärt (start_practice),
-## der vor der Karte läuft und nichts am Run oder Spielstand ändert.
+## Szenen rufen trigger("<id>") auf, im Tutorial-Lauf spielt dann ein TutorialOverlay die Sequenz ab, jede nur einmal
+## (SaveManager "tutorial_seen"). In echten Läufen kommt nichts.
+## Der Kampf wird in einem eigenen Übungskampf erklärt (start_practice), der vor der Karte läuft.
 ##
 ## Schritt einer Sequenz:
 ##  text   Übersetzungsschlüssel, den der NPC sagt
@@ -19,10 +21,8 @@ extends Node
 ##  if_present  der Schritt entfällt, wenn sein (erstes) Ziel gerade nicht zu sehen ist
 ##  dismiss  der Schritt wartet auf eine Aktion, zeigt aber auch Weiter: das beendet die Sequenz (Trainer verschwindet)
 
-## Ein- oder ausgeschaltet (Einstellungen), true = eingeschaltet
-signal enabled_changed(on: bool)
-
 const BATTLE_SCENE := "res://script/scenes/battle/battle.tscn"
+const SELECTION_SCENE := "res://script/scenes/selection/selection.tscn"
 const MAP_SCENE := "res://script/scenes/world_map/world_map.tscn"
 
 ## Wer spricht: Bild und Pixel-Material des NPCs unten in der Ecke
@@ -138,7 +138,7 @@ func trigger(id: String, on_end := Callable()) -> bool:
 	_overlay = TutorialOverlay.new()
 	add_child(_overlay)
 	_overlay.finished.connect(_mark_seen.bind(id))
-	_overlay.skipped.connect(set_enabled.bind(false))
+	_overlay.skipped.connect(ask_skip)
 	_overlay.tree_exited.connect(func():
 		if on_end.is_valid():
 			on_end.call())
@@ -146,29 +146,79 @@ func trigger(id: String, on_end := Callable()) -> bool:
 	return true
 
 func should_show(id: String) -> bool:
-	return SEQUENCES.has(id) and is_enabled() and not SaveManager.save_data["tutorial_seen"].has(id)
+	return SEQUENCES.has(id) and run_active and not SaveManager.save_data["tutorial_seen"].has(id)
 
 func is_running() -> bool:
 	return is_instance_valid(_overlay) and not _overlay.is_queued_for_deletion()
-
-func is_enabled() -> bool:
-	return not SaveManager.save_data["tutorial_done"]
 
 ## Für Szenen, die Mausklicks selbst in _input auswerten: true, solange das Tutorial den Klick an dieser Stelle abfängt
 func blocks_input(point: Vector2) -> bool:
 	return is_running() and not _overlay.lets_through(point)
 
-## Einstellungen und "Tutorial überspringen": eingeschaltet beginnt alles von vorn,
-## ausgeschaltet verschwindet auch eine laufende Sequenz
-func set_enabled(on: bool) -> void:
-	if on == is_enabled():
-		return
-	if not on and is_running():
-		_overlay.queue_free()
-	SaveManager.save_data["tutorial_seen"] = []
-	SaveManager.save_data["tutorial_done"] = not on
+# ─────────────────────────
+# Tutorial-Lauf
+
+## true vom Start des Tutorials bis zu seinem Ende (oder Überspringen)
+var run_active := false
+## Spielstand von vor dem Tutorial, kommt mit end_run zurück
+var _save_backup := {}
+
+## Ei-Auswahl beim Start: fragen, ob man mit Hilfe spielen will (neuer Spielstand oder Tutorial nie beendet)
+func needs_start_question() -> bool:
+	return not run_active and not SaveManager.save_data["tutorial_done"]
+
+## Einstellungen: starten nur in der Ei-Auswahl, nie mitten in einem Lauf
+func can_start() -> bool:
+	var scene := get_tree().current_scene
+	return not run_active and scene != null and scene.scene_file_path == SELECTION_SCENE
+
+## Startabfrage abgelehnt: kein Tutorial, die Frage kommt nicht wieder
+func decline() -> void:
+	SaveManager.save_data["tutorial_done"] = true
 	SaveManager.save_game()
-	enabled_changed.emit(on)
+
+## Merkt sich den Spielstand, schaltet das Speichern ab und startet die Ei-Auswahl neu im Tutorial-Modus,
+## mit eigenen Eiern und eigenem Biom-Pfad (die echten kommen mit end_run zurück)
+func start_run() -> void:
+	if run_active:
+		return
+	# auf der Platte bleibt tutorial_done, wie es war: bricht das Spiel mittendrin ab, kommt die Startabfrage wieder
+	_save_backup = SaveManager.save_data.duplicate(true)
+	_save_backup["tutorial_done"] = true
+	SaveManager.suspended = true
+	run_active = true
+	SaveManager.save_data["tutorial_seen"] = []
+	SaveManager.save_data["starter_eggs"] = []
+	SaveManager.save_data["biome_path"] = []
+	SaveManager.save_data["biome_pools"] = []
+	State.reset()
+	SceneLoader.change_scene(SELECTION_SCENE)
+
+## Ende oder Überspringen: Spielstand von vorher zurück, Speichern wieder an, zurück zur Ei-Auswahl
+func end_run() -> void:
+	if not run_active:
+		return
+	run_active = false
+	practice = false
+	_back_from_practice = false
+	if is_running():
+		_overlay.queue_free()
+	SaveManager.save_data = _save_backup
+	_save_backup = {}
+	SaveManager.suspended = false
+	SaveManager.save_game()
+	State.reset()
+	State.boss_shards = SaveManager.save_data["boss_shards"]
+	SceneLoader.change_scene(SELECTION_SCENE)
+
+## "Tutorial überspringen" in der Sprechblase: mit Rückfrage, die Sequenz bleibt solange stehen
+func ask_skip() -> void:
+	if not run_active or not is_running():
+		return
+	var dialog := ChoiceDialog.ask(_overlay.dialog_host(), tr("TUTORIAL_SKIP_TITLE"), tr("TUTORIAL_SKIP_TEXT"),
+		tr("TUTORIAL_SKIP_YES"), tr("TUTORIAL_SKIP_NO"))
+	if await dialog.chosen:
+		end_run()
 
 # ─────────────────────────
 # Übungskampf: läuft vor der Karte, solange die Kampf-Sequenz noch aussteht
@@ -206,6 +256,3 @@ func _mark_seen(id: String) -> void:
 	var seen: Array = SaveManager.save_data["tutorial_seen"]
 	if not seen.has(id):
 		seen.append(id)
-	if SEQUENCES.keys().all(seen.has):
-		SaveManager.save_data["tutorial_done"] = true
-	SaveManager.save_game()

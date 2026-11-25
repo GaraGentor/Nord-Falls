@@ -188,8 +188,6 @@ func _ready() -> void:
 	turn_wheel.start()
 	if Tutorial.practice:
 		_add_tutorial_targets()
-		# wer das Tutorial überspringt, hat auch mit dem Übungskampf nichts mehr zu tun
-		Tutorial.enabled_changed.connect(_on_tutorial_enabled_changed)
 		Tutorial.trigger("battle")
 
 ## Untere Leiste des Infobereichs: rechts Hypnose und Zugende als rechteckige Bildknöpfe (battle.tscn UI/BottomBar,
@@ -328,8 +326,9 @@ func _on_turn_for(mon: Monster) -> void:
 	# Mikrofon: in ungeraden Runden fällt jeder Zug aus, dafür heilt sich das Monster etwas.
 	# Gegner behalten ihren angekündigten Zug für die nächste Runde.
 	if BossRelics.silences_round(turn_wheel.round_number):
-		# verliehene Aktionen sind mit dem ausgefallenen Zug abgegolten
+		# verliehene Aktionen und Schlamm sind mit dem ausgefallenen Zug abgegolten
 		mon._loan_debt = 0
+		mon._mud_debt = 0
 		BossRelics.microphone_turn(mon)
 		await get_tree().create_timer(STUNNED_TIME).timeout
 		if not is_inside_tree():
@@ -339,6 +338,7 @@ func _on_turn_for(mon: Monster) -> void:
 	# Paralyse: betäubt, der Zug endet sofort
 	if ElementEffects.rolls_paralysis(mon):
 		mon._loan_debt = 0
+		mon._mud_debt = 0
 		await get_tree().create_timer(STUNNED_TIME).timeout
 		if not is_inside_tree():
 			return
@@ -385,8 +385,9 @@ func _on_turn_for(mon: Monster) -> void:
 		await _relic_overlay.wait_idle()
 		if not is_inside_tree():
 			return
-	# verliehene Aktionen sind mit diesem (gekürzten) Zug abgegolten
+	# verliehene Aktionen und Schlamm sind mit diesem (gekürzten) Zug abgegolten
 	mon._loan_debt = 0
+	mon._mud_debt = 0
 	Events.monster_status_changed.emit(mon)
 	_plan_intent(mon)
 	Events.intents_changed.emit()
@@ -459,8 +460,6 @@ func _reselect_if_gone(gone: Monster) -> void:
 func _exit_tree() -> void:
 	if not _practice_snapshot.is_empty():
 		_restore_practice_snapshot()
-	if Tutorial.enabled_changed.is_connected(_on_tutorial_enabled_changed):
-		Tutorial.enabled_changed.disconnect(_on_tutorial_enabled_changed)
 	Events.mouse_event.disconnect(_catch_mouse_event)
 	Events.monster_faints.disconnect(_check_game_over)
 	Events.finish_catching.disconnect(_finish_catching)
@@ -597,8 +596,8 @@ func _use_skill(from: Monster, card: Dictionary, target: Monster) -> void:
 					BossRelics.on_damage_dealt(from, mon, skill, hit, turn_wheel.round_number)
 				else:
 					Skills.apply_friend_extras(from, mon, skill)
-			# Plage: ein Gegner kürzt seinen schon angekündigten Zug sofort
-			if skill.get("debuff", "") == "moves" and State.enemy_mons.has(mon):
+			# Plage und Schlamm: ein Gegner kürzt seinen schon angekündigten Zug sofort
+			if (skill.get("debuff", "") == "moves" or mon._mud_debt > 0) and State.enemy_mons.has(mon):
 				_trim_intent(mon)
 	# die eigene Aufladung ist mit diesem Angriff verbraucht, danach erst laden die Extras die Partner auf
 	if Skills.is_damage_skill(skill):
@@ -759,10 +758,6 @@ func _end_practice() -> void:
 	# noch im Kampf zurücksetzen, die Lebensbalken hören dabei noch zu
 	_restore_practice_snapshot()
 	Tutorial.end_practice()
-
-func _on_tutorial_enabled_changed(on: bool) -> void:
-	if not on:
-		_end_practice()
 
 ## Im Debug-Menü gewählte Relikte (für den Kampf) und Trophäen (für jeden Boss) ersetzen die gewürfelten
 func _apply_debug_boss_setup(bosses: Array[Monster]) -> void:
@@ -970,8 +965,8 @@ func _plan_intent(emon: Monster) -> void:
 	emon._intent = []
 	if not emon.is_alive() or _opponents_of(emon).is_empty():
 		return
-	# verliehene Aktionen (Element-Leihgabe) fehlen im nächsten Zug, Plage deckelt sie
-	var moves: int = emon.cap_moves(Relics.modify("moves", emon._initial_moves, emon) + roundi(emon.boon_value("extra_moves")) - emon._loan_debt, true)
+	# verliehene Aktionen (Element-Leihgabe) und Schlamm fehlen im nächsten Zug, Plage deckelt sie
+	var moves: int = emon.cap_moves(Relics.modify("moves", emon._initial_moves, emon) + roundi(emon.boon_value("extra_moves")) - emon._loan_debt - emon._mud_debt, true)
 	var once_used = []
 	while true:
 		var options = emon._skills.filter(func(skill): return _can_plan(emon, skill, moves) and not once_used.has(skill))
@@ -1062,7 +1057,7 @@ func _take_loan(emon: Monster, action: Dictionary) -> void:
 
 ## Angekündigten Zug kürzen, bis er mit den verbliebenen Aktionen auskommt (hinten fallen Angriffe zuerst weg)
 func _trim_intent(emon: Monster) -> void:
-	var base: int = emon.cap_moves(Relics.modify("moves", emon._initial_moves, emon) + roundi(emon.boon_value("extra_moves")) - emon._loan_debt, true)
+	var base: int = emon.cap_moves(Relics.modify("moves", emon._initial_moves, emon) + roundi(emon.boon_value("extra_moves")) - emon._loan_debt - emon._mud_debt, true)
 	while not emon._intent.is_empty() and _intent_total(emon) > _intent_budget(emon, base):
 		emon._intent.pop_back()
 	Events.intents_changed.emit()

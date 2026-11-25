@@ -25,7 +25,7 @@ const MAIN_LIST_HEIGHT := 480
 const UNPICKED_COLOR := Color(0.65, 0.65, 0.65)
 const EGG_LABEL_WIDTH := 170
 const EGG_BUTTON_SIZE := Vector2(300, 44)
-const STAT_NAMES := {"hp": "KP", "atk": "Angriff", "def": "Verteidigung", "s_atk": "Sp. Angriff", "speed": "Initiative"}
+const STAT_NAMES := {"hp": "LP", "atk": "Angriff", "def": "Verteidigung", "s_atk": "Sp. Angriff", "speed": "Initiative"}
 const STAT_VALUE_WIDTH := 70
 const STAT_STEP_SIZE := Vector2(60, 40)
 const STATS_EXAMPLE_BST := 200
@@ -52,7 +52,7 @@ const TROPHY_STEP_SIZE := Vector2(50, 40)
 const FINAL_TEST_TEAM := 2
 const FINAL_TEST_DEFAULT_LEVEL := 35
 const FINAL_TEST_LIST_HEIGHT := 250
-const FINAL_STAT_SHORT := {"hp": "KP", "atk": "ANG", "def": "VER", "s_atk": "SP.ANG", "speed": "INI"}
+const FINAL_STAT_SHORT := {"hp": "LP", "atk": "ANG", "def": "VER", "s_atk": "SP.ANG", "speed": "INI"}
 const FINAL_STAT_LABEL_WIDTH := 64
 const FINAL_STEP_SIZE := Vector2(40, 36)
 ## Endboss-Test: Höhe der ganzen Seite zum Scrollen (die Buttons bleiben darunter stehen) und der Fähigkeiten-Liste
@@ -167,6 +167,7 @@ func _ready() -> void:
 	_build_vfx_page()
 	_build_reset_page()
 	_build_final_test_page()
+	_build_last_will_page()
 	_show_page(_main)
 
 func _build_main() -> void:
@@ -216,6 +217,7 @@ func _build_main() -> void:
 
 	_add_section(list, "Nach dem Kampf", [
 		["JUDGEMENT ...", func(): _show_page(_picker)],
+		["LETZTER WILLE ...", func(): _show_page(_last_will_page)],
 		["LEVEL-UP", _open_level_up],
 		["RELIC-AUSWAHL", _open_relic_reward],
 		["FÄHIGKEITEN-AUSWAHL", _open_skill_reward],
@@ -534,7 +536,7 @@ func _play_all_vfx() -> void:
 		await get_tree().create_timer(VFX_SEQUENCE_PAUSE).timeout
 
 func _show_page(page: VBoxContainer) -> void:
-	for other in [_main, _fight_page, _picker, _egg_page, _stats_page, _damage_page, _trophy_page, _relic_page, _preview_page, _vfx_page, _reset_page, _card_types_page, _final_test_page]:
+	for other in [_main, _fight_page, _picker, _egg_page, _stats_page, _damage_page, _trophy_page, _relic_page, _preview_page, _vfx_page, _reset_page, _card_types_page, _final_test_page, _last_will_page]:
 		if other != null:
 			other.visible = other == page
 
@@ -1086,7 +1088,7 @@ func _refresh_trophy_page() -> void:
 ## Zahlen-Einstellungen: Key, Titel, Schritte (negativ und positiv), Format des Werts
 const DAMAGE_ROWS := [
 	["level_offset", "Stufen-Sockel", [5.0, 1.0], "%d"],
-	["hp_scale", "KP-Multiplikator", [1.0, 0.25], "x%.2f"],
+	["hp_scale", "LP-Multiplikator", [1.0, 0.25], "x%.2f"],
 ]
 ## Höhe der scrollbaren Liste, passt samt Titel und Buttons in die 720 px hohe Ansicht
 const DAMAGE_LIST_HEIGHT := 480
@@ -1161,7 +1163,7 @@ func _refresh_damage_page() -> void:
 		"Stufen-Sockel: 0 = Werte wachsen linear mit der Stufe (wie bisher, Stufe 10 hat doppelt so viel wie Stufe 5). " +
 			"Höher = jede Stufe bringt anteilig weniger, Stufenunterschiede zählen weniger. Die Startstufe 5 bleibt immer gleich. " +
 			"Beispiel Sockel 10: Stufe 10 hat nur 1,33x so viel wie Stufe 5. Gilt für alle Werte.",
-		"KP-Multiplikator: steuert die Kampflänge (Treffer bis K.O.).",
+		"LP-Multiplikator: steuert die Kampflänge (Treffer bis K.O.).",
 		"Schaden = fester Wert + Anteil x (Sp.) Angriff, die Verteidigung des Ziels zählt nicht, nur Schilde (ein Schild blockt physisch und magisch).",
 		"Element-Faktor nur für magische Angriffe, physische treffen immer neutral.",
 	])
@@ -1330,6 +1332,124 @@ func _start_judgement() -> void:
 		var fallen := _wild_mon(Monmap.mons.pick_random().name, level)
 		fallen.add_gem("atk", FALLEN_GEM_BONUS)
 		State.fainted_own_mons.append(fallen)
+	_change_scene(JUDGEMENT_PATH)
+
+# ─────────────────────────
+# Letzter Wille: Testszene mit einstellbarem gefallenem Monster. Das aktuelle Team bleibt und trauert,
+# gefallen ist ein zusätzliches Monster einer zufälligen Art; die neuen Fänge sind ebenfalls zufällig.
+
+## Punkte pro Trophäe im Test
+const LAST_WILL_TROPHY_VALUE := 6
+const LAST_WILL_MAX_CATCHES := 3
+const LAST_WILL_MAX_TROPHIES := 5
+const LAST_WILL_MAX_ELEMENTS := 2
+const LAST_WILL_PRESET_SIZE := Vector2(340, 44)
+const LAST_WILL_PRESETS := [
+	{"title": "TEST 1: WIEDERBELEBEN", "skills": 3, "catches": 3, "elements": 0, "revived": false, "trophies": {"atk": 1}},
+	{"title": "TEST 2: VOLLER NACHLASS", "skills": 6, "catches": 1, "elements": 1, "revived": true,
+		"trophies": {"hp": 2, "atk": 1, "def": 1, "speed": 1}},
+]
+
+var _last_will_page: VBoxContainer
+## Zahlenwerte (skills, catches, elements und je Trophäen-Stat die Anzahl) und revived
+var _last_will := {"skills": 4, "catches": 3, "elements": 0, "revived": false, "hp": 1, "atk": 1, "def": 0, "s_atk": 0, "speed": 0}
+var _last_will_labels := {}
+var _last_will_revived: Button
+
+func _build_last_will_page() -> void:
+	_last_will_page = VBoxContainer.new()
+	_last_will_page.add_theme_constant_override("separation", 10)
+	add_footer(_last_will_page)
+	var list := _make_scroll_list(_last_will_page, FIGHT_LIST_HEIGHT)
+	var presets := _add_section(list, "Letzter Wille: fertige Testszenen", [], 2)
+	for preset in LAST_WILL_PRESETS:
+		var button := _make_button(preset.title, func():
+			_apply_last_will_preset(preset)
+			_start_last_will())
+		button.custom_minimum_size = LAST_WILL_PRESET_SIZE
+		presets.add_child(button)
+	list.add_child(_make_header("Eigene Testszene (das aktuelle Team bleibt, Gefallener und Fänge sind zufällige Arten)"))
+	_add_last_will_row(list, "Fähigkeiten", "skills", 1, Skills.MAX_SKILLS)
+	_add_last_will_row(list, "Neue Fänge", "catches", 0, LAST_WILL_MAX_CATCHES)
+	_add_last_will_row(list, "Verg. Elemente", "elements", 0, LAST_WILL_MAX_ELEMENTS)
+	for stat in STAT_NAMES:
+		_add_last_will_row(list, "Trophäen " + STAT_NAMES[stat], stat, 0, LAST_WILL_MAX_TROPHIES)
+	_last_will_revived = _make_toggle_button("")
+	_last_will_revived.custom_minimum_size = LAST_WILL_PRESET_SIZE
+	_last_will_revived.toggled.connect(func(on: bool):
+		_last_will.revived = on
+		_refresh_last_will())
+	list.add_child(_last_will_revived)
+
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 12)
+	row.add_child(_make_button("ZURÜCK", _show_page.bind(_main)))
+	row.add_child(_make_button("STARTEN", _start_last_will))
+	_last_will_page.add_child(row)
+	_refresh_last_will()
+
+func _add_last_will_row(parent: Control, title: String, key: String, minimum: int, maximum: int) -> void:
+	var row := _make_stat_row(title)
+	for step in [-1, 1]:
+		var button := _make_button("%+d" % step, func():
+			_last_will[key] = clampi(_last_will[key] + step, minimum, maximum)
+			_refresh_last_will())
+		button.custom_minimum_size = STAT_STEP_SIZE
+		row.add_child(button)
+		if step < 0:
+			_last_will_labels[key] = _make_stat_value(row)
+	parent.add_child(row)
+
+func _refresh_last_will() -> void:
+	for key in _last_will_labels:
+		_last_will_labels[key].text = str(_last_will[key])
+	_last_will_revived.set_pressed_no_signal(_last_will.revived)
+	_last_will_revived.modulate = Color.WHITE if _last_will.revived else UNPICKED_COLOR
+	_last_will_revived.text = "SCHON WIEDERBELEBT: " + ("JA" if _last_will.revived else "NEIN")
+
+func _apply_last_will_preset(preset: Dictionary) -> void:
+	for key in ["skills", "catches", "elements", "revived"]:
+		_last_will[key] = preset[key]
+	for stat in STAT_NAMES:
+		_last_will[stat] = preset.trophies.get(stat, 0)
+	_refresh_last_will()
+
+func _start_last_will() -> void:
+	var level: int = State.INITIAL_LEVEL
+	for mon in State.mons:
+		level = maxi(level, mon._level)
+	# ohne lebendes Monster gäbe es niemanden, der trauert und erbt
+	if State.mons.is_empty():
+		State.mons.append(_wild_mon(Monmap.mons.pick_random().name, level))
+	State.catched_mons.clear()
+	State.fainted_own_mons.clear()
+	for i in _last_will.catches:
+		var species: String = Monmap.mons.pick_random().name
+		var catch := _wild_mon(species, level)
+		catch._initial_moves = Monster.BASE_MOVES
+		State.catched_mons.append(catch)
+		State.mark_mon_caught(species)
+	var fallen := _wild_mon(Monmap.mons.pick_random().name, level)
+	# Fähigkeiten auf die gewünschte Zahl bringen: fehlende aus dem gemeinsamen Pool, überzählige fallen weg
+	var pool := Skills.pool_skills().filter(func(skill): return not Skills.knows_skill(fallen, skill.name))
+	pool.shuffle()
+	while fallen._skills.size() < _last_will.skills and not pool.is_empty():
+		fallen._skills.append(Skills.learnable_copy(pool.pop_back()))
+	while fallen._skills.size() > _last_will.skills:
+		fallen._skills.pop_back()
+	var elements: Array = Enums.MON_TYPES.values()
+	elements.shuffle()
+	var added := 0
+	for element in elements:
+		if added < _last_will.elements and fallen.can_gain_element(element):
+			fallen.gain_element(element)
+			added += 1
+	for stat in STAT_NAMES:
+		if _last_will[stat] > 0:
+			fallen.add_gem(stat, _last_will[stat] * LAST_WILL_TROPHY_VALUE, _last_will[stat])
+	fallen._revived = _last_will.revived
+	State.fainted_own_mons.append(fallen)
 	_change_scene(JUDGEMENT_PATH)
 
 ## Wildes Monster einer bestimmten Art, immer mit Ei-Attacke (falls noch eine offen ist), damit Opfern möglich ist

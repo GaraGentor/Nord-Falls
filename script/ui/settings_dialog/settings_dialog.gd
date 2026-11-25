@@ -1,7 +1,7 @@
 class_name SettingsDialog
 extends InfoDialog
 
-## Einstellungen (GameSettings, Tutorial) als Dialog, erreichbar über das Zahnrad im Startbildschirm und im Header der Karte.
+## Einstellungen (GameSettings, Tutorial starten) als Dialog, erreichbar über das Zahnrad im Startbildschirm und im Header der Karte.
 ## Fährt von unten herein. Neue Einstellungen kommen als weitere Abschnitte in _build.
 
 const GEAR_ICON := preload("res://assets/ui/icons/gear.svg")
@@ -13,8 +13,6 @@ const CHECK_SIZE := Vector2(40, 40)
 const SLIDE_DISTANCE := 160.0
 ## nicht gewählte Option abgedunkelt, wie die Schalter im Debug-Menü
 const UNPICKED_COLOR := Color(0.65, 0.65, 0.65)
-## Höhe für Titel, Schließen-Button und Ränder des Panels: der Rest des Fensters gehört der scrollbaren Liste
-const SCROLL_RESERVED_HEIGHT := 230.0
 
 ## Wählbare Option -> Wert, den sie setzt (für das Hervorheben der aktiven)
 var _window_buttons := {}
@@ -72,6 +70,8 @@ func _build(content: VBoxContainer) -> void:
 	content.add_child(_title(tr("SETTINGS_TITLE"), SkillDetailPopup.GOLD))
 	# Titel und Schließen-Button bleiben stehen, die Abschnitte dazwischen scrollen
 	content = _scroll_list(content)
+	content.add_child(_section(tr("SETTINGS_LANGUAGE")))
+	content.add_child(_language_row())
 	content.add_child(_section(tr("SETTINGS_DISPLAY")))
 	if GameSettings.has_window_mode():
 		var row := HBoxContainer.new()
@@ -121,43 +121,51 @@ func _build(content: VBoxContainer) -> void:
 	content.add_child(retry_check)
 	content.add_child(_note(tr("SETTINGS_RETRY_BATTLE_HINT"), IronPlate.TEXT_COLOR))
 	content.add_child(_section(tr("SETTINGS_TUTORIAL")))
-	var tutorial_check := make_check(tr("SETTINGS_TUTORIAL_TOGGLE"), Tutorial.is_enabled(), _on_tutorial_toggled)
-	tutorial_check.size_flags_horizontal = SIZE_SHRINK_BEGIN
-	content.add_child(tutorial_check)
-	content.add_child(_note(tr("SETTINGS_TUTORIAL_HINT"), IronPlate.TEXT_COLOR))
+	# nur in der Ei-Auswahl, nie mitten in einem Lauf (Tutorial.can_start)
+	var can_start := Tutorial.can_start()
+	var tutorial_button := RewardDialog.plate_button(tr("SETTINGS_TUTORIAL_START"))
+	tutorial_button.add_theme_font_size_override("font_size", ROW_FONT_SIZE)
+	tutorial_button.size_flags_horizontal = SIZE_SHRINK_BEGIN
+	tutorial_button.focus_mode = FOCUS_NONE
+	tutorial_button.disabled = not can_start
+	tutorial_button.modulate = Color.WHITE if can_start else UNPICKED_COLOR
+	tutorial_button.mouse_default_cursor_shape = CURSOR_POINTING_HAND if can_start else CURSOR_ARROW
+	tutorial_button.pressed.connect(_on_tutorial_start_pressed)
+	content.add_child(tutorial_button)
+	var hint := "SETTINGS_TUTORIAL_HINT"
+	if Tutorial.run_active:
+		hint = "SETTINGS_TUTORIAL_RUNNING"
+	elif not can_start:
+		hint = "SETTINGS_TUTORIAL_LOCKED"
+	content.add_child(_note(tr(hint), IronPlate.TEXT_COLOR))
 
-## Scrollbare Liste in content: so hoch wie ihr Inhalt, höchstens so hoch, dass der Dialog ins Fenster passt
-func _scroll_list(content: VBoxContainer) -> VBoxContainer:
-	var scroll := ScrollContainer.new()
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	content.add_child(scroll)
-	DragScroll.attach(scroll)
-	var list := VBoxContainer.new()
-	list.add_theme_constant_override("separation", content.get_theme_constant("separation"))
-	list.size_flags_horizontal = SIZE_EXPAND_FILL
-	scroll.add_child(list)
-	_scroll = scroll
-	_list = list
-	list.minimum_size_changed.connect(_fit_scroll)
-	_fit_scroll.call_deferred()
-	return list
+## Sprache: je Sprache ein Knopf mit Flagge und ihrem Namen in der eigenen Sprache. Nach dem Umschalten
+## lädt die Szene neu, damit alles in der neuen Sprache steht.
+func _language_row() -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	var current := TranslationServer.get_locale().substr(0, 2)
+	for locale: String in GameSettings.LANGUAGES:
+		var button := RewardDialog.plate_button(GameSettings.LANGUAGES[locale])
+		button.add_theme_font_size_override("font_size", ROW_FONT_SIZE)
+		button.custom_minimum_size.x = OPTION_WIDTH
+		button.focus_mode = FOCUS_NONE
+		button.mouse_default_cursor_shape = CURSOR_POINTING_HAND
+		button.icon = LanguageFlag.texture(locale)
+		button.add_theme_constant_override("h_separation", 10)
+		var active := locale == current
+		button.modulate = Color.WHITE if active else UNPICKED_COLOR
+		button.add_theme_color_override("font_color", SkillDetailPopup.GOLD if active else IronPlate.TEXT_COLOR)
+		button.pressed.connect(_switch_language.bind(locale))
+		row.add_child(button)
+	return row
 
-var _scroll: ScrollContainer
-var _list: VBoxContainer
-
-func _fit_scroll() -> void:
-	if not is_inside_tree():
+func _switch_language(locale: String) -> void:
+	if locale == TranslationServer.get_locale().substr(0, 2):
 		return
-	var wanted := _list.get_combined_minimum_size()
-	var max_height := maxf(get_viewport_rect().size.y - SCROLL_RESERVED_HEIGHT, 120.0)
-	var scrolls := wanted.y > max_height
-	# Platz für die Scroll-Leiste, damit sie nichts überdeckt
-	var bar := _scroll.get_v_scroll_bar().get_combined_minimum_size().x + 8 if scrolls else 0.0
-	_scroll.custom_minimum_size = Vector2(wanted.x + bar, minf(wanted.y, max_height))
-
-func _notification(what: int) -> void:
-	if what == NOTIFICATION_RESIZED and _list:
-		_fit_scroll()
+	GameSettings.set_language(locale)
+	# vieles ist beim Aufbau schon übersetzt: Szene neu laden (Startbildschirm bzw. Karte, wie nach jedem Kampf)
+	get_tree().reload_current_scene.call_deferred()
 
 func _option_button(text: String, fullscreen: bool) -> Button:
 	var button := RewardDialog.plate_button(text)
@@ -176,11 +184,12 @@ func _refresh() -> void:
 		button.modulate = Color.WHITE if active else UNPICKED_COLOR
 		button.add_theme_color_override("font_color", SkillDetailPopup.GOLD if active else IronPlate.TEXT_COLOR)
 
-## Eingeschaltet geht es sofort los: der Dialog schließt sich, die Szene startet ihre Sequenz (Tutorial.enabled_changed)
-func _on_tutorial_toggled(on: bool) -> void:
-	if on:
-		close()
-	Tutorial.set_enabled(on)
+## Es geht sofort los: der Dialog schließt sich, die Ei-Auswahl startet neu im Tutorial-Modus
+func _on_tutorial_start_pressed() -> void:
+	if not Tutorial.can_start():
+		return
+	close()
+	Tutorial.start_run()
 
 func _exit_tree() -> void:
 	if GameSettings.changed.is_connected(_refresh):

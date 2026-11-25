@@ -32,10 +32,15 @@ var enemy_loans := false
 ## Kampf-Geschwindigkeit (Index in BattleControls.SPEEDS) und Auto-Zugende, bleiben über Neustarts erhalten
 var battle_speed_index := 0
 var battle_auto_end := false
+## Sprache ("de", "en"); leer = Sprache des Systems (Godot wählt sie beim Start selbst)
+var language := ""
+## Wählbare Sprachen -> ihr Name in der eigenen Sprache (Einstellungen, LanguageFlag)
+const LANGUAGES := {"de": "Deutsch", "en": "English"}
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_load()
+	_apply_language()
 	_apply_window_mode()
 	get_tree().root.size_changed.connect(_update_pixel_scale)
 	_update_pixel_scale()
@@ -123,6 +128,18 @@ func set_battle_auto_end(on: bool) -> void:
 	battle_auto_end = on
 	_save()
 
+func set_language(locale: String) -> void:
+	if language == locale:
+		return
+	language = locale
+	_apply_language()
+	_save()
+	changed.emit()
+
+func _apply_language() -> void:
+	if language != "":
+		TranslationServer.set_locale(language)
+
 func toggle_fullscreen() -> void:
 	set_fullscreen(not fullscreen)
 
@@ -163,6 +180,7 @@ func _load() -> void:
 	enemy_loans = config.get_value("gameplay", "enemy_loans", false)
 	battle_speed_index = config.get_value("battle", "speed_index", 0)
 	battle_auto_end = config.get_value("battle", "auto_end", false)
+	language = config.get_value("display", "language", "")
 
 func _save() -> void:
 	var config := ConfigFile.new()
@@ -177,4 +195,5 @@ func _save() -> void:
 	config.set_value("gameplay", "enemy_loans", enemy_loans)
 	config.set_value("battle", "speed_index", battle_speed_index)
 	config.set_value("battle", "auto_end", battle_auto_end)
+	config.set_value("display", "language", language)
 	config.save(PATH)

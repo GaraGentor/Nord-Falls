@@ -11,10 +11,15 @@ func deal_damage(props):
 		props.mon._item_marks.erase("blood")
 		Events.monster_effect_text.emit(props.mon, tr("ITEM_BLOOD_STONE") + " x" + String.num(blood, 1), Items.EFFECT_COLOR)
 	reveal_stats_by_hit(props.from, props.mon, props.skill)
-	# der Schild fängt den Schaden zuerst ab (physisch und magisch), Magma und Schlamm gehen mit etwas Glück durch
+	# der Schild fängt den Schaden zuerst ab (physisch und magisch). Magma geht mit etwas Glück durch den Schild,
+	# ohne Schild beim Ziel gibt es stattdessen Zusatzschaden aus dessen Verteidigung (ElementEffects.melt_damage)
 	var absorbed: float = full_damage
 	if ElementEffects.rolls_pierce(props.skill, props.from):
-		ElementEffects.show_pierce(props.mon)
+		if props.mon.shield() > 0:
+			ElementEffects.show_pierce(props.mon)
+		else:
+			full_damage += ElementEffects.melt_damage(props.mon, props.skill)
+			absorbed = full_damage
 	else:
 		absorbed = props.mon.absorb_damage(full_damage)
 	# Übungskampf: niemand geht K.O.
@@ -767,7 +772,10 @@ func level_value(mon: Monster, skill: Dictionary) -> float:
 	return maxf(roundf(skill.per_level * mon._level), 1.0)
 
 # Einzelne Elemente, die dem Monster für diesen Skill noch fehlen (zum Einsetzen bzw. zum Erwachen).
+# Universelle Skills (Chaos) brauchen kein bestimmtes Element: nie fehlende Elemente (min_elements: missing_elements_text).
 func missing_elements(mon: Monster, skill: Dictionary) -> Array:
+	if is_universal(skill):
+		return []
 	return Enums.MON_TYPES.values().filter(func(element): return skill.nature & element and not mon._type & element)
 
 func _element_list(elements: Array) -> String:
@@ -1634,10 +1642,21 @@ var reward_skills = [
 	_flat_buff_skill("SKILL_FIRE_BUFF_EXTRA_SHIELD", FIRE, "shield", 12.0, 2, 2, 3, 0, "SKILL_FLAT_BUFF_SHIELD_DESC"),
 	# Luft
 	_flat_buff_skill("SKILL_AIR_BUFF_EXTRA_SHIELD", AIR, "shield", 12.0, 2, 2, 3, 0, "SKILL_FLAT_BUFF_SHIELD_DESC"),
+	# Dampf
+	_with(_attack_skill("SKILL_STEAM_PHYS_SCALD_FLURRY", STEAM, 10.0, 0.2, PHYS, 2, 1, 1), {"hits": 2, "description": "SKILL_DAMAGE_PHYSICAL_MULTI_DESC"}),
+	# Blitz
+	_with(_attack_skill("SKILL_LIGHTNING_PHYS_SPARK_HAIL", LIGHTNING, 0.0, 0.0, PHYS, 3, 2, 1), {"hits": 5, "description": "SKILL_EFFECT_MULTI_DESC"}),
+	_with(_attack_skill("SKILL_LIGHTNING_MAG_TWIN_SPARK", LIGHTNING, 10.0, 0.2, MAG, 2, 1, 1), {"hits": 2, "description": "SKILL_DAMAGE_ABILITY_MULTI_DESC"}),
 	# Magma
 	_attack_skill("SKILL_MAGMA_MAG_MAGMA_BURST", MAGMA, 30.0, 0.5, MAG, 3, 2, 2),
+	_with(_attack_skill("SKILL_MAGMA_PHYS_CINDER_JABS", MAGMA, 10.0, 0.2, PHYS, 2, 1, 1), {"hits": 2, "description": "SKILL_DAMAGE_PHYSICAL_MULTI_DESC"}),
+	# Eis
+	_with(_attack_skill("SKILL_ICE_MAG_HAILSTONES", ICE, 10.0, 0.2, MAG, 2, 1, 1), {"hits": 2, "description": "SKILL_DAMAGE_ABILITY_MULTI_DESC"}),
+	# Staub
+	_with(_attack_skill("SKILL_DUST_MAG_GRIT_GUSTS", DUST, 10.0, 0.2, MAG, 2, 1, 1), {"hits": 2, "description": "SKILL_DAMAGE_ABILITY_MULTI_DESC"}),
 	# Schlamm
 	_shield_skill("SKILL_MUD_ARMOR_CLAY_SHELL", MUD, 28.0, 0.5, 3, 2, 1),
+	_with(_attack_skill("SKILL_MUD_PHYS_MUD_SPLATTER", MUD, 9.0, 0.18, PHYS, 2, 1, 1), {"hits": 2, "description": "SKILL_DAMAGE_PHYSICAL_MULTI_DESC"}),
 	_with(_passive_skill("SKILL_PASSIVE_DEEP_VITALITY", MUD, 20.0, 3, "stat", "SKILL_PASSIVE_STAT_SELF_DESC"), {"passive_stat": "hp", "passive_scope": "self"}),
 	# Gewitter
 	_with(_status_skill("SKILL_THUNDERSTORM_DEBUFF_STORM_FRONT", THUNDERSTORM, "paralysis", 1.0, 0.25, FOES, 4, 1, 2, "SKILL_STATUS_PARALYSIS_DESC"), {"trainer": false}),
@@ -1667,49 +1686,71 @@ var reward_skills = [
 # ─────────────────────────
 # Couvert der Bosse (Fähigkeiten-Belohnung): REWARD_SKILL_OFFERS Skills der Stufen 2-4 zur Auswahl, ohne Preis.
 # Gezogen wird aus reward_skills und dem gemeinsamen Pool (ohne Meilenstein-Skills), was in diesem Run noch niemand
-# aus einem Couvert gelernt hat. Die Stufe hängt von der Seltenheit des Teams ab (reward_tier_weights):
-# je seltener das Team, desto eher Stufe 4. Ein Team nur aus gewöhnlichen Monstern bekommt höchstens Stufe 3.
+# aus einem Couvert gelernt hat. Die Stufe wird nach festen Gewichten gezogen (REWARD_TIER_WEIGHTS), unabhängig
+# von der Seltenheit des Teams. Stufe 4 und Chaos erst ab einem Monster mit 2 Elementen (reward_pool).
 const REWARD_SKILL_OFFERS := 3
 const REWARD_MIN_TIER := 2
 
-## Durchschnittliche Seltenheit des Teams: 0 = nur gewöhnliche ... 5 = nur mythische (Enums.MON_RARITY)
-func team_rarity() -> float:
-	if State.mons.is_empty():
-		return 0.0
-	var total := 0.0
+## Gewicht pro Stufe im Couvert, gleich für jedes Team (die Seltenheit der Monster spielt keine Rolle).
+## Ob Stufe 4 überhaupt kommt, entscheiden nur die Elemente (reward_pool).
+const REWARD_TIER_WEIGHTS := {
+	2: 38.0,
+	3: 39.0,
+	4: 21.0,
+}
+
+## Stufe 4 und Chaos-Skills erst, wenn ein Monster im Team mindestens so viele Elemente hat
+const REWARD_ADVANCED_MIN_ELEMENTS := 2
+
+## Meiste Elemente eines Monsters im Team
+func team_max_elements() -> int:
+	var most := 0
 	for mon in State.mons:
-		total += Monmap.rarity_of(mon._name)
-	return total / State.mons.size()
+		most = maxi(most, Map.count_elements(mon._type))
+	return most
 
-## Gewicht pro Stufe im Couvert. Stufe 4 gibt es erst, wenn mindestens ein Monster seltener als gewöhnlich ist.
-##   Team im Schnitt    Stufe 2  Stufe 3  Stufe 4
-##   gewöhnlich (0)       50       35        0
-##   ungewöhnlich (1)     44       37       13
-##   selten (2)           38       39       21
-##   episch (3)           32       41       29
-##   legendär (4)         26       43       37
-func reward_tier_weights(rarity: float) -> Dictionary:
-	return {
-		2: maxf(50.0 - 6.0 * rarity, 10.0),
-		3: 35.0 + 2.0 * rarity,
-		4: 0.0 if rarity <= 0.0 else 5.0 + 8.0 * rarity,
-	}
+## Aktionen, die das Monster pro Zug höchstens haben kann: eigene plus eine (Relikt "Extra-Zug", auch ohne es zu besitzen)
+func reward_reachable_moves(mon: Monster) -> int:
+	var base: int = mon._initial_moves + mon._upgrades
+	return maxi(Relics.modify("moves", base, mon), base + 1)
 
-## Alles, was ein Couvert gerade anbieten kann (ab REWARD_MIN_TIER, in diesem Run noch nicht aus einem Couvert gelernt)
+## Kann das Monster den Skill jetzt oder mit höchstens einem Element mehr einsetzen, und hat es (mit +1 Aktion)
+## genug Aktionen dafür?
+func reward_reachable(mon: Monster, skill: Dictionary) -> bool:
+	if skill_cost(mon, skill) > reward_reachable_moves(mon):
+		return false
+	if can_use(mon, skill):
+		return true
+	if is_universal(skill):
+		return Map.count_elements(mon._type) + 1 >= skill.get("min_elements", 1)
+	return Map.count_elements(skill.nature & ~mon._type) <= 1
+
+## Sofort einsetzbar: Elemente da und genug Aktionen (mit den Relikten, die das Team gerade hat)
+func reward_usable_now(mon: Monster, skill: Dictionary) -> bool:
+	return can_use(mon, skill) and skill_cost(mon, skill) <= Relics.modify("moves", mon._initial_moves + mon._upgrades, mon)
+
+## Alles, was ein Couvert gerade anbieten kann (ab REWARD_MIN_TIER, in diesem Run noch nicht aus einem Couvert gelernt).
+## Nur Skills, die ein Monster im Team erreichen kann (reward_reachable). Stufe 4 und Chaos erst, wenn ein Monster
+## mindestens REWARD_ADVANCED_MIN_ELEMENTS Elemente hat.
 func reward_pool() -> Array:
+	var advanced := team_max_elements() >= REWARD_ADVANCED_MIN_ELEMENTS
 	var seen := {}
 	var pool := []
 	for skill in reward_skills + pool_skills():
 		if skill.get("tier", 1) < REWARD_MIN_TIER or seen.has(skill.name) or State.taught_reward_skills.has(skill.name):
 			continue
+		if not advanced and (skill.get("tier", 1) >= 4 or is_universal(skill) or skill.nature == CHAOS):
+			continue
+		if not State.mons.any(func(mon): return reward_reachable(mon, skill)):
+			continue
 		seen[skill.name] = true
 		pool.append(skill)
 	return pool
 
-# Auswahl fürs Couvert: Stufe nach der Seltenheit des Teams, mindestens ein Skill für das Team sofort einsetzbar,
+# Auswahl fürs Couvert: Stufe nach REWARD_TIER_WEIGHTS, mindestens ein Skill für das Team sofort einsetzbar,
 # sofern es so einen noch gibt.
 func reward_offers() -> Array:
-	var weights := reward_tier_weights(team_rarity())
+	var weights := REWARD_TIER_WEIGHTS
 	var pool: Array = reward_pool().filter(func(skill): return weights.get(skill.tier, 0.0) > 0.0)
 	var offers := []
 	for i in REWARD_SKILL_OFFERS:
@@ -1718,14 +1759,15 @@ func reward_offers() -> Array:
 			break
 		offers.append(skill)
 		pool.erase(skill)
-	var usable := func(skill): return State.mons.any(func(mon): return can_use(mon, skill))
+	var usable := func(skill): return State.mons.any(func(mon): return reward_usable_now(mon, skill))
 	if not offers.is_empty() and not offers.any(usable):
 		var fitting := pool.filter(usable)
 		if not fitting.is_empty():
 			offers[0] = _pick_reward(fitting, weights)
 	return offers.map(func(skill): return get_skill(skill.name))
 
-## Zieht zuerst eine Stufe nach Gewicht (nur Stufen, die es im Pool gibt), dann zufällig einen Skill dieser Stufe
+## Zieht zuerst eine Stufe nach Gewicht (nur Stufen, die es im Pool gibt), dann einen Skill dieser Stufe
+## (reward_skill_weight: Skills des eigenen Kombi-Elements öfter)
 func _pick_reward(pool: Array, weights: Dictionary):
 	if pool.is_empty():
 		return null
@@ -1739,8 +1781,30 @@ func _pick_reward(pool: Array, weights: Dictionary):
 	for tier in by_tier:
 		roll -= weights.get(tier, 0.0)
 		if roll <= 0.0:
-			return by_tier[tier].pick_random()
-	return pool.pick_random()
+			return _pick_weighted_reward(by_tier[tier])
+	return _pick_weighted_reward(pool)
+
+## Skills, deren Element genau das Kombi-Element (2+ Elemente) eines Monsters im Team ist, kommen so oft öfter ins Couvert.
+## Sonst verdrängen die vielen Grundelement-Skills sie (ein Blitz-Monster sah nur in ca. jedem 7. Couvert einen Blitz-Skill).
+const REWARD_OWN_COMBO_WEIGHT := 3.0
+
+func reward_skill_weight(skill: Dictionary) -> float:
+	if is_universal(skill) or Map.count_elements(skill.nature) < 2:
+		return 1.0
+	if State.mons.any(func(mon): return mon._type == skill.nature):
+		return REWARD_OWN_COMBO_WEIGHT
+	return 1.0
+
+func _pick_weighted_reward(skills: Array):
+	var total := 0.0
+	for skill in skills:
+		total += reward_skill_weight(skill)
+	var roll := randf() * total
+	for skill in skills:
+		roll -= reward_skill_weight(skill)
+		if roll <= 0.0:
+			return skill
+	return skills.pick_random()
 
 # Aufstiegs-Skills: Trinkt ein Monster einen Element-Trank und steigt dadurch zu einem Kombi-Element auf,
 # kann es den Skill genau dieses Elements lernen (Treasure.add_potion_card, ElementGainOverlay). Vorerst leer.

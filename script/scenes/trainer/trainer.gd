@@ -375,8 +375,7 @@ func _show_missing_elements(card: RewardCard) -> void:
 			chip.queue_free()
 		if card == null or Skills.knows_skill(plate.mon, card.drag.skill.name):
 			continue
-		for element: int in Skills.missing_elements(plate.mon, card.drag.skill):
-			add_element_chip(plate.chips, element)
+		add_missing_elements(plate.chips, plate.mon, card.drag.skill)
 
 func _tooltip_anchor(target: DropTarget) -> Rect2:
 	return target.get_global_rect().merge((target as PlateMon).chips.get_global_rect())
@@ -424,6 +423,23 @@ func _close_mon() -> void:
 	_open_plate = null
 	_exit_button.visible = true
 	_pan_to(0.0)
+
+## Wie beim Letzten Willen: ein Klick neben Übersicht und Monster fährt die Bühne zurück
+## (ein Monster selbst wechselt die Übersicht über _toggle_mon)
+func _input(event: InputEvent) -> void:
+	if _open_plate == null or not event is InputEventMouseButton or not event.pressed or event.button_index != MOUSE_BUTTON_LEFT:
+		return
+	# ein Dialog darüber (z. B. Element-Info): der Klick gehört ihm
+	if InfoDialog.any_open(get_tree()):
+		return
+	var pos: Vector2 = event.global_position
+	if _modal_holder.get_global_rect().has_point(pos):
+		return
+	for plate in _plates:
+		if plate.get_global_rect().has_point(pos):
+			return
+	_close_mon()
+	get_viewport().set_input_as_handled()
 
 func _clear_modal() -> void:
 	for modal in _modal_holder.get_children():

@@ -40,12 +40,17 @@ const DEFAULT_DATA := {
 }
 
 var save_data: Dictionary = DEFAULT_DATA.duplicate(true)
+## Während des Tutorial-Laufs (Tutorial.start_run) wird nichts auf die Platte geschrieben, danach kommt der
+## Stand von vorher zurück. So lassen sich Eier oder Biom-Pfad nicht über das Tutorial neu würfeln.
+var suspended := false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	load_game()
 
 func save_game():
+	if suspended:
+		return
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
 		file.store_string(JSON.stringify(save_data))

@@ -176,15 +176,15 @@ Nicht vom Werkzeug angefasst:
 =================================================================
   3 Skills der Stufen 2-4 zur Auswahl, aus reward_skills und dem gemeinsamen Pool (ohne Meilenstein-Skills),
   ohne Skills, die in diesem Run schon jemand aus einem Couvert gelernt hat. Mindestens einer ist fürs Team einsetzbar.
-  Erst wird die Stufe gezogen, dann ein Skill dieser Stufe. Gewicht nach der durchschnittlichen Seltenheit des Teams
-  (0 = gewöhnlich ... 5 = mythisch, Skills.reward_tier_weights):
-	Team im Schnitt    Stufe 2  Stufe 3  Stufe 4
-	gewöhnlich (0)       50       35        0     <- nur gewöhnliche Monster: höchstens Stufe 3
-	ungewöhnlich (1)     44       37       13
-	selten (2)           38       39       21
-	episch (3)           32       41       29
-	legendär (4)         26       43       37
-  Schon ein seltenes Monster unter Gewöhnlichen (Schnitt 0,5) öffnet Stufe 4 (etwa jeder zehnte Skill).
+  Erst wird die Stufe gezogen, dann ein Skill dieser Stufe. Feste Gewichte, gleich für jedes Team, die Seltenheit
+  der Monster spielt keine Rolle (Skills.REWARD_TIER_WEIGHTS):
+	Stufe 2  Stufe 3  Stufe 4
+	  38       39       21
+  Ob Stufe 4 überhaupt kommt, entscheiden die Elemente (siehe unten).
+  Filter vorab (Skills.reward_pool):
+	- Nur Skills, die ein Monster im Team jetzt oder mit höchstens einem Element mehr einsetzen kann.
+	- Stufe 4 und Chaos-Skills erst, wenn ein Monster mindestens 2 Elemente hat (REWARD_ADVANCED_MIN_ELEMENTS).
+	- Kosten höchstens so viele Aktionen, wie dieses Monster pro Zug hat, plus 1 (Relikt Extra-Zug, auch ohne es).
 
 
 9. IDEEN FÜR SYNERGIEN

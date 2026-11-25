@@ -94,5 +94,4 @@ func _show_missing_elements(skill: Dictionary) -> void:
 			chip.queue_free()
 		if skill.is_empty() or Skills.knows_skill(target.mon, skill.name):
 			continue
-		for element: int in Skills.missing_elements(target.mon, skill):
-			add_element_chip(row, element)
+		add_missing_elements(row, target.mon, skill)

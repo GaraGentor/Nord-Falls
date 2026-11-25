@@ -65,16 +65,20 @@ func _ready() -> void:
 	stage.front_changed.connect(_on_front_changed)
 	stage.throw_finished.connect(_on_throw_finished)
 	_add_tutorial_targets()
-	Tutorial.enabled_changed.connect(_on_tutorial_enabled_changed)
-	Tutorial.trigger("selection")
+	if Tutorial.needs_start_question():
+		_ask_for_tutorial.call_deferred()
+	else:
+		Tutorial.trigger("selection")
 
-func _exit_tree() -> void:
-	Tutorial.enabled_changed.disconnect(_on_tutorial_enabled_changed)
-
-## Im Einstellungen-Dialog eingeschaltet: von vorn, damit das Tutorial mit dem Werfen der Eier beginnen kann
-func _on_tutorial_enabled_changed(on: bool) -> void:
-	if on:
-		get_tree().reload_current_scene.call_deferred()
+## Neuer Spielstand: mit Hilfe spielen (Tutorial-Lauf, die Ei-Auswahl startet neu) oder überspringen.
+## Man muss sich entscheiden, ein Klick daneben zählt nicht.
+func _ask_for_tutorial() -> void:
+	var dialog := ChoiceDialog.ask(self, tr("TUTORIAL_ASK_TITLE"), tr("TUTORIAL_ASK_TEXT"),
+		tr("TUTORIAL_ASK_YES"), tr("TUTORIAL_ASK_NO"), false)
+	if await dialog.chosen:
+		Tutorial.start_run()
+	else:
+		Tutorial.decline()
 
 ## Gruppen, die das interaktive Tutorial hervorhebt (siehe Tutorial.SEQUENCES)
 func _add_tutorial_targets() -> void:

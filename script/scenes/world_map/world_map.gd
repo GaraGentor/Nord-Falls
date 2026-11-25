@@ -18,8 +18,7 @@ extends Control
 @export var money_label: Label
 @export var key_label: Label
 @export var coupon_label: Label
-@export var depth_level: Label
-@export var biome_path_label: RichTextLabel
+@export var biome_trail: BiomeTrail
 @export var team_bar: HBoxContainer
 
 # Felder, Ereignisse und Dialoge holt sich die Karte erst, wenn sie gebraucht werden (load im Getter). Sie liegen
@@ -114,13 +113,6 @@ func _ready() -> void:
 	Relics.relics_changed.connect(refresh_walkable_nodes)
 
 	show_biome()
-	# Klick auf ein Biom der Route bzw. das aktuelle Biom zeigt seine Stärken und Schwächen
-	biome_path_label.meta_clicked.connect(func(meta): _open_biome_info(int(str(meta))))
-	biome_path_label.tooltip_text = tr("BIOME_INFO_HINT")
-	depth_level.tooltip_text = tr("BIOME_INFO_HINT")
-	depth_level.gui_input.connect(func(event: InputEvent):
-		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-			_open_biome_info(State.map_level))
 	monster_shard_changed(State.boss_shards)
 	change_key_text(State.keys)
 	change_coupon_text(State.coupons)
@@ -166,15 +158,9 @@ func _ready() -> void:
 	_setup_bag_button()
 	team_bar.add_to_group("tut_map_team")
 	$HBoxContainer/Panel/LegendButton.add_to_group("tut_map_legend")
-	Tutorial.enabled_changed.connect(_on_tutorial_enabled_changed)
 	# zu Beginn eines Runs oder direkt nach dem Übungskampf, nie über Belohnungen hinweg
 	if State.current_map_position == State.NO_MAP_POSITION or Tutorial.take_back_from_practice():
 		Tutorial.trigger("map")
-
-## Im Einstellungen-Dialog eingeschaltet: es geht gleich mit dem Übungskampf los, danach erklärt sich die Karte
-func _on_tutorial_enabled_changed(on: bool) -> void:
-	if on and Tutorial.wants_practice():
-		Tutorial.start_practice()
 
 # ─────────────────────────
 # Inventar (One-Way-Items): die Tasche oben links schaltet es ein und aus. Monster-Details aus dem Header
@@ -270,8 +256,6 @@ func add_debug_button() -> void:
 #	Events.map_event_pressed.disconnect(_call_map_event)
 
 func _exit_tree() -> void:
-	if Tutorial.enabled_changed.is_connected(_on_tutorial_enabled_changed):
-		Tutorial.enabled_changed.disconnect(_on_tutorial_enabled_changed)
 	State.ep_changed.disconnect(change_ep_text)
 	State.boss_shards_changed.disconnect(monster_shard_changed)
 	State.keys_changed.disconnect(change_key_text)
@@ -666,32 +650,11 @@ func change_key_text(keys) -> void:
 func change_coupon_text(coupons) -> void:
 	coupon_label.text = str(coupons)
 
-# Name des aktuellen Bioms in seiner Farbe, dazu die Tiefe
-func show_biome(mask := State.current_biome()) -> void:
-	var biome = ColorMap.get_combo(mask)
-	depth_level.text = tr("MAP_HEADER_BIOME").format({"biome": tr(biome.label), "depth": State.map_level + 1})
-	depth_level.add_theme_color_override("font_color", Color(biome.color).lightened(0.4))
-	show_biome_path()
-
-# Alle Biome des Runs als Route: geschaffte blass, das aktuelle hervorgehoben, kommende in ihrer Farbe
-func show_biome_path() -> void:
-	var parts = []
-	var passed := Color(IronPlate.TEXT_COLOR, 0.35).to_html()
-	for depth in State.biome_path.size():
-		var combo = ColorMap.get_combo(State.biome_path[depth])
-		# jedes Biom ist ein Link auf seine Tiefe (siehe _open_biome_info)
-		var text = "[url=%d]%d %s[/url]" % [depth, depth + 1, tr(combo.label)]
-		if depth < State.map_level:
-			parts.append("[color=#%s]%s[/color]" % [passed, text])
-		elif depth == State.map_level:
-			parts.append("[b][u][color=#%s]%s[/color][/u][/b]" % [Color(combo.color).lightened(0.4).to_html(false), text])
-		else:
-			parts.append("[color=#%s]%s[/color]" % [Color(combo.color).lightened(0.2).to_html(false), text])
-	biome_path_label.text = "[color=#%s]%s[/color] %s" % [SkillDetailPopup.GOLD.to_html(false), tr("MAP_HEADER_ROUTE"), (" [color=#%s]›[/color] " % passed).join(parts)]
-
-func _open_biome_info(depth: int) -> void:
-	if depth >= 0 and depth < State.biome_path.size():
-		BiomeInfoDialog.open(self, State.biome_path[depth], depth)
+# Biom-Pfad des Runs im Header: Kästchen pro Biom, das aktuelle umrahmt, darunter "Pfad: <Biom>".
+# Klick darauf öffnet den großen Pfad (BiomePathDialog), von dort jedes Biom mit Stärken und Schwächen.
+# mask bleibt für die Debug-Vorschau (Taste B), der Header zeigt immer den echten Pfad.
+func show_biome(_mask := State.current_biome()) -> void:
+	biome_trail.show_path(State.biome_path, State.map_level)
 
 func reset_animation_state(ele) -> void:
 	ele._ui_item.scale = Vector2(1,1)

@@ -484,6 +484,22 @@ static func add_element_chip(row: Control, element: int) -> void:
 	chip.set_element(element)
 	row.add_child(chip)
 
+## Was dem Monster für den Skill fehlt, in eine Zeile eingereiht: je fehlendem Element ein Chip. Universelle Skills
+## (Chaos) brauchen kein bestimmtes Element, höchstens eine Mindestzahl ("Benötigt 2 Elemente") - die steht als Text da.
+static func add_missing_elements(row: Control, mon: Monster, skill: Dictionary) -> void:
+	if Skills.is_universal(skill):
+		var text := Skills.missing_elements_text(mon, skill)
+		if text.is_empty():
+			return
+		var label := SkillCardFace.label(SkillCardFace.TEXT_SIZE, SkillCardFace.MISSING_COLOR)
+		label.text = text
+		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		row.add_child(label)
+		return
+	for element: int in Skills.missing_elements(mon, skill):
+		add_element_chip(row, element)
+
 ## Art eines Ziels: eigene Monster oder Arten als String
 static func mon_name(mon: Variant) -> String:
 	return mon if mon is String else mon._name

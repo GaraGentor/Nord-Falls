@@ -440,6 +440,10 @@ func _show_unlocks(skill_names: Array) -> void:
 	unlock_label.visible = true
 
 func _on_new_run_pressed() -> void:
+	# Tutorial-Lauf vorbei: Spielstand von vorher zurück, dann zur Ei-Auswahl
+	if Tutorial.run_active:
+		Tutorial.end_run()
+		return
 	State.reset()
 	get_tree().change_scene_to_file("res://script/scenes/selection/selection.tscn")
 

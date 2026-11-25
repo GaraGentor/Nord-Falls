@@ -10,8 +10,8 @@ extends Control
 ##   Das geht nur im Judgement direkt nach dem Fang, später nicht mehr. Die Tasche fliegt nur herein, solange
 ##   das ausgewählte Monster eine solche Ei-Attacke trägt.
 ## Was beim Weiter links liegt, wird freigelassen. Ohne Teammitglied ist Weiter gesperrt.
-## Ist im Kampf ein eigenes Monster gefallen, kann es zuerst einmalig durch einen neuen Fang wiederbelebt werden.
-## Wird das übersprungen oder ist es nicht möglich, vererbt es eine Sache (Letzter Wille).
+## Ist im Kampf ein eigenes Monster gefallen, kommt zuerst ein eigener Screen (last_will_screen.gd): dort kann es
+## einmalig durch einen neuen Fang wiederbelebt werden, sonst vererbt es eine Sache (Letzter Wille).
 
 const GOLD := SkillDetailPopup.GOLD
 const MUTED := IronPlate.TEXT_COLOR
@@ -21,6 +21,7 @@ const LIVING_MATERIAL = preload("res://script/ui/shader/living_pixels_material.t
 const ELEMENT_CHIP = preload("res://script/ui/element_chip/element_chip.tscn")
 const INSET_BOX = preload("res://script/ui/materials/iron_inset_box.tres")
 const MAP_SCENE := "res://script/scenes/world_map/world_map.tscn"
+const LAST_WILL_SCREEN = preload("res://script/scenes/judgment/last_will_screen.gd")
 const MAX_TEAM := 2
 const DRAG_THRESHOLD := 10.0
 # Anteil der KP, mit dem ein wiederbelebtes Monster zurückkommt
@@ -67,6 +68,8 @@ var _eggs_unlocked := 0
 var _press := {}
 var _drag_data := {}
 var _arrow_time := 0.0
+# Screen für ein gefallenes Monster liegt darüber: hier keine Eingaben auswerten
+var _farewell_open := false
 
 # Zone -> JudgementDropZone
 var _zones := {}
@@ -87,6 +90,7 @@ var _legend: HFlowContainer
 var _team_frame: Control
 var _slot_boxes: Array = []
 var _skill_grid: GridContainer
+var _skill_owner_label: Label
 var _bag: OpenBag
 var _bag_zone: JudgementDropZone
 var _bag_shown := false
@@ -136,7 +140,7 @@ func _highlight(zone: int, allowed: bool, hovered: bool) -> void:
 # Eingabe
 
 func _input(event: InputEvent) -> void:
-	if dialog.visible or _zones.is_empty():
+	if dialog.visible or _zones.is_empty() or _farewell_open:
 		return
 	# Monster und Karten werden hier vor der GUI ausgewertet, das Tutorial-Overlay würde sie sonst nicht abfangen
 	var mouse := event as InputEventMouse
@@ -359,46 +363,37 @@ func _handle_fallen() -> void:
 	var fallen_mons = State.fainted_own_mons.duplicate()
 	State.fainted_own_mons.clear()
 	for fallen in fallen_mons:
-		if not await _offer_revive(fallen):
-			await _last_will(fallen)
+		await _farewell(fallen)
 
-# Liefert true, wenn das Monster wiederbelebt wurde.
-func _offer_revive(fallen: Monster) -> bool:
-	if fallen._revived or _pool.is_empty():
-		return false
-	var hp_percent = roundi(REVIVE_HP_SHARE * 100)
-	var catch: Monster = await dialog.revive(fallen, _pool, hp_percent)
-	if catch == null:
-		return false
-	_remove(catch)
-	State.mons.append(fallen)
-	fallen.revive(REVIVE_HP_SHARE)
-	_refresh()
-	Helper.show_unlock_message(tr("REVIVE_DONE").format({"mon": Helper.mon_battle_name(fallen), "hp": hp_percent}))
-	return true
-
-# Erben können das Team und die neuen Fänge. Abgelehnt wird nur nach Rückfrage, das Erbe ist danach weg.
-func _last_will(fallen: Monster) -> void:
+# Eigener Screen (LastWillScreen): Fang auf den Körper werfen belebt wieder, sonst erbt ein Monster eine Sache.
+# Erben können das Team und die neuen Fänge. Ist beides nicht möglich, gibt es keinen Screen.
+func _farewell(fallen: Monster) -> void:
 	var heirs: Array = State.mons.duplicate()
 	heirs.append_array(_pool)
-	if not dialog.can_inherit(fallen, heirs):
+	var can_revive: bool = not fallen._revived and not _pool.is_empty()
+	if not can_revive and not LAST_WILL_SCREEN.can_inherit(fallen, heirs):
 		return
-	while true:
-		var result: Dictionary = await dialog.last_will(fallen, heirs)
-		if not result.is_empty():
-			_inherit(fallen, result)
-			_refresh()
-			return
-		var text = tr("LAST_WILL_DECLINE_TEXT").format({"mon": Helper.mon_battle_name(fallen)})
-		if await dialog.confirm(tr("LAST_WILL_DECLINE_TITLE"), text, tr("LAST_WILL_DECLINE")):
-			return
+	var screen: Control = LAST_WILL_SCREEN.new()
+	add_child(screen)
+	move_child(screen, dialog.get_index())
+	_farewell_open = true
+	var result: Dictionary = await screen.run(fallen, State.mons.duplicate(), _pool.duplicate(), dialog, REVIVE_HP_SHARE)
+	if result.has("revive"):
+		_remove(result.revive)
+		State.mons.append(fallen)
+		fallen.revive(REVIVE_HP_SHARE)
+		Helper.show_unlock_message(tr("REVIVE_DONE").format({"mon": Helper.mon_battle_name(fallen), "hp": roundi(REVIVE_HP_SHARE * 100)}))
+	elif not result.is_empty():
+		_inherit(result)
+	_refresh()
+	await screen.close()
+	_farewell_open = false
 
-func _inherit(fallen: Monster, result: Dictionary) -> void:
+func _inherit(result: Dictionary) -> void:
 	var heir: Monster = result.target
 	match result.gift.kind:
 		"gems":
-			for stat in fallen._gems:
-				heir.add_gem(stat, fallen._gems[stat], fallen.gem_count(stat))
+			heir.add_gem(result.gift.stat, result.gift.bonus, result.gift.count)
 		"element":
 			heir.gain_element(result.gift.element)
 		"skill":
@@ -407,7 +402,7 @@ func _inherit(fallen: Monster, result: Dictionary) -> void:
 				heir._skills.append(learned)
 			else:
 				heir._skills[result.replace] = learned
-	Helper.show_unlock_message(tr("LAST_WILL_INHERITED").format({"mon": Helper.mon_battle_name(heir), "gift": dialog.gift_name(result.gift)}))
+	Helper.show_unlock_message(tr("LAST_WILL_INHERITED").format({"mon": Helper.mon_battle_name(heir), "gift": LAST_WILL_SCREEN.gift_name(result.gift)}))
 
 # ─────────────────────────
 # Anzeige
@@ -467,6 +462,10 @@ func _refresh_team() -> void:
 func _refresh_skills() -> void:
 	_clear(_skill_grid)
 	_skill_cards.clear()
+	_skill_owner_label.visible = _selected != null
+	if _selected:
+		_skill_owner_label.text = Helper.mon_battle_name(_selected)
+		_skill_owner_label.add_theme_color_override("font_color", Helper.color_by_mon(_selected))
 	for i in Skills.MAX_SKILLS:
 		if _selected and i < _selected._skills.size():
 			var skill: Dictionary = _selected._skills[i]
@@ -863,6 +862,13 @@ func _build_middle() -> Control:
 	box.size_flags_stretch_ratio = 2.1
 	box.add_theme_constant_override("separation", 10)
 	box.mouse_filter = MOUSE_FILTER_IGNORE
+	# Name des gerade gezeigten Monsters, damit klar ist, wessen Fähigkeiten das sind
+	_skill_owner_label = _label(40, GOLD)
+	_skill_owner_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_skill_owner_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	_skill_owner_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_outline(_skill_owner_label)
+	box.add_child(_skill_owner_label)
 	_skill_grid = GridContainer.new()
 	_skill_grid.columns = 3
 	_skill_grid.size_flags_vertical = SIZE_EXPAND_FILL
