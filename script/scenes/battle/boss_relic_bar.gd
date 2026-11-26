@@ -34,7 +34,11 @@ func refresh() -> void:
 		child.queue_free()
 	# unten beginnen: das erste Relikt steht ganz unten
 	for i in range(BossRelics.active.size() - 1, -1, -1):
-		add_child(_slot(BossRelics.active[i]))
+		var slot := _slot(BossRelics.active[i])
+		# Bannsiegel: gebannte Relikte stehen ausgegraut da
+		if BossRelics.is_banned():
+			slot.modulate = Color(0.45, 0.45, 0.45)
+		add_child(slot)
 
 func _slot(id: String) -> PanelContainer:
 	var relic: Dictionary = BossRelics.get_relic(id)

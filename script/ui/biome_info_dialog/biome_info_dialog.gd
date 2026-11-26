@@ -112,7 +112,7 @@ class ElementCycle extends Control:
 	const HEAD := 8.0
 	const LINE_WIDTH := 2.0
 	const PIXEL_SPEED := 0.6
-	const LABEL_FONT_SIZE := 15
+	const LABEL_FONT_SIZE := 24
 	const DIM := Color(0.42, 0.42, 0.4, 0.55)
 	const INACTIVE_DARKEN := 0.55
 

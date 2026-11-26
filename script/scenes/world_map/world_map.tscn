@@ -3,13 +3,8 @@
 [ext_resource type="Script" path="res://script/scenes/world_map/world_map.gd" id="1_fque0"]
 [ext_resource type="Script" path="res://script/scenes/world_map/event_handler.gd" id="2_7tuf0"]
 [ext_resource type="Texture2D" uid="uid://cdaudimnlhfta" path="res://assets/ui/map/battle_icon.png" id="2_sikk3"]
-[ext_resource type="PackedScene" uid="uid://dnayp1xl2x6gl" path="res://script/scenes/heal_camp/heal_camp.tscn" id="2_tj45e"]
-[ext_resource type="PackedScene" uid="uid://bcjim8fkv613c" path="res://script/scenes/shop/shop.tscn" id="3_t1igp"]
-[ext_resource type="PackedScene" uid="uid://082mo0k6468p" path="res://script/scenes/jailer/jailer.tscn" id="4_e13wj"]
-[ext_resource type="PackedScene" uid="uid://bc56refqd7yk6" path="res://script/scenes/trainer/trainer.tscn" id="4_k05nh"]
 [ext_resource type="Script" path="res://script/ui/shader/iron_plate.gd" id="4_plate"]
 [ext_resource type="Shader" path="res://script/scenes/world_map/map_background.gdshader" id="5_23h7f"]
-[ext_resource type="PackedScene" uid="uid://c3ubam1ngmpg5" path="res://script/scenes/treasure/treasure.tscn" id="5_pm81x"]
 [ext_resource type="Theme" uid="uid://bqwc2gott07le" path="res://script/ui/materials/battle_labels.tres" id="5_pvajd"]
 [ext_resource type="Theme" uid="uid://b5pomesyumr6n" path="res://script/scenes/battle/flat_button_theme.tres" id="6_4ileh"]
 [ext_resource type="Script" path="res://script/scenes/world_map/node_container.gd" id="6_334vr"]
@@ -28,6 +23,7 @@
 [ext_resource type="Texture2D" path="res://assets/ui/icons/key.svg" id="24_key"]
 [ext_resource type="Texture2D" path="res://assets/ui/icons/coupon.svg" id="24_coupon"]
 [ext_resource type="Material" uid="uid://blo3dbj5wps64" path="res://script/ui/shader/living_pixels_material.tres" id="25_living"]
+[ext_resource type="Script" path="res://script/ui/biome_trail/biome_trail.gd" id="26_trail"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_hmv0x"]
 shader = ExtResource("5_23h7f")
@@ -58,7 +54,7 @@ shader_parameter/glow_color = Color(0.4, 0.9, 1, 1)
 shader_parameter/glow_intensity = 1.594
 shader_parameter/glow_speed = 2.76
 
-[node name="WorldMap" type="Control" node_paths=PackedStringArray("scroll_container", "map_layout", "battle_c", "camp_c", "grid_container", "boss_button", "node_container", "node_name", "line_node", "boss_shard_label", "money_label", "key_label", "coupon_label", "depth_level", "biome_path_label", "team_bar", "view_container")]
+[node name="WorldMap" type="Control" node_paths=PackedStringArray("scroll_container", "map_layout", "battle_c", "camp_c", "grid_container", "boss_button", "node_container", "node_name", "line_node", "boss_shard_label", "money_label", "key_label", "coupon_label", "biome_trail", "team_bar", "view_container")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -80,14 +76,8 @@ boss_shard_label = NodePath("HBoxContainer/Panel/MarginContainer/Header/Panel/Ma
 money_label = NodePath("HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow/MoneyLabel")
 key_label = NodePath("HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow/KeyLabel")
 coupon_label = NodePath("HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow/CouponLabel")
-depth_level = NodePath("HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow/DepthLevel")
-biome_path_label = NodePath("HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow/BiomePath")
+biome_trail = NodePath("HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow/BiomePath")
 team_bar = NodePath("HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TeamBar")
-heal_camp_scene = ExtResource("2_tj45e")
-shop_scene = ExtResource("3_t1igp")
-jailer_scene = ExtResource("4_e13wj")
-trainer_scene = ExtResource("4_k05nh")
-treasure_scene = ExtResource("5_pm81x")
 view_container = NodePath("ViewPanel")
 
 [node name="BattleIcon" type="TextureRect" parent="."]
@@ -209,7 +199,7 @@ stretch_mode = 5
 custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.858824, 0.717647, 0.45098, 1)
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 32
 text = "0"
 
 [node name="ShardIcon" type="TextureRect" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow"]
@@ -225,7 +215,7 @@ stretch_mode = 5
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.858824, 0.717647, 0.45098, 1)
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 32
 text = "0"
 
 [node name="KeyIcon" type="TextureRect" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow"]
@@ -241,7 +231,7 @@ stretch_mode = 5
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.858824, 0.717647, 0.45098, 1)
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 32
 text = "0"
 
 [node name="CouponIcon" type="TextureRect" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow"]
@@ -257,28 +247,18 @@ stretch_mode = 5
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.858824, 0.717647, 0.45098, 1)
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 32
 text = "0"
 
-[node name="DepthLevel" type="Label" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow"]
+[node name="Spacer" type="Control" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-mouse_filter = 0
-mouse_default_cursor_shape = 2
-theme_override_font_sizes/font_size = 22
-text = "Biom"
+mouse_filter = 2
 
-[node name="BiomePath" type="RichTextLabel" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow"]
+[node name="BiomePath" type="VBoxContainer" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer/TopRow"]
 layout_mode = 2
-size_flags_horizontal = 3
 size_flags_vertical = 4
-theme_override_font_sizes/normal_font_size = 16
-theme_override_font_sizes/bold_font_size = 18
-bbcode_enabled = true
-fit_content = true
-autowrap_mode = 0
-horizontal_alignment = 2
-meta_underlined = false
+script = ExtResource("26_trail")
 
 [node name="RelicBar" type="HBoxContainer" parent="HBoxContainer/Panel/MarginContainer/Header/Panel/MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 40)
@@ -455,7 +435,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 theme = ExtResource("5_pvajd")
 theme_override_constants/icon_max_width = 64
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 40
 flat = true
 icon_alignment = 1
 expand_icon = true

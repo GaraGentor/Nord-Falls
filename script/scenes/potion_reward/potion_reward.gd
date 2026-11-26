@@ -20,5 +20,11 @@ func _ready() -> void:
 	set_drag_hint("TREASURE_POTION_CHOOSE_MON")
 	show_fixed_targets(State.mons, false)
 	show_element_chips()
-	Treasure.add_potion_card(self, element)
+	var card := Treasure.add_potion_card(self, element)
 	play_chest_intro()
+	# Tutorial (Feld 4): der Trainer erklärt Tränke, sobald der Trank auf dem Teppich liegt
+	if Tutorial.should_show("potion"):
+		card.add_to_group("tut_potion_card")
+		_target_grid.add_to_group("tut_potion_mons")
+		Tutorial.trigger("potion")
+		tree_exiting.connect(Tutorial.stop.bind("potion"))

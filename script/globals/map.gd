@@ -336,36 +336,97 @@ func count_elements(mask: int) -> int:
 		mask >>= 1
 	return count
 
-## Feste Begegnungstabelle pro Biom-Tiefe (map_level), unabhängig vom eigenen Team.
+## Begegnungstabelle pro Biom-Tiefe (map_level), unabhängig vom eigenen Team.
 ## Werte werden über die Kämpfe im Biom von Anfang bis Ende interpoliert:
 ## - fights: erwartete normale Kämpfe im Biom (danach bleibt es beim Endwert)
-## - level: [Stufe beim ersten Kampf, Stufe beim letzten Kampf]
-## - offset: zufällige Abweichung pro Monster [min, max]
 ## - counts: Gewichte für 1/2/3 Gegner [am Anfang, am Ende]
 ## - moves: Gewichte für 1/2/3 Aktionen pro Zug, je Gegner gewürfelt [am Anfang, am Ende].
 ##   Eigene Monster kommen nur über den Kerkermeister auf mehr Aktionen, teure Skills (Kosten 2-3)
 ##   und die späten Biome verlangen daher gefangene, stärkere Monster und Verbesserungen.
-## Ein Team, das jeden Kampf ausfechtet (2 K.O.s = +1 Stufe), liegt etwa gleichauf;
-## wer lieber alles fängt, levelt nicht und fällt zurück.
+## Die Stufe der Gegner steht nicht hier, sie folgt der Referenzstufe (_plan_ref_levels).
 const ENCOUNTERS := [
-	# Biom 1: Einstieg, fast nur Einzelkämpfe auf gleicher oder niedrigerer Stufe (nie unter State.INITIAL_LEVEL)
-	{"fights": 4, "level": [4, 6], "offset": [-1, 0], "counts": [[100, 0, 0], [70, 30, 0]],
+	# Biom 1: Einstieg, fast nur Einzelkämpfe
+	{"fights": 4, "counts": [[100, 0, 0], [70, 30, 0]],
 		"moves": [[100, 0, 0], [90, 10, 0]]},
 	# Biom 2: Doppelkämpfe werden normal
-	{"fights": 4, "level": [7, 11], "offset": [-1, 1], "counts": [[70, 30, 0], [40, 50, 10]],
+	{"fights": 4, "counts": [[70, 30, 0], [40, 50, 10]],
 		"moves": [[85, 15, 0], [65, 30, 5]]},
 	# Biom 3: erste 3er-Gruppen
-	{"fights": 5, "level": [12, 17], "offset": [-1, 1], "counts": [[40, 50, 10], [15, 55, 30]],
+	{"fights": 5, "counts": [[40, 50, 10], [15, 55, 30]],
 		"moves": [[60, 35, 5], [40, 45, 15]]},
-	# Biom 4: gleiche oder höhere Stufe
-	{"fights": 6, "level": [18, 25], "offset": [0, 1], "counts": [[15, 55, 30], [5, 40, 55]],
+	# Biom 4
+	{"fights": 6, "counts": [[15, 55, 30], [5, 40, 55]],
 		"moves": [[40, 45, 15], [20, 50, 30]]},
 	# Biom 5: 3 gegen 2 ist die Regel
-	{"fights": 7, "level": [26, 35], "offset": [0, 2], "counts": [[5, 35, 60], [0, 20, 80]],
+	{"fights": 7, "counts": [[5, 35, 60], [0, 20, 80]],
 		"moves": [[20, 50, 30], [5, 45, 50]]},
 ]
 
-## Bosse pro Biom: Anzahl, Stufen über der Endstufe des Bioms und Mindest-Aktionen pro Zug
+## Referenzstufe: die Stufe, die ein Team hätte, das auf dem Pfad mit den meisten möglichen K.O.s jeden Kampf
+## und jedes Boss-Feld ausficht (1 K.O. = 1 halbe Stufe, wie im Level-Up). Gegner haben genau diese Stufe (100 %),
+## Boss-Felder und Biom-Boss zusätzlich level_bonus. Wer fängt, ausweicht oder den kampfärmeren Pfad nimmt,
+## fällt darunter. Relikte (Doppeltes Wachstum) und Extras (Auseinandersetzung, Buddy) zählen nicht mit.
+## Gerechnet wird in halben Stufen ab State.INITIAL_LEVEL, über die Biome weiter (State.level_ref_half).
+## Zufällige Abweichung pro Monster [min, max], nie unter State.INITIAL_LEVEL
+const LEVEL_OFFSET := [-1, 1]
+# halbe Stufen der Referenz vor jeder Zeile der aktuellen Karte (Index = Zeile), seit dem Betreten des Bioms fest
+var row_ref_half: Array[int] = []
+# halbe Stufen der Referenz vor dem Biom-Boss
+var boss_ref_half := 0
+# K.O.s des besten Pfads inklusive Biom-Boss, kommen beim Verlassen des Bioms auf State.level_ref_half
+var biome_ref_kills := 0
+# Referenz des gerade betretenen Felds (call_map_event), der Kampf holt sie sich ab (take_pending_ref_half). -1 = keine
+var pending_ref_half := -1
+
+## Stufe zu so vielen halben Stufen Referenz
+func ref_level(ref_half: int) -> int:
+	return State.INITIAL_LEVEL + ref_half / 2
+
+## Referenz vor dieser Zeile der Karte (über die letzte Zeile hinaus: vor dem Biom-Boss)
+func ref_half_for_row(row: int) -> int:
+	if row_ref_half.is_empty():
+		return State.level_ref_half
+	if row >= row_ref_half.size():
+		return boss_ref_half
+	return row_ref_half[maxi(row, 0)]
+
+## battle.gd: Referenz des betretenen Felds. Kämpfe ohne Feld (Debug-Menü) nehmen die nächste Zeile der Karte.
+func take_pending_ref_half() -> int:
+	var planned := pending_ref_half
+	pending_ref_half = -1
+	if planned >= 0:
+		return planned
+	var pos: Vector3 = State.current_map_position
+	return ref_half_for_row(0 if pos == State.NO_MAP_POSITION else int(pos.y) + 1)
+
+## Sucht den Pfad (Lane) mit den meisten möglichen K.O.s: pro Zeile das Kampf- oder Boss-Feld mit den meisten
+## Gegnern. Daraus entsteht die Referenz jeder Zeile, für alle Pfade gleich (der kampfärmere Pfad ist härter).
+func _plan_ref_levels(grid: Array) -> void:
+	var rows: int = grid[0].size()
+	var best_kills: Array = []
+	var best_total := -1
+	for line in starting_nodes:
+		var kills: Array = []
+		for row in rows:
+			var most := 0
+			for node: path in _line_nodes(grid, line, row):
+				if node._type == PATH_TYPE.COMBAT or node._type == PATH_TYPE.BOSS:
+					most = maxi(most, node._enemies.size())
+			kills.append(most)
+		var total: int = kills.reduce(func(a, b): return a + b, 0)
+		if total > best_total:
+			best_total = total
+			best_kills = kills
+	row_ref_half = []
+	var ref_half: int = State.level_ref_half
+	for row in rows:
+		row_ref_half.append(ref_half)
+		ref_half += best_kills[row]
+	boss_ref_half = ref_half
+	biome_ref_kills = best_total + boss_enemies.size()
+	print("Referenzstufe Biom %d: %d -> Boss %d (%d K.O.s)" % [State.map_level + 1, ref_level(State.level_ref_half), ref_level(boss_ref_half), biome_ref_kills])
+
+## Bosse pro Biom: Anzahl, Stufen über der Referenz und Mindest-Aktionen pro Zug
 ## (gewürfelt wird wie am Ende des Bioms, der Endboss hat immer 3)
 const BOSS_ENCOUNTERS := [
 	{"count": 1, "level_bonus": 2, "min_moves": 1},
@@ -395,6 +456,8 @@ func take_pending_relics() -> Array:
 	pending_relics = null
 	if planned != null:
 		return planned.duplicate()
+	if State.is_final_boss:
+		return BossRelics.random_final_relics()
 	return BossRelics.random_relics(BossRelics.RELICS_PER_BATTLE, _planned_relics())
 
 ## Alle Boss-Relikte, die im aktuellen Biom noch an einen Kampf vergeben sind
@@ -425,8 +488,11 @@ func roll_weighted(counts: Array, t: float) -> int:
 # Würfelt die Gegner aller Kampf- und Boss-Felder und des Biom-Bosses, dazu die Boss-Relikte der Boss-Kämpfe
 func generate_encounters(grid: Array) -> void:
 	boss_enemies = roll_boss_enemies(0, is_last_biome())
-	# jedes Relikt nur einmal pro Run: der Biom-Boss wählt zuerst, die Boss-Felder teilen sich den Rest
-	boss_relics = BossRelics.random_relics()
+	# neues Biom: auch die schon zerbrochenen Boss-Relikte dürfen wieder vorkommen
+	State.used_boss_relics = []
+	# der Biom-Boss wählt zuerst, die Boss-Felder bekommen bevorzugt andere, sonst Wiederholungen (BossRelics.random_relics).
+	# Der Endboss im letzten Biom zieht aus dem eigenen Endboss-Pool, die Boss-Felder dort haben dann freie Wahl.
+	boss_relics = BossRelics.random_final_relics() if is_last_biome() else BossRelics.random_relics()
 	var taken: Array = boss_relics.duplicate()
 	for column in grid:
 		for node in column:
@@ -438,6 +504,7 @@ func generate_encounters(grid: Array) -> void:
 				node._enemies = roll_boss_enemies()
 				node._boss_relics = BossRelics.random_relics(BossRelics.RELICS_PER_BATTLE, taken)
 				taken.append_array(node._boss_relics)
+	_plan_ref_levels(grid)
 
 # Wie viele normale Kämpfe auf dem Weg zu diesem Feld höchstens liegen (Zeilen des Pfads, in denen ein Kampf-Feld liegt).
 # Die Anzahl der Gegner steigt damit wie bisher, solange man Kämpfe nicht ausweicht.
@@ -495,6 +562,30 @@ func _roll_bounty() -> Dictionary:
 	if open.is_empty() or randf() > Skills.BOUNTY_CHANCE:
 		return {}
 	return open.pick_random()
+
+## Tutorial-Karte (Tutorial.run_active): eine Spur in der Mitte, die Felder 1-11 in fester Reihenfolge,
+## Feld 12 ist der Biom-Boss oben (tutorial_plan.txt, Abschnitt 4 D)
+const TUTORIAL_LANE := 3
+const TUTORIAL_ROWS := [
+	PATH_TYPE.COMBAT, PATH_TYPE.COMBAT, PATH_TYPE.EVENT, PATH_TYPE.TREASURE, PATH_TYPE.TRAINER, PATH_TYPE.SHOP,
+	PATH_TYPE.JAILER, PATH_TYPE.COMBAT, PATH_TYPE.GEM, PATH_TYPE.CAMP, PATH_TYPE.HUB,
+]
+
+func generate_tutorial_map() -> void:
+	all_nodes = []
+	starting_nodes = [TUTORIAL_LANE]
+	var grid := []
+	for column in 8:
+		var rows := []
+		rows.resize(TUTORIAL_ROWS.size())
+		grid.append(rows)
+	for row in TUTORIAL_ROWS.size():
+		var node := path.new(Vector3(TUTORIAL_LANE, row, TUTORIAL_LANE))
+		node._type = TUTORIAL_ROWS[row]
+		grid[TUTORIAL_LANE][row] = node
+		all_nodes.append(node)
+	generate_encounters(grid)
+	State.current_map = grid
 
 func generate_starting_points():
 	all_nodes = []

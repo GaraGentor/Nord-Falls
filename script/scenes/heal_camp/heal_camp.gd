@@ -9,7 +9,7 @@ extends Control
 class GoldStack extends VBoxContainer:
 	const ART_SIZE := Vector2(64, 64)
 	const COIN_SIZE := Vector2(40, 40)
-	const FONT_SIZE := 20
+	const FONT_SIZE := 32
 
 	var camp: Node
 	var amount: int
@@ -55,7 +55,7 @@ class GoldStack extends VBoxContainer:
 ## Relikt "Endloses Feuer" anstelle von Tasche und Essenz: kostet nichts und bleibt nach jedem Wurf liegen
 class EndlessFireRelic extends VBoxContainer:
 	const ART_SIZE := Vector2(96, 96)
-	const FONT_SIZE := 20
+	const FONT_SIZE := 32
 
 	var _art: Control
 
@@ -114,7 +114,7 @@ const ENDLESS_FIRE_HP := 50
 const GOLD_STACKS := {1: 1, 5: 3, 10: 5}
 const BAG_SIZE := Vector2(150, 142)
 const BAG_ITEM_SIZE := Vector2(40, 40)
-const BAG_FONT_SIZE := 22
+const BAG_FONT_SIZE := 32
 ## so viel Essenz steht für ein sichtbares Stück in der Tasche
 const ESSENCE_PER_ITEM := 25
 const BUBBLE_WIDTH := 320.0

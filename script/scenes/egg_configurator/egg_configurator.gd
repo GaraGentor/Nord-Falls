@@ -67,6 +67,12 @@ const BUBBLE_WIDTH := 380.0
 const BOTTOM_ROW_Y := 736.0
 ## Bereich des Bogens für die Tutorial-Hervorhebung
 const ARC_AREA := Rect2(120, 30, 1136, 460)
+## Mitte der Zähler auf der Vorderseite der Truhen (Bildpixel): so viele Karten liegen noch darin
+const CHEST_COUNT_LEFT := Vector2(222, 600)
+const CHEST_COUNT_RIGHT := Vector2(1154, 600)
+const CHEST_COUNT_FONT_SIZE := 32
+## leere Truhe: Zähler gedimmt
+const CHEST_EMPTY_ALPHA := 0.45
 
 ## wie schnell Karten ihrem Ziel folgen (exponentiell, pro Sekunde)
 const FOLLOW_SPEED := 12.0
@@ -118,6 +124,9 @@ var _bubble: SpeechBubble
 var _bottom_row: HBoxContainer
 var _counter_label: Label
 var _go_button: Button
+## Zähler auf den Truhen: [Panel, Label] links und rechts
+var _chest_left: Array = []
+var _chest_right: Array = []
 ## unsichtbare Flächen für die Tutorial-Hervorhebung
 var _table_area: Control
 var _arc_area: Control
@@ -190,12 +199,16 @@ func _build() -> void:
 	_table_area = _tutorial_area("tut_cfg_slots")
 	_arc_area = _tutorial_area("tut_cfg_grid")
 
+	# hinter den Karten: die aus der Truhe kommenden Karten fliegen darüber
+	_chest_left = _chest_counter()
+	_chest_right = _chest_counter()
+
 	_card_layer = Control.new()
 	_card_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_card_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(_card_layer)
 	for skill_name in Skills.get_available_egg_skills(_mon._name):
-		var entry := _add_entry(Skills.get_skill(skill_name), "", "")
+		var entry := _add_entry(Skills.carried_egg_skill(skill_name), "", "")
 		# wie die Attacke freigeschaltet wurde
 		var source := Skills.get_egg_skill_source(_mon._name, skill_name)
 		if not source.is_empty():
@@ -209,7 +222,7 @@ func _build() -> void:
 
 	_bottom_row = HBoxContainer.new()
 	_bottom_row.add_theme_constant_override("separation", 16)
-	_counter_label = _label("", 22, TEXT_COLOR)
+	_counter_label = _label("", 32, TEXT_COLOR)
 	var counter_panel := PanelContainer.new()
 	counter_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	IronPlate.frame(counter_panel, _counter_label, 16, 10)
@@ -255,6 +268,39 @@ func _image_layer(texture: Texture2D, material_: Material) -> TextureRect:
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return rect
 
+## Kleines Eisenschild auf einer Truhe: wie viele Karten noch darin liegen
+func _chest_counter() -> Array:
+	# leer, damit der erste Stand in _set_chest_count auf jeden Fall gesetzt wird
+	var label := _label("", CHEST_COUNT_FONT_SIZE, TEXT_COLOR)
+	var panel := PanelContainer.new()
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	IronPlate.frame(panel, label, 10, 4)
+	RewardDialog.ignore_mouse_below(panel)
+	add_child(panel)
+	return [panel, label]
+
+## Karten links bzw. rechts außerhalb des Bogens, je nach aktueller Scroll-Position
+func _update_chest_counts(floating_count: int) -> void:
+	var left := clampi(roundi(_scroll), 0, floating_count)
+	var right := maxi(floating_count - left - VISIBLE, 0)
+	_set_chest_count(_chest_left, left)
+	_set_chest_count(_chest_right, right)
+
+func _set_chest_count(counter: Array, count: int) -> void:
+	var label: Label = counter[1]
+	var text := "+%d" % count if count > 0 else "0"
+	if label.text == text:
+		return
+	label.text = text
+	var panel: PanelContainer = counter[0]
+	panel.modulate.a = 1.0 if count > 0 else CHEST_EMPTY_ALPHA
+	_place_chest_counter(counter, CHEST_COUNT_LEFT if counter == _chest_left else CHEST_COUNT_RIGHT)
+
+func _place_chest_counter(counter: Array, at: Vector2) -> void:
+	var panel: PanelContainer = counter[0]
+	panel.reset_size()
+	panel.position = _to_screen(at) - panel.size / 2.0
+
 func _tutorial_area(group: String) -> Control:
 	var area := Control.new()
 	area.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -268,7 +314,6 @@ func _add_entry(skill: Dictionary, locked_label: String, hint: String) -> Entry:
 	entry.locked_label = locked_label
 	entry.hint = hint
 	entry.card = EggSkillCard.create(skill, _mon, locked_label, hint)
-	entry.card.set_title_size(15)
 	entry.card.custom_minimum_size = CARD_SIZE
 	entry.card.size = CARD_SIZE
 	entry.card.pivot_offset = CARD_SIZE / 2
@@ -352,6 +397,8 @@ func _layout() -> void:
 	_arc_area.position = arc_rect.position
 	_arc_area.size = arc_rect.size
 	_bubble.position = _to_screen(BUBBLE_AT)
+	_place_chest_counter(_chest_left, CHEST_COUNT_LEFT)
+	_place_chest_counter(_chest_right, CHEST_COUNT_RIGHT)
 	_bottom_row.reset_size()
 	var row_center := _to_screen(Vector2(IMAGE_SIZE.x / 2.0, BOTTOM_ROW_Y))
 	_bottom_row.position = Vector2(row_center.x - _bottom_row.size.x / 2.0, minf(row_center.y - _bottom_row.size.y / 2.0, size.y - _bottom_row.size.y - 8.0))
@@ -436,6 +483,7 @@ func _process(delta: float) -> void:
 		entry.shake = move_toward(entry.shake, 0.0, delta * SHAKE_DECAY)
 		_apply(entry)
 	_raise_on_top()
+	_update_chest_counts(floating.size())
 	_slot_marks.queue_redraw()
 
 func _apply(entry: Entry) -> void:
@@ -604,12 +652,12 @@ func _drop(entry: Entry) -> void:
 		var from := entry.slot
 		if from >= 0:
 			_slots[from] = null
+		# die alte Karte zuerst vom Platz nehmen: _take_off_table leert ihren Platz, und der gehört danach der neuen
+		if old and from < 0:
+			_take_off_table(old)
 		_put_on_table(entry, _drop_slot)
-		if old:
-			if from >= 0:
-				_put_on_table(old, from)
-			else:
-				_take_off_table(old)
+		if old and from >= 0:
+			_put_on_table(old, from)
 	_refresh()
 
 func _put_on_table(entry: Entry, slot: int) -> void:
@@ -669,13 +717,10 @@ func _on_go_pressed() -> void:
 	SaveManager.set_egg_loadout(_mon._name, _selected())
 	_mon._skills = []
 	for skill_name in _selected():
-		var skill = Skills.get_skill(skill_name)
+		var skill = Skills.carried_egg_skill(skill_name)
 		if skill.is_empty():
 			continue
 		skill.scouted = true
 		_mon._skills.append(skill)
-	# mit Tutorial erst der Übungskampf, er führt danach zur Karte
-	if Tutorial.wants_practice():
-		Tutorial.start_practice()
-		return
-	get_tree().change_scene_to_file("res://script/scenes/world_map/world_map.tscn")
+	# die Karte braucht beim ersten Mal etwas: solange füllen sich die Wellen als Lade-Anzeige
+	SceneLoader.change_scene("res://script/scenes/world_map/world_map.tscn")

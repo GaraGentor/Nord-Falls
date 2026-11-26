@@ -9,7 +9,7 @@ const ELEMENT_CHIP := preload("res://script/ui/element_chip/element_chip.tscn")
 const GOLD := SkillDetailPopup.GOLD
 const MUTED := IronPlate.TEXT_COLOR
 ## Werte unter dem Netzdiagramm (StatsGrid wie im Kampf)
-const STATS_FONT_SIZE := 14
+const STATS_FONT_SIZE := 24
 ## Faule Eier fliegen doppelt so schnell herein
 const REROLL_SPEED := 2.0
 const EGG_COUNT := 3
@@ -23,14 +23,15 @@ const CORNER_BUTTON_GAP := 10.0
 const GUIDE_ICON := preload("res://assets/ui/icons/guide_book.svg")
 const COLLECTION_ICON := preload("res://assets/ui/icons/collection_eggs.svg")
 const MENU_BUTTON_WIDTH := 280.0
-const MENU_FONT_SIZE := 24
-const ACTION_FONT_SIZE := 28
-const FAILURES_FONT_SIZE := 20
+const MENU_FONT_SIZE := 40
+const ACTION_FONT_SIZE := 40
+const FAILURES_FONT_SIZE := 32
 ## Abstand der Fehlschläge zum unteren Rand des Bildes
 const FAILURES_BOTTOM := 24
-const NAME_FONT_SIZE := 30
+const NAME_FONT_SIZE := 48
 const RADAR_MIN_HEIGHT := 250.0
 const FADE_SECONDS := 0.3
+const MAP_SCENE := "res://script/scenes/world_map/world_map.tscn"
 
 @export var stage: EggStage
 @export var biome_path: Control
@@ -45,6 +46,7 @@ var _thrown := 0
 var _queued := 0
 
 var _spacer: Control
+var _tips: Tips
 var _failures: Label
 var _details: VBoxContainer
 var _name_label: Label
@@ -54,25 +56,54 @@ var _stats: VBoxContainer
 var _throw_button: Button
 var _go_button: Button
 var _reroll_button: Button
+## sucht eins der drei Monster zufällig aus (erscheint mit "Reise beginnen")
+var _random_button: Button
 
 func _ready() -> void:
 	_add_corner_buttons()
 	_build_side()
 	_add_failures()
+	# gespeicherter Run (RunSave): nur "Weiter", kein Biom-Pfad, keine Eier, kein Tutorial
+	if RunSave.has_pending():
+		_show_continue()
+		return
 	load_eggs()
 	biome_path.show_path(Map.load_biome_path())
 	stage.front_changed.connect(_on_front_changed)
 	stage.throw_finished.connect(_on_throw_finished)
 	_add_tutorial_targets()
-	Tutorial.enabled_changed.connect(_on_tutorial_enabled_changed)
-	Tutorial.trigger("selection")
+	if Tutorial.needs_start_question():
+		_ask_for_tutorial.call_deferred()
+	else:
+		Tutorial.trigger("selection")
 
-func _exit_tree() -> void:
-	Tutorial.enabled_changed.disconnect(_on_tutorial_enabled_changed)
+## Statt "Ei werfen" steht "Weiter" da, der Biom-Pfad ist ausgeblendet
+func _show_continue() -> void:
+	biome_path.visible = false
+	_throw_button.text = tr("SELECTION_CONTINUE")
+	_throw_button.pressed.disconnect(_on_throw_pressed)
+	_throw_button.pressed.connect(_on_continue_pressed)
 
-## Im Einstellungen-Dialog eingeschaltet: von vorn, damit das Tutorial mit dem Werfen der Eier beginnen kann
-func _on_tutorial_enabled_changed(on: bool) -> void:
-	if on:
+func _on_continue_pressed() -> void:
+	_throw_button.disabled = true
+	if not RunSave.restore():
+		get_tree().reload_current_scene.call_deferred()
+		return
+	get_tree().change_scene_to_file(MAP_SCENE)
+
+## Neuer Spielstand: mit Hilfe spielen (Tutorial-Lauf, die Ei-Auswahl startet neu) oder überspringen.
+## Man muss sich entscheiden, ein Klick daneben zählt nicht. Darüber gleich die Sprachwahl (erster Spielstart);
+## die Frage übersetzt sich beim Umschalten selbst, die Ei-Auswahl dahinter lädt danach neu.
+func _ask_for_tutorial() -> void:
+	var locale := TranslationServer.get_locale()
+	var dialog := ChoiceDialog.ask(self, "TUTORIAL_ASK_TITLE", "TUTORIAL_ASK_TEXT",
+		"TUTORIAL_ASK_YES", "TUTORIAL_ASK_NO", false, true)
+	if await dialog.chosen:
+		# lädt die Ei-Auswahl ohnehin neu
+		Tutorial.start_run()
+		return
+	Tutorial.decline()
+	if TranslationServer.get_locale() != locale:
 		get_tree().reload_current_scene.call_deferred()
 
 ## Gruppen, die das interaktive Tutorial hervorhebt (siehe Tutorial.SEQUENCES)
@@ -82,6 +113,10 @@ func _add_tutorial_targets() -> void:
 	_throw_button.add_to_group("tut_draw_egg")
 	_details.add_to_group("tut_starter_info")
 	_go_button.add_to_group("tut_begin_journey")
+	_tips.add_to_group("tut_sel_tips")
+	_chips.add_to_group("tut_sel_chips")
+	_radar.add_to_group("tut_sel_radar")
+	_stats.add_to_group("tut_sel_stats")
 
 ## Symbol-Knöpfe unten links übereinander: Einstellungen, darüber Sammlung und Anleitung
 func _add_corner_buttons() -> void:
@@ -127,9 +162,14 @@ func load_eggs() -> void:
 		roll_eggs()
 		return
 	mons = saved_eggs.map(Helper.mon_from_egg)
+	if Tutorial.run_active:
+		Tutorial.prepare_starters(mons, false)
 
 func roll_eggs() -> void:
 	mons = Helper.generate_mons({"count": EGG_COUNT, "initial": true})
+	# Tutorial: mindestens ein Starter ist stark gegen das erste Biom, der Trainer empfiehlt ihn
+	if Tutorial.run_active:
+		mons = Tutorial.prepare_starters(mons, true)
 	SaveManager.set_starter_eggs(mons.map(Helper.egg_to_save))
 
 func _on_throw_pressed() -> void:
@@ -153,6 +193,7 @@ func _throw_next() -> void:
 	_thrown += 1
 
 func _on_throw_finished() -> void:
+	Events.starter_egg_landed.emit()
 	if _queued > 0:
 		_queued -= 1
 		_throw_next()
@@ -164,7 +205,9 @@ func _on_throw_finished() -> void:
 		return
 	stage.speed_scale = 1.0
 	_fade(_go_button, true)
-	_reroll_button.visible = SaveManager.has_full_reroll_charges()
+	_fade(_random_button, true)
+	# im Tutorial nicht: die Ladungen gehören zum echten Spielstand
+	_reroll_button.visible = SaveManager.has_full_reroll_charges() and not Tutorial.run_active
 
 ## Neues Monster vorne: rechts seine Werte, unten seine Ei-Attacken
 func _on_front_changed(index: int, clicked: bool) -> void:
@@ -178,6 +221,7 @@ func select_egg(index: int) -> void:
 	var mon: Monster = mons[index]
 	if not _details.visible:
 		_spacer.visible = false
+		_tips.visible = false
 		_fade(_details, true)
 	_show_details(mon)
 	stage.show_skills(mon)
@@ -192,7 +236,15 @@ func _on_go_pressed() -> void:
 	# Ladungen werden erst beim Aufbruch verbraucht, und nur wenn neu gewürfelt wurde (auch vor einem Neustart)
 	if SaveManager.save_data["eggs_rerolled"]:
 		SaveManager.spend_reroll_charges()
+	# der nächste Run zeigt den nächsten Tipp
+	Tips.advance()
 	get_tree().change_scene_to_file("res://script/scenes/egg_configurator/egg_configurator.tscn")
+
+## Zufällig: eins der drei Monster kommt nach vorne, aufbrechen muss man dann selbst
+func _on_random_pressed() -> void:
+	if stage.is_busy() or mons.is_empty():
+		return
+	stage.bring_to_front(randi() % mons.size())
 
 ## Faule Eier: neue würfeln, alle drei fliegen gleichzeitig herein
 func _on_reroll_pressed() -> void:
@@ -201,6 +253,7 @@ func _on_reroll_pressed() -> void:
 	SaveManager.save_data["eggs_rerolled"] = true
 	_reroll_button.visible = false
 	_go_button.visible = false
+	_random_button.visible = false
 	roll_eggs()
 	stage.clear()
 	stage.speed_scale = REROLL_SPEED
@@ -225,6 +278,10 @@ func _build_side() -> void:
 	column.mouse_filter = MOUSE_FILTER_IGNORE
 	margin.add_child(column)
 
+	# Tipp des Runs oben in der Spalte, macht Platz, sobald das erste Monster zu sehen ist
+	_tips = Tips.new()
+	column.add_child(_tips)
+
 	# vor dem ersten Wurf leer, hält die Knöpfe unten
 	_spacer = Control.new()
 	_spacer.size_flags_vertical = SIZE_EXPAND_FILL
@@ -246,16 +303,22 @@ func _build_side() -> void:
 	_go_button = _menu_button(tr("SELECTION_BEGIN_JOURNEY"), _on_go_pressed, ACTION_FONT_SIZE)
 	_go_button.visible = false
 	actions.add_child(_go_button)
+	_random_button = _menu_button(tr("SELECTION_RANDOM_EGG"), _on_random_pressed, MENU_FONT_SIZE)
+	_random_button.visible = false
+	actions.add_child(_random_button)
 	_reroll_button = _menu_button(tr("SELECTION_REROLL_EGGS"), _on_reroll_pressed, MENU_FONT_SIZE)
 	_reroll_button.visible = false
 	actions.add_child(_reroll_button)
 	_throw_button = _menu_button(tr("SELECTION_DRAW_EGG"), _on_throw_pressed, ACTION_FONT_SIZE)
 	actions.add_child(_throw_button)
 
-## Verlorene Runs bisher, unten mittig auf dem Bild (bis zum ersten Wurf)
+## Gewonnene und verlorene Runs bisher, unten mittig auf dem Bild (bis zum ersten Wurf)
 func _add_failures() -> void:
 	_failures = Label.new()
-	_failures.text = tr("SELECTION_FAILURES").format({"count": int(SaveManager.save_data["failed_runs"])})
+	var failed := int(SaveManager.save_data["failed_runs"])
+	# gewonnen ist jeder beendete Run, der kein Fehlschlag war (SaveManager.add_finished_run)
+	var won := maxi(int(SaveManager.save_data["runs"]) - failed, 0)
+	_failures.text = tr("SELECTION_RECORD").format({"wins": won, "count": failed})
 	_failures.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_failures.add_theme_font_size_override("font_size", FAILURES_FONT_SIZE)
 	_failures.add_theme_color_override("font_color", MUTED)
@@ -298,7 +361,7 @@ func _build_details() -> void:
 	radar_box.mouse_filter = MOUSE_FILTER_IGNORE
 	IronPlate.frame(radar_panel, radar_box, 10, 8)
 	_details.add_child(radar_panel)
-	var heading := _label(17, GOLD)
+	var heading := _label(24, GOLD)
 	heading.text = tr("JUDGEMENT_GROWTH")
 	radar_box.add_child(heading)
 	_radar = GrowthRadar.new()

@@ -13,9 +13,9 @@ const TOP_OFFSET := 190.0
 const BOTTOM_OFFSET := 16.0
 const ICON_SIZE := 36
 const SLIDE_TIME := 0.35
-const TITLE_SIZE := 28
-const ENTRY_SIZE := 20
-const DESCRIPTION_SIZE := 16
+const TITLE_SIZE := 40
+const ENTRY_SIZE := 32
+const DESCRIPTION_SIZE := 24
 ## Farben wie auf den Schildern im Shop
 const TEXT_COLOR := IronPlate.TEXT_COLOR
 const OPEN_COLOR := SkillDetailPopup.GOLD

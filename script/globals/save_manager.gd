@@ -30,20 +30,30 @@ const DEFAULT_DATA := {
 	# interaktives Tutorial (siehe Tutorial): gesehene Sequenzen, done = ausgeschaltet, abgeschlossen oder übersprungen (neue Spielstände starten mit Tutorial)
 	"tutorial_seen": [],
 	"tutorial_done": false,
-	# beendete Runs insgesamt und davon verlorene (Fehlschläge, stehen in der Ei-Auswahl unter Anleitung und Sammlung)
+	# beendete Runs insgesamt und davon verlorene (Fehlschläge); Siege = runs - failed_runs, beides steht in der Ei-Auswahl unter Anleitung und Sammlung
 	"runs": 0,
 	"failed_runs": 0,
 	# Runs mit mehr als einer Boss Träne bis zum nächsten Kerkermeister im ersten Biom (Map.generate_run_jailer), 0 = noch nicht gewürfelt
 	"runs_until_jailer": 0,
+	# nächster Tipp in der Ei-Auswahl (Tips), läuft nach dem letzten wieder von vorne
+	"tip_index": 0,
 }
 
 var save_data: Dictionary = DEFAULT_DATA.duplicate(true)
+## Während des Tutorial-Laufs (Tutorial.start_run) wird nichts auf die Platte geschrieben, danach kommt der
+## Stand von vorher zurück. So lassen sich Eier oder Biom-Pfad nicht über das Tutorial neu würfeln.
+var suspended := false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	load_game()
+	# gespeicherter Run (Speichern und Beenden): gleich beim Start lesen und löschen, damit die Ei-Auswahl
+	# von Anfang an "Weiter" zeigt und der Run nur ein einziges Mal fortgesetzt werden kann
+	RunSave.take_on_boot()
 
 func save_game():
+	if suspended:
+		return
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
 		file.store_string(JSON.stringify(save_data))
@@ -65,9 +75,9 @@ func load_game():
 		save_data = parsed
 		_drop_removed_mons()
 
-## Aus dem Spiel entfernte Monster-Arten (Schlundwurm, Lavaritter, Leerwurm, Nachthydra, Höllenwächter, Schattenreißer).
-## Hier fest eingetragen, weil SaveManager vor Monmap geladen wird.
-const REMOVED_MONS := ["32", "34", "35", "44", "58", "65"]
+## Aus dem Spiel entfernte Monster-Arten (Schlundwurm, Lavaritter, Leerwurm, Nachthydra, Höllenwächter, Schattenreißer,
+## 56 seit „som fixes“). Hier fest eingetragen, weil SaveManager vor Monmap geladen wird.
+const REMOVED_MONS := ["32", "34", "35", "44", "56", "58", "65"]
 
 ## Alte Spielstände: entfernte Arten fliegen raus, sonst stürzen Ei-Auswahl, Pools und Sammlung
 ## bei Monmap.mon_metainfos_by_name ab.

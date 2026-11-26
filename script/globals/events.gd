@@ -14,6 +14,18 @@ signal select_widget_monster(mon)
 signal refresh_ui_for_monster()
 
 signal select_initial_mon(index)
+# Ei-Auswahl: ein geworfenes Ei ist gelandet und ausgebrütet (wartet das Tutorial drauf)
+signal starter_egg_landed()
+# Gericht: ein Fang ist ins Team gekommen (wartet das Tutorial drauf)
+signal judgement_team_joined()
+# Kampf: ein Gegner ist am Zug (das Tutorial lässt erst dann vom erzwungenen Zugende ab)
+signal enemy_turn_started()
+# Kampf: ein Element wurde vom Partner geliehen (ElementLoan.lend, wartet das Tutorial drauf)
+signal element_borrowed()
+# Inventar: ein Item ist an ein Monster gekommen (wartet das Tutorial drauf)
+signal item_equipped()
+# Letzter Wille: das gefallene Monster wurde mit einem Fang wiederbelebt (wartet das Tutorial drauf)
+signal last_will_revived()
 # Ei-Konfigurator: alle Plätze sind belegt (wartet das Tutorial drauf)
 signal egg_loadout_complete()
 
@@ -53,3 +65,12 @@ signal status_vfx(mon, kind)
 
 # upgrade status to make them upgraded on the run
 signal mon_upgraded(mon_name)
+
+## One-Way-Items im Kampf: Postit-Item auf ein Ziel gezogen (target null = aufs Kampffeld), battle.gd setzt es ein
+signal use_item(carrier, index, target)
+## Ein Item wurde eingesetzt (Tutorial wartet darauf)
+signal item_used(item)
+## Todes-Totem: ein gefallenes Monster steht wieder auf
+signal monster_revived(mon)
+## Element-Leihgabe (ElementLoan): Leihgaben oder die Vorschau beim Ziehen einer Kugel haben sich geändert
+signal element_loans_changed

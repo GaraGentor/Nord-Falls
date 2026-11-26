@@ -27,9 +27,15 @@ const BUBBLE_DROP := 40.0
 const CANDIDATE_PENALTY := BUBBLE_WIDTH * 40.0
 ## Aufschlag pro Ausweichstelle des Porträts (unten, Mitte, oben; bevorzugte Seite zuerst)
 const SPEAKER_PENALTY := SPEAKER_SIZE.x * 20.0
-## Gewicht verdeckter Fläche: Ziele und übrige Knöpfe der Szene (der Hintergrund zählt 0)
-const HOLE_WEIGHT := 4.0
+## Gewicht verdeckter Fläche: Ziele und übrige Knöpfe der Szene (der Hintergrund zählt 0).
+## Ziele zählen so viel, dass jede Stelle ohne Überdeckung gewinnt, wenn es eine gibt: das Tutorial bleibt frei.
+const HOLE_WEIGHT := 200.0
 const BUTTON_WEIGHT := 4.0
+## Ausweichstellen der Blase in den Ecken und Randmitten, wenn neben dem Sprecher kein Platz ist: Aufschlag
+const FALLBACK_PENALTY := CANDIDATE_PENALTY * 4.0
+## Laufende Neuberechnung (Knöpfe bewegen sich, z. B. beim Scrollen der Karte): Porträt und Blase bleiben stehen,
+## solange eine andere Stelle nicht deutlich weniger verdeckt. Sonst springen sie hin und her.
+const STICKY_PENALTY := BUBBLE_WIDTH * 120.0
 ## so oft wird nachgesehen, ob Knöpfe der Szene erschienen oder verschwunden sind
 const BUTTONS_REFRESH_SECONDS := 0.25
 ## so viel größer als das Ziel ist das Loch
@@ -38,8 +44,8 @@ const FADE_SECONDS := 0.25
 const DIM := Color(0, 0, 0, 0.65)
 ## bei offenen Schritten muss der Rest gut sichtbar bleiben
 const OPEN_DIM := Color(0, 0, 0, 0.25)
-const SKIP_FONT_SIZE := 16
-const NEXT_FONT_SIZE := 20
+const SKIP_FONT_SIZE := 24
+const NEXT_FONT_SIZE := 32
 
 ## Fläche über allem, schluckt Klicks außerhalb der Löcher
 class Blocker extends Control:
@@ -78,6 +84,8 @@ var _presses_left := 0
 ## sichtbare Knöpfe der Szene beim Beginn des Schritts: Porträt und Blase sollen sie nicht verdecken
 var _scene_buttons: Array = []
 var _buttons_timer := 0.0
+## Porträt würde überall ein Ziel verdecken und bleibt deshalb weg (_place_speaker)
+var _speaker_hidden := false
 
 func _init() -> void:
 	layer = LAYER
@@ -186,12 +194,8 @@ func _show_step(index: int) -> void:
 	_box.add_child(_bubble)
 	_box.move_child(_bubble, 0)
 	# offene Schritte: der Spieler braucht den ganzen Bildschirm, das Porträt tritt zurück und die Blase steht am Ziel
-	var portrait_open := _blocker.open and not _npc_speaks
-	_speaker.visible = not _npc_speaks and not portrait_open
-	for child in _bubble.get_children():
-		if child is Node2D:
-			child.visible = not portrait_open
-	_bubble.say(tr(step.text))
+	_speaker.visible = _speaker_shown()
+	_bubble.say(tr(step.text).format(Tutorial.text_values()))
 	_layout()
 
 ## Der NPC der Szene steht, wo er steht: die Blase kommt auf die Seite zur Bildmitte
@@ -201,24 +205,41 @@ func _choose_speaker_side() -> bool:
 
 ## Porträt an den Rand stellen, wo es am wenigsten Ziele und Knöpfe verdeckt: bevorzugt unten auf der Seite
 ## ohne Ziel, sonst auf der anderen Seite, sonst in der Mitte oder oben am Rand.
+## Verdeckt es auch dort ein Ziel, tritt das Porträt zurück und nur die Blase bleibt.
 ## keep_side: Seite bleibt (z. B. bei Größenänderung, der Zipfel der Blase zeigt schon dorthin)
-func _place_speaker(keep_side: bool) -> void:
+## sticky: die jetzige Stelle bleibt, solange keine andere deutlich besser ist
+func _place_speaker(keep_side: bool, sticky := false) -> void:
 	var screen := _blocker.size
 	var preferred := _speaker_right if keep_side else (_bounds.size.x <= 0.0 or _bounds.get_center().x < screen.x / 2)
+	var forced := _forced_side()
+	if forced != "":
+		preferred = forced == "right"
 	var sides: Array[bool] = [preferred]
-	if not keep_side:
+	if not keep_side and forced == "":
 		sides.append(not preferred)
+	var current := _speaker.position
 	var best_cost := INF
 	var index := 0
 	for y in [screen.y - SPEAKER_SIZE.y, (screen.y - SPEAKER_SIZE.y) / 2.0, 0.0]:
 		for right in sides:
 			var position := Vector2(screen.x - SPEAKER_SIZE.x if right else 0.0, y)
 			var cost := _covered_area(Rect2(position, SPEAKER_SIZE), false) + index * SPEAKER_PENALTY
+			if sticky and not position.is_equal_approx(current):
+				cost += STICKY_PENALTY
 			index += 1
 			if cost < best_cost:
 				best_cost = cost
 				_speaker.position = position
 				_speaker_right = right
+	_speaker_hidden = _covers_hole(_speaker.get_rect())
+	_speaker.visible = _speaker_shown()
+
+## Porträt in der Ecke: nicht bei sprechendem NPC der Szene, bei offenen Schritten und wenn es ein Ziel verdecken würde
+func _speaker_shown() -> bool:
+	return not _npc_speaks and not _blocker.open and not _speaker_hidden
+
+func _covers_hole(rect: Rect2) -> bool:
+	return _blocker.holes.any(func(hole: Rect2): return rect.intersects(hole))
 
 ## Knöpfe der Szene und alles, was sie in die Gruppe "tut_keep_clear" legt (z. B. Anzeigen neben Knöpfen)
 func _visible_buttons() -> Array:
@@ -270,9 +291,13 @@ func _next() -> void:
 		_close()
 		finished.emit()
 
+## Tutorial.ask_skip fragt nach; bleibt man, läuft die Sequenz an derselben Stelle weiter
 func _on_skip_pressed() -> void:
-	_close()
 	skipped.emit()
+
+## Dialoge aus dem Tutorial (Rückfrage beim Überspringen) liegen eine Ebene über dem Overlay
+func dialog_host() -> Node:
+	return _blocker
 
 func _close() -> void:
 	_stop_waiting()
@@ -280,6 +305,10 @@ func _close() -> void:
 
 ## Gehört die Sequenz zu einer Szene, die schon verlassen wurde?
 func is_stale() -> bool:
+	# gestartet aus _ready einer Szene, die beim Szenenwechsel noch nicht current_scene war: sie gehört dazu
+	if _scene == null:
+		_scene = get_tree().current_scene
+		return false
 	return get_tree().current_scene != _scene and get_tree().current_scene != null
 
 func _process(delta: float) -> void:
@@ -297,7 +326,7 @@ func _process(delta: float) -> void:
 	if _buttons_timer <= 0.0:
 		_buttons_timer = BUTTONS_REFRESH_SECONDS
 		_scene_buttons = _visible_buttons()
-		_layout()
+		_layout(true)
 
 func _update_holes() -> void:
 	if _index < 0:
@@ -334,7 +363,8 @@ func _update_holes() -> void:
 	_spotlight.set_shader_parameter("npc_hole", Vector4(npc_rect.position.x, npc_rect.position.y, npc_rect.size.x, npc_rect.size.y))
 	_spotlight.set_shader_parameter("rect_size", _blocker.size)
 
-func _layout() -> void:
+## sticky: laufende Neuberechnung, Porträt und Blase bleiben stehen, solange keine andere Stelle deutlich besser ist
+func _layout(sticky := false) -> void:
 	var screen := _blocker.size
 	_box.reset_size()
 	_box.size.x = BUBBLE_WIDTH
@@ -345,9 +375,14 @@ func _layout() -> void:
 		anchor = _rect_of(npc) if npc else Rect2(screen.x, screen.y / 2, 0, 0)
 		top = anchor.position.y + anchor.size.y * NPC_MOUTH
 	else:
-		_place_speaker(true)
+		_place_speaker(true, sticky)
 		anchor = _speaker.get_rect()
 		top = anchor.position.y + BUBBLE_DROP
+	# der Zipfel zeigt zum Sprecher, ohne Porträt hat er nichts zu zeigen
+	if _bubble:
+		for child in _bubble.get_children():
+			if child is Node2D:
+				child.visible = _npc_speaks or _speaker.visible
 	var x := anchor.position.x - BUBBLE_WIDTH - BUBBLE_GAP if _speaker_right else anchor.end.x + BUBBLE_GAP
 	var above_x := anchor.end.x - BUBBLE_WIDTH if _speaker_right else anchor.position.x
 	var max_x := screen.x - BUBBLE_WIDTH - BUBBLE_GAP
@@ -365,14 +400,36 @@ func _layout() -> void:
 		Vector2(x, max_y),
 		Vector2(above_x, anchor.position.y - _box.size.y),
 	]
+	var near := candidates.size()
+	# kein Platz beim Sprecher: Ecken und Randmitten des Bildschirms, damit die Blase nie ein Ziel verdeckt
+	var middle_x := (screen.x - BUBBLE_WIDTH) / 2.0
+	var middle_y := (screen.y - _box.size.y) / 2.0
+	for spot: Vector2 in [Vector2(BUBBLE_GAP, BUBBLE_GAP), Vector2(max_x, BUBBLE_GAP), Vector2(middle_x, BUBBLE_GAP),
+			Vector2(BUBBLE_GAP, max_y), Vector2(max_x, max_y), Vector2(middle_x, max_y),
+			Vector2(BUBBLE_GAP, middle_y), Vector2(max_x, middle_y)]:
+		candidates.append(spot)
 	for i in candidates.size():
 		candidates[i] = candidates[i].clamp(Vector2(BUBBLE_GAP, BUBBLE_GAP), Vector2(max_x, max_y))
+	# Schritt mit fester Seite ("bubble"): nur Stellen auf dieser Bildschirmhälfte
+	var forced := _forced_side()
+	if forced != "":
+		var on_side := func(spot: Vector2) -> bool:
+			var center_x := spot.x + BUBBLE_WIDTH / 2.0
+			return center_x >= screen.x / 2.0 if forced == "right" else center_x < screen.x / 2.0
+		var kept := candidates.filter(on_side)
+		if not kept.is_empty():
+			near = candidates.slice(0, near).filter(on_side).size()
+			candidates.assign(kept)
+	var current := _box.position
 	var best := candidates[0]
 	var best_cover := INF
 	for i in candidates.size():
 		var candidate := candidates[i]
 		# frühere Stellen sind näher am Sprecher und gewinnen, solange sie nicht deutlich mehr verdecken
-		var cover := _covered_area(Rect2(candidate, _box.size), true) + i * CANDIDATE_PENALTY
+		var penalty := i * CANDIDATE_PENALTY if i < near else near * CANDIDATE_PENALTY + FALLBACK_PENALTY
+		var cover := _covered_area(Rect2(candidate, _box.size), true) + penalty
+		if sticky and not candidate.is_equal_approx(current):
+			cover += STICKY_PENALTY
 		if cover < best_cover:
 			best = candidate
 			best_cover = cover
@@ -403,6 +460,23 @@ func _covered_area(rect: Rect2, with_speaker: bool) -> float:
 	if with_speaker and _speaker.visible:
 		area += rect.intersection(_speaker.get_rect()).get_area() * HOLE_WEIGHT
 	return area
+
+## Gibt der aktuelle Schritt das Ziel frei (es ist ein Ziel und der Schritt wartet auf eine Aktion, "free" oder "open")?
+func step_allows(group: String) -> bool:
+	if _index < 0 or _index >= _steps.size():
+		return false
+	if _blocker.open:
+		return true
+	var targets = _steps[_index].get("target", [])
+	if targets is String:
+		targets = [targets]
+	return _blocker.hole_clickable and targets.has(group)
+
+## "bubble" des aktuellen Schritts: "right" / "left" hält Trainer und Blase auf dieser Seite, sonst leer
+func _forced_side() -> String:
+	if _index < 0 or _index >= _steps.size():
+		return ""
+	return _steps[_index].get("bubble", "")
 
 func _first_target(step: Dictionary) -> String:
 	var targets = step.get("target", "")

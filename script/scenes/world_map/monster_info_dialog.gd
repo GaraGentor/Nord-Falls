@@ -4,21 +4,37 @@ extends Control
 ## Details eines eigenen Monsters über der ganzen Kartenfläche (der Header der Karte bleibt sichtbar):
 ## oben links Name und Bild (unten links am Bild die Züge als Rune), daneben die Werte wie im Kampf (mit Trophäen)
 ## und darunter Element- und Seltenheits-Chip, rechts das Wachstum pro Stufe als Netzdiagramm und der Zurück-Knopf.
-## Darunter alle Attacken als große Karten wie im Kampf in einer waagerechten Scrollview (reine Anzeige, ohne Klick).
+## Darunter alle Attacken als große Karten wie im Kampf in einer waagerechten Scrollview, per Drag & Drop sortierbar.
 
 const BATTLE_CARD := preload("res://script/scenes/battle/battle_card.tscn")
 const ELEMENT_CHIP := preload("res://script/ui/element_chip/element_chip.tscn")
 const PORTRAIT_SIZE := Vector2(160, 160)
-const NAME_FONT_SIZE := 26
+const NAME_FONT_SIZE := 40
 const CHIP_HEIGHT := 32.0
 ## Werte wie im Kampf: Schriftgröße und Breite der Platte im BattleInfoPanel (580 breit, je 12 Rand)
-const STATS_FONT_SIZE := 15
+const STATS_FONT_SIZE := 24
 const STATS_WIDTH := 556.0
 const RADAR_MIN_SIZE := Vector2(190, 150)
-const SKILL_CARD_SIZE := Vector2(220, 260)
+## Mindestgröße der Karten; nach unten nehmen sie den restlichen Platz unter den Infos ein (_fit_cards)
+const SKILL_CARD_SIZE := Vector2(210, 184)
+## Ränder der Platte und Abstand zwischen Infos und Karten
+const FRAME_MARGIN := Vector2i(24, 20)
+const BOX_SEPARATION := 16
 const BACK_ICON := preload("res://assets/ui/icons/icon_back.svg")
+## Sortieren per Drag & Drop: Platz der gezogenen Karte blass, Vorschau leicht größer und schräg
+const DRAGGED_ALPHA := 0.3
+const DRAG_PREVIEW_SCALE := 1.05
+const DRAG_PREVIEW_TILT := -3.0
+## so nah am linken / rechten Rand der Scrollview scrollt sie beim Ziehen mit (Pixel pro Sekunde)
+const EDGE_SCROLL_ZONE := 80.0
+const EDGE_SCROLL_SPEED := 700.0
 
 var _mon: Monster
+var _scroll: ScrollContainer
+var _row: HBoxContainer
+var _top: HBoxContainer
+## aktuelle Kartengröße, wächst in der Höhe mit dem freien Platz
+var _card_size := SKILL_CARD_SIZE
 
 func _init(mon: Monster) -> void:
 	_mon = mon
@@ -26,6 +42,9 @@ func _init(mon: Monster) -> void:
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	# Klicks gehen nicht auf die Karte darunter durch
 	mouse_filter = MOUSE_FILTER_STOP
+	# über offenen Belohnungen (Couvert): deren Monsterbilder auf den Skill-Karten liegen auf z_index 1
+	# (RewardDialog, vor den Rand-Effekten der Karte) und schienen sonst durch die Details
+	z_index = 2
 
 func _ready() -> void:
 	offset_top = RewardDialog.MAP_HEADER_HEIGHT
@@ -33,9 +52,10 @@ func _ready() -> void:
 	RewardDialog.fit_to_map_area(panel)
 	add_child(panel)
 	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 16)
-	IronPlate.frame(panel, box, 24, 20)
+	box.add_theme_constant_override("separation", BOX_SEPARATION)
+	IronPlate.frame(panel, box, FRAME_MARGIN.x, FRAME_MARGIN.y)
 	var top := HBoxContainer.new()
+	_top = top
 	top.add_theme_constant_override("separation", 24)
 	box.add_child(top)
 	top.add_child(_portrait_side())
@@ -47,6 +67,22 @@ func _ready() -> void:
 	back.pressed.connect(queue_free)
 	top.add_child(back)
 	box.add_child(_skill_cards())
+	resized.connect(_fit_cards)
+	_fit_cards.call_deferred()
+
+## Karten so hoch wie der Platz unter den Infos erlaubt (samt Rand-Effekten), mindestens SKILL_CARD_SIZE.
+## Gerechnet mit der eigenen Höhe (fest über die Anker), nicht mit der der Scrollview: die wächst mit den Karten.
+func _fit_cards() -> void:
+	var pad := SkillCardPaper.FLAME_PAD
+	var free := size.y - RewardDialog.MAP_DIALOG_MARGIN - 2 * FRAME_MARGIN.y - BOX_SEPARATION \
+			- _top.get_combined_minimum_size().y - pad.y - pad.w - _scroll.get_h_scroll_bar().get_combined_minimum_size().y
+	var card_size := Vector2(SKILL_CARD_SIZE.x, maxf(floorf(free), SKILL_CARD_SIZE.y))
+	if card_size == _card_size:
+		return
+	_card_size = card_size
+	for slot in _row.get_children():
+		if slot is SkillSlot:
+			slot.resize(card_size)
 
 ## Name über dem Bild, unten links am Bild die Züge
 func _portrait_side() -> Control:
@@ -103,7 +139,7 @@ func _radar() -> Control:
 	var heading := Label.new()
 	heading.text = tr("JUDGEMENT_GROWTH")
 	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	heading.add_theme_font_size_override("font_size", 17)
+	heading.add_theme_font_size_override("font_size", 24)
 	heading.add_theme_color_override("font_color", SkillDetailPopup.GOLD)
 	box.add_child(heading)
 	var radar := GrowthRadar.new()
@@ -113,21 +149,116 @@ func _radar() -> Control:
 	radar.show_mons([{"mon": _mon, "color": Helper.color_by_mon(_mon)}])
 	return panel
 
-## Alle Attacken als Kampfkarten nebeneinander. Die Karten nehmen keine Eingabe an,
-## so landen Mausrad und Wischen direkt bei der Scrollview und ein Klick bewirkt nichts.
+## Alle Attacken als Kampfkarten nebeneinander, per Drag & Drop sortierbar (SkillSlot).
+## Die neue Reihenfolge landet in _mon._skills: so stehen die Karten auch auf der Hand im Kampf und im Spielstand.
 func _skill_cards() -> Control:
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = SIZE_EXPAND_FILL
 	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_scroll = scroll
+	# Platz für die Rand-Effekte der Karten, sonst schneidet die Scrollview sie ab
+	var margin := SkillCardPaper.flame_margin()
+	scroll.add_child(margin)
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 12)
-	scroll.add_child(row)
+	row.add_theme_constant_override("separation", SkillCardPaper.FLAME_GAP_X)
+	margin.add_child(row)
+	_row = row
+	# losgelassen in einer Lücke zwischen zwei Karten zählt auch als Ablegen
+	row.set_drag_forwarding(Callable(),
+		func(_at: Vector2, data: Variant) -> bool: return data is SkillSlot,
+		func(_at: Vector2, _data: Variant) -> void: pass)
 	for skill in _mon._skills:
-		var card := BATTLE_CARD.instantiate()
-		card.mon = _mon
-		card.skill = skill
-		card.custom_minimum_size = SKILL_CARD_SIZE
-		card.size_flags_vertical = SIZE_SHRINK_BEGIN
-		card.mouse_filter = MOUSE_FILTER_IGNORE
-		row.add_child(card)
+		row.add_child(SkillSlot.new(self, skill))
 	return scroll
+
+## Am Rand der Scrollview beim Ziehen mitscrollen, damit auch weit entfernte Plätze erreichbar sind
+func _process(delta: float) -> void:
+	if _scroll == null or not get_viewport().gui_is_dragging() or not get_viewport().gui_get_drag_data() is SkillSlot:
+		return
+	var rect := _scroll.get_global_rect()
+	var x := get_global_mouse_position().x
+	var speed := 0.0
+	if x < rect.position.x + EDGE_SCROLL_ZONE:
+		speed = -EDGE_SCROLL_SPEED
+	elif x > rect.end.x - EDGE_SCROLL_ZONE:
+		speed = EDGE_SCROLL_SPEED
+	if speed != 0.0:
+		_scroll.scroll_horizontal += roundi(speed * delta)
+
+## Reihenfolge der Plätze in die Attacken des Monsters übernehmen
+func _apply_order() -> void:
+	var ordered: Array = []
+	for slot in _row.get_children():
+		if slot is SkillSlot:
+			ordered.append(slot.skill)
+	# dasselbe Array behalten, andere halten evtl. eine Referenz darauf
+	_mon._skills.clear()
+	_mon._skills.append_array(ordered)
+
+func _card_for(skill: Dictionary) -> Control:
+	var card := BATTLE_CARD.instantiate()
+	card.mon = _mon
+	card.skill = skill
+	card.custom_minimum_size = _card_size
+	card.size = _card_size
+	card.mouse_filter = MOUSE_FILTER_IGNORE
+	return card
+
+## Platz einer Karte in der Reihe: ziehen hebt die Karte an, über einem anderen Platz rückt sie sofort dorthin.
+## Außerhalb der Reihe losgelassen springt sie zurück an ihren alten Platz.
+class SkillSlot extends Control:
+	var skill: Dictionary
+	var _dialog: MonsterInfoDialog
+	var _start_index := -1
+
+	func _init(dialog: MonsterInfoDialog, skill_: Dictionary) -> void:
+		_dialog = dialog
+		skill = skill_
+		custom_minimum_size = dialog._card_size
+		size_flags_vertical = SIZE_SHRINK_BEGIN
+		# PASS: Mausrad und Wischen gehen weiter an die Scrollview
+		mouse_filter = MOUSE_FILTER_PASS
+		mouse_default_cursor_shape = CURSOR_DRAG
+		var card := dialog._card_for(skill)
+		add_child(card)
+
+	func resize(card_size: Vector2) -> void:
+		custom_minimum_size = card_size
+		var card: Control = get_child(0)
+		card.custom_minimum_size = card_size
+		card.size = card_size
+
+	func _get_drag_data(_at: Vector2) -> Variant:
+		_start_index = get_index()
+		modulate.a = DRAGGED_ALPHA
+		# Vorschau unter dem Finger zentriert, leicht vergrößert
+		var holder := Control.new()
+		var card := _dialog._card_for(skill)
+		card.position = -_dialog._card_size / 2.0
+		card.pivot_offset = _dialog._card_size / 2.0
+		card.scale = Vector2.ONE * DRAG_PREVIEW_SCALE
+		card.rotation_degrees = DRAG_PREVIEW_TILT
+		holder.add_child(card)
+		set_drag_preview(holder)
+		return self
+
+	## Über einem anderen Platz: gezogene Karte rückt an dessen Stelle, die übrigen weichen aus
+	func _can_drop_data(_at: Vector2, data: Variant) -> bool:
+		if not data is SkillSlot:
+			return false
+		if data != self:
+			get_parent().move_child(data, get_index())
+		return true
+
+	func _drop_data(_at: Vector2, _data: Variant) -> void:
+		pass
+
+	func _notification(what: int) -> void:
+		if what != NOTIFICATION_DRAG_END or _start_index < 0:
+			return
+		modulate.a = 1.0
+		if get_viewport().gui_is_drag_successful():
+			_dialog._apply_order()
+		else:
+			get_parent().move_child(self, _start_index)
+		_start_index = -1

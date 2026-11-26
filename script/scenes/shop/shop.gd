@@ -16,7 +16,7 @@ const Treasure = preload("res://script/scenes/treasure/treasure.gd")
 
 const SHELF_TEXTURE = preload("res://assets/ui/shop/shelf.svg")
 const PROPS_MATERIAL = preload("res://script/scenes/jailer/jailer_props_material.tres")
-const PIXEL_FONT = preload("res://script/ui/fonts/pxelfont/PixelifySans-VariableFont_wght.ttf")
+const PIXEL_FONT = preload("res://script/ui/fonts/m5x7/m5x7.ttf")
 const GOLD := SkillDetailPopup.GOLD
 const NO_OUTLINE := Color(1, 1, 0, 0)
 
@@ -24,7 +24,10 @@ const NO_OUTLINE := Color(1, 1, 0, 0)
 ## Der Laden lohnt sich durch die Wahl: Tränke mit gezieltem Element (Schatzkisten haben nur zufällige),
 ## Trophäen mit frei wählbarem Wert (Beute ist zufällig) und Relikte, die es sonst nur als Boss-Belohnung gibt.
 ## Schlüssel gibt es hier nicht (mehr), die bringen nur Kämpfe.
-const ELEMENT_PRICE := 45
+const ELEMENT_PRICE := 35
+## zwei Trank-Plätze oben links und zwei Item-Plätze oben rechts, die Pfeile blättern durch das Sortiment
+const POTION_OFFERS := 2
+const ITEM_OFFERS := 2
 ## pro Trophäe, unabhängig von der Biom-Tiefe
 const GEM_PRICE := 20
 ## pro Relikt; jedes angebotene Relikt lässt sich einzeln kaufen
@@ -33,17 +36,18 @@ const GEM_OFFERS := 2
 const RELIC_OFFERS := 2
 
 ## Regale, alle Maße in Bühnen-Pixeln: zwei Reihen mit je zwei Brettern links der Kasse, je zwei Waren pro Brett.
-## Index = Gruppe im Tutorial (tut_shop_shelf_<i>): oben die Tränke, unten links Trophäen, unten rechts Relikte.
+## Index = Gruppe im Tutorial (tut_shop_shelf_<i>): oben links Tränke, oben rechts One-Way-Items,
+## unten links Trophäen, unten rechts Relikte.
 const SHELF_HEIGHT := 46.0
-const SHELF_ROWS_Y := [96.0, 266.0]
+const SHELF_ROWS_Y := [112.0, 292.0]
 const SHELF_LAYOUT := [
 	{"column": 0, "row": 0},
 	{"column": 1, "row": 0},
 	{"column": 0, "row": 1},
 	{"column": 1, "row": 1},
 ]
-const SHELF_POTIONS_LEFT := 0
-const SHELF_POTIONS_RIGHT := 1
+const SHELF_POTIONS := 0
+const SHELF_ITEMS := 1
 const SHELF_GEMS := 2
 const SHELF_RELICS := 3
 ## Abstand der beiden Bretter einer Reihe und der Regale zur Kassen-Spalte
@@ -85,8 +89,8 @@ const MON_VIEW_WIDTH := 520.0
 const MODAL_GAP := 12.0
 ## Höhe der Übersicht wie beim Trainer: oben beginnt sie dort unter dessen Leiste (Tasche, Verlassen-Button),
 ## unten endet sie über dem Rand; beides in Bildschirm-Pixeln
-const MODAL_TOP := 142.0
-const MODAL_BOTTOM := 36.0
+const MODAL_TOP := 72.0
+const MODAL_BOTTOM := 24.0
 const PAN_SECONDS := 0.45
 ## Parallax des Hintergrunds: Anteil der Fahrt, um den er mitfährt, Ausschlag mit der Maus, Nachziehen pro Sekunde
 const PARALLAX_PAN := 0.1
@@ -97,7 +101,7 @@ const PARALLAX_FOLLOW := 6.0
 const LINE_BASE_SECONDS := 2.5
 const LINE_SECONDS_PER_CHAR := 0.04
 const THANKS_COUNT := 3
-const HOWTO_LINES := ["SHOP_SAY_WELCOME", "SHOP_SAY_POTIONS", "SHOP_SAY_GEMS", "SHOP_SAY_RELICS", "SHOP_SAY_CLICK"]
+const HOWTO_LINES := ["SHOP_SAY_WELCOME", "SHOP_SAY_POTIONS", "SHOP_SAY_ITEMS", "SHOP_SAY_GEMS", "SHOP_SAY_RELICS", "SHOP_SAY_CLICK"]
 
 ## Ware im Regal: oben steht das Bild auf dem Brett, darunter hängt das Schild mit dem Namen.
 ## Die Beschreibung steht nur im Popup, das ein Klick öffnet.
@@ -105,12 +109,17 @@ class ShelfItem extends RewardDialog.RewardCard:
 	const ART_SIZE := Vector2(68, 68)
 	## das Bild hat etwas Rand, so steht die Ware sichtbar auf dem Brett
 	const ART_SINK := 6.0
-	const TITLE_FONT_SIZE := 16
-	const PRICE_FONT_SIZE := 17
+	const TITLE_FONT_SIZE := 24
+	const PRICE_FONT_SIZE := 24
 	const TAG_MARGIN := 7
-	const SWITCH_SIZE := Vector2(30, 34)
-	const SWITCH_FONT_SIZE := 26
-	const SWITCH_Y := 10.0
+	## Blätter-Pfeile: zwei quadratische Eisenplatten nebeneinander mittig über dem Bild
+	const SWITCH_SIZE := Vector2(40, 40)
+	const SWITCH_GAP := 4.0
+	## Abstand der Platten zur Oberkante des Bildes (das Bild hat oben etwas leeren Rand)
+	const SWITCH_LIFT := 2.0
+	## Dreieck in der Platte: halbe Breite und halbe Höhe, schwarzer Umriss darum
+	const ARROW_HALF := Vector2(8, 10)
+	const ARROW_OUTLINE := 2.0
 
 	var art: Control
 	var title: String
@@ -197,27 +206,44 @@ class ShelfItem extends RewardDialog.RewardCard:
 		drag.title = card_title
 		_title_label.text = card_title
 
-	## Pfeile neben dem Bild, on_switch(step) mit -1 (links) bzw. +1 (rechts)
+	## Pfeile über dem Bild, on_switch(step) mit -1 (links) bzw. +1 (rechts).
+	## Jeder Pfeil ist eine kleine Eisenplatte mit Dreieck, beim Darüberfahren werden Rand und Dreieck golden.
 	func add_switch(on_switch: Callable, tooltip: String) -> void:
 		for step in [-1, 1]:
 			var button := Button.new()
-			button.text = "<" if step < 0 else ">"
 			button.tooltip_text = tooltip
 			button.focus_mode = Control.FOCUS_NONE
 			button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 			button.size = SWITCH_SIZE
-			button.add_theme_font_override("font", PIXEL_FONT)
-			button.add_theme_font_size_override("font_size", SWITCH_FONT_SIZE)
 			RewardDialog.clear_button_styles(button, StyleBoxEmpty.new())
-			button.add_theme_color_override("font_color", IronPlate.TEXT_COLOR)
-			button.add_theme_color_override("font_hover_color", GOLD)
-			button.add_theme_color_override("font_pressed_color", GOLD)
-			button.add_theme_color_override("font_outline_color", Color.BLACK)
-			button.add_theme_constant_override("outline_size", 6)
+			var plate := IronPlate.back(button)
+			# rechtwinklige Ecken statt der Schrägen der großen Platten
+			(plate.material as ShaderMaterial).set_shader_parameter("corner_cells", 0.0)
+			button.mouse_entered.connect(plate.set_rim.bind(GOLD))
+			button.mouse_exited.connect(plate.set_rim.bind(IronPlate.RIM))
+			button.draw.connect(_draw_arrow.bind(button, step))
 			button.pressed.connect(on_switch.bind(step))
 			_holder.add_child(button)
 			_switch_buttons.append(button)
 		_ignore_mouse_below()
+
+	func _draw_arrow(button: Button, step: int) -> void:
+		var center := button.size / 2
+		var color := GOLD if button.is_hovered() else IronPlate.TEXT_COLOR
+		# gedrückt sinkt das Dreieck einen Pixel ein
+		if button.get_draw_mode() == BaseButton.DRAW_PRESSED:
+			center.y += 1
+		var outline := Vector2(ARROW_OUTLINE, ARROW_OUTLINE)
+		button.draw_colored_polygon(_arrow_points(center, ARROW_HALF + outline, step), Color.BLACK)
+		button.draw_colored_polygon(_arrow_points(center, ARROW_HALF, step), color)
+
+	func _arrow_points(center: Vector2, half: Vector2, step: int) -> PackedVector2Array:
+		var dir := float(step)
+		return PackedVector2Array([
+			center + Vector2(dir * half.x, 0),
+			center + Vector2(-dir * half.x, -half.y),
+			center + Vector2(-dir * half.x, half.y),
+		])
 
 	func set_gold(gold: bool) -> void:
 		_gold_target.set_shader_parameter("outline_color", GOLD if gold else NO_OUTLINE)
@@ -242,10 +268,12 @@ class ShelfItem extends RewardDialog.RewardCard:
 		art.position = Vector2((width - ART_SIZE.x) / 2, ART_SINK)
 		if _price_label:
 			_price_label.position = Vector2(art.position.x + ART_SIZE.x, ART_SIZE.y - 26)
-		# Pfeile auf halber Höhe des Bildes, oberhalb des Preises
+		# Pfeile nebeneinander über dem Bild, mittig darüber
+		var switches_width := 2 * SWITCH_SIZE.x + SWITCH_GAP
+		var switches_left := art.position.x + (ART_SIZE.x - switches_width) / 2
 		for i in _switch_buttons.size():
-			var x := art.position.x - SWITCH_SIZE.x if i == 0 else art.position.x + ART_SIZE.x
-			_switch_buttons[i].position = Vector2(x, SWITCH_Y)
+			var x := switches_left + i * (SWITCH_SIZE.x + SWITCH_GAP)
+			_switch_buttons[i].position = Vector2(x, art.position.y - SWITCH_LIFT - SWITCH_SIZE.y)
 		_tag.position = Vector2(0, ART_SIZE.y + SHELF_HEIGHT / 2)
 		size = Vector2(width, _tag.position.y + _tag.size.y)
 
@@ -256,8 +284,8 @@ class MonField extends RewardDialog.DropTarget:
 	const IMAGE_SIZE := 250.0
 	const CHIPS_HEIGHT := 32.0
 	const FIELD_SIZE := Vector2(250, IMAGE_SIZE + CHIPS_HEIGHT)
-	const BOOST_FONT_SIZE := 18
-	const STAT_GETTERS := {"hp": "hp", "atk": "attack", "def": "defense", "s_atk": "s_attack", "s_def": "s_defense", "speed": "speed"}
+	const BOOST_FONT_SIZE := 24
+	const STAT_GETTERS := {"hp": "hp", "atk": "attack", "def": "defense", "s_atk": "s_attack", "speed": "speed"}
 	const SELECTED_SCALE := Vector2(1.08, 1.08)
 	const SELECT_SECONDS := 0.2
 
@@ -364,7 +392,7 @@ class MonField extends RewardDialog.DropTarget:
 ## Offene Tasche neben den Monstern, auf der Plakette steht das Geld. Ablegeziel für Relikte und Schlüssel.
 class ShopBag extends RewardDialog.DropTarget:
 	const BAG_SIZE := Vector2(208, 196)
-	const FONT_SIZE := 19
+	const FONT_SIZE := 32
 
 	var money: Label
 	var _art: OpenBag
@@ -428,10 +456,10 @@ class ItemPopup extends PanelContainer:
 		IronPlate.frame(self, box, 16, 14)
 		_art_holder = CenterContainer.new()
 		box.add_child(_art_holder)
-		_title = _label(box, 24, GOLD)
-		_price = _label(box, 20, IronPlate.TEXT_COLOR)
-		_description = _label(box, 19, IronPlate.TEXT_COLOR)
-		_hint = _label(box, 16, GOLD)
+		_title = _label(box, 40, GOLD)
+		_price = _label(box, 32, IronPlate.TEXT_COLOR)
+		_description = _label(box, 32, IronPlate.TEXT_COLOR)
+		_hint = _label(box, 24, GOLD)
 		var close := RewardDialog.plate_button(tr("MONSTER_CLOSE_INFO"))
 		close.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		close.pressed.connect(on_close)
@@ -681,10 +709,10 @@ func _show_popup(item: ShelfItem) -> void:
 	_popup.show_item(item, checkout_image.position.x + checkout_image.size.x / 2, ICON_BUTTON_SIZE.y + POPUP_GAP)
 
 func _fill_shelves() -> void:
-	var elements: Array = Treasure.ELEMENTS
-	for i in elements.size():
-		_filling_shelf = SHELF_POTIONS_LEFT if i < elements.size() / 2 else SHELF_POTIONS_RIGHT
-		set_price(Treasure.add_potion_card(self, elements[i]), ELEMENT_PRICE, true)
+	_filling_shelf = SHELF_POTIONS
+	_add_potion_offers()
+	_filling_shelf = SHELF_ITEMS
+	_add_item_offers()
 	_filling_shelf = SHELF_GEMS
 	_add_gem_offers()
 	_filling_shelf = SHELF_RELICS
@@ -717,6 +745,69 @@ func _switch_trophy(step: int, item: ShelfItem) -> void:
 	item.set_text(parts.title, parts.text)
 	item.set_art(GemField.gem_icon(stat))
 	# der neue Name kann anders umbrechen, das Schild passt sich an
+	_layout_stage()
+	item.set_gold(item == _selected or item.get_global_rect().has_point(get_global_mouse_position()))
+	if item == _selected:
+		_show_popup(item)
+	_update_previews()
+
+## Zwei Trank-Plätze mit verschiedenen Elementen, die Pfeile blättern durch alle Elemente. Ein gekaufter Platz ist weg.
+func _add_potion_offers() -> void:
+	var elements: Array = Treasure.ELEMENTS.duplicate()
+	elements.shuffle()
+	for i in POTION_OFFERS:
+		var card: ShelfItem = Treasure.add_potion_card(self, elements[i % elements.size()])
+		card.add_switch(_switch_potion.bind(card), tr("SHOP_POTION_SWITCH"))
+		set_price(card, ELEMENT_PRICE)
+
+func _switch_potion(step: int, item: ShelfItem) -> void:
+	if item.sold:
+		return
+	var elements: Array = Treasure.ELEMENTS
+	var element: int = elements[posmod(elements.find(item.drag.element) + step, elements.size())]
+	var parts := Treasure.potion_card_parts(self, element)
+	item.drag.merge(parts.drag, true)
+	item.set_text(parts.title, parts.text)
+	item.set_art(Treasure.potion_art(element))
+	_after_switch(item)
+
+## Sortiment an One-Way-Items für diesen Besuch (nur gewöhnliche, je mit eigenem Preis). Zwei Plätze starten auf
+## verschiedenen Items, die Pfeile blättern durch das ganze Sortiment. Gekauft landet das Item in der Tasche.
+var _item_assortment: Array = []
+
+func _add_item_offers() -> void:
+	_item_assortment = Items.shop_assortment()
+	if _item_assortment.is_empty():
+		return
+	for i in ITEM_OFFERS:
+		var offer: Dictionary = _item_assortment[i % _item_assortment.size()]
+		var parts := _item_card_parts(offer)
+		var card: ShelfItem = add_bag_card(parts.title, parts.text, Items.icon(offer.item), parts.drag.on_drop)
+		card.drag.offer = i % _item_assortment.size()
+		card.add_switch(_switch_item.bind(card), tr("SHOP_ITEM_SWITCH"))
+		set_price(card, offer.price)
+
+func _item_card_parts(offer: Dictionary) -> Dictionary:
+	var item: Dictionary = offer.item
+	var text := "%s\n%s" % [Items.description(item), Items.use_hint(item)]
+	return {"title": Items.title(item), "text": text, "drag": {"on_drop": func(): Items.add_to_bag(item.duplicate())}}
+
+func _switch_item(step: int, item: ShelfItem) -> void:
+	if item.sold:
+		return
+	var index: int = posmod(item.drag.offer + step, _item_assortment.size())
+	var offer: Dictionary = _item_assortment[index]
+	var parts := _item_card_parts(offer)
+	item.drag.merge(parts.drag, true)
+	item.drag.offer = index
+	item.drag.price = offer.price
+	item.set_text(parts.title, parts.text)
+	item.set_art(Items.icon(offer.item))
+	_money_changed(State.ep)
+	_after_switch(item)
+
+## Nach dem Umschalten: Schild neu umbrechen, Gold und offene Beschreibung nachziehen
+func _after_switch(item: ShelfItem) -> void:
 	_layout_stage()
 	item.set_gold(item == _selected or item.get_global_rect().has_point(get_global_mouse_position()))
 	if item == _selected:
@@ -886,6 +977,24 @@ func _after_reading(text: String, then: Callable) -> Tween:
 func _input(event: InputEvent) -> void:
 	if _explaining and event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		_next_line()
+	_close_mon_outside(event)
+
+## Wie beim Letzten Willen: ein Klick neben Übersicht und Monster fährt den Laden zurück
+## (ein Monster selbst wechselt die Übersicht über _toggle_mon)
+func _close_mon_outside(event: InputEvent) -> void:
+	if _open_field == null or not event is InputEventMouseButton or not event.pressed or event.button_index != MOUSE_BUTTON_LEFT:
+		return
+	# ein Dialog darüber (z. B. Element-Info): der Klick gehört ihm
+	if InfoDialog.any_open(get_tree()):
+		return
+	var pos: Vector2 = event.global_position
+	if _modal_holder.get_global_rect().has_point(pos):
+		return
+	for field in _mon_fields:
+		if field.covers(pos):
+			return
+	_close_mon()
+	get_viewport().set_input_as_handled()
 
 ## Die Kasse hüpft zweimal vor Freude
 func _jump_for_joy() -> void:
@@ -955,7 +1064,9 @@ func _hide_targets() -> void:
 	_update_previews()
 
 func _drop_targets() -> Array:
-	var targets: Array = _mon_fields.duplicate()
+	# untypisiert kopieren: _mon_fields ist Array[MonField], dort würde append(_bag) still scheitern
+	var targets: Array = []
+	targets.append_array(_mon_fields)
 	targets.append(_bag)
 	return targets
 

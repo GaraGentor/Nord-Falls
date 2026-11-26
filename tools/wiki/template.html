@@ -174,6 +174,7 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .cycle { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 1rem; }
 .icon { width: 40px; height: 40px; padding: 7px; border-radius: 10px; background: #2b3336; flex: none; }
 :root[data-theme="dark"] .icon, :root:not([data-theme="light"]) .icon { filter: none; }
+.icon.art { width: 64px; height: 64px; padding: 3px; object-fit: contain; }
 code { font-family: ui-monospace, Consolas, monospace; font-size: .82rem; background: var(--panel-2); padding: 1px 5px; border-radius: 5px; word-break: break-word; }
 .warn { background: color-mix(in srgb, var(--bad) 14%, var(--panel)); border: 1px solid var(--bad); border-radius: 10px; padding: 10px 14px; margin-bottom: 16px; }
 .empty { padding: 30px; text-align: center; color: var(--muted); }
@@ -216,7 +217,7 @@ const DATA = /*__WIKI_DATA__*/null;
 const UI = {
 	de: {
 		search: "Suchen…", monsters: "Monster", skills: "Skills", elements: "Elemente", gems: "Trophäen",
-		relics: "Relikte", unlocks: "Freischaltungen", map: "Karte", rarity: "Seltenheit", element: "Element",
+		relics: "Relikte", unlocks: "Meilensteine & Kopfgelder", map: "Karte", rarity: "Seltenheit", element: "Element",
 		bst: "Basiswerte (BST)", preferredStats: "Bevorzugte Werteverteilung", preferredHint: "Summe 100 %, schwankt pro Run um bis zu ±15 %", maxUpgrades: "Max. Upgrades", catchBase: "Grund-Fangchance",
 		defaultSkills: "Start-Ei-Attacken", unlockable: "Durch Fangen & Opfern", milestone: "Meilensteine", bounty: "Kopfgelder",
 		name: "Name", tier: "Stufe", power: "Stärke", type: "Art", cost: "Kosten", cd: "CD", shop: "Shop-Preis",
@@ -230,9 +231,11 @@ const UI = {
 		components: "Besteht aus", weight: "Spawn-Gewicht", noResults: "Keine Treffer.", warnings: "Warnungen beim Generieren",
 		strongVs: "stark gegen", maxSkills: "Max. Skills pro Monster", tierWeights: "Stufen-Gewichte (Spawn-Häufigkeit)",
 		onlyBase: "Nur Grund-Elemente", allCombos: "Alle Kombinationen", catchHint: "bei 0 HP und gleicher Stufe",
-		bossRelics: "Boss-Relikte", relicsPerBattle: "Relikte pro Boss-Kampf", bossRarity: "Seltenheit der Bosse (Gewicht, in Klammern normales Feld)", rarityUnlocks: "Freischaltung (wild und Boss)", fromBiome: "ab Biom", needs: "braucht", mythicBossChance: "Chance auf einen mythischen Boss pro Boss-Kampf",
+		bossRelics: "Boss-Relikte", relicsPerBattle: "Relikte pro Boss-Kampf", finalRelicsPerBattle: "Endboss-Relikte im Endboss-Kampf", finalRelic: "Endboss-Relikt", bossRarity: "Seltenheit der Bosse (Gewicht, in Klammern normales Feld)", rarityUnlocks: "Freischaltung (wild und Boss)", fromBiome: "ab Biom", needs: "braucht", mythicBossChance: "Chance auf einen mythischen Boss pro Boss-Kampf",
+		items: "Items", itemUse: "Einsatz", oncePerRun: "einmal pro Run", itemDrops: "Beute-Seltenheit (normal / Boss / Schatz)", maxDrops: "Höchstens Items pro Kampf", slotsPerMon: "Plätze pro Monster", shopItems: "Im Shop (nur gewöhnliche)", price: "Preis",
 		starter: "Start-Monster", onlyStarters: "Nur Start-Monster", noStarters: "Ohne Start-Monster", close: "Schließen",
-		clickHint: "Klick auf ein Monster zeigt alle Details.", weakTo: "Verwundbar gegen", resists: "Resistent gegen",
+		clickHint: "Klick auf ein Monster zeigt alle Details.", weakTo: "Verwundbar gegen (Magie)", resists: "Resistent gegen (Magie)",
+		elementMagicOnly: "Der Element-Faktor gilt nur für magische Angriffe (auch kritische). Physische Angriffe treffen immer neutral (×1), egal welches Element sie haben.",
 		dormantHint: "Schlummert: {power} % Stärke, dem Monster fehlt ein Element", effect: "Effekt",
 		rarityBonusHint: "Standard-Fähigkeiten werden pro Seltenheitsstufe über Gewöhnlich etwas stärker", perRarity: "pro Seltenheit",
 		elementEffects: "Element-Effekte", noEffect: "Kein Zusatzeffekt (Grundelement)",
@@ -248,22 +251,23 @@ const UI = {
 		unused: "Unbenutzt", usage: "Nutzung", usedOnly: "von Arten benutzt", unusedOnly: "von keiner Art benutzt",
 		unusedTotal: "{n} von {total} Skills hat keine Art (Start, Opfern, Meilenstein, Kopfgeld)",
 		perList: "Nach Quelle", perElement: "Nach Element und Kategorie", reachable: "trotzdem erreichbar über",
-		cats: { physical: "Angriff physisch", magic: "Angriff magisch", shield: "Rüstung", s_shield: "Magie-Schild", buff: "Buff", passive: "Passiv", area: "Fläche" },
+		cats: { physical: "Angriff physisch", magic: "Angriff magisch", shield: "Schild", buff: "Buff", passive: "Passiv", area: "Fläche" },
 		leads: {
 			unused: "Alle Skills, die <b>keine Monster-Art</b> als Start-Skill, Ei-Attacke, Meilenstein oder Kopfgeld hat. Pool-Skills können trotzdem bei wilden Monstern oder beim Trainer auftauchen (steht dahinter), Entwürfe (<code>Skills.draft_skills</code>) tauchen nirgends auf.",
 			monsters: "Alle Monster-Arten aus <code>Monmap.mons</code> mit ihren Ei-Attacken und wie man sie freischaltet.",
-			skills: "Alle Skills aus <code>Skills</code>, Regeln in <code>skill_regeln.txt</code>. Ein Monster kann einen Skill spielen, sobald es eins seiner Elemente hat; fehlen Elemente, schlummert er (schwächer, ohne Element-Effekt). Unter der Quelle steht, ob Trainer oder wilde Monster ihn haben. Spalten sind sortierbar.",
-			elements: "Element-Kreis und alle Kombinationen aus <code>ColorMap</code>. Jedes Skill-Element wird gegen jedes Ziel-Element verglichen; Kombi-Monster erben alle Schwächen und Resistenzen.",
+			skills: "Alle Skills aus <code>Skills</code>, Regeln in <code>skill_regeln.txt</code>. Ein Monster kann einen Skill spielen, sobald es eins seiner Elemente hat; fehlen Elemente, schlummert er (schwächer, ohne Element-Effekt). Unter der Quelle steht, ob Trainer oder wilde Monster ihn haben. Es gibt nur eine Art Schild: Er blockt physische und magische Angriffe. Spalten sind sortierbar.",
+			elements: "Element-Kreis und alle Kombinationen aus <code>ColorMap</code>. Jedes Skill-Element wird gegen jedes Ziel-Element verglichen; Kombi-Monster erben alle Schwächen und Resistenzen. Der Element-Faktor gilt nur für magische Angriffe, physische treffen immer neutral.",
 			gems: "Trophäen erhöhen einen Wert eines eigenen Monsters um feste Punkte für den restlichen Run.",
 			relics: "Relikte sind passive Run-Boni. Es gibt sie zur Auswahl in der Kiste nach Biom-Bossen und im Laden, unabhängig von ihrer Seltenheit.",
-			bossRelics: "Boss-Relikte aus <code>BossRelics.RELICS</code> gehören zum Boss-Kampf, nicht zu einem Boss: Jeder Boss-Kampf würfelt sie einmal, und sie stärken alle Gegner gleich. Ist der letzte Gegner besiegt oder gefangen, zerbrechen sie; ein gefangener Boss behält nur Werte, Fähigkeiten und Trophäen.",
-			unlocks: "Meilenstein-Ei-Attacken (mit der Art als Start-Monster) und Kopfgeld-Ei-Attacken (letzter Treffer gegen ein Kopfgeld-Monster).",
+			bossRelics: "Boss-Relikte aus <code>BossRelics.RELICS</code> gehören zum Boss-Kampf, nicht zu einem Boss: Jeder Boss-Kampf würfelt sie einmal, und sie stärken alle Gegner gleich. Ist der letzte Gegner besiegt oder gefangen, zerbrechen sie; ein gefangener Boss behält nur Werte, Fähigkeiten und Trophäen. <b>Endboss-Relikte</b> (markiert) gibt es nur im Endboss-Kampf des letzten Bioms, dort zieht der Endboss eins aus ihrem eigenen Pool; in allen anderen Boss-Kämpfen kommen sie nie vor.",
+			items: "One-Way-Items aus <code>Items.ITEMS</code>: einmal im Kampf einsetzbar, nur im Zug des Monsters, das sie trägt, ohne eine Aktion zu kosten. Es gibt sie als Beute nach Kämpfen, in Schätzen und (gewöhnliche) im Shop.",
+			unlocks: "Hier steht, wie man zusätzliche Ei-Attacken einer Art dauerhaft freischaltet (unabhängig von der Karte): <b>Meilensteine</b> erfüllt man mit der Art als Start-Monster (z. B. eine Anzahl K.O.s in einem Run), <b>Kopfgelder</b> mit dem letzten Treffer gegen ein Kopfgeld-Monster. Unter Belohnung steht, welche Art dafür welche Ei-Attacke bekommt.",
 			map: "Aufbau der Weltkarte pro Biom-Tiefe aus <code>Map.map_settings</code>. Zahlen in den Spalten sind die Zeilen, in denen das Feld fest liegt.",
 		},
 	},
 	en: {
 		search: "Search…", monsters: "Monsters", skills: "Skills", elements: "Elements", gems: "Trophies",
-		relics: "Relics", unlocks: "Unlocks", map: "Map", rarity: "Rarity", element: "Element",
+		relics: "Relics", unlocks: "Milestones & Bounties", map: "Map", rarity: "Rarity", element: "Element",
 		bst: "Base stats (BST)", preferredStats: "Preferred stat spread", preferredHint: "Sums to 100 %, varies by up to ±15 % per run", maxUpgrades: "Max upgrades", catchBase: "Base catch chance",
 		defaultSkills: "Starting egg moves", unlockable: "Catch & sacrifice", milestone: "Milestones", bounty: "Bounties",
 		name: "Name", tier: "Tier", power: "Power", type: "Type", cost: "Cost", cd: "CD", shop: "Shop price",
@@ -277,9 +281,11 @@ const UI = {
 		components: "Made of", weight: "Spawn weight", noResults: "No results.", warnings: "Warnings during generation",
 		strongVs: "strong against", maxSkills: "Max skills per monster", tierWeights: "Tier weights (spawn frequency)",
 		onlyBase: "Base elements only", allCombos: "All combinations", catchHint: "at 0 HP and same level",
-		bossRelics: "Boss relics", relicsPerBattle: "Relics per boss battle", bossRarity: "Boss rarity (weight, normal node in brackets)", rarityUnlocks: "Unlocks (wild and boss)", fromBiome: "from biome", needs: "needs", mythicBossChance: "Chance for one mythic boss per boss battle",
+		bossRelics: "Boss relics", relicsPerBattle: "Relics per boss battle", finalRelicsPerBattle: "Final boss relics in the final boss battle", finalRelic: "Final boss relic", bossRarity: "Boss rarity (weight, normal node in brackets)", rarityUnlocks: "Unlocks (wild and boss)", fromBiome: "from biome", needs: "needs", mythicBossChance: "Chance for one mythic boss per boss battle",
+		items: "Items", itemUse: "Use", oncePerRun: "once per run", itemDrops: "Loot rarity (normal / boss / treasure)", maxDrops: "Max items per battle", slotsPerMon: "Slots per monster", shopItems: "In the shop (common only)", price: "price",
 		starter: "Starter", onlyStarters: "Starters only", noStarters: "No starters", close: "Close",
-		clickHint: "Click a monster to see all details.", weakTo: "Weak to", resists: "Resists",
+		clickHint: "Click a monster to see all details.", weakTo: "Weak to (magic)", resists: "Resists (magic)",
+		elementMagicOnly: "The element multiplier only applies to magic attacks (critical hits included). Physical attacks always hit neutral (×1), whatever their element.",
 		dormantHint: "Dormant: {power} % strength, the monster lacks an element", effect: "Effect",
 		rarityBonusHint: "Standard skills get slightly stronger with each rarity step above Common", perRarity: "per rarity",
 		elementEffects: "Element effects", noEffect: "No extra effect (base element)",
@@ -295,16 +301,17 @@ const UI = {
 		unused: "Unused", usage: "Usage", usedOnly: "used by species", unusedOnly: "used by no species",
 		unusedTotal: "{n} of {total} skills belong to no species (starter, sacrifice, milestone, bounty)",
 		perList: "By source", perElement: "By element and category", reachable: "still reachable via",
-		cats: { physical: "Physical attack", magic: "Magic attack", shield: "Armor", s_shield: "Magic shield", buff: "Buff", passive: "Passive", area: "Area" },
+		cats: { physical: "Physical attack", magic: "Magic attack", shield: "Shield", buff: "Buff", passive: "Passive", area: "Area" },
 		leads: {
 			unused: "All skills that <b>no monster species</b> has as starter skill, egg move, milestone or bounty. Pool skills can still show up on wild monsters or at the trainer (noted behind them), drafts (<code>Skills.draft_skills</code>) appear nowhere.",
 			monsters: "All monster species from <code>Monmap.mons</code> with their egg moves and how to unlock them.",
-			skills: "All skills from <code>Skills</code>, rules in <code>skill_regeln.txt</code>. A monster can play a skill once it has one of its elements; missing elements make it dormant (weaker, no element effect). Below the source: whether the trainer or wild monsters have it. Columns are sortable.",
-			elements: "Element cycle and all combinations from <code>ColorMap</code>. Every skill element is compared with every target element; combined monsters inherit all weaknesses and resistances.",
+			skills: "All skills from <code>Skills</code>, rules in <code>skill_regeln.txt</code>. A monster can play a skill once it has one of its elements; missing elements make it dormant (weaker, no element effect). Below the source: whether the trainer or wild monsters have it. There is only one kind of shield: it blocks physical and magic attacks. Columns are sortable.",
+			elements: "Element cycle and all combinations from <code>ColorMap</code>. Every skill element is compared with every target element; combined monsters inherit all weaknesses and resistances. The element multiplier only applies to magic attacks, physical ones always hit neutral.",
 			gems: "Trophies raise one stat of your own monster by fixed points for the rest of the run.",
 			relics: "Relics are passive run bonuses. You can pick them from the chest after biome bosses and buy them in the shop, regardless of rarity.",
-			bossRelics: "Boss relics from <code>BossRelics.RELICS</code> belong to the boss battle, not to a boss: each boss battle rolls them once and they empower all enemies alike. When the last enemy is defeated or caught they break; a caught boss keeps only its stats, skills and trophies.",
-			unlocks: "Milestone egg moves (with the species as starter) and bounty egg moves (last hit against a bounty monster).",
+			bossRelics: "Boss relics from <code>BossRelics.RELICS</code> belong to the boss battle, not to a boss: each boss battle rolls them once and they empower all enemies alike. When the last enemy is defeated or caught they break; a caught boss keeps only its stats, skills and trophies. <b>Final boss relics</b> (marked) only appear in the final boss battle of the last biome, where the final boss draws one from their own pool; they never show up in other boss battles.",
+			items: "One-way items from <code>Items.ITEMS</code>: usable once in battle, only on the turn of the monster carrying them, without costing an action. They drop after battles, lie in treasures and (common ones) are sold in the shop.",
+			unlocks: "How to permanently unlock extra egg moves of a species (unrelated to the map): <b>milestones</b> are met with the species as starter (e.g. a number of K.O.s in one run), <b>bounties</b> with the last hit against a bounty monster. Reward lists which species gets which egg move.",
 			map: "World map layout per biome depth from <code>Map.map_settings</code>. Numbers are the rows where that node is fixed.",
 		},
 	},
@@ -342,6 +349,8 @@ function tr(key, args = {}) {
 	return text.replace(/\[\/?hl\]/g, "").replace(/\{(\w+)\}/g, (all, k) => (k in args ? args[k] : all));
 }
 const res = (p) => (p || "").replace(/^res:\/\//, "../");
+// eigene Bilder (PNG/JPEG) größer als die Platzhalter-Symbole (SVG)
+const iconClass = (p) => (/\.svg$/i.test(p || "") ? "icon" : "icon art");
 const pct = (v) => `${Math.round(v * 1000) / 10} %`;
 const fmtNum = (v) => (Number.isInteger(v) ? String(v) : String(Math.round(v * 100) / 100));
 
@@ -359,7 +368,7 @@ const chip = (mask) => `<span class="chip"><i style="background:${esc(elementCol
 // Spiegelt ElementEffects.element_effect_text: Text mit den Werten und der Auslösechance (TRIGGER_CHANCES) davor
 const effectPct = (share) => fmtNum(Math.round(share * 1000) / 10);
 const TRIGGER_CHANCE_KEYS = { STEAM: "DEBUFF_CHANCE", DUST: "DEBUFF_CHANCE", LIGHTNING: "FAIL_TRIGGER_CHANCE", ICE: "ICE_CHANCE",
-	MAGMA: "PIERCE_CHANCE", MUD: "PIERCE_CHANCE", SWAMP: "POISON_CHANCE", ASH_STORM: "ASH_CHANCE" };
+	MAGMA: "PIERCE_CHANCE", MUD: "MUD_CHANCE", SWAMP: "POISON_CHANCE", ASH_STORM: "ASH_CHANCE" };
 function effectText(key, power = 1, cardChance = 1, stripName = false) {
 	const c = DATA.elements.effects;
 	let text = tr(`EFFECT_${key}_DESC`, {
@@ -367,6 +376,7 @@ function effectText(key, power = 1, cardChance = 1, stripName = false) {
 		debuff: effectPct(c.DEBUFF_FACTOR * power),
 		fail: effectPct(c.FAIL_CHANCE * power),
 		ice: effectPct(c.ICE_SHIELD_SHARE * power),
+		melt: effectPct(c.MELT_SHARE * power),
 		poison: effectPct(c.POISON_SHARE * power),
 		stacks: c.POISON_MAX_STACKS,
 		ash: effectPct(c.ASH_SHARE * power),
@@ -414,7 +424,7 @@ const tierStars = (t) => "◆".repeat(t || 1) + `<span class="muted">${"◇".rep
 const dmgType = (s) => (s.damage_type === "ABILITY" ? ui("ability") : ui("physical"));
 // Wie Helper.skill_description: Haupttext mit {stat}/{element}, darunter die Extras (Skills.extras_text) und der
 // Element-Effekt der Karte (ElementEffects.skill_effect_text, mit effect_chance / effect_power der Karte)
-const STAT_KEYS = { hp: "STAT_HP", atk: "STAT_ATK", def: "STAT_DEF", s_atk: "STAT_SPA", s_def: "STAT_SPD", speed: "STAT_SPE" };
+const STAT_KEYS = { hp: "STAT_HP", atk: "STAT_ATK", def: "STAT_DEF", s_atk: "STAT_SPA", speed: "STAT_SPE" };
 const statLabel = (stat) => (STAT_KEYS[stat] ? tr(STAT_KEYS[stat]).replace(":", "") : stat || "");
 function skillEffectText(s) {
 	const key = DATA.elements.effectKeys?.[s.nature];
@@ -425,8 +435,8 @@ function skillEffectText(s) {
 	return effectText(key, power, chance);
 }
 // Stärke wie Skills.power_text ohne Monster: fester Wert + Anteil x Wert ("5 + 0.2×SAN")
-// Kreuz-Schilde (scaling_stat) rechnen mit dem anderen Verteidigungswert, wie Skills.shield_stat
-const SCALING_STAT = (s) => s.effect === "shield" ? (s.scaling_stat || (s.damage_type === "ABILITY" ? "s_def" : "def")) : (s.damage_type === "ABILITY" ? "s_atk" : "atk");
+// Schilde wachsen mit der Verteidigung, Angriffe mit Angriff bzw. Sp. Angriff (wie Skills.shield_amount / calc_damage)
+const SCALING_STAT = (s) => s.effect === "shield" ? "def" : (s.damage_type === "ABILITY" ? "s_atk" : "atk");
 const powerLabel = (s) => s.scaling != null ? `${fmtNum(s.value)} + ${fmtNum(s.scaling)}×${statLabel(SCALING_STAT(s))}` : fmtNum(s.value ?? s.damage ?? 0);
 function skillDesc(s) {
 	const lines = [tr(s.description, {
@@ -488,6 +498,7 @@ const SECTIONS = {
 	gems: { count: () => Object.keys(DATA.gems.stats).length, render: renderGems },
 	relics: { count: () => Object.keys(DATA.relics).length, render: renderRelics },
 	bossRelics: { count: () => Object.keys(DATA.bossRelics || {}).length, render: renderBossRelics },
+	items: { count: () => Object.keys(DATA.items || {}).length, render: renderItems },
 	unlocks: { count: () => DATA.milestones.length + DATA.bounties.length, render: renderUnlocks },
 	map: { count: () => Object.keys(DATA.map.settings).length, render: renderMap },
 };
@@ -498,7 +509,7 @@ function header(key) {
 
 // Bevorzugte Werteverteilung der Art, Spielwerte heißen im Spiel STAT_*
 function statProfile(m) {
-	const labels = { hp: "HP", atk: "ATK", def: "DEF", s_atk: "SPA", s_def: "SPD", speed: "SPE" };
+	const labels = { hp: "HP", atk: "ATK", def: "DEF", s_atk: "SPA", speed: "SPE" };
 	if (!m.preferred_stats) return "";
 	return `<div class="skill-group"><h4>${ui("preferredStats")}</h4><div class="stat-row" title="${esc(ui("preferredHint"))}">${
 		Object.entries(labels).map(([key, label]) => `<div><span>${esc(tr("STAT_" + label).replace(":", ""))}</span>${m.preferred_stats[key] ?? "–"} %</div>`).join("")}</div></div>`;
@@ -556,7 +567,7 @@ function skillCard(name, m, how) {
 
 function renderMonDetail(m) {
 	const catchBase = DATA.catch.rarityBase?.[m.rarity];
-	const labels = { hp: "HP", atk: "ATK", def: "DEF", s_atk: "SPA", s_def: "SPD", speed: "SPE" };
+	const labels = { hp: "HP", atk: "ATK", def: "DEF", s_atk: "SPA", speed: "SPE" };
 	const maxPref = Math.max(...Object.values(m.preferred_stats || { x: 1 }));
 	const bars = m.preferred_stats ? `<div class="skill-group"><h4 title="${esc(ui("preferredHint"))}">${ui("preferredStats")}</h4><div class="bars">${
 		Object.entries(labels).map(([key, label]) => {
@@ -739,11 +750,11 @@ function skillUsers(name) {
 		...Object.values(m.milestone_egg_skills || {}), ...Object.values(m.bounty_egg_skills || {})].includes(name));
 }
 
-// Kategorie für die Übersicht (wie Skills.egg_skill_category, Schilde getrennt nach Rüstung / Magie-Schild)
+// Kategorie für die Übersicht (wie Skills.egg_skill_category, nur eine Art Schild)
 function skillCategory(s) {
 	if (s.effect === "passive") return "passive";
 	if (s.effect === "buff" || s.effect === "boon") return "buff";
-	if (s.effect === "shield") return s.damage_type === "ABILITY" ? "s_shield" : "shield";
+	if (s.effect === "shield") return "shield";
 	if (s.target === "TEAM_ENEMY") return "area";
 	return s.damage_type === "ABILITY" ? "magic" : "physical";
 }
@@ -780,7 +791,8 @@ function renderElements() {
 	while (cur && !cycle.includes(cur)) { cycle.push(cur); cur = strong[cur]; }
 	const cycleHtml = `<div class="card wide"><h3>${ui("strongVs")}</h3><div class="cycle" style="margin-top:8px">${
 		cycle.map(chip).join(" <span class='muted'>→</span> ")} <span class="muted">→</span> ${chip(cycle[0])}</div>
-		<p class="small muted" style="margin:8px 0 0">+1 → ×${1 + DATA.elements.elementBonus}, +2 → ×${1 + 2 * DATA.elements.elementBonus} · −1 → ×${1 - DATA.elements.elementBonus}, −2 → ×${Math.pow(1 - DATA.elements.elementBonus, 2)}</p></div>`;
+		<p class="small muted" style="margin:8px 0 0">+1 → ×${1 + DATA.elements.elementBonus}, +2 → ×${1 + 2 * DATA.elements.elementBonus} · −1 → ×${1 - DATA.elements.elementBonus}, −2 → ×${Math.pow(1 - DATA.elements.elementBonus, 2)}</p>
+		<p class="small muted" style="margin:4px 0 0">${esc(ui("elementMagicOnly"))}</p></div>`;
 
 	const combos = DATA.elements.combos
 		.filter((c) => matches(tr(c.label), c.label, ...elementsIn(c.mask).map(elementName)))
@@ -862,7 +874,7 @@ function renderRelics() {
 	const cards = Object.entries(DATA.relics)
 		.filter(([id, r]) => matches(id, tr(r.name), tr(r.description), rarityName(r.rarity)))
 		.map(([id, r]) => `<article class="card"><div class="row" style="align-items:flex-start">
-			<img class="icon" src="${esc(res(r.icon))}" alt="" onerror="this.style.visibility='hidden'">
+			<img class="${iconClass(r.icon)}" src="${esc(res(r.icon))}" alt="" onerror="this.style.visibility='hidden'">
 			<div style="min-width:0"><h3>${hl(tr(r.name))}</h3>
 				<div class="row small" style="margin-top:2px"><span class="tag">${esc(rarityName(r.rarity))}</span><code>${esc(id)}</code></div>
 				<p style="margin:8px 0 0">${hl(tr(r.description))}</p>
@@ -874,24 +886,54 @@ function renderRelics() {
 	return header("relics") + (cards.length ? `<div class="grid">${cards.join("")}${hooks}</div>` : `<div class="empty">${ui("noResults")}</div>`);
 }
 
+function relicVars(r) {
+	const lv = DATA.bossRelicSettings?.buddyLevel || [];
+	return { value: r.value, min: lv[0] ?? "?", max: lv[1] ?? "?" };
+}
+
 function renderBossRelics() {
 	const cards = Object.entries(DATA.bossRelics || {})
-		.filter(([id, r]) => matches(id, tr(r.name), tr(r.description, { value: r.value })))
+		.filter(([id, r]) => matches(id, tr(r.name), tr(r.description, relicVars(r))))
 		.map(([id, r]) => `<article class="card"><div class="row" style="align-items:flex-start">
-			<img class="icon" src="${esc(res(r.icon))}" alt="" onerror="this.style.visibility='hidden'">
+			<img class="${iconClass(r.icon)}" src="${esc(res(r.icon))}" alt="" onerror="this.style.visibility='hidden'">
 			<div style="min-width:0"><h3>${hl(tr(r.name))}</h3>
-				<div class="row small" style="margin-top:2px"><code>${esc(id)}</code></div>
-				<p style="margin:8px 0 0">${hl(tr(r.description, { value: r.value }))}</p>
+				<div class="row small" style="margin-top:2px">${r.final ? `<span class="tag" style="${RARITY_STYLE.LEGENDARY || ""}">${ui("finalRelic")}</span>` : ""}<code>${esc(id)}</code></div>
+				<p style="margin:8px 0 0">${hl(tr(r.description, relicVars(r)))}</p>
 			</div></div>
 		</article>`);
 	const s = DATA.bossRelicSettings || {};
 	const settings = `<div class="card wide"><dl class="kv">
 		<dt>${ui("relicsPerBattle")}</dt><dd>${s.perBattle ?? "?"}</dd>
+		<dt>${ui("finalRelicsPerBattle")}</dt><dd>${s.finalPerBattle ?? "?"}</dd>
 		<dt>${ui("bossRarity")}</dt><dd>${Object.entries(s.rarityWeights || {}).map(([r, w]) => `<span style="${RARITY_STYLE[r] || ""}">${esc(rarityName(r))}</span> ${fmtNum(w)} (${fmtNum(s.wildWeights?.[r] ?? 0)})`).join(" · ") || ui("none")}</dd>
 		<dt>${ui("rarityUnlocks")}</dt><dd>${Object.entries(s.unlocks || {}).map(([r, u]) => `<span style="${RARITY_STYLE[r] || ""}">${esc(rarityName(r))}</span>: ${ui("fromBiome")} ${u.depth + 1}, ${ui("needs")} ${Object.entries(u.owned || {}).map(([o, n]) => `${n}× ${esc(rarityName(o))}`).join(", ")}`).join("<br>") || ui("none")}</dd>
 		<dt>${ui("mythicBossChance")}</dt><dd>${(s.mythicChance || []).map((c, i) => `${ui("depth")} ${i + 1}: ${pct(c)}`).join(" · ") || ui("none")}</dd>
 	</dl></div>`;
 	return header("bossRelics") + (cards.length ? `<div class="grid">${cards.join("")}${settings}</div>` : `<div class="empty">${ui("noResults")}</div>`);
+}
+
+function renderItems() {
+	// gerundet wie im Spiel (Items.description): 0.05 * 100 ergibt sonst 5.000000000000001
+	const value = (it) => (it.value == null ? "" : fmtNum(Math.round(it.value * 100) / 100));
+	const cards = Object.entries(DATA.items || {})
+		.filter(([id, it]) => matches(id, tr(it.name), tr(it.description, { value: value(it) }), rarityName(it.rarity)))
+		.map(([id, it]) => `<article class="card"><div class="row" style="align-items:flex-start">
+			<img class="${iconClass(it.icon)}" src="${esc(res(it.icon))}" alt="" onerror="this.style.visibility='hidden'">
+			<div style="min-width:0"><h3>${hl(tr(it.name))}</h3>
+				<div class="row small" style="margin-top:2px"><span class="tag" style="${RARITY_STYLE[it.rarity] || ""}">${esc(rarityName(it.rarity))}</span><code>${esc(id)}</code>${it.once_per_run ? ` <span class="tag">${ui("oncePerRun")}</span>` : ""}</div>
+				<p style="margin:8px 0 0">${hl(tr(it.description, { value: value(it) }))}</p>
+				<p class="small muted" style="margin:6px 0 0">${ui("itemUse")}: ${esc(tr("ITEM_USE_" + String(it.use).toUpperCase()))}</p>
+			</div></div>
+		</article>`);
+	const s = DATA.itemSettings || {};
+	const weights = (w) => Object.entries(w || {}).map(([r, v]) => `<span style="${RARITY_STYLE[r] || ""}">${esc(rarityName(r))}</span> ${fmtNum(v)}`).join(" · ") || ui("none");
+	const settings = `<div class="card wide"><dl class="kv">
+		<dt>${ui("itemDrops")}</dt><dd>${weights(s.rarityWeights)}<br>${weights(s.bossRarityWeights)}<br>${weights(s.treasureRarityWeights)}</dd>
+		<dt>${ui("maxDrops")}</dt><dd>${s.maxDrops ?? "?"}</dd>
+		<dt>${ui("slotsPerMon")}</dt><dd>${s.slotsPerMon ?? "?"}</dd>
+		<dt>${ui("shopItems")}</dt><dd>${s.shopAssortment ?? "?"}, ${ui("price")} ${(s.shopPrice || []).join("–")}</dd>
+	</dl></div>`;
+	return header("items") + (cards.length ? `<div class="grid">${cards.join("")}${settings}</div>` : `<div class="empty">${ui("noResults")}</div>`);
 }
 
 function renderUnlocks() {

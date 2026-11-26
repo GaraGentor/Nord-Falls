@@ -1,7 +1,7 @@
 class_name SettingsDialog
 extends InfoDialog
 
-## Einstellungen (GameSettings, Tutorial) als Dialog, erreichbar über das Zahnrad im Startbildschirm und im Header der Karte.
+## Einstellungen (GameSettings, Tutorial starten) als Dialog, erreichbar über das Zahnrad im Startbildschirm und im Header der Karte.
 ## Fährt von unten herein. Neue Einstellungen kommen als weitere Abschnitte in _build.
 
 const GEAR_ICON := preload("res://assets/ui/icons/gear.svg")
@@ -68,8 +68,12 @@ static func make_check(text: String, on: bool, on_toggled: Callable) -> HBoxCont
 
 func _build(content: VBoxContainer) -> void:
 	content.add_child(_title(tr("SETTINGS_TITLE"), SkillDetailPopup.GOLD))
+	# Titel und Schließen-Button bleiben stehen, die Abschnitte dazwischen scrollen
+	content = _scroll_list(content)
+	content.add_child(_section(tr("SETTINGS_LANGUAGE")))
+	content.add_child(language_row(_switch_language))
+	content.add_child(_section(tr("SETTINGS_DISPLAY")))
 	if GameSettings.has_window_mode():
-		content.add_child(_section(tr("SETTINGS_DISPLAY")))
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 10)
 		var caption := _text(tr("SETTINGS_WINDOW_MODE"), IronPlate.TEXT_COLOR, ROW_FONT_SIZE)
@@ -82,11 +86,85 @@ func _build(content: VBoxContainer) -> void:
 		content.add_child(_note(tr("SETTINGS_FULLSCREEN_HINT"), IronPlate.TEXT_COLOR))
 		GameSettings.changed.connect(_refresh)
 		_refresh()
+	var effects_check := make_check(tr("SETTINGS_CARD_EFFECTS"), GameSettings.card_effects, GameSettings.set_card_effects)
+	effects_check.size_flags_horizontal = SIZE_SHRINK_BEGIN
+	content.add_child(effects_check)
+	content.add_child(_note(tr("SETTINGS_CARD_EFFECTS_HINT"), IronPlate.TEXT_COLOR))
+	var watermark_check := make_check(tr("SETTINGS_CARD_WATERMARK"), GameSettings.card_watermark, GameSettings.set_card_watermark)
+	watermark_check.size_flags_horizontal = SIZE_SHRINK_BEGIN
+	content.add_child(watermark_check)
+	content.add_child(_note(tr("SETTINGS_CARD_WATERMARK_HINT"), IronPlate.TEXT_COLOR))
+	content.add_child(_section(tr("SETTINGS_GAMEPLAY")))
+	# Hard Mode: ohne die Relikte des Easy Mode, der sonst immer gilt (GameSettings.hard_mode)
+	_add_check(content, "SETTINGS_HARD_MODE", GameSettings.hard_mode, GameSettings.set_hard_mode)
+	# Test-Schalter nur in Debug-Builds, im fertigen Spiel bleiben sie aus (GameSettings.has_test_settings)
+	if GameSettings.has_test_settings():
+		_add_check(content, "SETTINGS_ENEMY_LOANS", GameSettings.enemy_loans, GameSettings.set_enemy_loans)
+		_add_check(content, "SETTINGS_DORMANT_SKILLS", GameSettings.dormant_skills, GameSettings.set_dormant_skills)
+		_add_check(content, "SETTINGS_FLYING_CARPET", GameSettings.flying_carpet, GameSettings.set_flying_carpet)
+		_add_check(content, "SETTINGS_RETRY_BATTLE", GameSettings.retry_battle, GameSettings.set_retry_battle)
 	content.add_child(_section(tr("SETTINGS_TUTORIAL")))
-	var tutorial_check := make_check(tr("SETTINGS_TUTORIAL_TOGGLE"), Tutorial.is_enabled(), _on_tutorial_toggled)
-	tutorial_check.size_flags_horizontal = SIZE_SHRINK_BEGIN
-	content.add_child(tutorial_check)
-	content.add_child(_note(tr("SETTINGS_TUTORIAL_HINT"), IronPlate.TEXT_COLOR))
+	# nur in der Ei-Auswahl, nie mitten in einem Lauf (Tutorial.can_start)
+	var can_start := Tutorial.can_start()
+	var tutorial_button := RewardDialog.plate_button(tr("SETTINGS_TUTORIAL_START"))
+	tutorial_button.add_theme_font_size_override("font_size", ROW_FONT_SIZE)
+	tutorial_button.size_flags_horizontal = SIZE_SHRINK_BEGIN
+	tutorial_button.focus_mode = FOCUS_NONE
+	tutorial_button.disabled = not can_start
+	tutorial_button.modulate = Color.WHITE if can_start else UNPICKED_COLOR
+	tutorial_button.mouse_default_cursor_shape = CURSOR_POINTING_HAND if can_start else CURSOR_ARROW
+	tutorial_button.pressed.connect(_on_tutorial_start_pressed)
+	content.add_child(tutorial_button)
+	var hint := "SETTINGS_TUTORIAL_HINT"
+	if Tutorial.run_active:
+		hint = "SETTINGS_TUTORIAL_RUNNING"
+	elif not can_start:
+		hint = "SETTINGS_TUTORIAL_LOCKED"
+	content.add_child(_note(tr(hint), IronPlate.TEXT_COLOR))
+
+## Sprache: je Sprache ein Knopf mit Flagge und ihrem Namen in der eigenen Sprache, die aktive hell mit goldener
+## Schrift. on_pick bekommt die gewählte Sprache. Auch in der Startabfrage des Tutorials (ChoiceDialog with_language).
+static func language_row(on_pick: Callable) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	var buttons := {}
+	for locale: String in GameSettings.LANGUAGES:
+		var button := RewardDialog.plate_button(GameSettings.LANGUAGES[locale])
+		button.add_theme_font_size_override("font_size", ROW_FONT_SIZE)
+		button.custom_minimum_size.x = OPTION_WIDTH
+		button.focus_mode = FOCUS_NONE
+		button.mouse_default_cursor_shape = CURSOR_POINTING_HAND
+		button.icon = LanguageFlag.texture(locale)
+		button.add_theme_constant_override("h_separation", 10)
+		buttons[locale] = button
+		row.add_child(button)
+	var refresh := func():
+		var current := TranslationServer.get_locale().substr(0, 2)
+		for locale: String in buttons:
+			var active := locale == current
+			buttons[locale].modulate = Color.WHITE if active else UNPICKED_COLOR
+			buttons[locale].add_theme_color_override("font_color", SkillDetailPopup.GOLD if active else IronPlate.TEXT_COLOR)
+	for locale: String in buttons:
+		buttons[locale].pressed.connect(func():
+			on_pick.call(locale)
+			refresh.call())
+	refresh.call()
+	return row
+
+## Checkbox mit Erklärung darunter; key ist der Übersetzungsschlüssel, der Hinweis steht unter key + "_HINT"
+func _add_check(content: VBoxContainer, key: String, on: bool, on_toggled: Callable) -> void:
+	var check := make_check(tr(key), on, on_toggled)
+	check.size_flags_horizontal = SIZE_SHRINK_BEGIN
+	content.add_child(check)
+	content.add_child(_note(tr(key + "_HINT"), IronPlate.TEXT_COLOR))
+
+## Nach dem Umschalten lädt die Szene neu, damit alles in der neuen Sprache steht
+func _switch_language(locale: String) -> void:
+	if locale == TranslationServer.get_locale().substr(0, 2):
+		return
+	GameSettings.set_language(locale)
+	# vieles ist beim Aufbau schon übersetzt: Szene neu laden (Startbildschirm bzw. Karte, wie nach jedem Kampf)
+	get_tree().reload_current_scene.call_deferred()
 
 func _option_button(text: String, fullscreen: bool) -> Button:
 	var button := RewardDialog.plate_button(text)
@@ -105,11 +183,12 @@ func _refresh() -> void:
 		button.modulate = Color.WHITE if active else UNPICKED_COLOR
 		button.add_theme_color_override("font_color", SkillDetailPopup.GOLD if active else IronPlate.TEXT_COLOR)
 
-## Eingeschaltet geht es sofort los: der Dialog schließt sich, die Szene startet ihre Sequenz (Tutorial.enabled_changed)
-func _on_tutorial_toggled(on: bool) -> void:
-	if on:
-		close()
-	Tutorial.set_enabled(on)
+## Es geht sofort los: der Dialog schließt sich, die Ei-Auswahl startet neu im Tutorial-Modus
+func _on_tutorial_start_pressed() -> void:
+	if not Tutorial.can_start():
+		return
+	close()
+	Tutorial.start_run()
 
 func _exit_tree() -> void:
 	if GameSettings.changed.is_connected(_refresh):
@@ -117,7 +196,10 @@ func _exit_tree() -> void:
 
 ## Panel fährt von unten hoch
 func _animate_in() -> void:
-	var target_y := _panel.position.y
+	# Ziel aus der Mindestgröße: die scrollbare Liste ist gerade erst auf Fensterhöhe geschrumpft (_fit_scroll),
+	# der CenterContainer hat das Panel womöglich noch nicht neu ausgerichtet
+	_fit_scroll()
+	var target_y := (size.y - _panel.get_combined_minimum_size().y) / 2
 	_panel.position.y = target_y + SLIDE_DISTANCE
 	_panel.modulate.a = 0
 	var tween := create_tween().set_parallel()

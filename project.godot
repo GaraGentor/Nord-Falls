@@ -15,9 +15,11 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="To the north"
-run/main_scene="res://script/scenes/selection/selection.tscn"
+run/main_scene="res://script/scenes/intro/intro.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
-config/icon="res://icon.svg"
+boot_splash/bg_color=Color(0, 0, 0, 1)
+boot_splash/show_image=false
+config/icon="res://assets/mons/20/20_frontx512.png"
 
 [autoload]
 
@@ -36,6 +38,8 @@ Tutorial="*res://script/globals/tutorial.gd"
 ElementEffects="*res://script/globals/element_effects.gd"
 BossRelics="*res://script/globals/boss_relics.gd"
 GameSettings="*res://script/globals/game_settings.gd"
+Items="*res://script/globals/items.gd"
+SceneLoader="*res://script/globals/scene_loader.gd"
 MCPScreenshot="*res://addons/godot_mcp/mcp_screenshot_service.gd"
 MCPInputService="*res://addons/godot_mcp/mcp_input_service.gd"
 MCPGameInspector="*res://addons/godot_mcp/mcp_game_inspector_service.gd"
@@ -45,7 +49,7 @@ MCPGameInspector="*res://addons/godot_mcp/mcp_game_inspector_service.gd"
 window/size/viewport_width=1280
 window/size/viewport_height=720
 window/stretch/mode="canvas_items"
-window/stretch/aspect="expand"
+window/stretch/aspect="keep"
 
 [dotnet]
 
@@ -62,6 +66,7 @@ locale/translations=PackedStringArray("res://localization/translations.en.transl
 [rendering]
 
 textures/vram_compression/import_etc2_astc=true
+environment/defaults/default_clear_color=Color(0, 0, 0, 1)
 
 [shader_globals]
 

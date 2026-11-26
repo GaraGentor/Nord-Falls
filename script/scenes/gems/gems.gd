@@ -12,9 +12,8 @@ const ACCENT := Color(0.2, 0.6, 0.65)
 const STATS := {
 	"hp": {"name": "GEM_HP", "desc": "GEM_HP_DESC", "stat": "STAT_HP", "icon": "res://assets/ui/trophies/lighthouse.svg"},
 	"atk": {"name": "GEM_ATK", "desc": "GEM_ATK_DESC", "stat": "STAT_ATK", "icon": "res://assets/ui/trophies/branch_club.svg"},
-	"def": {"name": "GEM_DEF", "desc": "GEM_DEF_DESC", "stat": "STAT_DEF", "icon": "res://assets/ui/trophies/crystal_hide.svg"},
 	"s_atk": {"name": "GEM_S_ATK", "desc": "GEM_S_ATK_DESC", "stat": "STAT_SPA", "icon": "res://assets/ui/trophies/spark_tail.svg"},
-	"s_def": {"name": "GEM_S_DEF", "desc": "GEM_S_DEF_DESC", "stat": "STAT_SPD", "icon": "res://assets/ui/trophies/mist_veil.svg"},
+	"def": {"name": "GEM_DEF", "desc": "GEM_DEF_DESC", "stat": "STAT_DEF", "icon": "res://assets/ui/trophies/crystal_hide.svg"},
 	"speed": {"name": "GEM_SPEED", "desc": "GEM_SPEED_DESC", "stat": "STAT_SPE", "icon": "res://assets/ui/trophies/storm_feather.svg"},
 }
 
@@ -49,7 +48,8 @@ static func show_gem_info(dialog: RewardDialog) -> void:
 		if target.mon == null:
 			continue
 		# wie im Map-Header: Trophäen-Anteil "(N)" hinter der Zahl, die Trophäen darunter (StatsGrid.show_trophies)
-		target.stats = StatsGrid.stacked_for(target.mon, 15, true)
+		# gleiche Schriftgröße wie bei der Fähigkeiten-Auswahl (skill_reward.gd)
+		target.stats = StatsGrid.stacked_for(target.mon, 24, true)
 		target.box.add_child(target.stats)
 		ignore_mouse_below(target)
 

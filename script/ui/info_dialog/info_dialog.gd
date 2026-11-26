@@ -7,13 +7,15 @@ extends Control
 ## Unterklassen füllen _build(content) und geben über _accent() die Randfarbe an.
 
 const LAYER := 50
-const SECTION_FONT_SIZE := 22
-const ROW_FONT_SIZE := 16
-const NOTE_FONT_SIZE := 15
+const SECTION_FONT_SIZE := 32
+const ROW_FONT_SIZE := 24
+const NOTE_FONT_SIZE := 24
 const NOTE_WIDTH := 640.0
 const STRONG_COLOR := Color(0.55, 0.9, 0.45)
 const WEAK_COLOR := SkillDetailPopup.MISSING_COLOR
 const NEUTRAL_COLOR := Color(0.62, 0.62, 0.58)
+## Abstand des Dialogs zum oberen und unteren Fensterrand zusammen, wenn die Liste scrollt (_scroll_list)
+const SCROLL_SCREEN_MARGIN := 40.0
 
 var _panel: PanelContainer
 
@@ -31,7 +33,14 @@ static func present(host: Node, dialog: InfoDialog) -> InfoDialog:
 	host.add_child(layer)
 	return dialog
 
+const GROUP := "info_dialog"
+
+## Liegt gerade ein Info-Dialog offen? Dann dürfen Klicks darin nichts darunter schließen (Trainer, Laden)
+static func any_open(tree: SceneTree) -> bool:
+	return tree.get_nodes_in_group(GROUP).any(func(node): return not node.is_queued_for_deletion())
+
 func _init() -> void:
+	add_to_group(GROUP)
 	theme = RewardDialog.FONT_THEME
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	mouse_filter = MOUSE_FILTER_STOP
@@ -56,14 +65,21 @@ func _ready() -> void:
 	content.add_theme_constant_override("separation", 14)
 	IronPlate.frame(_panel, content, 28, 22).set_rim(_accent())
 	_build(content)
+	if _has_close_button():
+		content.add_child(_close_button())
+	_animate_in.call_deferred()
 
+## Fragen (ChoiceDialog) bringen eigene Antwort-Knöpfe mit
+func _has_close_button() -> bool:
+	return true
+
+func _close_button() -> Button:
 	var close_button := RewardDialog.plate_button(tr("BIOME_INFO_CLOSE"))
 	close_button.size_flags_horizontal = SIZE_SHRINK_CENTER
 	close_button.focus_mode = FOCUS_NONE
 	close_button.mouse_default_cursor_shape = CURSOR_POINTING_HAND
 	close_button.pressed.connect(close)
-	content.add_child(close_button)
-	_animate_in.call_deferred()
+	return close_button
 
 func _accent() -> Color:
 	return IronPlate.RIM
@@ -88,6 +104,42 @@ func _animate_in() -> void:
 	var tween := create_tween().set_parallel()
 	tween.tween_property(_panel, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(_panel, "modulate:a", 1.0, 0.2)
+
+## Scrollbare Liste in content (alles davor und der Schließen-Button bleiben stehen): so hoch wie ihr Inhalt,
+## höchstens so hoch, dass der ganze Dialog ins Fenster passt. Weiter befüllt wird die zurückgegebene Liste.
+func _scroll_list(content: VBoxContainer) -> VBoxContainer:
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	content.add_child(scroll)
+	DragScroll.attach(scroll)
+	var list := VBoxContainer.new()
+	list.add_theme_constant_override("separation", content.get_theme_constant("separation"))
+	list.size_flags_horizontal = SIZE_EXPAND_FILL
+	scroll.add_child(list)
+	_scroll = scroll
+	_list = list
+	list.minimum_size_changed.connect(_fit_scroll)
+	_fit_scroll.call_deferred()
+	return list
+
+var _scroll: ScrollContainer
+var _list: VBoxContainer
+
+func _fit_scroll() -> void:
+	if not is_inside_tree() or _scroll == null:
+		return
+	var wanted := _list.get_combined_minimum_size()
+	# alles außer der Liste (Titel, Schließen-Button, Ränder) braucht seinen Platz, der Rest gehört der Liste
+	var others := _panel.get_combined_minimum_size().y - _scroll.get_combined_minimum_size().y
+	var max_height := maxf(get_viewport_rect().size.y - others - SCROLL_SCREEN_MARGIN, 120.0)
+	var scrolls := wanted.y > max_height
+	# Platz für die Scroll-Leiste, damit sie nichts überdeckt
+	var bar := _scroll.get_v_scroll_bar().get_combined_minimum_size().x + 8 if scrolls else 0.0
+	_scroll.custom_minimum_size = Vector2(wanted.x + bar, minf(wanted.y, max_height))
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_RESIZED and _list:
+		_fit_scroll()
 
 func _title(text: String, color: Color) -> Label:
 	var title := Label.new()

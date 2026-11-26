@@ -45,6 +45,13 @@ func build_mon_cards() -> void:
 			side[0].add_child(card)
 			card.setup(mon)
 
+## Karte für einen Gegner, der erst mitten im Kampf dazukommt (Endboss-Relikt Buddy)
+func add_mon_card(mon: Monster) -> void:
+	var card: BattleMonCard = MON_CARD.instantiate()
+	enemy_cards.add_child(card)
+	card.setup(mon)
+	_highlight_card()
+
 func _highlight_card() -> void:
 	if enemy_cards == null or own_cards == null:
 		return
@@ -73,13 +80,15 @@ func refresh() -> void:
 	else:
 		_build_skill_list()
 
-## Eigene Werte sind bekannt. Bei Gegnern deckt ein Treffer (Sp.) Verteidigung bzw. (Sp.) Angriff auf
+## Eigene Werte sind bekannt. Bei Gegnern deckt ein Treffer die Verteidigung bzw. den (Sp.) Angriff auf
 ## (Skills.reveal_stats_by_hit), ein Fang der Art alle Werte.
 func _hidden_stats() -> Array:
 	if reveal_all or State.mons.has(monster) or State.is_mon_known(monster._name) or Relics.works("all_stats"):
 		return []
-	var hidden := ["hp", "speed", "bst"]
-	for stat in ["atk", "def", "s_atk", "s_def"]:
+	var hidden := ["speed", "bst"]
+	if not Relics.works("enemy_hp"):
+		hidden.append("hp")
+	for stat in ["atk", "def", "s_atk"]:
 		if not State.is_mon_stat_revealed(monster._name, stat):
 			hidden.append(stat)
 	return hidden
@@ -128,7 +137,10 @@ func _build_egg_skill_overview() -> void:
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		icon.texture = load(category.icon)
-		icon.modulate = color
+		# Kategorie-Symbol in der Art-Farbe (SkillCardPaper.KIND_COLORS), ganz gesperrte Kategorien blasser
+		icon.modulate = SkillCardPaper.KIND_COLORS[category.key]
+		if entry.available.is_empty():
+			icon.modulate.a = 0.55
 		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		row.add_child(icon)
 		var category_label := _label(tr(category.label), color)
@@ -165,7 +177,7 @@ func _show_egg_category_info(category: Dictionary, entry: Dictionary) -> void:
 		group_box.add_child(divider)
 		var group_label := _label(tr(group[0]), EGG_SKILL_COLOR)
 		group_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-		group_label.add_theme_font_size_override("font_size", 15)
+		group_label.add_theme_font_size_override("font_size", 24)
 		group_box.add_child(group_label)
 		for skill_name in group[1]:
 			var skill := Skills.get_skill(skill_name)
@@ -181,7 +193,17 @@ func _show_egg_category_info(category: Dictionary, entry: Dictionary) -> void:
 			skill_label.gui_input.connect(func(event: InputEvent):
 				if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 					_show_egg_skill_detail(skill, entry.hints.get(skill_name, [])))
-			group_box.add_child(skill_label)
+			skill_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			# vorne das Art-Symbol in der Art-Farbe (Schilde zeigen so auch, ob physisch oder magisch)
+			var line := HBoxContainer.new()
+			line.add_theme_constant_override("separation", 6)
+			var kind_icon := SkillCardPaper.kind_icon_rect(skill, 18)
+			kind_icon.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+			if locked:
+				kind_icon.modulate.a = 0.55
+			line.add_child(kind_icon)
+			line.add_child(skill_label)
+			group_box.add_child(line)
 	skill_info_container.skill_name.text = tr(category.label)
 	skill_info_container.skill_name.self_modulate = EGG_SKILL_COLOR
 	skill_info_container.skill_name.add_theme_font_size_override("font_size", SKILL_FONT_SIZE)
@@ -192,10 +214,10 @@ func _show_egg_category_info(category: Dictionary, entry: Dictionary) -> void:
 # ─────────────────────────
 # Details eines Skills im Popup neben dem Panel (SkillDetailPopup): Ei-Attacken der Auswahl und Skills im Kampf.
 
-const EGG_CATEGORY_FONT_SIZE := 20
+const EGG_CATEGORY_FONT_SIZE := 32
 const EGG_GROUP_SEPARATION := 20
 const EGG_DIVIDER_HEIGHT := 2.0
-const SKILL_FONT_SIZE := 18
+const SKILL_FONT_SIZE := 24
 
 var _egg_skill_list: VBoxContainer
 var _detail_popup: SkillDetailPopup
@@ -234,6 +256,7 @@ func _build_skill_list() -> void:
 			icon.tooltip_text = tr("EGG_SKILL_HINT")
 		elif known:
 			icon.texture = Skills.kind_icon(skill)
+			icon.modulate = Helper.color_by_type(skill.nature)
 		skill_grid.add_child(icon)
 
 		# unbekannte Skills verraten Element (Farbe) und Stufe, damit man gezielt Monster jagen kann

@@ -103,6 +103,29 @@ function lambdasToStrings(src, store) {
 		let i = m.index + m[0].length - 1 + args.length;
 		const colon = src.indexOf(":", i);
 		let depth = 0, quote = null, j = colon + 1;
+		// mehrzeiliges Lambda (nach dem Doppelpunkt nichts mehr in der Zeile): alle tiefer eingerückten Folgezeilen,
+		// ein Komma am Ende der letzten gehört schon zum umgebenden Dictionary
+		const lineEnd = src.indexOf("\n", colon);
+		if (lineEnd > -1 && src.slice(colon + 1, lineEnd).trim() === "") {
+			const lineStart = src.lastIndexOf("\n", m.index) + 1;
+			const indent = /^[\t ]*/.exec(src.slice(lineStart))[0].length;
+			let end = lineEnd;
+			while (end < src.length) {
+				const next = src.indexOf("\n", end + 1);
+				const line = src.slice(end + 1, next === -1 ? src.length : next);
+				if (line.trim() !== "" && /^[\t ]*/.exec(line)[0].length <= indent) break;
+				end = next === -1 ? src.length : next;
+			}
+			j = end;
+			while (j > colon && /\s/.test(src[j - 1])) j--;
+			if (src[j - 1] === ",") j--;
+			const text = ("func" + args + src.slice(i, j)).replace(/\s+/g, " ").trim();
+			store.push(text);
+			out += src.slice(last, m.index) + `"@@LAMBDA${store.length - 1}@@"`;
+			last = j;
+			re.lastIndex = j;
+			continue;
+		}
 		for (; j < src.length; j++) {
 			const c = src[j];
 			if (quote) { if (c === "\\") j++; else if (c === quote) quote = null; continue; }
@@ -321,6 +344,16 @@ function collect() {
 	Object.assign(ctx.helpers, bossConsts, { roundi: Math.round });
 	const bossRelics = readVar(bossSrc, "RELICS", "BossRelics") ?? {};
 
+	// One-Way-Items: eigenes Rarity-Enum (wird als Name gelesen), Werte aus den Konstanten der Datei (BAIT_BONUS * 100)
+	const itemsSrc = read("script/globals/items.gd");
+	Object.assign(ctx.enums.Rarity, parseEnum(itemsSrc, "Rarity"));
+	const itemConsts = {};
+	for (const m of stripComments(itemsSrc).matchAll(/^const\s+([A-Z_]+)\s*(?::\s*\w+\s*)?:?=\s*([-\d.]+|"[^"\n]*"|\[[^\]\n]*\])\s*$/gm)) {
+		itemConsts[m[1]] = evalGd(m[2], `Items ${m[1]}`);
+	}
+	Object.assign(ctx.helpers, itemConsts);
+	const items = readVar(itemsSrc, "ITEMS", "Items") ?? {};
+
 	return {
 		enums: ctx.enums,
 		elements: {
@@ -355,10 +388,22 @@ function collect() {
 		bossRelics,
 		bossRelicSettings: {
 			perBattle: bossConsts.RELICS_PER_BATTLE,
+			finalPerBattle: bossConsts.FINAL_RELICS_PER_BATTLE,
+			buddyLevel: (bossSrc.match(/BUDDY_LEVEL\s*:?=\s*Vector2i\((\d+),\s*(\d+)\)/) || []).slice(1).map(Number),
 			rarityWeights: readVar(bossSrc, "BOSS_RARITY_WEIGHTS", "BossRelics") ?? {},
 			wildWeights: readVar(mapSrc, "RARITY_SPAWN_WEIGHTS", "Map") ?? {},
 			unlocks: readVar(mapSrc, "RARITY_UNLOCKS", "Map") ?? {},
 			mythicChance: bossConsts.MYTHIC_BOSS_CHANCE ?? [],
+		},
+		items,
+		itemSettings: {
+			rarityWeights: readVar(itemsSrc, "RARITY_WEIGHTS", "Items") ?? {},
+			bossRarityWeights: readVar(itemsSrc, "BOSS_RARITY_WEIGHTS", "Items") ?? {},
+			treasureRarityWeights: readVar(itemsSrc, "TREASURE_RARITY_WEIGHTS", "Items") ?? {},
+			maxDrops: itemConsts.MAX_DROPS_PER_BATTLE,
+			slotsPerMon: itemConsts.SLOTS_PER_MON,
+			shopAssortment: itemConsts.SHOP_ASSORTMENT,
+			shopPrice: itemConsts.SHOP_PRICE,
 		},
 		gems: {
 			stats: readVar(gemsSrc, "STATS", "Gems") ?? {},
@@ -401,7 +446,7 @@ function build() {
 
 	console.log(`Wiki gebaut: ${path.relative(ROOT, path.join(OUT_DIR, "index.html"))}`);
 	console.log(`  ${data.mons.length} Monster, ${data.skills.length} Skills, ${Object.keys(data.relics).length} Relikte, ` +
-		`${Object.keys(data.bossRelics).length} Boss-Relikte, ` +
+		`${Object.keys(data.bossRelics).length} Boss-Relikte, ${Object.keys(data.items).length} Items, ` +
 		`${Object.keys(data.gems.stats).length} Trophäen, ${data.elements.combos.length} Elemente`);
 	for (const w of warnings) console.warn("  WARNUNG: " + w);
 }

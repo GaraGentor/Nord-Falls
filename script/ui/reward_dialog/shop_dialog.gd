@@ -9,7 +9,7 @@ extends RewardDialog
 ## Gutscheine neben der Tasche, der Stapel lässt sich auf den Verkäufer ziehen
 class CouponStack extends VBoxContainer:
 	const ART_SIZE := Vector2(64, 64)
-	const FONT_SIZE := 18
+	const FONT_SIZE := 24
 
 	var dialog: ShopDialog
 	var _art: Control

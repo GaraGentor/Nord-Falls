@@ -63,4 +63,4 @@ func _enemy_elements() -> Array:
 func _fight() -> void:
 	Map.pending_enemies = _enemies
 	Map.pending_relics = []
-	get_tree().change_scene_to_file(BATTLE_SCENE)
+	SceneLoader.change_scene(BATTLE_SCENE)

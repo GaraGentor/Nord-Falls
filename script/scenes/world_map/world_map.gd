@@ -18,28 +18,48 @@ extends Control
 @export var money_label: Label
 @export var key_label: Label
 @export var coupon_label: Label
-@export var depth_level: Label
-@export var biome_path_label: RichTextLabel
+@export var biome_trail: BiomeTrail
 @export var team_bar: HBoxContainer
 
-@export var heal_camp_scene: PackedScene
-@export var shop_scene: PackedScene
-# gogogo
-@export var jailer_scene: PackedScene
-@export var trainer_scene: PackedScene
-@export var treasure_scene: PackedScene
-
-const RELIC_REWARD_SCENE := preload("res://script/scenes/relic_reward/relic_reward.tscn")
-const GEM_SCENE := preload("res://script/scenes/gems/gems.tscn")
-const SKILL_REWARD_SCENE := preload("res://script/scenes/skill_reward/skill_reward.tscn")
-const WHEEL_EVENT := preload("res://script/scenes/wheel_event/wheel_event.gd")
-const VOID_EVENT := preload("res://script/scenes/void_event/void_event.gd")
-const CONFRONTATION_EVENT := preload("res://script/scenes/confrontation_event/confrontation_event.gd")
-const HUB_CAMP := preload("res://script/scenes/hub_camp/hub_camp.gd")
-const DEBUG_MENU := preload("res://script/scenes/world_map/map_debug_menu.gd")
-const POTION_REWARD := preload("res://script/scenes/potion_reward/potion_reward.gd")
+# Felder, Ereignisse und Dialoge holt sich die Karte erst, wenn sie gebraucht werden (load im Getter). Sie liegen
+# schon seit dem Intro im Speicher (SceneLoader), so kostet die Karte selbst keine Ladezeit für sie.
+var heal_camp_scene: PackedScene:
+	get: return load("res://script/scenes/heal_camp/heal_camp.tscn")
+var shop_scene: PackedScene:
+	get: return load("res://script/scenes/shop/shop.tscn")
+var jailer_scene: PackedScene:
+	get: return load("res://script/scenes/jailer/jailer.tscn")
+var trainer_scene: PackedScene:
+	get: return load("res://script/scenes/trainer/trainer.tscn")
+var treasure_scene: PackedScene:
+	get: return load("res://script/scenes/treasure/treasure.tscn")
+var RELIC_REWARD_SCENE: PackedScene:
+	get: return load("res://script/scenes/relic_reward/relic_reward.tscn")
+var GEM_SCENE: PackedScene:
+	get: return load("res://script/scenes/gems/gems.tscn")
+var SKILL_REWARD_SCENE: PackedScene:
+	get: return load("res://script/scenes/skill_reward/skill_reward.tscn")
+var WHEEL_EVENT: GDScript:
+	get: return load("res://script/scenes/wheel_event/wheel_event.gd")
+var VOID_EVENT: GDScript:
+	get: return load("res://script/scenes/void_event/void_event.gd")
+var CONFRONTATION_EVENT: GDScript:
+	get: return load("res://script/scenes/confrontation_event/confrontation_event.gd")
+var HUB_CAMP: GDScript:
+	get: return load("res://script/scenes/hub_camp/hub_camp.gd")
+## nur in Debug-Builds gebraucht
+var DEBUG_MENU: GDScript:
+	get: return load("res://script/scenes/world_map/map_debug_menu.gd")
+var POTION_REWARD: GDScript:
+	get: return load("res://script/scenes/potion_reward/potion_reward.gd")
+var INVENTORY_DIALOG: GDScript:
+	get: return load("res://script/scenes/world_map/inventory_dialog.gd")
+const BATTLE_SCENE := "res://script/scenes/battle/battle.tscn"
 ## Boss-Felder sind halb so groß wie der Biom-Boss (64 statt 128 px), ihre Relikt-Bahn auch
 const MAP_BOSS_ORBIT_SCALE := 0.55
+## Tutorial: Pfeil über dem nächsten Feld (_point_to_next)
+const TutorialPointerScript = preload("res://script/ui/tutorial/tutorial_pointer.gd")
+var _pointer: Control
 
 @export var view_container: Panel
 
@@ -47,8 +67,11 @@ const MAP_BOSS_ORBIT_SCALE := 0.55
 @onready var map_paper: Control = $HBoxContainer/Panel2/ScrollContainer/MarginContainer/MapPaper
 @onready var map_panel: Control = $HBoxContainer/Panel2
 @onready var desk_background: CanvasItem = $ColorRect
+## Tasche oben links im Header: öffnet und schließt das Inventar
+@onready var bag_icon: TextureRect = $HBoxContainer/Panel/BagIcon
 
 var tweens = []
+var _inventory: Control
 var lines: Array[UILine] = []
 var weather: MapWeather
 # Biom, dessen Aussehen gerade gezeigt wird (weicht nur in der Vorschau mit Taste B vom echten Biom ab)
@@ -93,13 +116,6 @@ func _ready() -> void:
 	Relics.relics_changed.connect(refresh_walkable_nodes)
 
 	show_biome()
-	# Klick auf ein Biom der Route bzw. das aktuelle Biom zeigt seine Stärken und Schwächen
-	biome_path_label.meta_clicked.connect(func(meta): _open_biome_info(int(str(meta))))
-	biome_path_label.tooltip_text = tr("BIOME_INFO_HINT")
-	depth_level.tooltip_text = tr("BIOME_INFO_HINT")
-	depth_level.gui_input.connect(func(event: InputEvent):
-		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-			_open_biome_info(State.map_level))
 	monster_shard_changed(State.boss_shards)
 	change_key_text(State.keys)
 	change_coupon_text(State.coupons)
@@ -119,16 +135,21 @@ func _ready() -> void:
 	if State.killed_monsters >= 1 or State.has_pending_loot():
 		get_tree().change_scene_to_file("res://script/scenes/level_up/level_up.tscn")
 		return 
-	if State.is_boss_fight:
+	# Tutorial: nach dem Biom-Boss baut sich die Karte auf, Reliktkiste und Couvert gehen auf, dann endet das
+	# Tutorial (_tutorial_after_rewards)
+	if State.is_boss_fight and not Tutorial.run_active:
 		_finish_biome()
 		return
 	#Events.map_event_pressed.connect(_call_map_event)
 	if not State.current_map:
-		Map.generate_starting_points()
+		if Tutorial.run_active:
+			Map.generate_tutorial_map()
+		else:
+			Map.generate_starting_points()
 	set_map()
 	apply_biome_look()
 	# Fahrt von oben nach unten nur bei Run-Start oder neuem Biom, sonst direkt an die alte Stelle
-	scroll_container_to_bottom(State.current_map_position == State.NO_MAP_POSITION)
+	var scroll := scroll_container_to_bottom(State.current_map_position == State.NO_MAP_POSITION)
 	map_ui.modulate.a = 1.0
 	if State.current_map_position == State.NO_MAP_POSITION:
 		change_position(Vector3.ZERO, true)
@@ -136,23 +157,97 @@ func _ready() -> void:
 		change_position(State.current_map_position)
 	change_ep_text(State.ep)
 	add_settings_button()
+	add_save_quit_button()
 	# die Boss-Relikte stehen seit dem Betreten des Bioms fest und kreisen um den Boss
 	if not Map.boss_relics.is_empty():
 		boss_button.add_child(BossRelicOrbit.new(Map.boss_relics))
 	if OS.is_debug_build():
 		add_debug_button()
 	show_pending_rewards()
+	_setup_bag_button()
 	team_bar.add_to_group("tut_map_team")
 	$HBoxContainer/Panel/LegendButton.add_to_group("tut_map_legend")
-	Tutorial.enabled_changed.connect(_on_tutorial_enabled_changed)
-	# zu Beginn eines Runs oder direkt nach dem Übungskampf, nie über Belohnungen hinweg
-	if State.current_map_position == State.NO_MAP_POSITION or Tutorial.take_back_from_practice():
+	_add_currency_targets()
+	# zu Beginn eines Runs, nie über Belohnungen hinweg. Erst nach der Fahrt über die Karte: während sie läuft,
+	# wandern Felder und Ziele über den Bildschirm, Trainer und Blase würden ihnen hinterherspringen
+	if State.current_map_position == State.NO_MAP_POSITION and Tutorial.should_show("map"):
+		if scroll:
+			# solange die Fahrt läuft, nimmt die Karte keine Klicks an: sonst wählt man ein Feld vor dem Tutorial
+			var input_block := CanvasLayer.new()
+			input_block.layer = TutorialOverlay.LAYER - 1
+			var catcher := Control.new()
+			catcher.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+			catcher.mouse_filter = Control.MOUSE_FILTER_STOP
+			input_block.add_child(catcher)
+			add_child(input_block)
+			await scroll.finished
+			input_block.queue_free()
 		Tutorial.trigger("map")
 
-## Im Einstellungen-Dialog eingeschaltet: es geht gleich mit dem Übungskampf los, danach erklärt sich die Karte
-func _on_tutorial_enabled_changed(on: bool) -> void:
-	if on and Tutorial.wants_practice():
-		Tutorial.start_practice()
+# ─────────────────────────
+# Inventar (One-Way-Items): die Tasche oben links schaltet es ein und aus. Monster-Details aus dem Header
+# legen sich darüber, beide liegen im view_container.
+
+func _setup_bag_button() -> void:
+	bag_icon.mouse_filter = Control.MOUSE_FILTER_STOP
+	bag_icon.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	bag_icon.tooltip_text = tr("INVENTORY_OPEN")
+	# eigenes Material: der goldene Umriss soll nur diese Tasche treffen
+	bag_icon.material = bag_icon.material.duplicate()
+	bag_icon.gui_input.connect(func(event: InputEvent):
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			toggle_inventory())
+	bag_icon.mouse_entered.connect(func(): RewardDialog.set_outline(bag_icon.material, true))
+	bag_icon.mouse_exited.connect(func(): RewardDialog.set_outline(bag_icon.material, _inventory != null))
+	bag_icon.add_to_group("tut_map_bag")
+	_add_bag_count()
+
+## Anzahl der Items in der Tasche auf der schwarzen Plakette in der Mitte der Tasche (leer: keine Zahl)
+const BAG_PLAQUE_CENTER := Vector2(90, 124)
+const BAG_TEXTURE_SIZE := Vector2(180, 170)
+const BAG_COUNT_SIZE := Vector2(44, 40)
+const BAG_COUNT_FONT_SIZE := 32
+
+func _add_bag_count() -> void:
+	var count_label := Label.new()
+	count_label.add_theme_font_override("font", OpenBag.PIXEL_FONT)
+	count_label.add_theme_font_size_override("font_size", BAG_COUNT_FONT_SIZE)
+	count_label.add_theme_color_override("font_color", SkillDetailPopup.GOLD)
+	count_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	count_label.add_theme_constant_override("outline_size", 4)
+	count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	count_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	count_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	count_label.size = BAG_COUNT_SIZE
+	# eigenes Material des Icons nicht erben (der Umriss würde sonst auch die Zahl umranden)
+	count_label.use_parent_material = false
+	bag_icon.add_child(count_label)
+	var place := func():
+		# das Bild sitzt mit Seitenverhältnis mittig im TextureRect
+		var factor := minf(bag_icon.size.x / BAG_TEXTURE_SIZE.x, bag_icon.size.y / BAG_TEXTURE_SIZE.y)
+		var offset := (bag_icon.size - BAG_TEXTURE_SIZE * factor) / 2
+		count_label.position = offset + BAG_PLAQUE_CENTER * factor - BAG_COUNT_SIZE / 2
+	bag_icon.resized.connect(place)
+	place.call()
+	var refresh := func():
+		var count := Items.bag_count()
+		count_label.text = str(count) if count > 0 else ""
+	Items.items_changed.connect(refresh)
+	tree_exiting.connect(func(): Items.items_changed.disconnect(refresh))
+	refresh.call()
+
+func toggle_inventory() -> void:
+	if _inventory:
+		_inventory.queue_free()
+		return
+	_inventory = INVENTORY_DIALOG.new()
+	_inventory.tree_exiting.connect(func():
+		_inventory = null
+		RewardDialog.set_outline(bag_icon.material, false))
+	view_container.add_child(_inventory)
+	# offene Monster-Details bleiben obenauf
+	view_container.move_child(_inventory, 0)
+	RewardDialog.set_outline(bag_icon.material, true)
 
 # Zahnrad im Header direkt links neben dem Legenden-Button, gleich groß wie dieser
 func add_settings_button() -> void:
@@ -164,14 +259,42 @@ func add_settings_button() -> void:
 	button.offset_bottom = -16.0
 	$HBoxContainer/Panel.add_child(button)
 
-# Nur in Debug-Builds: links neben dem Einstellungen-Button im Header
+const DOOR_ICON := preload("res://assets/ui/icons/door.svg")
+
+# Tür im Header links neben dem Zahnrad, gleich groß: Speichern und Beenden (RunSave). Nicht im Tutorial-Lauf.
+func add_save_quit_button() -> void:
+	if not RunSave.can_save():
+		return
+	var button := SettingsDialog.make_button(self)
+	button.icon = DOOR_ICON
+	button.tooltip_text = "MAP_SAVE_QUIT"
+	# make_button öffnet die Einstellungen: diese Verbindung durch die Abfrage ersetzen
+	for connection in button.pressed.get_connections():
+		button.pressed.disconnect(connection.callable)
+	button.pressed.connect(_ask_save_quit)
+	button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	button.offset_left = -200.0
+	button.offset_top = -72.0
+	button.offset_right = -144.0
+	button.offset_bottom = -16.0
+	$HBoxContainer/Panel.add_child(button)
+
+## Speichern und Beenden oder Abbrechen
+func _ask_save_quit() -> void:
+	var dialog := ChoiceDialog.ask(self, "MAP_SAVE_QUIT_TITLE", "MAP_SAVE_QUIT_TEXT", "MAP_SAVE_QUIT_YES", "MAP_SAVE_QUIT_NO")
+	if not await dialog.chosen:
+		return
+	if RunSave.save():
+		get_tree().quit()
+
+# Nur in Debug-Builds: links neben der Tür im Header
 func add_debug_button() -> void:
 	var button := RewardDialog.plate_button("DEBUG")
-	button.add_theme_font_size_override("font_size", 16)
+	button.add_theme_font_size_override("font_size", 24)
 	button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-	button.offset_left = -236.0
+	button.offset_left = -300.0
 	button.offset_top = -60.0
-	button.offset_right = -144.0
+	button.offset_right = -208.0
 	button.offset_bottom = -16.0
 	button.pressed.connect(func():
 		var menu = DEBUG_MENU.new()
@@ -183,8 +306,6 @@ func add_debug_button() -> void:
 #	Events.map_event_pressed.disconnect(_call_map_event)
 
 func _exit_tree() -> void:
-	if Tutorial.enabled_changed.is_connected(_on_tutorial_enabled_changed):
-		Tutorial.enabled_changed.disconnect(_on_tutorial_enabled_changed)
 	State.ep_changed.disconnect(change_ep_text)
 	State.boss_shards_changed.disconnect(monster_shard_changed)
 	State.keys_changed.disconnect(change_key_text)
@@ -280,7 +401,7 @@ func make_enemy_badge() -> Label:
 	var badge := Label.new()
 	badge.name = ENEMY_BADGE_NAME
 	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	badge.add_theme_font_size_override("font_size", 28)
+	badge.add_theme_font_size_override("font_size", 40)
 	badge.add_theme_color_override("font_color", SkillDetailPopup.GOLD)
 	badge.add_theme_color_override("font_outline_color", Color.BLACK)
 	badge.add_theme_constant_override("outline_size", 8)
@@ -329,48 +450,58 @@ func _on_button_pressed() -> void:
 func _call_map_event(map_node) -> void:
 	if map_node._pos.y == State.map_progress_level:
 		print("same level, go!")
-		get_tree().change_scene_to_file("res://script/scenes/battle/battle.tscn")
+		SceneLoader.change_scene(BATTLE_SCENE)
 
-func scroll_container_to_bottom(animate := true) -> void:
+## Fahrt zur aktuellen Reihe; mit animate kommt der Tween zurück (sonst null)
+func scroll_container_to_bottom(animate := true) -> Tween:
 	var cur_pos = State.current_map_position
 	var map_height = grid_container.get_child_count() / grid_container.columns
 	var damn_bro = scroll_container.get_v_scroll_bar().max_value - scroll_container.size.y
 	var scroll_pos = damn_bro - ((damn_bro / map_height) * cur_pos.y)
 	if not animate:
 		scroll_container.scroll_vertical = int(scroll_pos)
-		return
-	var tween = get_tree().create_tween()
+		return null
+	# an die Karte gebunden: verlässt man sie vorher, endet die Fahrt mit ihr
+	var tween = create_tween()
 	tween.tween_property(
 		scroll_container, "scroll_vertical",
 		scroll_pos, map_height * .1 + 1
 	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	return tween
 
 func call_map_event(path_type) -> void:
 	if path_type:
 		if State.current_map_position == State.NO_MAP_POSITION and path_type._pos.y == 0:
 			Map.pending_enemies = path_type._enemies
 			Map.pending_relics = path_type._boss_relics
+			Map.pending_ref_half = Map.ref_half_for_row(int(path_type._pos.y))
 			call_event_by_type(path_type._type)
 			State.current_map_position = path_type._pos
 			#reset_animation_state(path_type)
+			return
 		if can_walk_to(path_type, State.current_map_position):
 			Map.pending_enemies = path_type._enemies
 			Map.pending_relics = path_type._boss_relics
+			# auch für Auseinandersetzungen auf Event-Feldern
+			Map.pending_ref_half = Map.ref_half_for_row(int(path_type._pos.y))
 			call_event_by_type(path_type._type)
 			State.current_map_position = path_type._pos
 			#reset_animation_state(path_type)
 
-## Immer nur eine Reihe weiter, die Lane darf nur der Fliegende Teppich wechseln
+## Immer nur eine Reihe weiter, die Lane darf nur der Fliegende Teppich wechseln.
+## Debug-Menü "JEDES FELD": jedes Feld der Karte ist betretbar, auch zurück und quer.
 func can_walk_to(node, pos: Vector3) -> bool:
+	if DebugSettings.free_walk_enabled():
+		return true
 	return node._pos.y == pos.y + 1 and (node._pos.z == pos.z or Relics.works("flying_carpet"))
 
 func call_event_by_type(type) -> void:
 	if type == Map.PATH_TYPE.COMBAT:
-		get_tree().change_scene_to_file("res://script/scenes/battle/battle.tscn")
+		SceneLoader.change_scene(BATTLE_SCENE)
 		pass
 	if type == Map.PATH_TYPE.BOSS:
 		State.is_map_boss = true
-		get_tree().change_scene_to_file("res://script/scenes/battle/battle.tscn")
+		SceneLoader.change_scene(BATTLE_SCENE)
 	if type == Map.PATH_TYPE.CAMP:
 		open_heal_camp()
 	if type == Map.PATH_TYPE.HUB:
@@ -405,7 +536,8 @@ func call_event_by_type(type) -> void:
 
 # EVENT-Feld: welches Ereignis kommt, wird über Map.event_chances ausgewürfelt
 func call_random_event() -> void:
-	var event = Map.roll_event()
+	# Tutorial: immer das Glücksrad (Variante "Ewiges Pech", wheel_event.gd)
+	var event = Map.EVENT_TYPE.WHEEL if Tutorial.run_active else Map.roll_event()
 	print("random event", event)
 	match event:
 		Map.EVENT_TYPE.CAMP:
@@ -434,12 +566,16 @@ func open_heal_camp() -> void:
 
 func _on_boss_button_pressed() -> void:
 	if State.current_map.size() > 0:
-		if State.current_map_position.y + 1 == State.current_map[0].size():
+		if State.current_map_position.y + 1 == State.current_map[0].size() or DebugSettings.free_walk_enabled():
 			start_biome_boss()
 
 ## Biom-Boss besiegt und Beute abgehandelt: weiter ins nächste Biom, nach dem letzten endet der Run mit einem Sieg.
 ## Boss-Felder auf der Karte zählen nicht für die Meilensteine und die Faule-Eier-Ladung.
 func _finish_biome() -> void:
+	# Tutorial: der Biom-Boss ist das letzte Feld, danach endet das Tutorial
+	if Tutorial.run_active:
+		Tutorial.finish()
+		return
 	State.is_boss_fight = false
 	SaveManager.add_reroll_charge()
 	State.map_level += 1
@@ -448,6 +584,8 @@ func _finish_biome() -> void:
 		State.run_flawless_bosses += 1
 	Skills.check_milestones()
 	State.biome_fight_index = 0
+	# die Referenzstufe läuft über die Biome weiter: alle möglichen K.O.s des besten Pfads samt Biom-Boss
+	State.level_ref_half += Map.biome_ref_kills
 	if State.map_level == Map.map_settings.size():
 		State.end_run(true)
 		get_tree().change_scene_to_file("res://script/scenes/run_end/run_end.tscn")
@@ -461,7 +599,7 @@ func start_biome_boss() -> void:
 	Map.pending_relics = Map.boss_relics
 	if State.map_level == Map.map_settings.size() - 1:
 		State.is_final_boss = true
-	get_tree().change_scene_to_file("res://script/scenes/battle/battle.tscn")
+	SceneLoader.change_scene(BATTLE_SCENE)
 	State.current_map_position = State.NO_MAP_POSITION
 
 func change_position(pos, initial = false) -> void:
@@ -489,6 +627,50 @@ func change_position(pos, initial = false) -> void:
 			tween.tween_property(ub, "scale", Vector2(1, 1), 3)
 			tweens.append(tween)
 			ub.modulate = Color.WHITE
+	_point_to_next(possible_walkable_nodes, pos)
+
+## Vorräte oben im Header (Symbol + Zahl) für das Tutorial; nach dem ersten Schlüssel (Glücksrad, Feld 3) werden sie
+## erklärt, sobald kein Dialog mehr über der Karte liegt
+func _add_currency_targets() -> void:
+	for pair in [["map_cur_essence", money_label, "EssenceIcon"], ["map_cur_tears", boss_shard_label, "ShardIcon"],
+			["map_cur_keys", key_label, "KeyIcon"], ["map_cur_coupons", coupon_label, "CouponIcon"]]:
+		var label: Label = pair[1]
+		for node: Control in [label.get_parent().get_node(pair[2]), label]:
+			node.add_to_group("tut_" + pair[0])
+			node.add_to_group("tut_map_currencies")
+	if not Tutorial.should_show("currencies"):
+		return
+	view_container.child_exiting_tree.connect(func(_child): _tutorial_currencies.call_deferred())
+
+func _tutorial_currencies() -> void:
+	if State.keys <= 0 or not Tutorial.should_show("currencies") or Tutorial.is_running():
+		return
+	if view_container.get_children().any(func(child): return not child.is_queued_for_deletion() and child.visible):
+		return
+	Tutorial.trigger("currencies")
+
+## Tutorial-Lauf: ein Pfeil zeigt immer auf das nächste Feld (nach dem letzten Feld auf den Biom-Boss),
+## damit nach einer Erklärung niemand rätselt, wohin es weitergeht
+func _point_to_next(walkable: Array, pos: Vector3) -> void:
+	if is_instance_valid(_pointer):
+		_pointer.queue_free()
+	_pointer = null
+	if not Tutorial.run_active:
+		return
+	var target: Control = null
+	for node in walkable:
+		if node._ui_item:
+			target = node._ui_item
+			break
+	if target == null and State.current_map.size() > 0 and pos.y + 1 == State.current_map[0].size():
+		target = boss_button
+	if target:
+		_pointer = TutorialPointerScript.new()
+		# Shop, Lager, Schatz, Inventar & Co. liegen im view_container über der Karte
+		_pointer.covered = func() -> bool:
+			return view_container.get_children().any(
+				func(child): return not child.is_queued_for_deletion() and child.visible)
+		target.add_child(_pointer)
 
 ## Kommt der Fliegende Teppich auf der Karte dazu oder geht er (Shop, Void), ändern sich die begehbaren Felder.
 ## Vor dem ersten Feld ist ohnehin die ganze erste Reihe frei.
@@ -570,32 +752,11 @@ func change_key_text(keys) -> void:
 func change_coupon_text(coupons) -> void:
 	coupon_label.text = str(coupons)
 
-# Name des aktuellen Bioms in seiner Farbe, dazu die Tiefe
-func show_biome(mask := State.current_biome()) -> void:
-	var biome = ColorMap.get_combo(mask)
-	depth_level.text = tr("MAP_HEADER_BIOME").format({"biome": tr(biome.label), "depth": State.map_level + 1})
-	depth_level.add_theme_color_override("font_color", Color(biome.color).lightened(0.4))
-	show_biome_path()
-
-# Alle Biome des Runs als Route: geschaffte blass, das aktuelle hervorgehoben, kommende in ihrer Farbe
-func show_biome_path() -> void:
-	var parts = []
-	var passed := Color(IronPlate.TEXT_COLOR, 0.35).to_html()
-	for depth in State.biome_path.size():
-		var combo = ColorMap.get_combo(State.biome_path[depth])
-		# jedes Biom ist ein Link auf seine Tiefe (siehe _open_biome_info)
-		var text = "[url=%d]%d %s[/url]" % [depth, depth + 1, tr(combo.label)]
-		if depth < State.map_level:
-			parts.append("[color=#%s]%s[/color]" % [passed, text])
-		elif depth == State.map_level:
-			parts.append("[b][u][color=#%s]%s[/color][/u][/b]" % [Color(combo.color).lightened(0.4).to_html(false), text])
-		else:
-			parts.append("[color=#%s]%s[/color]" % [Color(combo.color).lightened(0.2).to_html(false), text])
-	biome_path_label.text = "[color=#%s]%s[/color] %s" % [SkillDetailPopup.GOLD.to_html(false), tr("MAP_HEADER_ROUTE"), (" [color=#%s]›[/color] " % passed).join(parts)]
-
-func _open_biome_info(depth: int) -> void:
-	if depth >= 0 and depth < State.biome_path.size():
-		BiomeInfoDialog.open(self, State.biome_path[depth], depth)
+# Biom-Pfad des Runs im Header: Kästchen pro Biom, das aktuelle umrahmt, darunter "Pfad: <Biom>".
+# Klick darauf öffnet den großen Pfad (BiomePathDialog), von dort jedes Biom mit Stärken und Schwächen.
+# mask bleibt für die Debug-Vorschau (Taste B), der Header zeigt immer den echten Pfad.
+func show_biome(_mask := State.current_biome()) -> void:
+	biome_trail.show_path(State.biome_path, State.map_level)
 
 func reset_animation_state(ele) -> void:
 	ele._ui_item.scale = Vector2(1,1)
@@ -607,15 +768,33 @@ func reset_animation_state(ele) -> void:
 func show_pending_rewards() -> void:
 	var dialog := _next_pending_reward()
 	if dialog == null:
+		_tutorial_after_rewards()
 		return
 	dialog.tree_exited.connect(show_pending_rewards, CONNECT_DEFERRED | CONNECT_ONE_SHOT)
 	view_container.add_child(dialog)
 	dialog.visible = true
 
+## Tutorial, alle Belohnungen erledigt: nach dem Biom-Boss endet das Tutorial (Tutorial.finish),
+## nach dem Schatz (Feld 4) geht das Inventar auf und wird erklärt
+func _tutorial_after_rewards() -> void:
+	if not Tutorial.run_active:
+		return
+	if State.is_boss_fight:
+		State.is_boss_fight = false
+		Tutorial.finish()
+		return
+	if int(State.current_map_position.y) != 3 or not Tutorial.should_show("inventory"):
+		return
+	if State.bag.all(func(item): return item == null):
+		return
+	if not _inventory:
+		toggle_inventory()
+	Tutorial.trigger("inventory")
+
 func _next_pending_reward() -> Control:
 	if State.pending_relic_reward:
 		State.pending_relic_reward = false
-		if not Relics.chest_offers().is_empty():
+		if not Relics.chest_offers(State.relic_chest_rarity).is_empty():
 			return RELIC_REWARD_SCENE.instantiate()
 	if State.pending_skill_reward:
 		State.pending_skill_reward = false

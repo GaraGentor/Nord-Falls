@@ -34,31 +34,32 @@ const MILESTONE_SEED = SEED_ARG ? SEED_ARG.slice(7) : 'meilensteine-1';
 // Daten-Tabellen
 
 const STARTERS = ['2', '4', '5', '82']; // wie State.INITIAL_MONS
-const ORDER = ['atk', 's_atk', 'def', 's_def']; // Gleichstand der Kategorien
-const CAT = { atk: 'PHYS', s_atk: 'MAG', def: 'ARMOR', s_def: 'WARD' };
-const STATNAME = { atk: 'Ang.', s_atk: 'Sp. Ang.', def: 'Vert.', s_def: 'Sp. Vert.', hp: 'KP', speed: 'Init.' };
+// Drei Kategorien: physischer Angriff, magischer Angriff, Schild (es gibt nur noch einen Schild, er blockt beides)
+const ORDER = ['atk', 's_atk', 'def']; // Gleichstand der Kategorien
+const CAT = { atk: 'PHYS', s_atk: 'MAG', def: 'ARMOR' };
+const STATNAME = { atk: 'Ang.', s_atk: 'Sp. Ang.', def: 'Vert.', hp: 'KP', speed: 'Init.' };
 const isAtk = c => c === 'atk' || c === 's_atk';
 
 // Stufe 2 / Stufe 3 pro Grundelement und Kategorie (draft_skills)
 const BASE = {
-  FIRE: { atk: ['FLAME_FIST', 'BLAZE_RUSH'], s_atk: ['SPARK_SHOT', 'FIREBALL'], def: ['CINDER_PLATE', 'FLAME_WALL'], s_def: ['HEAT_VEIL', 'PHOENIX_AURA'] },
-  WATER: { atk: ['TIDE_SLAP', 'BREAKER'], s_atk: ['BUBBLE_BEAM', 'HYDRO_LANCE'], def: ['SHELL', 'CORAL_WALL'], s_def: ['MIST_VEIL', 'TIDAL_DOME'] },
-  EARTH: { atk: ['BOULDER_BASH', 'QUAKE_STOMP'], s_atk: ['PEBBLE_STORM', 'GEO_PULSE'], def: ['STONE_SKIN', 'GRANITE_BASTION'], s_def: ['CLAY_SEAL', 'CRYSTAL_SEAL'] },
-  AIR: { atk: ['GUST_KICK', 'CYCLONE_CLAW'], s_atk: ['WIND_BLADE', 'TEMPEST_RAY'], def: ['DRAFT_GUARD', 'GALE_WALL'], s_def: ['BREEZE_VEIL', 'SKY_DOME'] },
+  FIRE: { atk: ['FLAME_FIST', 'BLAZE_RUSH'], s_atk: ['SPARK_SHOT', 'FIREBALL'], def: ['CINDER_PLATE', 'FLAME_WALL'] },
+  WATER: { atk: ['TIDE_SLAP', 'BREAKER'], s_atk: ['BUBBLE_BEAM', 'HYDRO_LANCE'], def: ['SHELL', 'CORAL_WALL'] },
+  EARTH: { atk: ['BOULDER_BASH', 'QUAKE_STOMP'], s_atk: ['PEBBLE_STORM', 'GEO_PULSE'], def: ['STONE_SKIN', 'GRANITE_BASTION'] },
+  AIR: { atk: ['GUST_KICK', 'CYCLONE_CLAW'], s_atk: ['WIND_BLADE', 'TEMPEST_RAY'], def: ['DRAFT_GUARD', 'GALE_WALL'] },
 };
 // Kombis pro Kategorie [leicht, stark] + Top (Stufe 4).
 // Zweier: leicht = Stufe 2 (CD 1), stark = Stufe 3. Dreier: leicht = Stufe 3 (CD 1), stark = Stufe 3 (CD 3).
 const COMBO = {
-  STEAM: { atk: ['HOT_JAB', 'SCALD_STRIKE'], s_atk: ['VAPOR_PUFF', 'STEAM_JET'], def: ['STEAM_COAT', 'VAPOR_PLATE'], s_def: ['HAZE_SHIELD', 'FOG_BARRIER'], top: 'PHYS_STEAM_HAMMER' },
-  LIGHTNING: { atk: ['SHOCK_TAP', 'VOLT_PUNCH'], s_atk: ['SPARK_BOLT', 'ARC_BOLT'], def: ['CHARGE_PLATE', 'STATIC_PLATE'], s_def: ['ION_VEIL', 'SPARK_FIELD'], top: 'MAG_THUNDERCLAP' },
-  MAGMA: { atk: ['EMBER_KNUCKLE', 'LAVA_FIST'], s_atk: ['LAVA_SPIT', 'MAGMA_BURST'], def: ['PUMICE_SKIN', 'OBSIDIAN_PLATE'], s_def: ['HEAT_SHIMMER', 'EMBER_CRUST'], top: 'PHYS_ERUPTION_SLAM' },
-  ICE: { atk: ['FROST_BITE', 'ICICLE_JAB'], s_atk: ['SNOW_FLURRY', 'FROST_RAY'], def: ['RIME_COAT', 'ICE_PLATE'], s_def: ['SNOW_VEIL', 'FROST_MIRROR'], top: 'MAG_BLIZZARD' },
-  DUST: { atk: ['GRIT_PUNCH', 'SAND_CLAW'], s_atk: ['DUST_SHOT', 'DUST_DEVIL'], def: ['SANDSTONE_SKIN', 'DUNE_WALL'], s_def: ['DUST_CLOAK', 'SAND_VEIL'], top: 'MAG_SANDSTORM' },
-  MUD: { atk: ['MUD_PUNCH', 'MUD_SLAM'], s_atk: ['SLUDGE_SHOT', 'BOG_PULSE'], def: ['MUD_COAT', 'CLAY_SHELL'], s_def: ['PEAT_SEAL', 'SILT_SEAL'], top: 'ARMOR_LANDSLIDE_WALL' },
-  THUNDERSTORM: { atk: ['SQUALL_STRIKE', 'STORM_FIST'], s_atk: ['STATIC_RAIN', 'CHAIN_LIGHTNING'], def: ['RAIN_GUARD', 'STORM_PLATE'], s_def: ['STORM_VEIL', 'CLOUD_DOME'], top: 'MAG_SKYFALL' },
-  VOLCANO: { atk: ['VOLCANIC_FIST', 'CALDERA_CRUSH'], s_atk: ['FUME_BURST', 'PYROCLAST'], def: ['LAVA_CRUST', 'BASALT_FORT'], s_def: ['STEAM_VENT', 'GEYSER_SHIELD'], top: 'PHYS_MAGMA_TITAN' },
-  ASH_STORM: { atk: ['SOOT_STRIKE', 'CINDER_CLAW'], s_atk: ['EMBER_GUST', 'ASH_CYCLONE'], def: ['CINDER_SHELL', 'SLAG_ARMOR'], s_def: ['SMOKE_SCREEN', 'SOOT_VEIL'], top: 'PHYS_ASHEN_ROLLER' },
-  SWAMP: { atk: ['REED_WHIP', 'ROOT_LASH'], s_atk: ['SPORE_PUFF', 'MIASMA_CLOUD'], def: ['MOSS_HIDE', 'MANGROVE_WALL'], s_def: ['BOG_MIST', 'MARSH_MIST'], top: 'MAG_BOG_MAW' },
+  STEAM: { atk: ['HOT_JAB', 'SCALD_STRIKE'], s_atk: ['VAPOR_PUFF', 'STEAM_JET'], def: ['STEAM_COAT', 'VAPOR_PLATE'], top: 'PHYS_STEAM_HAMMER' },
+  LIGHTNING: { atk: ['SHOCK_TAP', 'VOLT_PUNCH'], s_atk: ['SPARK_BOLT', 'ARC_BOLT'], def: ['CHARGE_PLATE', 'STATIC_PLATE'], top: 'MAG_THUNDERCLAP' },
+  MAGMA: { atk: ['EMBER_KNUCKLE', 'LAVA_FIST'], s_atk: ['LAVA_SPIT', 'MAGMA_BURST'], def: ['PUMICE_SKIN', 'OBSIDIAN_PLATE'], top: 'PHYS_ERUPTION_SLAM' },
+  ICE: { atk: ['FROST_BITE', 'ICICLE_JAB'], s_atk: ['SNOW_FLURRY', 'FROST_RAY'], def: ['RIME_COAT', 'ICE_PLATE'], top: 'MAG_BLIZZARD' },
+  DUST: { atk: ['GRIT_PUNCH', 'SAND_CLAW'], s_atk: ['DUST_SHOT', 'DUST_DEVIL'], def: ['SANDSTONE_SKIN', 'DUNE_WALL'], top: 'MAG_SANDSTORM' },
+  MUD: { atk: ['MUD_PUNCH', 'MUD_SLAM'], s_atk: ['SLUDGE_SHOT', 'BOG_PULSE'], def: ['MUD_COAT', 'CLAY_SHELL'], top: 'ARMOR_LANDSLIDE_WALL' },
+  THUNDERSTORM: { atk: ['SQUALL_STRIKE', 'STORM_FIST'], s_atk: ['STATIC_RAIN', 'CHAIN_LIGHTNING'], def: ['RAIN_GUARD', 'STORM_PLATE'], top: 'MAG_SKYFALL' },
+  VOLCANO: { atk: ['VOLCANIC_FIST', 'CALDERA_CRUSH'], s_atk: ['FUME_BURST', 'PYROCLAST'], def: ['LAVA_CRUST', 'BASALT_FORT'], top: 'PHYS_MAGMA_TITAN' },
+  ASH_STORM: { atk: ['SOOT_STRIKE', 'CINDER_CLAW'], s_atk: ['EMBER_GUST', 'ASH_CYCLONE'], def: ['CINDER_SHELL', 'SLAG_ARMOR'], top: 'PHYS_ASHEN_ROLLER' },
+  SWAMP: { atk: ['REED_WHIP', 'ROOT_LASH'], s_atk: ['SPORE_PUFF', 'MIASMA_CLOUD'], def: ['MOSS_HIDE', 'MANGROVE_WALL'], top: 'MAG_BOG_MAW' },
 };
 // Elemente -> Kombi-Name (für affinity in monmap.gd)
 const COMBO_ELEMENTS = {
@@ -70,33 +71,33 @@ const comboOf = elements => {
   const hit = Object.entries(COMBO_ELEMENTS).find(([, els]) => [...els].sort().join('|') === key);
   return hit ? hit[0] : null;
 };
-const ELEM_PASSIVE = { FIRE: 'element_power (Feuer-Angriffe +10 %)', AIR: 'magic_power (magische Angriffe +10 %)', EARTH: 'shield_power (Rüstung +10 %)', WATER: 's_shield_power (Magie-Schilde +10 %)' };
+const ELEM_PASSIVE = { FIRE: 'element_power (Feuer-Angriffe +10 %)', AIR: 'magic_power (magische Angriffe +10 %)', EARTH: 'shield_power (Schilde +10 %)', WATER: 'regen (4 % der max. KP zu Beginn jedes eigenen Zuges)' };
 
 // Meilensteine (Schlüssel wie Skills.MILESTONES in skills.gd). Pro Art drei Plätze, pro Platz wird eine Bedingung
 // gewürfelt [Schlüssel, Gewicht]. Alles gilt innerhalb EINES Runs mit der Art als Start-Monster.
-// Standard: Gewöhnlich/Ungewöhnlich Boss 1 + Boss 3, ab Selten Boss 2 + Boss 4, dritter Platz Chaos
+// Standard: Gewöhnlich/Ungewöhnlich Boss 1 + Boss 3, ab Selten Boss 2 + Boss 4, dritter Platz Dreier-Kombi
 // (bei Gewöhnlich/Ungewöhnlich manchmal nur "ein neues Element"). Den Endboss gibt es als Meilenstein nicht mehr.
 const MILESTONE_SLOTS = {
   low: [
     [['boss_1', 55], ['kills_5', 25], ['finisher_1', 20]],
     [['boss_3', 50], ['kills_10', 15], ['flawless_2', 15], ['bounty', 10], ['finisher_2', 10]],
-    [['chaos', 60], ['new_element', 40]],
+    [['triple', 60], ['new_element', 40]],
   ],
   high: [
     [['boss_2', 50], ['kills_8', 20], ['flawless_1', 15], ['finisher_2', 15]],
     [['boss_4', 50], ['kills_15', 15], ['flawless_3', 10], ['bounty', 15], ['finisher_3', 10]],
-    [['chaos', 100]],
+    [['triple', 100]],
   ],
 };
 // Schwierigkeit: die drei Meilenstein-Skills (schwach -> stark) gehen in dieser Reihenfolge an die Bedingungen
 const MILESTONE_DIFFICULTY = {
   boss_1: 1, finisher_1: 1.5, kills_5: 2, flawless_1: 2, new_element: 2, boss_2: 2, finisher_2: 2.5, kills_8: 2.5,
-  boss_3: 3, flawless_2: 3, kills_10: 3, bounty: 3.5, finisher_3: 3.5, boss_4: 4, kills_15: 4, flawless_3: 4, chaos: 5,
+  boss_3: 3, flawless_2: 3, kills_10: 3, bounty: 3.5, finisher_3: 3.5, boss_4: 4, kills_15: 4, flawless_3: 4, triple: 5,
 };
 const MILESTONE_LABEL = {
   boss_1: 'Boss 1', boss_2: 'Boss 2', boss_3: 'Boss 3', boss_4: 'Boss 4', flawless_1: 'Boss 1 ohne K.O.', flawless_2: 'Boss 2 ohne K.O.',
   flawless_3: 'Boss 3 ohne K.O.', finisher_1: '1x letzter Boss-Treffer', finisher_2: '2x letzter Boss-Treffer', finisher_3: '3x letzter Boss-Treffer',
-  kills_5: '5 K.O.s', kills_8: '8 K.O.s', kills_10: '10 K.O.s', kills_15: '15 K.O.s', bounty: 'Kopfgeld', new_element: 'neues Element', chaos: 'Chaos',
+  kills_5: '5 K.O.s', kills_8: '8 K.O.s', kills_10: '10 K.O.s', kills_15: '15 K.O.s', bounty: 'Kopfgeld', new_element: 'neues Element', triple: 'Dreier-Kombi',
 };
 // kleiner Zufallsgenerator mit Seed (xmur3 + mulberry32), damit jeder Lauf gleich würfelt
 function rng(seedText) {
@@ -184,13 +185,47 @@ const t1 = {
 const lightOf = (el, c) => isAtk(c) ? t1.strike(el, c) : t1.shield(el, c);
 const weakOf = (el, c) => isAtk(c) ? t1.weakForm(el, c) : t1.plain(el, c);
 
-const buffT2 = (el, st) => planned(`SKILL_${el}_BUFF_${st.toUpperCase()}`, `Stufe 2, Buff: ein eigenes Monster ${STATNAME[st]} +25 % für 2 Züge, CD 2, 1 Aktion`);
-const buffT3 = (el, st) => (el === 'FIRE' && st === 'atk') ? 'SKILL_FIRE_BOON_FOCUS_FLAME'
-  : el === 'AIR' ? 'SKILL_AIR_BOON_TAILWIND'
-  : (el === 'WATER' && isAtk(st)) ? 'SKILL_WATER_BOON_BLOOD_TIDE'
-  : planned(`SKILL_${el}_BUFF_TEAM_${st.toUpperCase()}`, `Stufe 3, Buff: ganzes Team ${STATNAME[st]} +12 % für 2 Züge, CD 3, 1 Aktion`);
-const buffT4 = co => co === 'LIGHTNING' ? 'SKILL_LIGHTNING_BOON_OVERCHARGE'
-  : planned(`SKILL_${co}_BUFF_T4`, 'Stufe 4, Kombi-Buff: Team +15-18 % oder Einzel +35 % für 3 Züge (nach Kombi-Thema), CD 3, 2 Aktionen, "trainer": false');
+// Buffs (todo.txt, Stand Nov. 2026). Kleine Buffs +25 % (Stufe 2) und Team-Buffs +12 % (Stufe 3) bleiben, kosten 0 Aktionen.
+// Neu: feste Buffs pro Grundelement (Schild-Bonus für Verteidiger, Schadens-Bonus für Angreifer), Element-Buffs für ein
+// verbündetes Monster (Feuer Glut Hitze, Erde Zusatz Keule, Luft Rückenwind) und universelle Buffs (Element Chaos, für alle).
+// Fehlt der 25 %-Buff für einen Wert (Feuer hat keinen Vert.-Buff), springt der feste Stufe-2-Buff ein.
+const buffT2 = (el, st) => planned(`SKILL_${el}_BUFF_${st.toUpperCase()}`, `Stufe 2, Buff: ein eigenes Monster ${STATNAME[st]} +25 % für 2 Züge, CD 2, 0 Aktionen`,
+  fixedT2(el, st));
+// fest: Stufe 1 Doppelter Schild (+8 auf Schilde) / Kampfgeist (+5 Schaden), Stufe 2 Extra Schild (+12) / Kampfrausch (+8)
+const fixedT1 = (el, st) => st === 'def' ? `SKILL_${el}_BUFF_DOUBLE_SHIELD` : `SKILL_${el}_BUFF_FIGHTING_SPIRIT`;
+// Weitere schwache feste Buffs (Stufe 1, 5-9 Schaden bzw. Schild). Ungewöhnliche Arten bekommen sie der Reihe nach
+// (nach Element und Angreifer/Verteidiger), damit nicht jede Art Kampfgeist bzw. Doppelter Schild hat.
+const WEAK_BUFFS = {
+  atk: { FIRE: ['SPARK_STRIKE'], WATER: ['CURRENT'], EARTH: ['MOMENTUM'], AIR: ['GUST', 'UPDRAFT'] },
+  def: { FIRE: ['HEAT_VEIL'], WATER: ['WAVE_SHIELD'], EARTH: ['STONE_SKIN'], AIR: ['WIND_MANTLE'] },
+};
+const weakBuff = (mon, el, st) => {
+  const side = isAtk(st) ? 'atk' : 'def';
+  const extra = (WEAK_BUFFS[side][el] || []).map(n => `SKILL_${el}_BUFF_${n}`);
+  // Verteidiger gibt es pro Element meist nur einen: der neue Schild-Buff zuerst, sonst bliebe er unbenutzt
+  const options = (side === 'def' ? [...extra, fixedT1(el, st)] : [fixedT1(el, st), ...extra]).filter(exists);
+  const peers = mons.filter(m => m.rarity === mon.rarity && m.type === el && isAtk(categories(m.ps)[0]) === isAtk(st));
+  return options[Math.max(peers.indexOf(mon), 0) % options.length] || fixedT1(el, st);
+};
+const fixedT2 = (el, st) => st === 'def' ? `SKILL_${el}_BUFF_EXTRA_SHIELD` : `SKILL_${el}_BUFF_BATTLE_FRENZY`;
+// Element-Buff für einen Verbündeten (Stufe 2, CD 1, 0 Aktionen), Wasser hat keinen: dann der feste Stufe-2-Buff
+const ALLY_BUFF = { FIRE: 'SKILL_FIRE_BUFF_EMBER_HEAT', EARTH: 'SKILL_EARTH_BUFF_EXTRA_CLUB', AIR: 'SKILL_AIR_BUFF_TAILWIND' };
+const allyBuff = (el, st) => ALLY_BUFF[el] || fixedT2(el, st);
+// Stufe 3: Team-Buff +12 %, wenn es ihn für den Wert gibt, sonst universell: Verteidiger Starker Schild, Angreifer Mut & Wille
+const buffT3 = (el, st) => exists(`SKILL_${el}_BUFF_TEAM_${st.toUpperCase()}`) ? `SKILL_${el}_BUFF_TEAM_${st.toUpperCase()}`
+  : st === 'def' ? 'SKILL_CHAOS_BUFF_STRONG_SHIELD' : 'SKILL_CHAOS_BOON_COURAGE';
+// Stufe 4 (universell, ersetzt die alten Kombi-Buffs): nach K1, mythische Schläger bekommen Respekt Schelle
+const buffT4 = (st, rarity) => st === 'def' ? 'SKILL_CHAOS_BUFF_GOLDEN_SHIELD' : st === 's_atk' ? 'SKILL_CHAOS_BUFF_YIN_YANG'
+  : rarity === 'MYTHIC' ? 'SKILL_CHAOS_BOON_RESPECT_SLAP' : 'SKILL_CHAOS_BUFF_BUDDHA_FIST';
+// Dreier-Passive (Stufe 4) für Mythische, wenn sie zur Art passen (Nachbrennen nur für Schläger, True Magi nur für Magier)
+const triPassive = (tri, cs) => {
+  const physFirst = cs.indexOf('atk') < cs.indexOf('s_atk');
+  if (tri === 'SWAMP') return 'SKILL_PASSIVE_SWAMP_FIELD';
+  if (tri === 'THUNDERSTORM') return 'SKILL_PASSIVE_DENSE_CLOUDS';
+  if (tri === 'ASH_STORM' && physFirst) return 'SKILL_PASSIVE_AFTERBURN';
+  if (tri === 'VOLCANO' && !physFirst) return 'SKILL_PASSIVE_TRUE_MAGI';
+  return null;
+};
 const passiveT3 = el => planned(`SKILL_PASSIVE_${el}_POWER`, `Stufe 3, Passiv ${ELEM_PASSIVE[el]}`);
 const passiveT4 = co => planned(`SKILL_PASSIVE_${co}_T4`, 'Stufe 4, Passiv element_power 15 mit passive_element = Kombi (Angriffe mit allen Elementen der Kombi +15 %), "trainer": false, nur Meilenstein');
 const swift = (el, c) => planned(`SKILL_${el}_${CAT[c]}_${BASE[el][c][1]}_SWIFT`, `Stufe 3, schnelle Variante von ${BASE[el][c][1]}: CD 0, 1 Aktion, ca. 12 + 0,30 (Element-Charakter +)`,
@@ -206,16 +241,17 @@ const categories = ps => [...ORDER].sort((a, b) => (ps[b] - ps[a]) || (ORDER.ind
 // Start-Skills gewöhnlicher Arten (Schema aus dem Kommentar in monmap.gd, nach dem höchsten Kampfwert)
 function commonDefault(el, cs, ps) {
   const k1 = cs[0];
-  if (isAtk(k1)) return [t1.thrust(el, k1), t1.strike(el, k1), t1.weakShield(el, k1 === 'atk' ? 'def' : 's_def')];
+  if (isAtk(k1)) return [t1.thrust(el, k1), t1.strike(el, k1), t1.weakShield(el, 'def')];
+  // Verteidiger: Schild plus je ein schwacher Stoß beider Angriffsarten (der stärkere zuerst)
   const weakAtk = ps.s_atk > ps.atk ? 's_atk' : 'atk';
-  return [t1.weakThrust(el, weakAtk), t1.shield(el, k1), t1.weakShield(el, k1 === 'def' ? 's_def' : 'def')];
+  return [t1.weakThrust(el, weakAtk), t1.shield(el, k1), t1.weakThrust(el, weakAtk === 'atk' ? 's_atk' : 'atk')];
 }
 
 // ─────────────────────────
 // Die Regeln pro Seltenheit (siehe skill_verteilung.txt Teil B)
 
 function plan(mon) {
-  const el = mon.type, cs = categories(mon.ps), [k1, k2, k3, k4] = cs, ba = cs.find(isAtk);
+  const el = mon.type, cs = categories(mon.ps), [k1, k2, k3] = cs, ba = cs.find(isAtk);
   const { co, tri } = mon;
   const p = { cats: cs, def: [], egg: [], ms: {}, problems: [] };
   if (['RARE', 'EPIC', 'LEGENDARY', 'MYTHIC'].includes(mon.rarity) && !co) p.problems.push('"affinity" fehlt in monmap.gd');
@@ -226,31 +262,31 @@ function plan(mon) {
   switch (mon.rarity) {
     case 'COMMON':
       p.def = commonDefault(el, cs, mon.ps);
-      p.egg = [weakOf(el, k4), base(el, k3, 2), base(el, k1, 2)];
+      p.egg = [weakOf(el, k3), base(el, k3, 2), base(el, k1, 2)];
       p.ms = [base(el, k2, 2), base(el, k1, 3), base(el, k2, 3)];
       break;
     case 'UNCOMMON':
       if (isAtk(k1)) p.def = [t1.strong(el, k1), t1.thrust(el, k1), lightOf(el, k2)];
       else p.def = [t1.shield(el, k1), t1.thrust(el, ba), k2 === ba ? t1.strike(el, k2) : lightOf(el, k2)];
-      p.egg = [weakOf(el, k4), base(el, k2, 2), base(el, k1, 3), buffT2(el, k1)];
-      p.ms = [base(el, k3, 2), base(el, k1, 2), base(el, k2, 3)];
+      p.egg = [weakOf(el, k3), base(el, k2, 2), base(el, k1, 3), buffT2(el, k1)];
+      p.ms = [weakBuff(mon, el, k1), base(el, k1, 2), base(el, k2, 3)];
       break;
     case 'RARE':
       p.def = [base(el, k1, 2), isAtk(k2) ? t1.strong(el, k2) : t1.shield(el, k2), t1.small(el, ba)];
-      p.egg = [base(el, k1, 3), base(el, k2, 3), base(el, k3, 2), isAtk(k1) ? buffT2(el, k1) : passiveT3(el)];
+      p.egg = [base(el, k1, 3), base(el, k2, 3), fixedT2(el, k1), isAtk(k1) ? buffT2(el, k1) : passiveT3(el)];
       p.ms = [base(el, k2, 2), combo(co, k2, 0), combo(co, k1, 0)];
       break;
     case 'EPIC':
       p.def = [base(el, k1, 3), base(el, k2, 2), t1.small(el, ba)];
-      p.egg = [base(el, k2, 3), swift(el, k1), base(el, k3, 3), buffT3(el, k1)];
+      p.egg = [base(el, k2, 3), swift(el, k1), allyBuff(el, k1), buffT3(el, k1)];
       p.ms = [combo(co, k2, 0), combo(co, k1, 0), epicPassive(el, co, cs)];
       break;
     case 'LEGENDARY':
     case 'MYTHIC':
       p.def = [base(el, k1, 3), base(el, k2, 3), swift(el, ba)];
-      p.egg = [combo(co, k1, 1), combo(co, k2, 1), mon.rarity === 'MYTHIC' ? top(tri) : top(co), buffT4(co)];
+      p.egg = [combo(co, k1, 1), combo(co, k2, 1), mon.rarity === 'MYTHIC' ? top(tri) : top(co), buffT4(k1, mon.rarity)];
       p.ms = mon.rarity === 'MYTHIC'
-        ? [combo(tri, k1, 1), top(co), passiveT4(co)]
+        ? [combo(tri, k1, 1), top(co), triPassive(tri, cs) || passiveT4(co)]
         : [combo(tri, k1, 0), combo(tri, k1, 1), passiveT4(co)];
       break;
   }
@@ -260,10 +296,10 @@ function plan(mon) {
   // Kopfgeld-Ei-Attacke: der erste Kandidat, den es gibt und den die Art noch nicht hat
   const taken = new Set([...p.def, ...p.egg, ...Object.values(p.ms)]);
   const bountyCandidates = {
-    COMMON: () => [base(el, k3, 3), base(el, k4, 2), base(el, k4, 3)],
-    UNCOMMON: () => [base(el, k3, 3), base(el, k4, 3), base(el, k2, 2)],
-    RARE: () => [combo(co, k3, 0), combo(co, k4, 0), base(el, k4, 3)],
-    EPIC: () => [combo(co, k3, 0), combo(co, k4, 0), base(el, k4, 3)],
+    COMMON: () => [base(el, k3, 3), base(el, k2, 3), base(el, k1, 3)],
+    UNCOMMON: () => [base(el, k3, 3), base(el, k2, 2), base(el, k3, 2)],
+    RARE: () => [combo(co, k3, 0), combo(co, k3, 1), base(el, k3, 3)],
+    EPIC: () => [combo(co, k3, 0), combo(co, k3, 1), base(el, k3, 3)],
     LEGENDARY: () => [combo(tri, k2, 0), combo(tri, k2, 1), combo(co, k3, 1)],
     MYTHIC: () => [combo(tri, k2, 1), combo(tri, k3, 1), combo(co, k3, 1)],
   }[mon.rarity]();
@@ -369,9 +405,12 @@ if (!ONLY_TEXT && !problems.length) {
 //   von keiner Art benutzt, Stufe 1       -> draft_skills
 // starter_skills, standard_skills, bounty_skills und ascension_skills bleiben unberührt.
 
-const MANAGED = ['egg_skills', 'defensive_skills', 'buff_skills', 'passive_skills', 'area_skills', 'milestone_skills', 'bounty_skills', 'reward_skills', 'draft_skills'];
-// Baustein -> [Pool-Liste, Index des Arguments "tier" (null = immer Stufe 1)]
+const MANAGED = ['egg_skills', 'defensive_skills', 'buff_skills', 'passive_skills', 'area_skills', 'debuff_skills', 'milestone_skills', 'bounty_skills', 'reward_skills', 'draft_skills'];
+// Baustein -> [Pool-Liste, Index des Arguments "tier" (null = immer Stufe 1)].
+// Reihenfolge zählt: längere Namen vor den kürzeren, die darin stecken (_flat_buff_skill vor _buff_skill).
 const BUILDERS = {
+  _flat_buff_skill: ['buff_skills', 5], _action_skill: ['buff_skills', 3],
+  _debuff_skill: ['debuff_skills', 7], _status_skill: ['debuff_skills', 6],
   _flat_attack_skill: ['egg_skills', null], _attack_skill: ['egg_skills', 5],
   _flat_shield_skill: ['defensive_skills', null], _shield_skill: ['defensive_skills', 5], _cross_shield_skill: ['defensive_skills', 5],
   _buff_skill: ['buff_skills', 5], _team_buff_skill: ['buff_skills', 5], _boon_skill: ['buff_skills', 7],
@@ -512,7 +551,7 @@ for (const r of Object.keys(RLABEL)) {
     txt += `\n#${mon.id} ${mon.label}  [${RLABEL[r]}, ${mon.type}${STARTERS.includes(mon.id) ? ', Startmonster' : ''}]\n`;
     if (mon.manual) { txt += '  "skills_manual": true - wird von Hand gepflegt, nicht verändert\n'; continue; }
     const p = plans.get(mon.id);
-    txt += `  Werte: KP ${ps.hp} | Ang ${ps.atk} | Vert ${ps.def} | SpAng ${ps.s_atk} | SpVert ${ps.s_def} | Init ${ps.speed}`;
+    txt += `  Werte: KP ${ps.hp} | Ang ${ps.atk} | Vert ${ps.def} | SpAng ${ps.s_atk} | Init ${ps.speed}`;
     txt += `   Reihenfolge: ${p.cats.map(c => STATNAME[c]).join(' > ')}\n`;
     if (mon.co) txt += `  Neben-Element: ${mon.co}${mon.tri ? '   Dreier-Kombi: ' + mon.tri : ''}\n`;
     if (p.problems.length) { txt += `  FEHLER: ${p.problems.join('; ')}\n`; continue; }

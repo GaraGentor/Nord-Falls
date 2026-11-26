@@ -1,12 +1,13 @@
 class_name BattleControls
 extends VBoxContainer
 
-## Knöpfe am rechten Rand des Kampffelds (oben, über der Boss-Relikt-Leiste, gleicher Stil wie BossRelicBar):
+## Spalte unten links im Infobereich, links neben Hypnose und Zugende (gleicher Stil wie BossRelicBar),
+## Lage siehe battle.gd _build_bottom_bar:
 ##   Geschwindigkeit: stellt die Animationen des Kampfs um (1x, 2x, 5x, 10x). Wirkt über Engine.time_scale,
 ##     also auf Tweens, Timer und Animationen gleichermaßen. Linksklick schneller, Rechtsklick langsamer.
 ##   Auto-Zugende: ist es an, endet der eigene Zug von selbst, sobald keine Karte mehr spielbar ist (siehe battle.gd).
-## Beide Einstellungen bleiben für spätere Kämpfe erhalten, außerhalb des Kampfs läuft alles wieder in
-## normaler Geschwindigkeit (siehe _exit_tree).
+## Beide Einstellungen werden in den GameSettings gespeichert (bleiben auch nach Neustart), außerhalb des Kampfs
+## läuft alles wieder in normaler Geschwindigkeit (siehe _exit_tree).
 
 signal auto_end_toggled(enabled: bool)
 
@@ -19,7 +20,7 @@ const BORDER := Color(0.858824, 0.717647, 0.45098)
 const BORDER_HOVER := Color(1.0, 0.92, 0.65)
 const TEXT_COLOR := Color(0.858824, 0.717647, 0.45098)
 const TEXT_OFF := Color(0.55, 0.5, 0.4)
-const FONT_SIZE := 18
+const FONT_SIZE := 24
 const MARGIN := 8
 
 ## gewählte Stufe (Index in SPEEDS), gilt für alle Kämpfe des Spiels
@@ -34,14 +35,9 @@ var _auto_style: StyleBoxFlat
 func _ready() -> void:
 	add_theme_constant_override("separation", 6)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	anchor_left = 1.0
-	anchor_right = 1.0
-	anchor_top = 0.0
-	anchor_bottom = 0.0
-	offset_left = -(SIZE.x + MARGIN)
-	offset_right = -MARGIN
-	offset_top = MARGIN
-	offset_bottom = MARGIN
+	alignment = BoxContainer.ALIGNMENT_CENTER
+	speed_index = clampi(GameSettings.battle_speed_index, 0, SPEEDS.size() - 1)
+	auto_end = GameSettings.battle_auto_end
 	var speed := _slot(tr("BATTLE_SPEED_TOOLTIP"), _on_speed_input)
 	_speed_label = speed.get_child(0)
 	add_child(speed)
@@ -86,12 +82,14 @@ func _on_speed_input(button: int) -> void:
 		speed_index = (speed_index - 1 + SPEEDS.size()) % SPEEDS.size()
 	else:
 		return
+	GameSettings.set_battle_speed_index(speed_index)
 	_apply_speed()
 
 func _on_auto_input(button: int) -> void:
 	if button != MOUSE_BUTTON_LEFT:
 		return
 	auto_end = not auto_end
+	GameSettings.set_battle_auto_end(auto_end)
 	_apply_auto()
 	auto_end_toggled.emit(auto_end)
 

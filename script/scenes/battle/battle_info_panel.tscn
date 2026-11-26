@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://ckihn5boo5krt" path="res://script/scenes/battle/turn_wheel.tscn" id="2_wheel"]
 [ext_resource type="Script" path="res://script/scenes/battle/stats_grid_container.gd" id="4_stats"]
 [ext_resource type="Script" path="res://script/ui/shader/iron_plate.gd" id="15_plate"]
-[ext_resource type="FontFile" uid="uid://cbavibkhidesl" path="res://script/ui/fonts/pxelfont/PixelifySans-VariableFont_wght.ttf" id="5_font"]
+[ext_resource type="FontFile" uid="uid://ywpbdhg1g3f3" path="res://script/ui/fonts/m5x7/m5x7.ttf" id="5_font"]
 [ext_resource type="Script" path="res://script/scenes/battle/skill_info_scroll_container.gd" id="6_skillinfo"]
 [ext_resource type="PackedScene" uid="uid://owmyxu3qq3so" path="res://script/ui/element_chip/element_chip.tscn" id="9_chip"]
 
@@ -77,20 +77,21 @@ custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 size_flags_vertical = 0
 theme_override_constants/separation = 16
-alignment = 1
 
 [node name="NameLabel" type="Label" parent="MarginContainer/VBoxContainer/TypeRow"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("5_font")
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 32
 text = "[NAME]"
 vertical_alignment = 1
 
 [node name="ElementChip" parent="MarginContainer/VBoxContainer/TypeRow" instance=ExtResource("9_chip")]
 layout_mode = 2
+size_flags_horizontal = 0
 
 [node name="RarityChip" parent="MarginContainer/VBoxContainer/TypeRow" instance=ExtResource("9_chip")]
 layout_mode = 2
+size_flags_horizontal = 0
 
 [node name="StatsPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
@@ -122,7 +123,7 @@ visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_fonts/font = ExtResource("5_font")
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 24
 text = "ATK"
 
 [node name="SkillPanel" type="Panel" parent="MarginContainer/VBoxContainer"]

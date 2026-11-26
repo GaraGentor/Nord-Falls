@@ -111,6 +111,8 @@ func init_skills(mon: Monster) -> void:
 			if st == "damage_type":
 				var y = (type_splash if Skills.is_physical(skill) else magic_splash).duplicate(DuplicateFlags.DUPLICATE_USE_INSTANTIATION)
 				y.texture = Skills.kind_icon(skill)
+				if skill.scouted:
+					y.modulate = Helper.color_by_type(skill.nature)
 				y.visible = true
 				grid_container.add_child(y)
 				continue

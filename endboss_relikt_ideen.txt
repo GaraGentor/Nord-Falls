@@ -1,0 +1,45 @@
+Endboss-Relikte – Ideensammlung
+================================
+
+Bisher gut angekommen: Flinkes Wiesel (Boss ist abwechselnd als Erster und als Letzter dran).
+Endboss-Relikte sollten den Kampf spürbar verändern, aber lesbar bleiben (sichtbar in der Relikt-Leiste).
+
+1. Mini-Monster-Spawner (schon in tasks.txt)
+   - Alle 2 Runden erscheint ein Mini-Monster (halbe Stufe, nicht fangbar, immer 1 Aktion),
+     sobald gerade keins da ist oder eins gestorben ist.
+   - Druck: Man muss abwägen zwischen Boss angreifen und Minis wegräumen.
+
+2. Zweite Phase / Wiedergeburt
+   - Fällt der Endboss das erste Mal, steht er mit 50 % KP wieder auf und wechselt sein Element
+     (z. B. auf das Element, gegen das das Team am schwächsten ist).
+   - Visuell: Relikt zerbricht erst nach Phase 2.
+
+3. Element-Rotation
+   - Jede Runde wechselt der Endboss sein Element im Kreis (Wasser > Feuer > Luft > Erde).
+   - Das Rad zeigt das Element der nächsten Runde an, damit man planen kann.
+   - Passt gut zum Relikt "Brutaler Schlag".
+
+4. Fluch-Uhr
+   - Ab Runde 8 bekommt jedes eigene Monster pro Runde wachsenden Schaden (1 %, 2 %, 3 % ... der max. KP).
+   - Verhindert endlos lange Abwehrkämpfe, belohnt Angriffs-Decks.
+
+5. Spiegel-Thron
+   - Der erste Skill, den man pro Runde spielt, wird vom Endboss in seinem Zug kopiert
+     (mit seinen Werten, ohne Ei-Attacken-Passive).
+
+6. Seelenband
+   - Der Endboss ist mit einem Begleiter verbunden: Schaden am Begleiter heilt den Endboss um 50 %.
+     Erst den Begleiter töten oder Schaden direkt auf den Boss bündeln.
+
+7. Gier
+   - Jede verbrauchte Item-Nutzung im Kampf gibt dem Endboss einen Stapel (+5 % Schaden).
+   - Gegenstück zu Item-lastigen Runs.
+
+8. Schattenrad
+   - Die Zugreihenfolge auf dem Rad ist für die nächste Runde verdeckt (nur die aktuelle sichtbar).
+
+9. Stille Krone
+   - Der Endboss ist gegen Debuffs immun, solange er über 50 % KP hat.
+
+10. Letzter Befehl
+   - Unter 25 % KP bekommt der Endboss jede Runde +1 Aktion (stapelt bis max. +2).

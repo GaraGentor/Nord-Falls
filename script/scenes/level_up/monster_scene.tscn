@@ -6,7 +6,7 @@
 [ext_resource type="Material" path="res://script/ui/shader/monster_living_material.tres" id="1_living"]
 [ext_resource type="Texture2D" uid="uid://8stqwlamb4k5" path="res://assets/mons/2/2_front.png" id="2_hngs5"]
 [ext_resource type="Script" path="res://script/scenes/battle/stats_grid_container.gd" id="4_kwyv7"]
-[ext_resource type="FontFile" uid="uid://cbavibkhidesl" path="res://script/ui/fonts/pxelfont/PixelifySans-VariableFont_wght.ttf" id="5_u1j1l"]
+[ext_resource type="FontFile" uid="uid://ywpbdhg1g3f3" path="res://script/ui/fonts/m5x7/m5x7.ttf" id="5_u1j1l"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0gv6h"]
 bg_color = Color(0.05, 0.07, 0.085, 1)
@@ -124,7 +124,7 @@ is_leveling = true
 visible = false
 layout_mode = 2
 theme_override_fonts/font = ExtResource("5_u1j1l")
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 24
 text = "ATK"
 
 [node name="MarginContainer" type="MarginContainer" parent="MarginContainer/Panel/VBoxContainer"]
@@ -187,5 +187,5 @@ theme = ExtResource("1_08c52")
 theme_override_colors/font_color = Color(0.858824, 0.717647, 0.45098, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 8
-theme_override_font_sizes/font_size = 50
+theme_override_font_sizes/font_size = 72
 text = "LEVEL_UP_TITLE"

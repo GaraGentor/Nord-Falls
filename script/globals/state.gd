@@ -23,8 +23,10 @@ var relics: Array[String] = []
 var overall_progress_level := 0
 var map_progress_level := 0
 var map_level := 0
-# normale Kämpfe im aktuellen Biom, bestimmt Stufe und Aktionen der Gegner (siehe Map.ENCOUNTERS)
+# normale Kämpfe im aktuellen Biom, bestimmt die Aktionen der Gegner (siehe Map.ENCOUNTERS)
 var biome_fight_index := 0
+# Referenzstufe beim Betreten des aktuellen Bioms in halben Stufen ab INITIAL_LEVEL (siehe Map._plan_ref_levels)
+var level_ref_half := 0
 # Element-Masken der Biome pro Tiefe, einmal pro Run gewürfelt (siehe Map.generate_biome_path)
 var biome_path: Array[int] = []
 # Monster-Arten, die pro Tiefe wild auftauchen können, zusammen mit biome_path gewürfelt (siehe Map.generate_biome_pools)
@@ -40,7 +42,7 @@ var defeated_mon_names: Array[String] = []
 var caught_mon_names: Array[String] = []
 # Im Kampf durch Treffer aufgedeckte Einzelwerte pro Art: name -> Array der Stat-Keys (siehe Skills.reveal_stats_by_hit)
 var revealed_mon_stats: Dictionary = {}
-# Boss-Relikte, die in diesem Run schon zerbrochen sind: sie kommen nicht noch einmal vor (BossRelics.random_relics)
+# Boss-Relikte, die in diesem Biom schon zerbrochen sind: sie kommen erst wieder, wenn keine anderen frei sind (BossRelics.random_relics)
 var used_boss_relics: Array = []
 
 var is_boss_fight: bool = false
@@ -49,12 +51,18 @@ var is_final_boss: bool = false
 var is_map_boss: bool = false
 # Beute in die Tasche gezogen: beim nächsten Betreten der Karte nacheinander abhandeln (world_map.gd show_pending_rewards)
 var pending_relic_reward: bool = false
+# Seltenheit der Relikt-Kiste (Relics.Rarity): Biom-Boss selten, Boss-Feld gewöhnlich, -1 = alle (Debug)
+var relic_chest_rarity: int = -1
 var pending_skill_reward: bool = false
 var pending_gem_rewards: int = 0
 # Element-Tränke aus einer Schatzkiste (Elemente), fallen nach der Kiste aus der Tasche (potion_reward.gd)
 var pending_potions: Array[int] = []
 # Einzigartige Skills, die in diesem Run schon jemand gelernt hat, sie kommen kein zweites Mal (Skills.reward_offers)
 var taught_reward_skills: Array[String] = []
+# One-Way-Items (Items): Tasche als Raster, null = leerer Platz (Items.normalize_bag). Ausgerüstete stehen an den Monstern.
+var bag: Array = []
+# Items, die es pro Run nur einmal gibt (Todes-Totem) und die schon gefunden wurden
+var found_unique_items: Array = []
 
 # money
 signal ep_changed(ep)
@@ -88,6 +96,8 @@ var coupons: int = 0:
 
 
 var killed_monsters: int = 0
+# davon Bosse (Biom-Boss und Boss-Felder, ohne Buddy-Helfer), für Doppeltes Wachstum (Relics "boss_kill_progress")
+var killed_bosses: int = 0
 # im Kampf verdiente Monster Essenz: liegt auf dem Schlachtfeld, bis sie im Level-Up-Screen in die Tasche gezogen wird
 var pending_ep: int = 0
 # im Kampf gefundene Schlüssel, liegen genauso auf dem Schlachtfeld wie die Essenz
@@ -100,10 +110,13 @@ var pending_relic_chest: bool = false
 var pending_skill_envelope: bool = false
 # nach einem Biom-Boss: Boss Tränen auf dem Schlachtfeld
 var pending_boss_shards: int = 0
+# One-Way-Items auf dem Schlachtfeld: Beute und die Items gefallener eigener Monster
+var pending_items: Array = []
 
 # Liegt noch etwas auf dem Schlachtfeld? Dann führt der Weg zur Karte erst über den Level-Up-Bildschirm.
 func has_pending_loot() -> bool:
-	return pending_ep > 0 or pending_keys > 0 or pending_gems > 0 or pending_coupons > 0 or pending_relic_chest or pending_skill_envelope or pending_boss_shards > 0
+	return pending_ep > 0 or pending_keys > 0 or pending_gems > 0 or pending_coupons > 0 or pending_relic_chest or pending_skill_envelope or pending_boss_shards > 0 \
+		or not pending_items.is_empty()
 
 # Was noch auf dem Schlachtfeld liegt, ist beim Weitergehen weg.
 func clear_pending_loot() -> void:
@@ -114,6 +127,7 @@ func clear_pending_loot() -> void:
 	pending_relic_chest = false
 	pending_skill_envelope = false
 	pending_boss_shards = 0
+	pending_items = []
 
 # Run-Statistik für den Endbildschirm (run_end.gd). killed_monsters wird beim Level-Up verbraucht, daher eigene Zähler.
 var run_won := false
@@ -149,11 +163,13 @@ func _ready() -> void:
 	boss_shards = SaveManager.save_data["boss_shards"]
 
 func reset() -> void:
+	BattleRetry.clear()
 	ep = 0
 	keys = 0
 	coupons = 0
 	map_level = 0
 	biome_fight_index = 0
+	level_ref_half = 0
 	biome_path = []
 	map_progress_level = 0
 	overall_progress_level = 0
@@ -167,6 +183,7 @@ func reset() -> void:
 	fainted_own_mons = []
 	fainted_enemy_mons = []
 	killed_monsters = 0
+	killed_bosses = 0
 	used_boss_relics = []
 	clear_pending_loot()
 	current_map_position = NO_MAP_POSITION
@@ -174,10 +191,13 @@ func reset() -> void:
 	is_final_boss = false
 	is_map_boss = false
 	pending_relic_reward = false
+	relic_chest_rarity = -1
 	pending_skill_reward = false
 	pending_gem_rewards = 0
 	pending_potions = []
 	taught_reward_skills = []
+	bag = []
+	found_unique_items = []
 	rolled_mon_stats = {}
 	defeated_mon_names = []
 	caught_mon_names = []
@@ -220,8 +240,12 @@ func get_mon_stats(mon_name: String) -> Dictionary:
 func restore_mon_stats(mon_name: String, best_points: int, growth: Dictionary) -> void:
 	var stats = get_mon_stats(mon_name)
 	stats.best_points = best_points
+	# alte Eier haben noch einen Anteil für die entfernte Sp. Verteidigung: die übrigen wieder auf Summe 1 bringen
+	var sum := 0.0
 	for attr in Growth.ATTRS:
-		stats.growth[attr] = growth[attr]
+		sum += float(growth.get(attr, 0.0))
+	for attr in Growth.ATTRS:
+		stats.growth[attr] = float(growth.get(attr, 0.0)) / sum if sum > 0.0 else 1.0 / Growth.ATTRS.size()
 
 # Ist das Start-Monster noch im Team? K.O. gegangene (battle.gd _clear_fainted_mons) und abgegebene Monster
 # (leaving_screen.gd) stehen nicht mehr in mons.
@@ -279,7 +303,7 @@ func record_sighting(mon: Monster, depth: int) -> void:
 		"count": previous.get("count", 0) + 1,
 		"stats": {
 			"hp": mon.hp(), "atk": mon.attack(), "def": mon.defense(),
-			"s_atk": mon.s_attack(), "s_def": mon.s_defense(), "speed": mon.speed(),
+			"s_atk": mon.s_attack(), "speed": mon.speed(),
 		},
 		"skills": mon._skills.map(func(skill): return {"name": skill.name, "egg": skill.get("egg_skill", false)}),
 	}

@@ -24,26 +24,30 @@ const BATTLE_CARD := preload("res://script/scenes/battle/battle_card.tscn")
 const ELEMENT_CHIP := preload("res://script/ui/element_chip/element_chip.tscn")
 const LABEL_THEME := preload("res://script/ui/materials/battle_labels.tres")
 const CHIP_HEIGHT := 32.0
-const MON_SIZE := Vector2(170, 170)
+const MON_SIZE := Vector2(160, 160)
+## Kartengröße; nur falls das Fenster doch zu niedrig ist, werden die Karten flacher (_fit_cards)
 const SKILL_CARD_SIZE := Vector2(170, 200)
-const DESCRIPTION_FONT_SIZE := 16
-const SKILL_TITLE_FONT_SIZE := 22
+const MIN_CARD_HEIGHT := 130.0
+const FRAME_PADDING := 16
+const BOX_SEPARATION := 12
+const DESCRIPTION_FONT_SIZE := SkillCardFace.TEXT_SIZE
+const SKILL_TITLE_FONT_SIZE := SkillCardFace.TITLE_SIZE
 const OPEN_SECONDS := 0.15
-const PIXEL_FONT = preload("res://script/ui/fonts/pxelfont/PixelifySans-VariableFont_wght.ttf")
-const STAT_FONT_SIZE := 17
+const PIXEL_FONT = preload("res://script/ui/fonts/m5x7/m5x7.ttf")
+const STAT_FONT_SIZE := 24
 const STAT_COLUMNS := 3
 ## Anzeige -> Getter am Monster
 const STATS := {
 	"STAT_HP": "hp",
 	"STAT_ATK": "attack",
-	"STAT_DEF": "defense",
 	"STAT_SPA": "s_attack",
-	"STAT_SPD": "s_defense",
+	"STAT_DEF": "defense",
 	"STAT_SPE": "speed",
+	"STAT_BST": "",
 }
 ## Anzeige -> Stat-Key (StatsGrid.ICONS)
 const STAT_KEYS := {
-	"STAT_HP": "hp", "STAT_ATK": "atk", "STAT_DEF": "def", "STAT_SPA": "s_atk", "STAT_SPD": "s_def", "STAT_SPE": "speed",
+	"STAT_HP": "hp", "STAT_ATK": "atk", "STAT_SPA": "s_atk", "STAT_DEF": "def", "STAT_SPE": "speed", "STAT_BST": "bst",
 }
 
 var _mon: Monster
@@ -51,6 +55,8 @@ var _skills: Array
 var _details: RichTextLabel
 var _details_scroll: AutoScrollContainer
 var _slots: Array[SkillSlot] = []
+var _top: HBoxContainer
+var _card_scroll: ScrollContainer
 
 func _init(mon: Monster) -> void:
 	_mon = mon
@@ -58,15 +64,26 @@ func _init(mon: Monster) -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 12)
-	IronPlate.frame(self, box, 16, 16)
-	var top := HBoxContainer.new()
-	top.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	top.add_theme_constant_override("separation", 16)
-	box.add_child(top)
-	top.add_child(_build_details())
-	top.add_child(_portrait(mon))
+	box.add_theme_constant_override("separation", BOX_SEPARATION)
+	IronPlate.frame(self, box, FRAME_PADDING, FRAME_PADDING)
+	_top = HBoxContainer.new()
+	_top.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_top.add_theme_constant_override("separation", 16)
+	box.add_child(_top)
+	_top.add_child(_build_details())
+	_top.add_child(_portrait(mon))
 	box.add_child(_cards())
+
+func _enter_tree() -> void:
+	var holder := get_parent_control()
+	if holder and not holder.resized.is_connected(_fit_cards):
+		holder.resized.connect(_fit_cards)
+	_fit_cards.call_deferred()
+
+func _exit_tree() -> void:
+	var holder := get_parent_control()
+	if holder and holder.resized.is_connected(_fit_cards):
+		holder.resized.disconnect(_fit_cards)
 
 func _ready() -> void:
 	modulate.a = 0.0
@@ -117,8 +134,10 @@ func _skill_text(skill: Dictionary) -> String:
 func _kind_text(skill: Dictionary) -> String:
 	if Skills.is_passive(skill):
 		return tr("EGG_CATEGORY_PASSIVE")
-	if skill.get("effect", "") == "buff":
+	if Skills.is_buff_skill(skill):
 		return tr("EGG_CATEGORY_BUFF")
+	if Skills.is_debuff_skill(skill):
+		return tr("SKILL_KIND_DEBUFF")
 	return tr("SKILL_KIND_ACTIVE")
 
 func _portrait(mon: Monster) -> Control:
@@ -155,7 +174,8 @@ func _stats(mon: Monster) -> Control:
 		label.add_theme_font_override("font", PIXEL_FONT)
 		label.add_theme_font_size_override("font_size", STAT_FONT_SIZE)
 		label.add_theme_color_override("font_color", IronPlate.TEXT_COLOR)
-		label.text = "%s %d" % [tr(key), roundi(mon.call(STATS[key]))]
+		var value: float = mon._best_points if key == "STAT_BST" else mon.call(STATS[key])
+		label.text = "%s %d" % [tr(key), roundi(value)]
 		# Symbol davor wie in allen Werte-Tabellen, ein Klick erklärt die Werte
 		var cell := StatsGrid.name_cell(self, STAT_KEYS[key], label, false)
 		cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -164,10 +184,14 @@ func _stats(mon: Monster) -> Control:
 
 func _cards() -> Control:
 	var scroll := ScrollContainer.new()
+	_card_scroll = scroll
 	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	# Platz für die Rand-Effekte der Karten, sonst schneidet die Scrollview sie ab
+	var margin := SkillCardPaper.flame_margin()
+	scroll.add_child(margin)
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 10)
-	scroll.add_child(row)
+	row.add_theme_constant_override("separation", SkillCardPaper.FLAME_GAP_X)
+	margin.add_child(row)
 	for i in _skills.size():
 		var card := BATTLE_CARD.instantiate()
 		card.mon = _mon
@@ -183,3 +207,15 @@ func _cards() -> Control:
 		row.add_child(slot)
 		_slots.append(slot)
 	return scroll
+
+## Karten so hoch wie der Platz unter Infos und Monster erlaubt (samt Rand-Effekten), höchstens SKILL_CARD_SIZE
+func _fit_cards() -> void:
+	var pad := SkillCardPaper.FLAME_PAD
+	# Höhe des Fensters, nicht die eigene: die wächst mit, solange die Karten zu hoch sind
+	var free := get_parent_area_size().y - 2 * FRAME_PADDING - BOX_SEPARATION - _top.get_combined_minimum_size().y - pad.y - pad.w \
+			- _card_scroll.get_h_scroll_bar().get_combined_minimum_size().y
+	var height := clampf(free, MIN_CARD_HEIGHT, SKILL_CARD_SIZE.y)
+	var card_size := Vector2(SKILL_CARD_SIZE.x * height / SKILL_CARD_SIZE.y, height).round()
+	for slot in _slots:
+		if slot.card.custom_minimum_size != card_size:
+			slot.card.custom_minimum_size = card_size

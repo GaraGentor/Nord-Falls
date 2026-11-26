@@ -10,8 +10,8 @@ extends Control
 ##   Das geht nur im Judgement direkt nach dem Fang, später nicht mehr. Die Tasche fliegt nur herein, solange
 ##   das ausgewählte Monster eine solche Ei-Attacke trägt.
 ## Was beim Weiter links liegt, wird freigelassen. Ohne Teammitglied ist Weiter gesperrt.
-## Ist im Kampf ein eigenes Monster gefallen, kann es zuerst einmalig durch einen neuen Fang wiederbelebt werden.
-## Wird das übersprungen oder ist es nicht möglich, vererbt es eine Sache (Letzter Wille).
+## Ist im Kampf ein eigenes Monster gefallen, kommt zuerst ein eigener Screen (last_will_screen.gd): dort kann es
+## einmalig durch einen neuen Fang wiederbelebt werden, sonst vererbt es eine Sache (Letzter Wille).
 
 const GOLD := SkillDetailPopup.GOLD
 const MUTED := IronPlate.TEXT_COLOR
@@ -21,6 +21,7 @@ const LIVING_MATERIAL = preload("res://script/ui/shader/living_pixels_material.t
 const ELEMENT_CHIP = preload("res://script/ui/element_chip/element_chip.tscn")
 const INSET_BOX = preload("res://script/ui/materials/iron_inset_box.tres")
 const MAP_SCENE := "res://script/scenes/world_map/world_map.tscn"
+const LAST_WILL_SCREEN = preload("res://script/scenes/judgment/last_will_screen.gd")
 const MAX_TEAM := 2
 const DRAG_THRESHOLD := 10.0
 # Anteil der KP, mit dem ein wiederbelebtes Monster zurückkommt
@@ -31,7 +32,7 @@ const CATCH_COLOR := Color(0.36, 0.82, 0.4)
 const SLOT_COLORS := [Color(0.7, 0.45, 0.96), Color(0.25, 0.85, 0.8)]
 const STAT_KEYS := Growth.ATTRS
 const STAT_LABELS := GrowthRadar.STAT_LABELS
-## Breite einer Werte-Zelle (Symbol und Zahl): passen alle sechs nebeneinander, stehen sie in einer Zeile
+## Breite einer Werte-Zelle (Symbol und Zahl): passen alle fünf nebeneinander, stehen sie in einer Zeile
 const STAT_CELL_WIDTH := 46.0
 ## Höhe des Monsterbilds links (das Netzdiagramm braucht darunter Platz), im Team füllt das Bild den Platz
 const CATCH_PICTURE_HEIGHT := 130.0
@@ -67,6 +68,8 @@ var _eggs_unlocked := 0
 var _press := {}
 var _drag_data := {}
 var _arrow_time := 0.0
+# Screen für ein gefallenes Monster liegt darüber: hier keine Eingaben auswerten
+var _farewell_open := false
 
 # Zone -> JudgementDropZone
 var _zones := {}
@@ -87,6 +90,7 @@ var _legend: HFlowContainer
 var _team_frame: Control
 var _slot_boxes: Array = []
 var _skill_grid: GridContainer
+var _skill_owner_label: Label
 var _bag: OpenBag
 var _bag_zone: JudgementDropZone
 var _bag_shown := false
@@ -136,7 +140,7 @@ func _highlight(zone: int, allowed: bool, hovered: bool) -> void:
 # Eingabe
 
 func _input(event: InputEvent) -> void:
-	if dialog.visible or _zones.is_empty():
+	if dialog.visible or _zones.is_empty() or _farewell_open:
 		return
 	# Monster und Karten werden hier vor der GUI ausgewertet, das Tutorial-Overlay würde sie sonst nicht abfangen
 	var mouse := event as InputEventMouse
@@ -202,13 +206,20 @@ func _select(mon: Monster) -> void:
 	_refresh()
 
 func _on_dropped(data: Dictionary, zone: int) -> void:
-	if _reason(zone, data) != "":
+	var reason := _reason(zone, data)
+	if reason != "":
+		# z. B. "kennt die Attacke schon": oben einblenden, warum das nicht geht
+		if reason != "-":
+			Helper.show_unlock_message(reason)
 		return
 	if data.has("judgement_mon"):
 		var mon: Monster = data.judgement_mon
+		var joined := not State.mons.has(mon)
 		match zone:
 			Zone.SLOT_1, Zone.SLOT_2:
 				_place(mon, zone - Zone.SLOT_1)
+				if joined:
+					Events.judgement_team_joined.emit()
 			Zone.BENCH:
 				_bench(mon)
 	else:
@@ -221,6 +232,10 @@ func _on_dropped(data: Dictionary, zone: int) -> void:
 
 func _on_confirm_pressed() -> void:
 	if dialog.visible or State.mons.is_empty():
+		return
+	# Tutorial (Feld 1): erst kommt der Fang ins Team
+	if Tutorial.judgement_join_only() and not _pool.is_empty():
+		Helper.show_unlock_message(tr("TUT_JUD_JOIN_FIRST"))
 		return
 	if _pool.any(_is_guarded_starter):
 		var ok = await dialog.confirm(tr("JUDGEMENT_RELEASE_STARTER_TITLE"), _starter_warning(), tr("JUDGEMENT_RELEASE_CONFIRM"))
@@ -236,8 +251,13 @@ func _on_confirm_pressed() -> void:
 # ─────────────────────────
 # Regeln & Aktionen
 
-# "" wenn data hier abgelegt werden darf, sonst "-"
+# "" wenn data hier abgelegt werden darf, sonst "-" oder ein Grund, der beim Ablegen angezeigt wird
 func _reason(zone: int, data: Dictionary) -> String:
+	# Tutorial (Feld 1): einzig erlaubt ist, den Fang auf den freien Platz zu ziehen
+	if Tutorial.judgement_join_only():
+		var joins: bool = data.has("judgement_mon") and not State.mons.has(data.judgement_mon) \
+			and zone in [Zone.SLOT_1, Zone.SLOT_2] and zone - Zone.SLOT_1 >= State.mons.size()
+		return "" if joins else "-"
 	if data.has("judgement_mon"):
 		var mon: Monster = data.judgement_mon
 		var in_team := State.mons.has(mon)
@@ -256,8 +276,11 @@ func _reason(zone: int, data: Dictionary) -> String:
 	match zone:
 		Zone.SLOT_1, Zone.SLOT_2:
 			var slot := zone - Zone.SLOT_1
-			if slot >= State.mons.size() or State.mons[slot] == owner or Skills.knows_skill(State.mons[slot], skill.name):
+			if slot >= State.mons.size() or State.mons[slot] == owner:
 				return "-"
+			# schon bekannt: beim Ablegen sagen, warum es nicht geht
+			if Skills.knows_skill(State.mons[slot], skill.name):
+				return tr("JUDGEMENT_ALREADY_HAS_SKILL").format({"mon": Helper.mon_battle_name(State.mons[slot]), "skill": tr(skill.name)})
 			return ""
 		Zone.BAG:
 			return "" if _is_unlockable_egg(owner, skill) else "-"
@@ -276,6 +299,8 @@ func _place(mon: Monster, slot: int) -> void:
 		return
 	var pool_index = _pool.find(mon)
 	if slot < State.mons.size():
+		# wer das Team verlässt, gibt seine One-Way-Items in die Tasche zurück
+		Items.return_items(State.mons[slot])
 		_pool[pool_index] = State.mons[slot]
 		State.mons[slot] = mon
 		_index = pool_index
@@ -285,6 +310,7 @@ func _place(mon: Monster, slot: int) -> void:
 
 # Teammitglied nach links ablegen: es liegt danach vorne im Blätterstapel
 func _bench(mon: Monster) -> void:
+	Items.return_items(mon)
 	State.mons.erase(mon)
 	_pool.append(mon)
 	_index = _pool.size() - 1
@@ -323,6 +349,7 @@ func _may_lose(mon: Monster) -> bool:
 	return await dialog.confirm(tr("JUDGEMENT_LOSE_STARTER_TITLE"), _starter_warning(), tr("JUDGEMENT_LOSE_STARTER_CONFIRM"))
 
 func _remove(mon: Monster) -> void:
+	Items.return_items(mon)
 	State.mons.erase(mon)
 	State.catched_mons.erase(mon)
 	_pool.erase(mon)
@@ -348,46 +375,37 @@ func _handle_fallen() -> void:
 	var fallen_mons = State.fainted_own_mons.duplicate()
 	State.fainted_own_mons.clear()
 	for fallen in fallen_mons:
-		if not await _offer_revive(fallen):
-			await _last_will(fallen)
+		await _farewell(fallen)
 
-# Liefert true, wenn das Monster wiederbelebt wurde.
-func _offer_revive(fallen: Monster) -> bool:
-	if fallen._revived or _pool.is_empty():
-		return false
-	var hp_percent = roundi(REVIVE_HP_SHARE * 100)
-	var catch: Monster = await dialog.revive(fallen, _pool, hp_percent)
-	if catch == null:
-		return false
-	_remove(catch)
-	State.mons.append(fallen)
-	fallen.revive(REVIVE_HP_SHARE)
-	_refresh()
-	Helper.show_unlock_message(tr("REVIVE_DONE").format({"mon": Helper.mon_battle_name(fallen), "hp": hp_percent}))
-	return true
-
-# Erben können das Team und die neuen Fänge. Abgelehnt wird nur nach Rückfrage, das Erbe ist danach weg.
-func _last_will(fallen: Monster) -> void:
+# Eigener Screen (LastWillScreen): Fang auf den Körper werfen belebt wieder, sonst erbt ein Monster eine Sache.
+# Erben können das Team und die neuen Fänge. Ist beides nicht möglich, gibt es keinen Screen.
+func _farewell(fallen: Monster) -> void:
 	var heirs: Array = State.mons.duplicate()
 	heirs.append_array(_pool)
-	if not dialog.can_inherit(fallen, heirs):
+	var can_revive: bool = not fallen._revived and not _pool.is_empty()
+	if not can_revive and not LAST_WILL_SCREEN.can_inherit(fallen, heirs):
 		return
-	while true:
-		var result: Dictionary = await dialog.last_will(fallen, heirs)
-		if not result.is_empty():
-			_inherit(fallen, result)
-			_refresh()
-			return
-		var text = tr("LAST_WILL_DECLINE_TEXT").format({"mon": Helper.mon_battle_name(fallen)})
-		if await dialog.confirm(tr("LAST_WILL_DECLINE_TITLE"), text, tr("LAST_WILL_DECLINE")):
-			return
+	var screen: Control = LAST_WILL_SCREEN.new()
+	add_child(screen)
+	move_child(screen, dialog.get_index())
+	_farewell_open = true
+	var result: Dictionary = await screen.run(fallen, State.mons.duplicate(), _pool.duplicate(), dialog, REVIVE_HP_SHARE)
+	if result.has("revive"):
+		_remove(result.revive)
+		State.mons.append(fallen)
+		fallen.revive(REVIVE_HP_SHARE)
+		Helper.show_unlock_message(tr("REVIVE_DONE").format({"mon": Helper.mon_battle_name(fallen), "hp": roundi(REVIVE_HP_SHARE * 100)}))
+	elif not result.is_empty():
+		_inherit(result)
+	_refresh()
+	await screen.close()
+	_farewell_open = false
 
-func _inherit(fallen: Monster, result: Dictionary) -> void:
+func _inherit(result: Dictionary) -> void:
 	var heir: Monster = result.target
 	match result.gift.kind:
 		"gems":
-			for stat in fallen._gems:
-				heir.add_gem(stat, fallen._gems[stat], fallen.gem_count(stat))
+			heir.add_gem(result.gift.stat, result.gift.bonus, result.gift.count)
 		"element":
 			heir.gain_element(result.gift.element)
 		"skill":
@@ -396,7 +414,7 @@ func _inherit(fallen: Monster, result: Dictionary) -> void:
 				heir._skills.append(learned)
 			else:
 				heir._skills[result.replace] = learned
-	Helper.show_unlock_message(tr("LAST_WILL_INHERITED").format({"mon": Helper.mon_battle_name(heir), "gift": dialog.gift_name(result.gift)}))
+	Helper.show_unlock_message(tr("LAST_WILL_INHERITED").format({"mon": Helper.mon_battle_name(heir), "gift": LAST_WILL_SCREEN.gift_name(result.gift)}))
 
 # ─────────────────────────
 # Anzeige
@@ -413,7 +431,9 @@ func _refresh() -> void:
 	_refresh_skills()
 	_refresh_radar()
 	_bag.show_items(_eggs_unlocked)
-	_show_bag(_selected != null and not _selected.get_unlockable_egg_skill().is_empty() and _new_mons.has(_selected))
+	# im Tutorial (Feld 1) immer zu sehen: der Trainer erklärt sie, auch wenn der Fang keine Ei-Attacke mitbringt
+	_show_bag(Tutorial.judgement_join_only()
+		or (_selected != null and not _selected.get_unlockable_egg_skill().is_empty() and _new_mons.has(_selected)))
 	_confirm_button.disabled = State.mons.is_empty()
 	_confirm_button.modulate.a = 0.45 if _confirm_button.disabled else 1.0
 	_confirm_button.tooltip_text = tr("JUDGEMENT_REASON_LAST") if _confirm_button.disabled else ""
@@ -426,7 +446,7 @@ func _refresh_catch() -> void:
 	_prev_button.disabled = _pool.size() <= 1
 	_next_button.disabled = _pool.size() <= 1
 	if not has_catch:
-		var empty := _label(16, MUTED)
+		var empty := _label(24, MUTED)
 		empty.text = tr("JUDGEMENT_NO_CATCHES_LEFT")
 		_outline(empty)
 		empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -446,7 +466,7 @@ func _refresh_team() -> void:
 			_slot_entries[slot] = _mon_entry(State.mons[slot], SLOT_COLORS[slot], true)
 			box.add_child(_slot_entries[slot])
 		else:
-			var missing := _label(17, MUTED)
+			var missing := _label(24, MUTED)
 			missing.text = tr("JUDGEMENT_MISSING_MEMBER")
 			missing.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			missing.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -456,6 +476,10 @@ func _refresh_team() -> void:
 func _refresh_skills() -> void:
 	_clear(_skill_grid)
 	_skill_cards.clear()
+	_skill_owner_label.visible = _selected != null
+	if _selected:
+		_skill_owner_label.text = Helper.mon_battle_name(_selected)
+		_skill_owner_label.add_theme_color_override("font_color", Helper.color_by_mon(_selected))
 	for i in Skills.MAX_SKILLS:
 		if _selected and i < _selected._skills.size():
 			var skill: Dictionary = _selected._skills[i]
@@ -497,7 +521,7 @@ func _refresh_radar() -> void:
 		dot.size_flags_vertical = SIZE_SHRINK_CENTER
 		dot.mouse_filter = MOUSE_FILTER_IGNORE
 		row.add_child(dot)
-		var name_label := _label(13, MUTED)
+		var name_label := _label(24, MUTED)
 		name_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 		name_label.text = Helper.mon_battle_name(entry.mon)
 		row.add_child(name_label)
@@ -529,14 +553,14 @@ func _mon_entry(mon: Monster, color: Color, fill: bool) -> VBoxContainer:
 	var header := HBoxContainer.new()
 	header.mouse_filter = MOUSE_FILTER_IGNORE
 	entry.add_child(header)
-	var name_label := _label(20, Helper.color_by_mon(mon))
+	var name_label := _label(32, Helper.color_by_mon(mon))
 	name_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	name_label.size_flags_horizontal = SIZE_EXPAND_FILL
 	name_label.text = Helper.mon_battle_name(mon)
 	_outline(name_label)
 	header.add_child(name_label)
-	var level := _label(20, MUTED)
+	var level := _label(32, MUTED)
 	level.autowrap_mode = TextServer.AUTOWRAP_OFF
 	level.text = tr("BATTLE_MON_LEVEL") + " " + str(mon._level)
 	_outline(level)
@@ -633,7 +657,7 @@ func _badge(text: String, background: Color, color: Color) -> PanelContainer:
 	row.add_theme_constant_override("separation", 4)
 	row.mouse_filter = MOUSE_FILTER_IGNORE
 	IronPlate.frame(badge, row, 8, 3).tint(background)
-	var label := _label(14, color)
+	var label := _label(24, color)
 	label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	label.text = text
 	row.add_child(label)
@@ -660,7 +684,7 @@ func _stats_box(mon: Monster, color: Color) -> PanelContainer:
 	grid.add_theme_constant_override("v_separation", 3)
 	grid.mouse_filter = MOUSE_FILTER_IGNORE
 	box.add_child(grid)
-	var values := {"hp": mon.hp(), "atk": mon.attack(), "def": mon.defense(), "s_atk": mon.s_attack(), "s_def": mon.s_defense(), "speed": mon.speed()}
+	var values := {"hp": mon.hp(), "atk": mon.attack(), "def": mon.defense(), "s_atk": mon.s_attack(), "speed": mon.speed()}
 	for key in STAT_KEYS:
 		var cell := HBoxContainer.new()
 		cell.add_theme_constant_override("separation", 3)
@@ -669,7 +693,7 @@ func _stats_box(mon: Monster, color: Color) -> PanelContainer:
 		cell.mouse_filter = MOUSE_FILTER_PASS
 		cell.tooltip_text = tr(STAT_LABELS[key]).trim_suffix(":")
 		cell.add_child(StatsGrid.stat_icon(key, 16))
-		var value := _label(14, MUTED)
+		var value := _label(24, MUTED)
 		value.autowrap_mode = TextServer.AUTOWRAP_OFF
 		value.text = str(int(values[key]))
 		cell.add_child(value)
@@ -803,7 +827,7 @@ func _build_left() -> Control:
 	var page_panel := PanelContainer.new()
 	page_panel.mouse_filter = MOUSE_FILTER_IGNORE
 	page_panel.size_flags_horizontal = SIZE_EXPAND_FILL
-	_page_label = _label(20, GOLD)
+	_page_label = _label(32, GOLD)
 	_page_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	IronPlate.frame(page_panel, _page_label, 10, 4)
 	nav.add_child(page_panel)
@@ -825,7 +849,7 @@ func _build_left() -> Control:
 	radar_box.mouse_filter = MOUSE_FILTER_IGNORE
 	IronPlate.frame(radar_panel, radar_box, 10, 8)
 	box.add_child(radar_panel)
-	var heading := _label(17, GOLD)
+	var heading := _label(24, GOLD)
 	heading.text = tr("JUDGEMENT_GROWTH")
 	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	radar_box.add_child(heading)
@@ -852,6 +876,13 @@ func _build_middle() -> Control:
 	box.size_flags_stretch_ratio = 2.1
 	box.add_theme_constant_override("separation", 10)
 	box.mouse_filter = MOUSE_FILTER_IGNORE
+	# Name des gerade gezeigten Monsters, damit klar ist, wessen Fähigkeiten das sind
+	_skill_owner_label = _label(40, GOLD)
+	_skill_owner_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_skill_owner_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	_skill_owner_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_outline(_skill_owner_label)
+	box.add_child(_skill_owner_label)
 	_skill_grid = GridContainer.new()
 	_skill_grid.columns = 3
 	_skill_grid.size_flags_vertical = SIZE_EXPAND_FILL
@@ -917,7 +948,7 @@ func _build_team() -> Control:
 		_slot_boxes.append(box)
 	var legend := PanelContainer.new()
 	legend.mouse_filter = MOUSE_FILTER_IGNORE
-	var title := _label(20, GOLD)
+	var title := _label(32, GOLD)
 	title.autowrap_mode = TextServer.AUTOWRAP_OFF
 	title.text = tr("JUDGEMENT_TEAM")
 	IronPlate.frame(legend, title, 22, 5).set_rim(GOLD)
@@ -964,7 +995,7 @@ func _drop_frame(zone: Control) -> Panel:
 func _nav_button(text: String, direction: int) -> Button:
 	var button := RewardDialog.plate_button(text)
 	button.custom_minimum_size = Vector2(48, 36)
-	button.add_theme_font_size_override("font_size", 20)
+	button.add_theme_font_size_override("font_size", 32)
 	button.pressed.connect(_step.bind(direction))
 	return button
 

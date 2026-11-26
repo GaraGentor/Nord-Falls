@@ -4,7 +4,7 @@ extends Node
 ## Fertige Builds ignorieren die Datei und nutzen immer die Standardwerte.
 
 const PATH := "user://debug_settings.json"
-const STATS := ["hp", "atk", "def", "s_atk", "s_def", "speed"]
+const STATS := ["hp", "atk", "s_atk", "def", "speed"]
 const MAX_RESERVED := 100
 ## Globales Wachstum pro Stufe (Mon._base_stat), skaliert den Zuwachs aller Werte aller Monster im gleichen Verhältnis:
 ## FULL_GROWTH = voller Zuwachs aus der BST, 0 = kein Wachstum, halber Wert = halber Zuwachs, doppelter = doppelter.
@@ -51,6 +51,15 @@ var _trophy_bonus: Array = []
 const DEFAULT_BOSS_TROPHIES := false
 var _boss_trophies := DEFAULT_BOSS_TROPHIES
 
+## Kampf-Cheats (Schalter im Debug-Menü, gespeichert): Knöpfe oben rechts im Kampf (BattleDebugButtons) für einen
+## Sofortsieg und für die sichere Fangchance
+var _win_button := false
+var _catch_button := false
+## Karte: jedes Feld betretbar (Schalter im Debug-Menü, gespeichert)
+var _free_walk := false
+## Fangchance gerade auf 100 % (Knopf im Kampf). Gilt nur, solange der Fang-Knopf im Debug-Menü an ist, nicht gespeichert.
+var sure_catch := false
+
 ## Im Debug-Menü gewählte Gegnerzahl für den nächsten Kampf, 0 = wie im normalen Spiel. Wird nicht gespeichert.
 var next_enemy_count := 0
 ## Im Debug-Menü gewählte Boss-Relikte (Array von IDs) des nächsten Boss-Kampfs und Trophäen
@@ -70,6 +79,9 @@ func _ready() -> void:
 		_disabled_relics = parsed.get("disabled_relics", [])
 		_trophy_bonus = parsed.get("trophy_bonus", [])
 		_boss_trophies = bool(parsed.get("boss_trophies", DEFAULT_BOSS_TROPHIES))
+		_win_button = bool(parsed.get("battle_win_button", false))
+		_catch_button = bool(parsed.get("battle_catch_button", false))
+		_free_walk = bool(parsed.get("map_free_walk", false))
 
 func save() -> void:
 	var file := FileAccess.open(PATH, FileAccess.WRITE)
@@ -77,7 +89,8 @@ func save() -> void:
 		# fremde Einträge (z. B. "growth_stats" vom Branch new-conzept) bleiben erhalten
 		var data := _other.duplicate()
 		data.merge({"reserved_stats": _reserved, "growth_per_level": _growth, "damage_formula": _damage, "disabled_relics": _disabled_relics,
-			"trophy_bonus": _trophy_bonus, "boss_trophies": _boss_trophies}, true)
+			"trophy_bonus": _trophy_bonus, "boss_trophies": _boss_trophies,
+			"battle_win_button": _win_button, "battle_catch_button": _catch_button, "map_free_walk": _free_walk}, true)
 		file.store_string(JSON.stringify(data))
 
 func is_relic_disabled(id: String) -> bool:
@@ -120,6 +133,35 @@ func boss_trophies_enabled() -> bool:
 func set_boss_trophies_enabled(on: bool) -> void:
 	_boss_trophies = on
 	save()
+
+## Nur in Debug-Builds: fertige Builds zeigen keine Kampf-Cheats
+func win_button_enabled() -> bool:
+	return OS.is_debug_build() and _win_button
+
+func set_win_button_enabled(on: bool) -> void:
+	_win_button = on
+	save()
+
+## Karte: jedes Feld betretbar, unabhängig von den Wegen (nur Debug-Builds, gespeichert)
+func free_walk_enabled() -> bool:
+	return OS.is_debug_build() and _free_walk
+
+func set_free_walk_enabled(on: bool) -> void:
+	_free_walk = on
+	save()
+
+func catch_button_enabled() -> bool:
+	return OS.is_debug_build() and _catch_button
+
+func set_catch_button_enabled(on: bool) -> void:
+	_catch_button = on
+	if not on:
+		sure_catch = false
+	save()
+
+## Fang klappt sicher (Fang-Knopf im Kampf eingeschaltet)
+func catches_for_sure() -> bool:
+	return sure_catch and catch_button_enabled()
 
 ## Gewählte Gegnerzahl, sonst usual_count. Die Wahl gilt nur für einen Kampf.
 func take_enemy_count(usual_count: int) -> int:

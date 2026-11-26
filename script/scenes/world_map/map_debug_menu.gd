@@ -7,8 +7,8 @@ extends RewardDialog
 const ACCENT := Color(0.85, 0.3, 0.3)
 const COLUMNS := 6
 const BUTTON_SIZE := Vector2(170, 44)
-const BUTTON_FONT_SIZE := 16
-const HEADER_FONT_SIZE := 18
+const BUTTON_FONT_SIZE := 24
+const HEADER_FONT_SIZE := 24
 const MON_COLUMNS := 8
 const MON_BUTTON_SIZE := Vector2(130, 120)
 const MON_ICON_SIZE := 72
@@ -25,7 +25,7 @@ const MAIN_LIST_HEIGHT := 480
 const UNPICKED_COLOR := Color(0.65, 0.65, 0.65)
 const EGG_LABEL_WIDTH := 170
 const EGG_BUTTON_SIZE := Vector2(300, 44)
-const STAT_NAMES := {"hp": "KP", "atk": "Angriff", "def": "Verteidigung", "s_atk": "Sp. Angriff", "s_def": "Sp. Verteidigung", "speed": "Initiative"}
+const STAT_NAMES := {"hp": "LP", "atk": "Angriff", "def": "Verteidigung", "s_atk": "Sp. Angriff", "speed": "Initiative"}
 const STAT_VALUE_WIDTH := 70
 const STAT_STEP_SIZE := Vector2(60, 40)
 const STATS_EXAMPLE_BST := 200
@@ -48,6 +48,19 @@ const TROPHY_COLUMNS := 3
 const TROPHY_LABEL_WIDTH := 170
 const TROPHY_VALUE_WIDTH := 50
 const TROPHY_STEP_SIZE := Vector2(50, 40)
+## Endboss-Test: Teamgröße, Startstufe (Ende des letzten Bioms) und kompakte Trophäen-Zähler
+const FINAL_TEST_TEAM := 2
+const FINAL_TEST_DEFAULT_LEVEL := 35
+const FINAL_TEST_LIST_HEIGHT := 250
+const FINAL_STAT_SHORT := {"hp": "LP", "atk": "ANG", "def": "VER", "s_atk": "SP.ANG", "speed": "INI"}
+const FINAL_STAT_LABEL_WIDTH := 64
+const FINAL_STEP_SIZE := Vector2(40, 36)
+## Endboss-Test: Höhe der ganzen Seite zum Scrollen (die Buttons bleiben darunter stehen) und der Fähigkeiten-Liste
+const FINAL_PAGE_HEIGHT := 480
+const FINAL_SKILL_LIST_HEIGHT := 220
+const FINAL_SKILL_BUTTON_SIZE := Vector2(200, 40)
+## Gegnerzahl-Seite: Höhe des scrollbaren Bereichs (Gegnerzahl und Boss-Ausstattung), ZURÜCK bleibt darunter
+const FIGHT_LIST_HEIGHT := 480
 
 const BATTLE_PATH := "res://script/scenes/battle/battle.tscn"
 const JUDGEMENT_PATH := "res://script/scenes/judgment/judgement.tscn"
@@ -111,6 +124,31 @@ var _vfx_back := false
 var _vfx_view_button: Button
 ## Sicherheitsabfrage vor dem Löschen des Spielstands
 var _reset_page: VBoxContainer
+## Endboss-Test: eigenes Zweier-Team gegen den Endboss
+var _final_test_page: VBoxContainer
+## gewählte Arten, höchstens FINAL_TEST_TEAM, die älteste fliegt beim Wählen einer weiteren raus
+var _final_picks: Array[String] = []
+var _final_buttons := {}
+var _final_level := FINAL_TEST_DEFAULT_LEVEL
+var _final_level_label: Label
+var _final_chaos: Button
+## pro Team-Platz: Stat-Key -> Anzahl Trophäen
+var _final_trophies: Array = []
+## pro Team-Platz: Stat-Key -> Label, dazu die Überschrift mit dem Namen der Art
+var _final_trophy_labels: Array = []
+var _final_slot_labels: Array[Label] = []
+var _final_start: Button
+## Boss-Relikte des Endboss-Kampfs (leer = wie im Spiel, zufällig aus dem Endboss-Pool)
+var _final_boss_relic_picks: Array = []
+## eigene Relikte für den Test, ersetzen beim Start die gesammelten (vorbelegt mit den aktuellen)
+var _final_relic_picks: Array = []
+## pro Team-Platz: Namen der gewählten Fähigkeiten, höchstens Skills.MAX_SKILLS (leer = zufälliges Deck)
+var _final_skill_picks: Array = []
+## Team-Platz, dessen Fähigkeiten gerade gewählt werden
+var _final_skill_slot := 0
+var _final_skill_slot_buttons: Array[Button] = []
+## Skill-Name -> Schalter
+var _final_skill_buttons := {}
 
 func _ready() -> void:
 	set_accent(ACCENT)
@@ -128,6 +166,8 @@ func _ready() -> void:
 	_build_preview_page()
 	_build_vfx_page()
 	_build_reset_page()
+	_build_final_test_page()
+	_build_last_will_page()
 	_show_page(_main)
 
 func _build_main() -> void:
@@ -151,7 +191,20 @@ func _build_main() -> void:
 		[tr(Map.type_label(Map.PATH_TYPE.COMBAT)) + " ...", _open_fight_page.bind(_change_scene.bind(BATTLE_PATH))],
 		["BOSS-FELD ...", _open_fight_page.bind(_start_map_boss, true)],
 		["ENDBOSS ..." if is_last_biome else "BIOM-BOSS ...", _open_fight_page.bind(map.start_biome_boss, true)],
+		["ENDBOSS-TEST ...", func(): _show_page(_final_test_page)],
 	])
+	# Knöpfe oben rechts im Kampf (BattleDebugButtons), gespeichert wie die Balancing-Werte
+	var cheats := _add_section(list, "Kampf-Cheats (Knöpfe oben rechts im Kampf)", [])
+	cheats.add_child(_make_setting_toggle("SOFORTSIEG", DebugSettings.win_button_enabled(),
+		DebugSettings.set_win_button_enabled, "Knopf im Kampf: ein Klick besiegt alle Gegner"))
+	cheats.add_child(_make_setting_toggle("FANG 100 %", DebugSettings.catch_button_enabled(),
+		DebugSettings.set_catch_button_enabled, "Knopf im Kampf: schaltet die Fangchance auf 100 % und wieder zurück"))
+	var walk := _add_section(list, "Karte", [])
+	walk.add_child(_make_setting_toggle("JEDES FELD", DebugSettings.free_walk_enabled(),
+		func(on: bool):
+			DebugSettings.set_free_walk_enabled(on)
+			map.refresh_walkable_nodes(),
+		"Jedes Feld der Karte (und der Biom-Boss) lässt sich betreten, egal ob ein Weg dorthin führt"))
 
 	var fields := []
 	for type in [Map.PATH_TYPE.CAMP, Map.PATH_TYPE.HUB, Map.PATH_TYPE.SHOP, Map.PATH_TYPE.TRAINER, Map.PATH_TYPE.JAILER, Map.PATH_TYPE.GEM, Map.PATH_TYPE.TREASURE]:
@@ -164,6 +217,7 @@ func _build_main() -> void:
 
 	_add_section(list, "Nach dem Kampf", [
 		["JUDGEMENT ...", func(): _show_page(_picker)],
+		["LETZTER WILLE ...", func(): _show_page(_last_will_page)],
 		["LEVEL-UP", _open_level_up],
 		["RELIC-AUSWAHL", _open_relic_reward],
 		["FÄHIGKEITEN-AUSWAHL", _open_skill_reward],
@@ -188,12 +242,22 @@ func _build_main() -> void:
 	extras.add_child(_make_button("RELIKTE ...", func(): _show_page(_relic_page)))
 	extras.add_child(_make_button("SPIELSTAND LÖSCHEN ...", func(): _show_page(_reset_page)))
 
+	# ein Klick legt das Item direkt in die Tasche, Schriftfarbe = Seltenheit
+	var item_grid := _add_section(list, "Items (Klick legt es in die Tasche)", [])
+	for id in Items.ITEMS:
+		var item := Items.make(id)
+		var item_button := _make_button(Items.title(item).to_upper(), _add_item.bind(id))
+		item_button.add_theme_color_override("font_color", Items.rarity_color(item))
+		item_button.tooltip_text = Items.description(item)
+		item_grid.add_child(item_button)
+
 	var balancing := _add_section(list, "Optimierung & Balancing", [
 		["WERTE-VERTEILUNG ...", func(): _show_page(_stats_page)],
 		["SCHADENSFORMEL ...", func(): _show_page(_damage_page)],
 		["TROPHÄEN-WERTE ...", func(): _show_page(_trophy_page)],
 		["MONSTER-VORSCHAU ...", func(): _show_page(_preview_page)],
 		["VFX-VORSCHAU ...", func(): _show_page(_vfx_page)],
+		["KARTEN-TYPEN ...", _open_card_types_page],
 	])
 	# Bosse mit oder ohne Trophäen, gespeichert wie die anderen Balancing-Werte
 	var boss_trophies_button := _make_toggle_button("")
@@ -217,11 +281,13 @@ func _build_fight_page() -> void:
 	_fight_page.add_theme_constant_override("separation", 12)
 	add_footer(_fight_page)
 
+	# Gegnerzahl und Boss-Ausstattung scrollen, damit nichts aus dem Fenster ragt
+	var list := _make_scroll_list(_fight_page, FIGHT_LIST_HEIGHT)
 	var entries := [["WIE IM SPIEL", _start_fight.bind(0)]]
 	for count in range(1, MAX_ENEMIES + 1):
 		entries.append([str(count), _start_fight.bind(count)])
-	_add_section(_fight_page, "Gegen wie viele Monster?", entries)
-	_build_boss_options()
+	_add_section(list, "Gegen wie viele Monster?", entries)
+	_build_boss_options(list)
 
 	var back_button := _make_button("ZURÜCK", _show_page.bind(_main))
 	back_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -418,9 +484,7 @@ func _build_vfx_page() -> void:
 	], VFX_COLUMNS)
 	_add_section(list, "Schilde", [
 		["SCHILD", _play_vfx.bind(kinds.SHIELD)],
-		["MAG. SCHILD", _play_vfx.bind(kinds.S_SHIELD)],
 		["SCHILD-TREFFER", _play_vfx.bind(kinds.SHIELD_HIT)],
-		["MAG. SCHILD-TREFFER", _play_vfx.bind(kinds.S_SHIELD_HIT)],
 	], VFX_COLUMNS)
 	_add_section(list, "Buff, Schwächung & Heilung", [
 		["BUFF", _play_vfx.bind(kinds.BUFF)],
@@ -462,7 +526,7 @@ func _play_all_vfx() -> void:
 	var sequence := [[kinds.SLASH, Enums.MON_TYPES.FIRE], [kinds.FIRE, 0], [kinds.WATER, 0], [kinds.EARTH, 0], [kinds.AIR, 0],
 		[kinds.STEAM, 0], [kinds.LIGHTNING, 0], [kinds.MAGMA, 0], [kinds.ICE, 0], [kinds.DUST, 0], [kinds.MUD, 0],
 		[kinds.POISON, 0], [kinds.ASH, 0], [kinds.THUNDER, 0], [kinds.ERUPTION, 0], [kinds.CHAOS, 0],
-		[kinds.SHIELD, 0], [kinds.SHIELD_HIT, 0], [kinds.S_SHIELD, 0], [kinds.S_SHIELD_HIT, 0],
+		[kinds.SHIELD, 0], [kinds.SHIELD_HIT, 0],
 		[kinds.BUFF, 0], [kinds.DEBUFF, 0], [kinds.HEAL, 0]]
 	for entry in sequence:
 		# Seite gewechselt oder Menü geschlossen: Abfolge abbrechen
@@ -472,8 +536,112 @@ func _play_all_vfx() -> void:
 		await get_tree().create_timer(VFX_SEQUENCE_PAUSE).timeout
 
 func _show_page(page: VBoxContainer) -> void:
-	for other in [_main, _fight_page, _picker, _egg_page, _stats_page, _damage_page, _trophy_page, _relic_page, _preview_page, _vfx_page, _reset_page]:
-		other.visible = other == page
+	for other in [_main, _fight_page, _picker, _egg_page, _stats_page, _damage_page, _trophy_page, _relic_page, _preview_page, _vfx_page, _reset_page, _card_types_page, _final_test_page, _last_will_page]:
+		if other != null:
+			other.visible = other == page
+
+# ─────────────────────────
+# Karten-Typen: je Art (SkillCardPaper.kind_key) eine echte Karte mit Wasserzeichen und Rand-Effekt,
+# dazu eine gesperrte Ei-Attacke. Wird erst beim Öffnen gebaut, mit dem ersten Monster im Team.
+
+const CARD_TYPES := [
+	["physical", "Angriff physisch"],
+	["magic", "Angriff magisch"],
+	["shield", "Schild"],
+	["buff", "Buff"],
+	["debuff", "Debuff"],
+	["passive", "Passiv"],
+]
+const CARD_TYPE_COLUMNS := 4
+const CARD_TYPE_SIZE := Vector2(185, 260)
+const CARD_TYPE_LIST_HEIGHT := 480
+## Platz für die Rand-Effekte, die über die Karten hinausragen (SkillCardPaper.FLAME_PAD)
+const CARD_TYPE_GAP := Vector2(44, 64)
+
+var _card_types_page: VBoxContainer
+
+func _open_card_types_page() -> void:
+	if _card_types_page != null:
+		_card_types_page.queue_free()
+	_card_types_page = VBoxContainer.new()
+	_card_types_page.add_theme_constant_override("separation", 12)
+	add_footer(_card_types_page)
+	_card_types_page.add_child(_make_header("Karten-Typen (Wasserzeichen und Rand-Effekt je Art)"))
+
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size.y = CARD_TYPE_LIST_HEIGHT
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_card_types_page.add_child(scroll)
+	DragScroll.attach(scroll)
+	# Rand oben und an den Seiten, sonst schneidet die Liste die Flammen der ersten Reihe ab
+	var margin := MarginContainer.new()
+	margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	margin.add_theme_constant_override("margin_top", int(SkillCardPaper.FLAME_PAD.y))
+	margin.add_theme_constant_override("margin_left", int(SkillCardPaper.FLAME_PAD.x))
+	margin.add_theme_constant_override("margin_right", int(SkillCardPaper.FLAME_PAD.z))
+	margin.add_theme_constant_override("margin_bottom", int(SkillCardPaper.FLAME_PAD.w))
+	scroll.add_child(margin)
+	var grid := GridContainer.new()
+	grid.columns = CARD_TYPE_COLUMNS
+	grid.add_theme_constant_override("h_separation", int(CARD_TYPE_GAP.x))
+	grid.add_theme_constant_override("v_separation", int(CARD_TYPE_GAP.y))
+	margin.add_child(grid)
+
+	var mon: Monster = State.mons[0] if not State.mons.is_empty() else Monster.new(State.INITIAL_LEVEL, Monmap.mon_metainfos_by_name(Monmap.mons[0].name))
+	var examples := _card_type_examples()
+	for entry in CARD_TYPES:
+		var kind: String = entry[0]
+		var caption: String = entry[1]
+		var skill: Dictionary = examples.get(kind, {})
+		var preview_only := false
+		# Debuffs gibt es (noch) nicht als eigene Skills: Buff-Karte, deren Papier als Debuff gezeichnet wird
+		if skill.is_empty() and kind == "debuff" and examples.has("buff"):
+			skill = examples.buff
+			preview_only = true
+		if skill.is_empty():
+			grid.add_child(_card_type_entry(null, caption + "\n(kein Skill im Spiel)"))
+			continue
+		var card := EggSkillCard.create(skill, mon)
+		if preview_only:
+			var fake := skill.duplicate()
+			fake.effect = "debuff"
+			card._paper.set_skill(fake)
+			caption += "\n(nur Vorschau, kein Debuff-Skill im Spiel)"
+		grid.add_child(_card_type_entry(card, caption))
+	# gesperrte Ei-Attacke: grau, ohne Rand-Effekt
+	if examples.has("physical"):
+		var locked := EggSkillCard.create(examples.physical, mon, "CONFIGURATOR_LOCKED", "EGG_SKILL_HINT")
+		grid.add_child(_card_type_entry(locked, "Gesperrte Ei-Attacke"))
+
+	var back := _make_button("ZURÜCK", _show_page.bind(_main))
+	back.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_card_types_page.add_child(back)
+	_show_page(_card_types_page)
+
+## Erster Skill je Art aus allen Skills, die im Spiel vorkommen (Pool und Trainer)
+func _card_type_examples() -> Dictionary:
+	var examples := {}
+	for skill in Skills.pool_skills() + Skills.trainer_skills(1):
+		var kind := SkillCardPaper.kind_key(skill)
+		if not examples.has(kind):
+			examples[kind] = Skills.get_skill(skill.name)
+	return examples
+
+func _card_type_entry(card: Control, caption: String) -> Control:
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", int(SkillCardPaper.FLAME_PAD.w) + 4)
+	if card != null:
+		card.custom_minimum_size = CARD_TYPE_SIZE
+		card.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		box.add_child(card)
+	var label := Label.new()
+	label.text = caption
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.custom_minimum_size.x = CARD_TYPE_SIZE.x
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.add_theme_color_override("font_color", IronPlate.TEXT_COLOR)
+	box.add_child(label)
+	return box
 
 func _refresh_start() -> void:
 	# ohne Fang und Gefallenen würde das Judgement sofort zurück zur Karte springen
@@ -514,6 +682,19 @@ func _make_toggle_button(text: String) -> Button:
 	button.toggled.connect(func(on: bool): button.modulate = Color.WHITE if on else UNPICKED_COLOR)
 	return button
 
+## Schalter "TITEL: AN/AUS" für eine gespeicherte Einstellung
+func _make_setting_toggle(title: String, on: bool, apply: Callable, tooltip: String) -> Button:
+	var button := _make_toggle_button("")
+	button.custom_minimum_size = BUTTON_SIZE
+	button.tooltip_text = tooltip
+	button.button_pressed = on
+	button.modulate = Color.WHITE if on else UNPICKED_COLOR
+	button.text = title + ": " + ("AN" if on else "AUS")
+	button.toggled.connect(func(now_on: bool):
+		apply.call(now_on)
+		button.text = title + ": " + ("AN" if now_on else "AUS"))
+	return button
+
 ## Raster für Monster-Buttons in einer scrollbaren Liste fester Höhe, damit Titel und Buttons darunter
 ## auch bei vielen Arten sichtbar bleiben. Auf dem Handy scrollt Wischen auch auf den Buttons (DragScroll).
 func _make_mon_grid(page: VBoxContainer, height: int) -> GridContainer:
@@ -528,6 +709,28 @@ func _make_mon_grid(page: VBoxContainer, height: int) -> GridContainer:
 	grid.add_theme_constant_override("h_separation", 8)
 	grid.add_theme_constant_override("v_separation", 8)
 	scroll.add_child(grid)
+	return grid
+
+## Scrollbare Liste fester Höhe für eine ganze Seite, die Buttons darunter bleiben immer sichtbar
+func _make_scroll_list(page: VBoxContainer, height: int) -> VBoxContainer:
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size.y = height
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	page.add_child(scroll)
+	DragScroll.attach(scroll)
+	var list := VBoxContainer.new()
+	list.add_theme_constant_override("separation", 10)
+	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(list)
+	return list
+
+## Raster ohne eigenes Scrollen (für Seiten, die als Ganzes scrollen)
+func _make_grid(parent: Control, columns: int) -> GridContainer:
+	var grid := GridContainer.new()
+	grid.columns = columns
+	grid.add_theme_constant_override("h_separation", 8)
+	grid.add_theme_constant_override("v_separation", 8)
+	parent.add_child(grid)
 	return grid
 
 func _make_mon_button(mon_species: String) -> Button:
@@ -562,27 +765,13 @@ func _start_fight(enemy_count: int) -> void:
 # Boss-Ausstattung (nur für Boss-Kämpfe auf der Gegnerzahl-Seite)
 
 ## Relikte als Schalter (keins = wie im Spiel), Trophäen pro Art mit Zähler (WIE IM SPIEL oder EIGENE)
-func _build_boss_options() -> void:
+func _build_boss_options(parent: Control) -> void:
 	_boss_options = VBoxContainer.new()
 	_boss_options.add_theme_constant_override("separation", 8)
-	_fight_page.add_child(_boss_options)
+	parent.add_child(_boss_options)
 
-	_boss_options.add_child(_make_header("Boss-Relikte des Kampfs (keins gewählt = wie im Spiel, %d zufällig)" % BossRelics.RELICS_PER_BATTLE))
-	var relic_grid := GridContainer.new()
-	relic_grid.columns = COLUMNS
-	relic_grid.add_theme_constant_override("h_separation", 8)
-	relic_grid.add_theme_constant_override("v_separation", 8)
-	_boss_options.add_child(relic_grid)
-	for id in BossRelics.RELICS:
-		var button := _make_toggle_button(tr(BossRelics.get_relic(id).name))
-		button.custom_minimum_size = BUTTON_SIZE
-		button.tooltip_text = BossRelics.description(id)
-		button.toggled.connect(func(on: bool):
-			if on:
-				_boss_relic_picks.append(id)
-			else:
-				_boss_relic_picks.erase(id))
-		relic_grid.add_child(button)
+	_boss_options.add_child(_make_header("Boss-Relikte des Kampfs (keins gewählt = wie im Spiel, %d zufällig; orange = Endboss-Relikt)" % BossRelics.RELICS_PER_BATTLE))
+	_add_boss_relic_toggles(_boss_options, _boss_relic_picks)
 
 	var default_count: int = BossRelics.default_trophies(Map.encounter_depth()).values()[0]
 	_boss_options.add_child(_make_header("Trophäen pro Boss, Anzahl je Art (wie im Spiel in diesem Biom: je %dx)" % default_count))
@@ -613,6 +802,22 @@ func _build_boss_options() -> void:
 		cell.add_child(_make_trophy_step_button(stat, 1))
 		trophy_grid.add_child(cell)
 	_refresh_trophy_mode()
+
+## Schalter für alle Boss-Relikte, Endboss-Relikte zuerst und in Relikt-Farbe. picks wird direkt befüllt.
+func _add_boss_relic_toggles(parent: Control, picks: Array) -> void:
+	var relic_grid := _make_grid(parent, COLUMNS)
+	for id in BossRelics.final_ids() + BossRelics.normal_ids():
+		var button := _make_toggle_button(tr(BossRelics.get_relic(id).name))
+		button.custom_minimum_size = BUTTON_SIZE
+		button.tooltip_text = ("Endboss-Relikt\n" if BossRelics.is_final(id) else "") + BossRelics.description(id)
+		if BossRelics.is_final(id):
+			button.add_theme_color_override("font_color", BossRelics.RELIC_COLOR)
+		button.toggled.connect(func(on: bool):
+			if on:
+				picks.append(id)
+			else:
+				picks.erase(id))
+		relic_grid.add_child(button)
 
 ## Ein Zähler schaltet auf eigene Trophäen um
 func _make_trophy_step_button(stat: String, step: int) -> Button:
@@ -702,9 +907,20 @@ func _end_run(won: bool) -> void:
 func _switch_biome(depth: int) -> void:
 	State.map_level = depth
 	State.biome_fight_index = 0
+	# Referenzstufe ab der Stufe des Teams, sonst stünden die Gegner nach dem Sprung noch auf dem alten Biom
+	State.level_ref_half = _team_ref_half()
 	State.current_map_position = State.NO_MAP_POSITION
 	Map.generate_starting_points()
 	_change_scene(WORLD_MAP_PATH)
+
+## Referenzstufe (halbe Stufen ab State.INITIAL_LEVEL) zur Durchschnittsstufe des Teams
+func _team_ref_half() -> int:
+	if State.mons.is_empty():
+		return 0
+	var total := 0
+	for mon in State.mons:
+		total += mon._level
+	return maxi(roundi(float(total) / State.mons.size()) - State.INITIAL_LEVEL, 0) * 2
 
 func _add_essence() -> void:
 	State.ep += DEBUG_ESSENCE
@@ -719,6 +935,11 @@ func _add_shards() -> void:
 func _add_keys() -> void:
 	State.keys += DEBUG_KEYS
 	Helper.show_unlock_message("+%d Schlüssel" % DEBUG_KEYS)
+
+func _add_item(id: String) -> void:
+	var item := Items.make(id)
+	Items.add_to_bag(item)
+	Helper.show_unlock_message("+1 %s" % Items.title(item))
 
 func _add_coupon() -> void:
 	State.coupons += 1
@@ -867,11 +1088,11 @@ func _refresh_trophy_page() -> void:
 ## Zahlen-Einstellungen: Key, Titel, Schritte (negativ und positiv), Format des Werts
 const DAMAGE_ROWS := [
 	["level_offset", "Stufen-Sockel", [5.0, 1.0], "%d"],
-	["hp_scale", "KP-Multiplikator", [1.0, 0.25], "x%.2f"],
+	["hp_scale", "LP-Multiplikator", [1.0, 0.25], "x%.2f"],
 ]
 ## Höhe der scrollbaren Liste, passt samt Titel und Buttons in die 720 px hohe Ansicht
 const DAMAGE_LIST_HEIGHT := 480
-const DAMAGE_SIM_FONT_SIZE := 15
+const DAMAGE_SIM_FONT_SIZE := 24
 
 ## Regler rund um den Schaden, darunter eine Live-Übersicht der Treffer bis K.O.
 func _build_damage_page() -> void:
@@ -942,8 +1163,9 @@ func _refresh_damage_page() -> void:
 		"Stufen-Sockel: 0 = Werte wachsen linear mit der Stufe (wie bisher, Stufe 10 hat doppelt so viel wie Stufe 5). " +
 			"Höher = jede Stufe bringt anteilig weniger, Stufenunterschiede zählen weniger. Die Startstufe 5 bleibt immer gleich. " +
 			"Beispiel Sockel 10: Stufe 10 hat nur 1,33x so viel wie Stufe 5. Gilt für alle Werte.",
-		"KP-Multiplikator: steuert die Kampflänge (Treffer bis K.O.).",
-		"Schaden = fester Wert + Anteil x (Sp.) Angriff, die Verteidigung des Ziels zählt nicht, nur Schilde.",
+		"LP-Multiplikator: steuert die Kampflänge (Treffer bis K.O.).",
+		"Schaden = fester Wert + Anteil x (Sp.) Angriff, die Verteidigung des Ziels zählt nicht, nur Schilde (ein Schild blockt physisch und magisch).",
+		"Element-Faktor nur für magische Angriffe, physische treffen immer neutral.",
 	])
 	_damage_sim.text = DamageSim.report()
 
@@ -1112,6 +1334,124 @@ func _start_judgement() -> void:
 		State.fainted_own_mons.append(fallen)
 	_change_scene(JUDGEMENT_PATH)
 
+# ─────────────────────────
+# Letzter Wille: Testszene mit einstellbarem gefallenem Monster. Das aktuelle Team bleibt und trauert,
+# gefallen ist ein zusätzliches Monster einer zufälligen Art; die neuen Fänge sind ebenfalls zufällig.
+
+## Punkte pro Trophäe im Test
+const LAST_WILL_TROPHY_VALUE := 6
+const LAST_WILL_MAX_CATCHES := 3
+const LAST_WILL_MAX_TROPHIES := 5
+const LAST_WILL_MAX_ELEMENTS := 2
+const LAST_WILL_PRESET_SIZE := Vector2(340, 44)
+const LAST_WILL_PRESETS := [
+	{"title": "TEST 1: WIEDERBELEBEN", "skills": 3, "catches": 3, "elements": 0, "revived": false, "trophies": {"atk": 1}},
+	{"title": "TEST 2: VOLLER NACHLASS", "skills": 6, "catches": 1, "elements": 1, "revived": true,
+		"trophies": {"hp": 2, "atk": 1, "def": 1, "speed": 1}},
+]
+
+var _last_will_page: VBoxContainer
+## Zahlenwerte (skills, catches, elements und je Trophäen-Stat die Anzahl) und revived
+var _last_will := {"skills": 4, "catches": 3, "elements": 0, "revived": false, "hp": 1, "atk": 1, "def": 0, "s_atk": 0, "speed": 0}
+var _last_will_labels := {}
+var _last_will_revived: Button
+
+func _build_last_will_page() -> void:
+	_last_will_page = VBoxContainer.new()
+	_last_will_page.add_theme_constant_override("separation", 10)
+	add_footer(_last_will_page)
+	var list := _make_scroll_list(_last_will_page, FIGHT_LIST_HEIGHT)
+	var presets := _add_section(list, "Letzter Wille: fertige Testszenen", [], 2)
+	for preset in LAST_WILL_PRESETS:
+		var button := _make_button(preset.title, func():
+			_apply_last_will_preset(preset)
+			_start_last_will())
+		button.custom_minimum_size = LAST_WILL_PRESET_SIZE
+		presets.add_child(button)
+	list.add_child(_make_header("Eigene Testszene (das aktuelle Team bleibt, Gefallener und Fänge sind zufällige Arten)"))
+	_add_last_will_row(list, "Fähigkeiten", "skills", 1, Skills.MAX_SKILLS)
+	_add_last_will_row(list, "Neue Fänge", "catches", 0, LAST_WILL_MAX_CATCHES)
+	_add_last_will_row(list, "Verg. Elemente", "elements", 0, LAST_WILL_MAX_ELEMENTS)
+	for stat in STAT_NAMES:
+		_add_last_will_row(list, "Trophäen " + STAT_NAMES[stat], stat, 0, LAST_WILL_MAX_TROPHIES)
+	_last_will_revived = _make_toggle_button("")
+	_last_will_revived.custom_minimum_size = LAST_WILL_PRESET_SIZE
+	_last_will_revived.toggled.connect(func(on: bool):
+		_last_will.revived = on
+		_refresh_last_will())
+	list.add_child(_last_will_revived)
+
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 12)
+	row.add_child(_make_button("ZURÜCK", _show_page.bind(_main)))
+	row.add_child(_make_button("STARTEN", _start_last_will))
+	_last_will_page.add_child(row)
+	_refresh_last_will()
+
+func _add_last_will_row(parent: Control, title: String, key: String, minimum: int, maximum: int) -> void:
+	var row := _make_stat_row(title)
+	for step in [-1, 1]:
+		var button := _make_button("%+d" % step, func():
+			_last_will[key] = clampi(_last_will[key] + step, minimum, maximum)
+			_refresh_last_will())
+		button.custom_minimum_size = STAT_STEP_SIZE
+		row.add_child(button)
+		if step < 0:
+			_last_will_labels[key] = _make_stat_value(row)
+	parent.add_child(row)
+
+func _refresh_last_will() -> void:
+	for key in _last_will_labels:
+		_last_will_labels[key].text = str(_last_will[key])
+	_last_will_revived.set_pressed_no_signal(_last_will.revived)
+	_last_will_revived.modulate = Color.WHITE if _last_will.revived else UNPICKED_COLOR
+	_last_will_revived.text = "SCHON WIEDERBELEBT: " + ("JA" if _last_will.revived else "NEIN")
+
+func _apply_last_will_preset(preset: Dictionary) -> void:
+	for key in ["skills", "catches", "elements", "revived"]:
+		_last_will[key] = preset[key]
+	for stat in STAT_NAMES:
+		_last_will[stat] = preset.trophies.get(stat, 0)
+	_refresh_last_will()
+
+func _start_last_will() -> void:
+	var level: int = State.INITIAL_LEVEL
+	for mon in State.mons:
+		level = maxi(level, mon._level)
+	# ohne lebendes Monster gäbe es niemanden, der trauert und erbt
+	if State.mons.is_empty():
+		State.mons.append(_wild_mon(Monmap.mons.pick_random().name, level))
+	State.catched_mons.clear()
+	State.fainted_own_mons.clear()
+	for i in _last_will.catches:
+		var species: String = Monmap.mons.pick_random().name
+		var catch := _wild_mon(species, level)
+		catch._initial_moves = Monster.BASE_MOVES
+		State.catched_mons.append(catch)
+		State.mark_mon_caught(species)
+	var fallen := _wild_mon(Monmap.mons.pick_random().name, level)
+	# Fähigkeiten auf die gewünschte Zahl bringen: fehlende aus dem gemeinsamen Pool, überzählige fallen weg
+	var pool := Skills.pool_skills().filter(func(skill): return not Skills.knows_skill(fallen, skill.name))
+	pool.shuffle()
+	while fallen._skills.size() < _last_will.skills and not pool.is_empty():
+		fallen._skills.append(Skills.learnable_copy(pool.pop_back()))
+	while fallen._skills.size() > _last_will.skills:
+		fallen._skills.pop_back()
+	var elements: Array = Enums.MON_TYPES.values()
+	elements.shuffle()
+	var added := 0
+	for element in elements:
+		if added < _last_will.elements and fallen.can_gain_element(element):
+			fallen.gain_element(element)
+			added += 1
+	for stat in STAT_NAMES:
+		if _last_will[stat] > 0:
+			fallen.add_gem(stat, _last_will[stat] * LAST_WILL_TROPHY_VALUE, _last_will[stat])
+	fallen._revived = _last_will.revived
+	State.fainted_own_mons.append(fallen)
+	_change_scene(JUDGEMENT_PATH)
+
 ## Wildes Monster einer bestimmten Art, immer mit Ei-Attacke (falls noch eine offen ist), damit Opfern möglich ist
 func _wild_mon(mon_species: String, level: int) -> Monster:
 	var meta: Dictionary = Monmap.mon_metainfos_by_name(mon_species)
@@ -1121,6 +1461,277 @@ func _wild_mon(mon_species: String, level: int) -> Monster:
 	Helper.roll_wild_skills(mon, meta)
 	Helper.add_egg_skill(mon)
 	mon.unlock_skills()
+	return mon
+
+# ─────────────────────────
+# Endboss-Test: zwei frei gewählte Arten auf freier Stufe, auf Wunsch im Chaos-Element, mit eigenen Trophäen und bis zu
+# 6 gewählten Fähigkeiten pro Monster (sonst zufälliges Deck), eigenen Relikten und wählbaren Boss-Relikten, direkt
+# gegen den Endboss des letzten Bioms. Ersetzt das aktuelle Team und die gesammelten Relikte.
+# Die ganze Seite scrollt, ZURÜCK und ENDBOSS STARTEN bleiben darunter stehen.
+
+func _build_final_test_page() -> void:
+	_final_test_page = VBoxContainer.new()
+	_final_test_page.add_theme_constant_override("separation", 10)
+	add_footer(_final_test_page)
+	for slot in FINAL_TEST_TEAM:
+		_final_skill_picks.append([])
+	_final_relic_picks = State.relics.filter(func(id): return not Relics.SETTINGS_ONLY_RELICS.has(id))
+
+	var list := _make_scroll_list(_final_test_page, FINAL_PAGE_HEIGHT)
+	list.add_child(_make_header("Endboss-Test: %d Monster wählen (ersetzt das Team)" % FINAL_TEST_TEAM))
+	var grid := _make_mon_grid(list, FINAL_TEST_LIST_HEIGHT)
+	for meta in Monmap.mons:
+		if meta.has("bounty_target") or meta.get("final_boss", false):
+			continue
+		var species: String = meta.name
+		var button := _make_mon_button(species)
+		button.toggled.connect(_on_final_pick.bind(species))
+		_final_buttons[species] = button
+		grid.add_child(button)
+
+	# Stufe und Dreier-Kombi
+	var options := HBoxContainer.new()
+	options.add_theme_constant_override("separation", 8)
+	list.add_child(options)
+	options.add_child(_make_header("Stufe"))
+	for step in [-5, -1]:
+		options.add_child(_make_final_level_button(step))
+	_final_level_label = _make_header("")
+	_final_level_label.custom_minimum_size.x = TROPHY_VALUE_WIDTH
+	_final_level_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	options.add_child(_final_level_label)
+	for step in [1, 5]:
+		options.add_child(_make_final_level_button(step))
+	_final_chaos = _make_toggle_button("DREIER-KOMBI")
+	_final_chaos.custom_minimum_size = BUTTON_SIZE
+	_final_chaos.tooltip_text = "Beide Monster bekommen zufällige Elemente bis zur Dreier-Kombi (wie am Ende eines Runs)"
+	options.add_child(_final_chaos)
+	_final_chaos.button_pressed = true
+
+	# Trophäen pro Team-Platz
+	list.add_child(_make_header("Trophäen pro Monster"))
+	for slot in FINAL_TEST_TEAM:
+		var counts := {}
+		var labels := {}
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 4)
+		list.add_child(row)
+		var slot_label := _make_header("")
+		slot_label.custom_minimum_size.x = TROPHY_LABEL_WIDTH
+		slot_label.clip_text = true
+		row.add_child(slot_label)
+		_final_slot_labels.append(slot_label)
+		for stat in DebugSettings.STATS:
+			counts[stat] = 0
+			var stat_label := _make_header(FINAL_STAT_SHORT[stat])
+			stat_label.custom_minimum_size.x = FINAL_STAT_LABEL_WIDTH
+			stat_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+			row.add_child(stat_label)
+			row.add_child(_make_final_trophy_button(slot, stat, -1))
+			var value := _make_header("")
+			value.custom_minimum_size.x = 36
+			value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			row.add_child(value)
+			labels[stat] = value
+			row.add_child(_make_final_trophy_button(slot, stat, 1))
+		_final_trophies.append(counts)
+		_final_trophy_labels.append(labels)
+
+	_build_final_skill_picker(list)
+
+	# Boss-Relikte des Endboss-Kampfs
+	list.add_child(_make_header("Boss-Relikte des Endboss-Kampfs (keins gewählt = wie im Spiel: %d zufällig aus dem Endboss-Pool; orange = Endboss-Relikt)" % BossRelics.FINAL_RELICS_PER_BATTLE))
+	_add_boss_relic_toggles(list, _final_boss_relic_picks)
+
+	# eigene Relikte, vorbelegt mit den gerade gesammelten
+	list.add_child(_make_header("Eigene Relikte (ersetzen beim Start die gesammelten)"))
+	var relic_grid := _make_grid(list, COLUMNS)
+	for id in Relics.RELICS:
+		if Relics.SETTINGS_ONLY_RELICS.has(id):
+			continue
+		var relic: Dictionary = Relics.get_relic(id)
+		var button := _make_toggle_button(tr(relic.name))
+		button.custom_minimum_size = BUTTON_SIZE
+		button.tooltip_text = tr(relic.description)
+		button.button_pressed = _final_relic_picks.has(id)
+		button.toggled.connect(func(on: bool):
+			if on and not _final_relic_picks.has(id):
+				_final_relic_picks.append(id)
+			elif not on:
+				_final_relic_picks.erase(id))
+		relic_grid.add_child(button)
+
+	var buttons := HBoxContainer.new()
+	buttons.alignment = BoxContainer.ALIGNMENT_CENTER
+	buttons.add_theme_constant_override("separation", 12)
+	buttons.add_child(_make_button("ZURÜCK", _show_page.bind(_main)))
+	_final_start = _make_button("ENDBOSS STARTEN", _start_final_test)
+	buttons.add_child(_final_start)
+	_final_test_page.add_child(buttons)
+	_refresh_final_test()
+
+func _on_final_pick(on: bool, species: String) -> void:
+	if not on:
+		_final_picks.erase(species)
+	elif not _final_picks.has(species):
+		_final_picks.append(species)
+		if _final_picks.size() > FINAL_TEST_TEAM:
+			# löst toggled(false) aus, das räumt die Liste nicht doppelt ab
+			var oldest: String = _final_picks.pop_front()
+			_final_buttons[oldest].button_pressed = false
+	_refresh_final_test()
+
+func _make_final_level_button(step: int) -> Button:
+	var button := _make_button("%+d" % step, func():
+		_final_level = clampi(_final_level + step, 1, 99)
+		_refresh_final_test())
+	button.custom_minimum_size = TROPHY_STEP_SIZE
+	return button
+
+func _make_final_trophy_button(slot: int, stat: String, step: int) -> Button:
+	var button := _make_button("%+d" % step, func():
+		_final_trophies[slot][stat] = maxi(_final_trophies[slot][stat] + step, 0)
+		_refresh_final_test())
+	button.custom_minimum_size = FINAL_STEP_SIZE
+	return button
+
+## Fähigkeiten pro Team-Platz: oben wird der Platz gewählt, darunter liegen alle lernbaren Fähigkeiten
+## (Pool, Meilensteine, Kopfgelder, Couverts) als Schalter. Höchstens Skills.MAX_SKILLS, die älteste fliegt raus.
+func _build_final_skill_picker(list: VBoxContainer) -> void:
+	list.add_child(_make_header("Fähigkeiten (bis zu %d pro Monster, keine gewählt = zufälliges Deck)" % Skills.MAX_SKILLS))
+	var slots := HBoxContainer.new()
+	slots.add_theme_constant_override("separation", 8)
+	list.add_child(slots)
+	for slot in FINAL_TEST_TEAM:
+		var slot_button := _make_toggle_button("")
+		slot_button.custom_minimum_size = Vector2(BUTTON_SIZE.x * 2, BUTTON_SIZE.y)
+		slot_button.pressed.connect(func():
+			_final_skill_slot = slot
+			_refresh_final_test())
+		slots.add_child(slot_button)
+		_final_skill_slot_buttons.append(slot_button)
+	slots.add_child(_make_button("LEEREN", func():
+		_final_skill_picks[_final_skill_slot].clear()
+		_refresh_final_test()))
+
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size.y = FINAL_SKILL_LIST_HEIGHT
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	list.add_child(scroll)
+	DragScroll.attach(scroll)
+	var grid := GridContainer.new()
+	grid.columns = 5
+	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid.add_theme_constant_override("h_separation", 8)
+	grid.add_theme_constant_override("v_separation", 8)
+	scroll.add_child(grid)
+	for skill_name in _final_skill_pool():
+		var skill: Dictionary = Skills.get_skill(skill_name)
+		var button := _make_toggle_button(tr(skill_name))
+		button.custom_minimum_size = FINAL_SKILL_BUTTON_SIZE
+		button.clip_text = true
+		button.tooltip_text = tr(skill_name) + "\n" + tr(ColorMap.get_combo(skill.get("nature", 0)).get("label", ""))
+		var color = ColorMap.get_combo(skill.get("nature", 0)).get("color", "")
+		if color != "":
+			button.add_theme_color_override("font_color", Color(color))
+		button.toggled.connect(_on_final_skill_toggled.bind(skill_name))
+		_final_skill_buttons[skill_name] = button
+		grid.add_child(button)
+
+## Alle Fähigkeiten, die ein Monster im Run lernen kann, nach übersetztem Namen sortiert
+func _final_skill_pool() -> Array:
+	var names := []
+	for skill in Skills.pool_skills() + Skills.milestone_skills + Skills.bounty_skills + Skills.reward_skills:
+		if not names.has(skill.name):
+			names.append(skill.name)
+	names.sort_custom(func(a, b): return tr(a).naturalnocasecmp_to(tr(b)) < 0)
+	return names
+
+func _on_final_skill_toggled(on: bool, skill_name: String) -> void:
+	var picks: Array = _final_skill_picks[_final_skill_slot]
+	if on and not picks.has(skill_name):
+		picks.append(skill_name)
+		if picks.size() > Skills.MAX_SKILLS:
+			picks.pop_front()
+	elif not on:
+		picks.erase(skill_name)
+	_refresh_final_test()
+
+func _refresh_final_test() -> void:
+	_final_level_label.text = str(_final_level)
+	for slot in FINAL_TEST_TEAM:
+		var species: String = _final_picks[slot] if slot < _final_picks.size() else ""
+		var species_name: String = Helper.mon_display_name(species) if species != "" else "—"
+		_final_slot_labels[slot].text = "%d: %s" % [slot + 1, species_name]
+		for stat in _final_trophy_labels[slot]:
+			_final_trophy_labels[slot][stat].text = "%d" % _final_trophies[slot][stat]
+		var count: int = _final_skill_picks[slot].size()
+		_final_skill_slot_buttons[slot].text = "FÄHIGKEITEN %d: %s (%s)" % [slot + 1, species_name.to_upper(),
+			"%d/%d" % [count, Skills.MAX_SKILLS] if count > 0 else "ZUFÄLLIG"]
+		_final_skill_slot_buttons[slot].set_pressed_no_signal(slot == _final_skill_slot)
+		_final_skill_slot_buttons[slot].modulate = Color.WHITE if slot == _final_skill_slot else UNPICKED_COLOR
+	# Schalter zeigen die Fähigkeiten des gerade gewählten Platzes
+	var current: Array = _final_skill_picks[_final_skill_slot]
+	for skill_name in _final_skill_buttons:
+		var button: Button = _final_skill_buttons[skill_name]
+		button.set_pressed_no_signal(current.has(skill_name))
+		button.modulate = Color.WHITE if current.has(skill_name) else UNPICKED_COLOR
+	_final_start.disabled = _final_picks.size() < FINAL_TEST_TEAM
+
+func _start_final_test() -> void:
+	# letztes Biom: Endboss, Biom-Skills für die Decks und Biom-Stufe der Bosse
+	State.map_level = Map.map_settings.size() - 1
+	State.biome_fight_index = 0
+	State.current_map_position = State.NO_MAP_POSITION
+	# Endboss auf der gewählten Stufe (+ level_bonus), wie am Ende eines Runs, in dem man gleichauf liegt
+	Map.boss_ref_half = (_final_level - State.INITIAL_LEVEL) * 2
+	for mon in State.mons:
+		Items.return_items(mon)
+	var team: Array[Monster] = []
+	for slot in _final_picks.size():
+		team.append(_final_test_mon(_final_picks[slot], _final_trophies[slot], _final_skill_picks[slot]))
+	State.mons = team
+	# eigene Relikte wie gewählt (on_add der neuen läuft über add_relic)
+	for id in State.relics.duplicate():
+		if not _final_relic_picks.has(id) and not Relics.SETTINGS_ONLY_RELICS.has(id):
+			Relics.remove_relic(id)
+	for id in _final_relic_picks:
+		Relics.add_relic(id)
+	State.is_map_boss = false
+	State.is_boss_fight = true
+	State.is_final_boss = true
+	DebugSettings.next_enemy_count = 0
+	DebugSettings.next_boss_relics = null
+	DebugSettings.next_boss_trophies = null
+	Map.pending_enemies = Map.roll_boss_enemies(0, true)
+	Map.pending_relics = _final_boss_relic_picks.duplicate() if not _final_boss_relic_picks.is_empty() \
+		else BossRelics.random_final_relics()
+	_change_scene(BATTLE_PATH)
+
+## Monster für den Endboss-Test: Dreier-Kombi (falls gewählt) vor dem Deck, damit die Karten dazu wach sind.
+## Gewählte Fähigkeiten ersetzen das zufällige Deck. Trophäen zählen wie im letzten Biom (DebugSettings.trophy_bonus).
+func _final_test_mon(species: String, trophies: Dictionary, skill_names: Array) -> Monster:
+	var meta: Dictionary = Monmap.mon_metainfos_by_name(species)
+	var mon := Monster.new(_final_level, meta)
+	if _final_chaos.button_pressed:
+		var missing: Array = Enums.MON_TYPES.values()
+		missing.shuffle()
+		for element in missing:
+			mon.gain_element(element)
+	if skill_names.is_empty():
+		Helper.roll_wild_skills(mon, meta)
+		Helper.add_egg_skill(mon)
+	else:
+		for skill_name in skill_names:
+			var skill: Dictionary = Skills.get_skill(skill_name)
+			if not skill.is_empty():
+				mon._skills.append(skill)
+	mon.unlock_skills()
+	mon._initial_moves = Monster.BASE_MOVES
+	var bonus: int = DebugSettings.trophy_bonus(State.map_level)
+	for stat in trophies:
+		if trophies[stat] > 0:
+			mon.add_gem(stat, bonus * trophies[stat], trophies[stat])
 	return mon
 
 # ─────────────────────────

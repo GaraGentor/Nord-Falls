@@ -6,7 +6,7 @@ extends PopupPanel
 ## Schließt sich beim Klick daneben von selbst (PopupPanel).
 
 const THEME := preload("res://script/ui/materials/pixel_font_theme.tres")
-const FONT_SIZE := 18
+const FONT_SIZE := 24
 const BUFF_COLOR := Color(0.55, 1.0, 0.55)
 const TEXT_COLOR := Color(0.92, 0.9, 0.85)
 const BACKGROUND := Color(0.08, 0.07, 0.1, 0.94)
@@ -23,17 +23,29 @@ static func buffed_stats(mon: Monster) -> Array:
 		var stat: String = BOON_ICON_STATS.get(kind, "")
 		if stat != "" and not stats.has(stat):
 			stats.append(stat)
+	for mod in mon._flat_mods.values():
+		var stat: String = FLAT_ICON_STATS.get(mod.stat, mod.stat)
+		if mod.value > 0.0 and not stats.has(stat):
+			stats.append(stat)
 	return stats
 
 ## Symbol (Stat-Key) pro Sonder-Verstärkung im Status unter dem Monster
-const BOON_ICON_STATS := {"crit_next": "atk", "crit": "atk", "leech": "hp", "extra_moves": "speed", "taunt": "def"}
+const BOON_ICON_STATS := {"crit_next": "atk", "crit": "atk", "leech": "hp", "extra_moves": "speed", "taunt": "def",
+	"double_hit": "atk", "extra_action": "speed"}
+## Symbol für feste Boni ohne eigenen Wert (Schild-Bonus -> Verteidigung, Schadens-Bonus -> Angriff), Plage -> Initiative
+const FLAT_ICON_STATS := {"shield": "def", "damage": "atk", "moves": "speed"}
 
 ## Werte mit Schwächung (mehrere Quellen auf denselben Wert zählen einmal)
 static func debuffed_stats(mon: Monster) -> Array:
 	var stats := []
 	for debuff in mon._debuffs.values():
-		if not stats.has(debuff.stat):
-			stats.append(debuff.stat)
+		var stat: String = FLAT_ICON_STATS.get(debuff.stat, debuff.stat) if debuff.stat == "moves" else debuff.stat
+		if not stats.has(stat):
+			stats.append(stat)
+	for mod in mon._flat_mods.values():
+		var stat: String = FLAT_ICON_STATS.get(mod.stat, mod.stat)
+		if mod.value < 0.0 and not stats.has(stat):
+			stats.append(stat)
 	return stats
 
 ## Öffnet das Fenster unter anchor
@@ -76,6 +88,11 @@ func _lines(mon: Monster) -> Array:
 		var buff: Dictionary = mon._buffs[stat]
 		lines.append([tr("STATUS_BUFF_LINE").format({"value": roundi(buff.factor * 100), "stat": Skills.stat_label(stat),
 			"turns": _turns(buff.turns)}), BUFF_COLOR])
+	# feste Boni (Doppelter Schild, Kampfgeist, Rückenwind ...)
+	for mod in mon._flat_mods.values():
+		if mod.value > 0.0:
+			lines.append([tr("STATUS_FLAT_BUFF_LINE").format({"value": roundi(mod.value), "stat": Skills.stat_label(mod.stat),
+				"turns": _turns(mod.turns)}), BUFF_COLOR])
 	for kind in mon._charges:
 		lines.append([tr("STATUS_CHARGE_LINE_" + String(kind).to_upper()).format({"value": roundi(mon._charges[kind] * 100)}), BUFF_COLOR])
 	# Sonder-Verstärkungen (kritische Treffer, Lebensraub, Aktionen, Aggro)
@@ -83,8 +100,17 @@ func _lines(mon: Monster) -> Array:
 		var boon: Dictionary = mon._boons[kind]
 		lines.append([tr("STATUS_BOON_" + String(kind).to_upper()).format({"value": roundi(boon.value), "turns": _turns(boon.turns)}), BUFF_COLOR])
 	for debuff in mon._debuffs.values():
+		# Plage: höchstens n Aktionen pro Zug
+		if debuff.stat == "moves":
+			lines.append([tr("STATUS_MOVES_CAP_LINE").format({"value": roundi(debuff.factor), "turns": _turns(debuff.turns)}),
+				ElementEffects.DEBUFF_COLOR])
+			continue
 		lines.append([tr("STATUS_DEBUFF_LINE").format({"value": roundi(debuff.factor * 100), "stat": Skills.stat_label(debuff.stat),
 			"turns": _turns(debuff.turns)}), ElementEffects.DEBUFF_COLOR])
+	for mod in mon._flat_mods.values():
+		if mod.value < 0.0:
+			lines.append([tr("STATUS_FLAT_DEBUFF_LINE").format({"value": roundi(-mod.value), "stat": Skills.stat_label(mod.stat),
+				"turns": _turns(mod.turns)}), ElementEffects.DEBUFF_COLOR])
 	for status in mon._statuses:
 		var text := tr(ElementEffects.STATUS_LABELS[status])
 		if status == ElementEffects.POISON:

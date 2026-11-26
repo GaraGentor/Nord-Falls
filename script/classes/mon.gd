@@ -18,6 +18,8 @@ var _upgrades: int = 0
 var _bounty: String = ""
 # Gegner aus einem Boss-Kampf (Biom-Boss oder Boss-Feld)
 var _is_boss: bool = false
+# Helfer des Endboss-Relikts Buddy: nur für einen Kampf, nicht fangbar, keine Beute
+var _minion: bool = false
 # Monster, das zuletzt Schaden verursacht hat (entscheidet, wer ein Kopfgeld bekommt)
 var _last_hit_by: Monster
 var _lost_hp: float = 0:
@@ -52,9 +54,21 @@ var _gained_elements: int = 0
 var _revived: bool = false
 
 # Kampf-Zustand, wird zu Beginn jedes Kampfes zurückgesetzt (reset_battle_state)
-# Schilde fangen Schaden ab, bis sie aufgebraucht sind oder der nächste eigene Zug beginnt (start_turn): physisch gegen physischen, magisch gegen magischen Schaden
-var _shield: float = 0
-var _s_shield: float = 0
+# Schilde fangen Schaden ab (physisch und magisch), bis sie aufgebraucht sind oder der Wirker wieder am Zug ist.
+# Einträge {"amount": float, "source": Monster}; source == null = Schild zu Kampfbeginn (Schildrune), hält die erste Runde.
+# Schilde desselben Wirkers laufen gleichzeitig ab und liegen daher in einem Eintrag (add_shield).
+# Stirbt der Wirker, kommt sein Zug nie wieder: dann fällt der Schild zu Beginn des nächsten eigenen Zuges weg (start_turn).
+var _shields: Array = []
+## Wie viele Züge bis ein Schild dieses Wirkers abläuft (source, holder) -> int, gesetzt von battle.gd (Turn Wheel).
+## Damit verbraucht Schaden zuerst den Schild, der am frühesten abläuft. Ohne Kampf zählt die Reihenfolge des Hinzufügens.
+static var shield_expiry: Callable
+# Spiegelscherbe: Treffer werfen einen Anteil des Schadens zurück, Einträge {"share": float, "source": Monster},
+# laufen ab wie Schilde (bis der Wirker wieder am Zug ist)
+var _reflects: Array = []
+# Markierungen durch One-Way-Items im Kampf: "bait" = +Fangchance (0..1), "blood" = Schadensfaktor des nächsten Treffers
+var _item_marks: Dictionary = {}
+# Ausgerüstete One-Way-Items (Items), zwei Plätze, null = leer. Gehören zum Run, nicht zum Kampf.
+var _items: Array = [null, null]
 # Buffs: Stat-Key (wie bei _gems) -> {"factor": 0.3 = +30 %, "turns": übrige eigene Züge}
 var _buffs: Dictionary = {}
 # Schwächungen (ElementEffects): Quelle -> {"stat": Stat-Key, "factor": 0.2 = -20 %, "turns": übrige eigene Züge, -1 = bis Kampfende}.
@@ -70,12 +84,25 @@ var _charges: Dictionary = {}
 # "crit" (alle Treffer kritisch), "leech" (Lebensraub value %), "extra_moves" (+value Aktionen pro Zug),
 # "taunt" (zieht die Einzelangriffe der Gegner auf sich)
 var _boons: Dictionary = {}
+# Feste Boni und Abzüge (Buffs mit festen Werten, Treibsand): Quelle -> {"stat": ..., "value": + Bonus / - Abzug,
+# "turns": übrige eigene Züge (+1 wie bei Buffs)}. stat ist ein echter Wert ("atk", "s_atk", "def", "speed") oder
+# "shield" (+value auf jeden Schild, den das Monster wirkt) bzw. "damage" (+value Schaden auf jeden eigenen Angriff).
+var _flat_mods: Dictionary = {}
+## Über so viele Aktionen pro Zug hebt Mut & Wille (Skills.grant_action) ein Monster nicht
+const MAX_GRANTED_MOVES := 4
 # Buffs und Schwächungen zusammen drücken einen Wert nie unter diesen Faktor
 const MIN_STAT_FACTOR := 0.25
 # Nur Gegner: geplanter nächster Zug als [{"skill": Dictionary, "target": Monster}], im Kampf als Absicht sichtbar (battle.gd _plan_intent)
 var _intent: Array = []
 # Zwischenstände der Boss-Relikte dieses Monsters im laufenden Kampf (z. B. Schaden für den Fate-Spiegel), siehe BossRelics
 var _relic_state: Dictionary = {}
+# Element-Leihgabe (ElementLoan): geliehene Elemente [{"element": int, "from": Monster}], gelten bis zur nächsten
+# Fähigkeit, die sie verändern, oder bis Zugende
+var _loans: Array = []
+# Aktionen, die dieses Monster verliehen hat: fehlen ihm in seinem nächsten Zug (reset_to_new_round)
+var _loan_debt: int = 0
+# Schlamm (ElementEffects._apply_mud): so viele Aktionen fehlen diesem Monster in seinem nächsten Zug (0 oder 1)
+var _mud_debt: int = 0
 
 func _init(level: int, meta_data: Dictionary) -> void:
 	## get saved data and apply.
@@ -111,24 +138,30 @@ func upgrade_skill(skill, level):
 	pass
 
 func reset_battle_state() -> void:
-	_shield = 0
-	_s_shield = 0
+	_shields = []
+	_reflects = []
+	_item_marks = {}
 	_buffs = {}
 	_debuffs = {}
 	_statuses = {}
 	_charges = {}
 	_boons = {}
+	_flat_mods = {}
 	_intent = []
 	_relic_state = {}
+	_loans = []
+	_loan_debt = 0
+	_mud_debt = 0
 	for skill in _skills:
 		skill.erase("_cooldown_left")
 	Events.monster_status_changed.emit(self)
 
-# Beginn eines eigenen Zuges (eigene Monster und Gegner): Abklingzeiten und Buffs zählen herunter,
-# Schilde laufen ab (sie halten also genau bis zum nächsten eigenen Zug).
+# Beginn eines eigenen Zuges (eigene Monster und Gegner): Abklingzeiten und Buffs zählen herunter.
+# Die eigenen Schilde und die anderer Monster dieses Wirkers sind schon abgelaufen (battle.gd ruft vorher
+# expire_from für alle Monster auf). Hier fallen nur noch Schilde weg, deren Wirker nicht mehr kämpft.
 func start_turn() -> void:
-	_shield = 0
-	_s_shield = 0
+	_shields = _shields.filter(func(entry): return entry.source == null or _still_fighting(entry.source))
+	_reflects = _reflects.filter(func(entry): return _still_fighting(entry.source))
 	for skill in _skills:
 		Skills.tick_cooldown(skill)
 	for stat in _buffs.keys():
@@ -147,27 +180,87 @@ func start_turn() -> void:
 		_boons[key].turns -= 1
 		if _boons[key].turns <= 0:
 			_boons.erase(key)
+	for key in _flat_mods.keys():
+		_flat_mods[key].turns -= 1
+		if _flat_mods[key].turns <= 0:
+			_flat_mods.erase(key)
 	Events.monster_status_changed.emit(self)
 
-func add_shield(amount: float, physical: bool) -> void:
-	if physical:
-		_shield += amount
-	else:
-		_s_shield += amount
+## Summe aller Schilde
+func shield() -> float:
+	var total := 0.0
+	for entry in _shields:
+		total += entry.amount
+	return total
+
+## Schild von source (null = dieses Monster selbst): hält, bis source wieder am Zug ist
+func add_shield(amount: float, source: Monster = null) -> void:
+	if amount <= 0:
+		return
+	_add_shield_entry(amount, self if source == null else source)
+
+## Schild zu Kampfbeginn (Schildrune): hält die ganze erste Runde, egal wer wann am Zug ist (expire_start_shields)
+func add_start_shield(amount: float) -> void:
+	if amount > 0:
+		_add_shield_entry(amount, null)
+
+func _add_shield_entry(amount: float, source: Monster) -> void:
+	for entry in _shields:
+		if entry.source == source:
+			entry.amount += amount
+			Events.monster_status_changed.emit(self)
+			return
+	_shields.append({"amount": amount, "source": source})
 	Events.monster_status_changed.emit(self)
 
-# Zieht den Schaden vom passenden Schild ab und liefert, was durchkommt.
-func absorb_damage(damage: float, physical: bool) -> float:
-	var shield = _shield if physical else _s_shield
-	var blocked = minf(shield, damage)
-	if blocked <= 0:
+## caster ist wieder am Zug: seine Schilde und Spiegelungen auf diesem Monster laufen ab
+func expire_from(caster: Monster) -> void:
+	var before := _shields.size() + _reflects.size()
+	_shields = _shields.filter(func(entry): return entry.source != caster)
+	_reflects = _reflects.filter(func(entry): return entry.source != caster)
+	if _shields.size() + _reflects.size() != before:
+		Events.monster_status_changed.emit(self)
+
+## Die erste Runde ist vorbei: Schilde zu Kampfbeginn laufen ab
+func expire_start_shields() -> void:
+	expire_from(null)
+
+## Steht source noch lebend im Kampf? (gefangene Gegner stehen nicht mehr in enemy_mons)
+func _still_fighting(source: Monster) -> bool:
+	return source != null and source.is_alive() and (State.mons.has(source) or State.enemy_mons.has(source))
+
+# Zieht den Schaden von den Schilden ab (sie blocken physische und magische Angriffe) und liefert, was durchkommt.
+# Zuerst wird der Schild verbraucht, der am frühesten abläuft (shield_expiry).
+func absorb_damage(damage: float) -> float:
+	if _shields.is_empty() or damage <= 0:
 		return damage
-	if physical:
-		_shield = maxf(_shield - blocked, 0.0)
-	else:
-		_s_shield = maxf(_s_shield - blocked, 0.0)
+	var order := _shields.duplicate()
+	if shield_expiry.is_valid():
+		var holder := self
+		order.sort_custom(func(a, b): return shield_expiry.call(a.source, holder) < shield_expiry.call(b.source, holder))
+	var left := damage
+	for entry in order:
+		var blocked := minf(entry.amount, left)
+		entry.amount -= blocked
+		left -= blocked
+		if left <= 0:
+			break
+	_shields = _shields.filter(func(entry): return entry.amount > 0)
 	Events.monster_status_changed.emit(self)
-	return damage - blocked
+	return left
+
+## Spiegelscherbe: Treffer werfen share des Schadens zurück, bis source wieder am Zug ist
+func add_reflect(share: float, source: Monster) -> void:
+	_reflects = _reflects.filter(func(entry): return entry.source != source)
+	_reflects.append({"share": share, "source": source})
+	Events.monster_status_changed.emit(self)
+
+## Anteil des Schadens, der zum Angreifer zurückprallt (mehrere Spiegelungen zählen nicht doppelt, die stärkste gilt)
+func reflect_share() -> float:
+	var share := 0.0
+	for entry in _reflects:
+		share = maxf(share, entry.share)
+	return share
 
 # Erneutes Buffen desselben Werts stapelt nicht, sondern frischt Stärke und Dauer auf.
 func add_buff(stat: String, factor: float, turns: int) -> void:
@@ -182,7 +275,38 @@ func buff_factor(stat: String) -> float:
 	return maxf(factor, MIN_STAT_FACTOR)
 
 func is_buffed() -> bool:
-	return not _buffs.is_empty() or not _charges.is_empty() or not _boons.is_empty()
+	return not _buffs.is_empty() or not _charges.is_empty() or not _boons.is_empty() \
+		or _flat_mods.values().any(func(mod): return mod.value > 0.0)
+
+# Fester Bonus (value > 0) oder Abzug (value < 0). Erneut aus derselben Quelle: frischt auf, stapelt nicht
+# (der stärkere Wert und die längere Dauer bleiben).
+func add_flat(key: String, stat: String, value: float, turns: int) -> void:
+	var old: Dictionary = _flat_mods.get(key, {})
+	var stronger: float = value if absf(value) >= absf(old.get("value", 0.0)) else old.value
+	_flat_mods[key] = {"stat": stat, "value": stronger, "turns": maxi(turns, old.get("turns", 0))}
+	Events.monster_status_changed.emit(self)
+
+## Summe aller festen Boni und Abzüge auf stat (siehe _flat_mods)
+func flat_bonus(stat: String) -> float:
+	var total := 0.0
+	for mod in _flat_mods.values():
+		if mod.stat == stat:
+			total += mod.value
+	return total
+
+# Plage: Aktionen pro Zug gedeckelt (Schwächung mit stat "moves", factor = höchstens so viele Aktionen), -1 = kein Deckel.
+# next_turn: nur Deckel, die den nächsten eigenen Zug noch erleben (Gegner planen ihren Zug am Ende des vorigen).
+func moves_cap(next_turn := false) -> int:
+	var cap := -1
+	for debuff in _debuffs.values():
+		if debuff.stat != "moves" or (next_turn and debuff.turns == 1):
+			continue
+		cap = roundi(debuff.factor) if cap < 0 else mini(cap, roundi(debuff.factor))
+	return cap
+
+func cap_moves(moves: int, next_turn := false) -> int:
+	var cap := moves_cap(next_turn)
+	return moves if cap < 0 else mini(moves, cap)
 
 # Erneutes Verleihen derselben Sonder-Verstärkung stapelt nicht, sondern nimmt den größeren Wert und die längere Dauer.
 func add_boon(kind: String, value: float, turns: int) -> void:
@@ -232,7 +356,7 @@ func add_debuff(key: String, stat: String, factor: float, turns: int) -> void:
 	Events.monster_status_changed.emit(self)
 
 func is_debuffed() -> bool:
-	return not _debuffs.is_empty()
+	return not _debuffs.is_empty() or _flat_mods.values().any(func(mod): return mod.value < 0.0)
 
 # Statuseffekt bis Kampfende, erneutes Anwenden erhöht die Stapel bis max_stacks.
 # Die Stärke bleibt die der stärksten Karte, eine schwächere Karte senkt sie nicht.
@@ -257,7 +381,11 @@ func reset_to_new_round():
 	Events.refresh_ui_for_monster.emit()
 	print("_upgrades", _upgrades, "_initial_moves", _initial_moves)
 	# Rückenwind & Co.: zusätzliche Aktionen für ein paar eigene Züge (Sonder-Verstärkung "extra_moves")
-	_computed_moves = Relics.modify("moves", _initial_moves + _upgrades, self) + roundi(boon_value("extra_moves"))
+	# verliehene Aktionen (Element-Leihgabe) fehlen genau in diesem Zug
+	# Plage deckelt die Aktionen, Schlamm nimmt eine weg
+	_computed_moves = maxi(cap_moves(Relics.modify("moves", _initial_moves + _upgrades, self) + roundi(boon_value("extra_moves")) - _loan_debt - _mud_debt), 0)
+	_loan_debt = 0
+	_mud_debt = 0
 
 func unlock_skills():
 	for skill in _skills:
@@ -285,14 +413,18 @@ func defense():
 func s_attack():
 	return _stat_with_bonuses("s_atk")
 
-func s_defense():
-	return _stat_with_bonuses("s_def")
-
 func speed():
 	return _stat_with_bonuses("speed")
 
+# Feste Boni (_flat_mods) zählen zum Grundwert, Prozent-Buffs wirken darauf. Großer Bruder (Passiv beim Vorgänger
+# im Team) hebt den Grundwert auf den des Trägers, wenn der höher ist.
 func _stat_with_bonuses(stat: String) -> float:
-	return (_base_stat(stat) + gem_bonus(stat)) * buff_factor(stat) * Skills.passive_stat_factor(self, stat)
+	var raw := maxf(raw_stat(stat), Skills.big_brother_stat(self, stat))
+	return maxf(raw + flat_bonus(stat), 0.0) * buff_factor(stat) * Skills.passive_stat_factor(self, stat)
+
+## Grundwert + Edelsteine, ohne Buffs und Passive
+func raw_stat(stat: String) -> float:
+	return _base_stat(stat) + gem_bonus(stat)
 
 func best():
 	return _best_points
@@ -327,7 +459,17 @@ func add_gem(stat: String, bonus: int, count := 1) -> void:
 	_gems[stat] = _gems.get(stat, 0) + bonus
 	_gem_counts[stat] = gem_count(stat) + count
 
+## Höchstens so viele Elemente kann ein Monster haben (Dreier-Kombi). Chaos (alle vier) bleibt dem Endboss vorbehalten,
+## der es schon als Art-Element mitbringt. Spieler müssen sich so für einen Dreier-Pfad entscheiden.
+const MAX_ELEMENTS := 3
+
+## Kann das Monster dieses Element noch annehmen? (noch nicht da und danach höchstens MAX_ELEMENTS)
+func can_gain_element(element: int) -> bool:
+	return not ColorMap.has_element(_type, element) and Map.count_elements(_type | element) <= MAX_ELEMENTS
+
 func gain_element(element: int) -> void:
+	if not can_gain_element(element):
+		return
 	_type = ColorMap.add_element(_type, element)
 	_gained_elements |= element
 	# Meilensteine "neues Element" / "Chaos" des Start-Monsters

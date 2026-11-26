@@ -2,7 +2,7 @@ class_name EggSkillCard
 extends PanelContainer
 
 ## Große Karte einer Ei-Attacke für die Ei-Auswahl, aufgebaut wie die Spielkarte im Kampf.
-## Kosten, Sterne, Abklingzeit, Name und unten Gesamtwert und Element stehen fest (SkillCardFace). Nur die Beschreibung darunter scrollt:
+## Kosten schräg auf der Ecke, der Name und unten Wert mit Art-Symbol, Sterne, Abklingzeit und Element stehen fest (SkillCardFace). Nur die Beschreibung darunter scrollt:
 ## von selbst, wenn sie nicht passt, und per Mausrad / Leiste auch von Hand. Nach eigenem Scrollen
 ## setzt das automatische Scrollen erst nach einer Weile Ruhe wieder ein.
 ## Gesperrte Attacken liegen unter zwei gekreuzten Ketten, mittig steht, wie man sie freischaltet.
@@ -10,13 +10,29 @@ extends PanelContainer
 const HEIGHT := 210.0
 const THEME := preload("res://script/ui/materials/battle_labels.tres")
 const TEXT_COLOR := IronPlate.TEXT_COLOR
-const MISSING_COLOR := Color(1, 0.45, 0.45)
 const LOCKED_TINT := Color(0.5, 0.5, 0.5)
 const GOLD := SkillCardPaper.GOLD
 
 var _scroll: AutoScrollContainer
 var _paper: SkillCardPaper
+var _bottom_row: SkillCardFace.BottomRow
 var _name_label: Label
+## Gesperrte Karte: Inhalt (abgedunkelt) und Ketten mit Hinweis, set_revealed blendet die Ketten weg
+var _margin: MarginContainer
+var _lock: ChainOverlay
+## Plakette mit dem Freischalt-Hinweis (fährt beim Aufdecken nach oben raus)
+var _lock_text: Control
+var _reveal_tween: Tween
+
+## Aufdecken: Hinweis raus, dann die Ketten, die zweite etwas versetzt
+const REVEAL_TEXT_TIME := 0.22
+const REVEAL_CHAIN_TIME := 0.38
+const REVEAL_CHAIN_STAGGER := 0.07
+
+## Plakette mit dem Freischalt-Hinweis: Abstand zum Kartenrand, Innenabstand, Schriftgröße des Hinweises
+const LOCK_MARGIN := 14
+const LOCK_PLATE_PADDING := 8
+const LOCK_HINT_SIZE := 19
 
 ## locked_label/locked_hint: gesperrte Attacke, Texte mittig auf den Ketten (leer = nicht gesperrt)
 static func create(skill: Dictionary, mon: Monster, locked_label := "", locked_hint := "") -> EggSkillCard:
@@ -41,27 +57,29 @@ func _build(skill: Dictionary, mon: Monster, locked_label: String, locked_hint: 
 	if locked:
 		margin.modulate = LOCKED_TINT
 	add_child(margin)
+	_margin = margin
 	var lines := VBoxContainer.new()
 	lines.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	lines.add_theme_constant_override("separation", 4)
 	margin.add_child(lines)
 
-	# oben: Kosten, Sterne (Stufe) und Abklingzeit
+	# oben: Kosten schräg auf der Ecke, der Name daneben
 	var top_row := SkillCardFace.TopRow.new()
 	lines.add_child(top_row)
 	top_row.show_skill(skill)
 
-	var name_label := _label(tr(skill.name), 18, SkillCardPaper.readable_color(Helper.color_by_type(skill.nature)))
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var name_label := _label(tr(skill.name), SkillCardFace.TITLE_SIZE, SkillCardPaper.readable_color(Helper.color_by_type(skill.nature)))
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	lines.add_child(name_label)
-	# höchstens zwei Zeilen, lange Namen werden kleiner
-	SkillCardFace.fit_title(name_label, 18)
+	# einheitliche Titelgröße, höchstens zwei Zeilen, lange Namen werden kleiner
+	top_row.set_title(name_label)
 	_name_label = name_label
 
 	# Mitte: nur die Beschreibung scrollt
 	_scroll = AutoScrollContainer.new()
 	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	# ohne sichtbare Leiste: der Text scrollt von selbst, von Hand mit dem Mausrad
+	_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
 	# auf der ganzen Karte gedrückt halten hält den Text an
 	_scroll.hold_area = self
 	# PASS: Klick und Ziehen gehen weiter an die Karte (Drag & Drop), das Mausrad scrollt den Text
@@ -74,7 +92,7 @@ func _build(skill: Dictionary, mon: Monster, locked_label: String, locked_hint: 
 	description.scroll_active = false
 	description.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	description.add_theme_font_override("normal_font", THEME.get_font("font", "Label"))
-	description.add_theme_font_size_override("normal_font_size", 13)
+	SkillCardFace.style_text(description)
 	description.add_theme_color_override("default_color", TEXT_COLOR)
 	# schlummernd: abgeschwächte Werte, Element-Effekt durchgestrichen, darunter was die Attacke weckt
 	description.text = Helper.skill_description(skill, true, null if locked else mon)
@@ -83,33 +101,70 @@ func _build(skill: Dictionary, mon: Monster, locked_label: String, locked_hint: 
 	description.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_scroll.add_child(description)
 
-	if not locked and not Skills.can_use(mon, skill):
-		# wählbar, aber erst spielbar, wenn das Monster die fehlenden Elemente bekommt (z. B. im Shop)
-		var missing := _label(Skills.missing_elements_text(mon, skill), 12, MISSING_COLOR)
-		missing.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		missing.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		missing.custom_minimum_size.x = 1
-		lines.add_child(missing)
-
-	# unten: Icon mit Gesamtwert und Element
+	# unten: links Wert und Art-Symbol, rechts die Abklingzeit
 	var bottom_row := SkillCardFace.BottomRow.new()
 	lines.add_child(bottom_row)
 	bottom_row.show_skill(skill, mon)
+	# ohne Monster (Trainer, Couvert) gibt es keine fehlenden Elemente
+	if not locked and mon != null and not Skills.can_use(mon, skill):
+		# wählbar, aber erst spielbar, wenn das Monster die fehlenden Elemente bekommt (z. B. im Shop):
+		# der Hinweis liegt über Wert und Abklingzeit, die Beschreibung behält ihren Platz
+		bottom_row.show_missing(Skills.missing_elements_text(mon, skill))
+	_bottom_row = bottom_row
 
 	if locked:
 		_scroll.set_process(false)
-		add_child(_build_lock(locked_label, locked_hint))
+		_lock = _build_lock(locked_label, locked_hint)
+		add_child(_lock)
+
+func is_locked() -> bool:
+	return _lock != null
+
+## Gesperrte Karte aufdecken (Ketten und Hinweis weg, Karte in voller Farbe) oder wieder verschließen.
+## Die Sammlung deckt so eine angeklickte Ei-Attacke auf, bis man woanders hinklickt.
+func set_revealed(revealed: bool) -> void:
+	if _lock == null:
+		return
+	if _reveal_tween != null:
+		_reveal_tween.kill()
+	_scroll.set_process(revealed)
+	set_selected(revealed)
+	var tween := create_tween().set_parallel()
+	_reveal_tween = tween
+	var out_y := -size.y
+	if revealed:
+		# erst fährt der Hinweis nach oben raus, dann ziehen sich die Ketten nacheinander nach oben weg
+		tween.tween_property(_lock_text, "position:y", out_y, REVEAL_TEXT_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+		tween.tween_property(_lock_text, "modulate:a", 0.0, REVEAL_TEXT_TIME).set_delay(REVEAL_TEXT_TIME * 0.5)
+		tween.tween_property(_lock, "retract_right", 1.0, REVEAL_CHAIN_TIME).set_delay(REVEAL_TEXT_TIME * 0.6) \
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+		tween.tween_property(_lock, "retract_left", 1.0, REVEAL_CHAIN_TIME).set_delay(REVEAL_TEXT_TIME * 0.6 + REVEAL_CHAIN_STAGGER) \
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+		tween.tween_property(_margin, "modulate", Color.WHITE, REVEAL_CHAIN_TIME).set_delay(REVEAL_TEXT_TIME)
+		tween.tween_method(_paper.set_muted, 1.0, 0.0, REVEAL_CHAIN_TIME).set_delay(REVEAL_TEXT_TIME)
+	else:
+		# umgekehrt: die Ketten rasseln zurück (federn nach), danach fällt der Hinweis wieder von oben herein
+		tween.tween_property(_lock, "retract_left", 0.0, REVEAL_CHAIN_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tween.tween_property(_lock, "retract_right", 0.0, REVEAL_CHAIN_TIME).set_delay(REVEAL_CHAIN_STAGGER) \
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tween.tween_property(_margin, "modulate", LOCKED_TINT, REVEAL_CHAIN_TIME)
+		tween.tween_method(_paper.set_muted, 0.0, 1.0, REVEAL_CHAIN_TIME)
+		var text_delay := REVEAL_CHAIN_TIME * 0.6
+		tween.tween_property(_lock_text, "position:y", 0.0, REVEAL_TEXT_TIME * 1.4).from(out_y).set_delay(text_delay) \
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tween.tween_property(_lock_text, "modulate:a", 1.0, REVEAL_TEXT_TIME).set_delay(text_delay)
 
 ## Zwei gekreuzte Ketten über der Karte, mittig eine Plakette mit dem Freischalt-Hinweis
-func _build_lock(locked_label: String, locked_hint: String) -> Control:
+func _build_lock(locked_label: String, locked_hint: String) -> ChainOverlay:
 	var chains := ChainOverlay.new()
 	chains.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var center := MarginContainer.new()
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for side in ["left", "right", "top", "bottom"]:
-		center.add_theme_constant_override("margin_" + side, 14)
+		center.add_theme_constant_override("margin_" + side, LOCK_MARGIN)
 	chains.add_child(center)
+	_lock_text = center
 	var plate := PanelContainer.new()
 	plate.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -118,28 +173,44 @@ func _build_lock(locked_label: String, locked_hint: String) -> Control:
 	style.border_color = ChainOverlay.METAL
 	style.set_border_width_all(2)
 	style.set_corner_radius_all(4)
-	style.set_content_margin_all(8)
+	style.set_content_margin_all(LOCK_PLATE_PADDING)
 	plate.add_theme_stylebox_override("panel", style)
 	center.add_child(plate)
 	var texts := VBoxContainer.new()
 	texts.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	texts.add_theme_constant_override("separation", 4)
 	plate.add_child(texts)
-	var title := _label(tr(locked_label), 14, GOLD)
+	var title := _label(tr(locked_label), 24, GOLD)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	title.custom_minimum_size.x = 1
 	texts.add_child(title)
-	var hint := _label(tr(locked_hint), 12, TEXT_COLOR)
+	# langer Hinweis scrollt von selbst wie die Beschreibung, statt die Plakette über die Karte hinaus wachsen zu lassen
+	var hint_scroll := AutoScrollContainer.new()
+	hint_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
+	hint_scroll.hold_area = self
+	hint_scroll.mouse_filter = Control.MOUSE_FILTER_PASS
+	texts.add_child(hint_scroll)
+	var hint := _label(tr(locked_hint), LOCK_HINT_SIZE, TEXT_COLOR)
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint.custom_minimum_size.x = 1
-	texts.add_child(hint)
+	hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hint_scroll.add_child(hint)
+	# Höhe des Hinweises: so hoch wie sein Text, höchstens so viel, wie die Karte unter dem Titel noch Platz hat
+	var fit := func() -> void:
+		var room := center.size.y - LOCK_MARGIN * 2 - LOCK_PLATE_PADDING * 2 - texts.get_theme_constant("separation") - title.size.y
+		var wanted := hint.get_minimum_size().y
+		hint_scroll.custom_minimum_size.y = clampf(wanted, 0.0, maxf(room, 0.0))
+	center.resized.connect(fit, CONNECT_DEFERRED)
+	hint.resized.connect(fit, CONNECT_DEFERRED)
+	title.resized.connect(fit, CONNECT_DEFERRED)
 	return chains
 
-## Kleinerer Name für schmale Karten (z. B. Ei-Auswahl), lange Namen werden weiterhin noch kleiner
-func set_title_size(font_size: int) -> void:
-	SkillCardFace.fit_title(_name_label, font_size)
+## Steckt die Karte in einer anderen, die Klicks und Ziehen bekommt (Trainer, Couvert): dort gedrückt halten
+## hält den Text an
+func set_hold_area(area: Control) -> void:
+	_scroll.hold_area = area
 
 ## Angeklickte Karte leuchtet am Rahmen
 func set_selected(selected: bool) -> void:
@@ -163,13 +234,28 @@ class ChainOverlay extends Control:
 	const LINK_STEP := 19.0
 	const SEGMENTS := 16
 
+	## 0 = Kette liegt über der Karte, 1 = ganz nach oben rechts bzw. oben links aus der Karte gezogen
+	var retract_right := 0.0:
+		set(value):
+			retract_right = value
+			queue_redraw()
+	var retract_left := 0.0:
+		set(value):
+			retract_left = value
+			queue_redraw()
+
 	func _ready() -> void:
 		clip_contents = true
 		resized.connect(queue_redraw)
 
 	func _draw() -> void:
-		_draw_chain(Vector2(size.x, 0), Vector2(0, size.y))
-		_draw_chain(Vector2.ZERO, size)
+		_draw_retracted(Vector2(size.x, 0), Vector2(0, size.y), retract_right)
+		_draw_retracted(Vector2.ZERO, size, retract_left)
+
+	## Die Kette rutscht entlang ihrer eigenen Richtung zu ihrem oberen Ende hinaus
+	func _draw_retracted(from: Vector2, to: Vector2, retract: float) -> void:
+		var shift := (from - to) * retract * 1.15
+		_draw_chain(from + shift, to + shift)
 
 	func _draw_chain(from: Vector2, to: Vector2) -> void:
 		var length := from.distance_to(to)

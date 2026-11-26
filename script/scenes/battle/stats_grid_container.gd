@@ -14,20 +14,19 @@ extends GridContainer
 const GAIN_COLOR := Color(0.45, 0.85, 0.45)
 
 ## Symbol pro Wert (weiße Linien), auch oben rechts auf den Fähigkeiten (Skills.kind_icon):
-## Faust = physischer Angriff, Funken = magischer Angriff, Schild = Verteidigung, Schild mit Funken = Sp. Verteidigung
+## Faust = physischer Angriff, Funken = magischer Angriff, Schild = Verteidigung
 const ICONS := {
 	"hp": preload("res://assets/ui/icons/stat_heart.svg"),
 	"atk": preload("res://assets/ui/icons/fist.svg"),
 	"def": preload("res://assets/ui/icons/stat_shield.svg"),
 	"s_atk": preload("res://assets/ui/icons/sparkle.svg"),
-	"s_def": preload("res://assets/ui/icons/stat_s_shield.svg"),
 	"speed": preload("res://assets/ui/icons/stat_pentagram.svg"),
 	"bst": preload("res://assets/ui/icons/stat_arrow_up.svg"),
 }
 const ICON_ALPHA := 0.8
 ## Symbolgröße relativ zur Schriftgröße der Beschriftung
 const ICON_SCALE := 1.15
-const DEFAULT_FONT_SIZE := 16
+const DEFAULT_FONT_SIZE := 24
 ## Trophäen-Bonus hinter der Zahl ("+6" in Grün), etwas kleiner als die Zahl
 const TROPHY_BONUS_FONT_SCALE := 0.8
 const TROPHY_ICON_SCALE := 1.1
@@ -38,7 +37,7 @@ var plabels: Array[Label] = []
 var _value_labels := {}
 
 ## Werte-Tabelle ohne eigene Szene, mit stacked-Layout (trophies: Trophäen-Anteil und Trophäen unter den Werten)
-static func stacked_for(monster: Monster, font_size := 15, trophies := false) -> StatsGrid:
+static func stacked_for(monster: Monster, font_size := 24, trophies := false) -> StatsGrid:
 	var grid := StatsGrid.new()
 	grid.stacked = true
 	grid.show_trophies = trophies
@@ -65,19 +64,14 @@ var map = [
 		"value": func(monster:Monster): return monster.attack(),
 	},
 	{
-		"key": "def",
-		"label": "STAT_DEF",
-		"value": func(monster:Monster): return monster.defense(),
-	},
-	{
 		"key": "s_atk",
 		"label": "STAT_SPA",
 		"value": func(monster:Monster): return monster.s_attack(),
 	},
 	{
-		"key": "s_def",
-		"label": "STAT_SPD",
-		"value": func(monster:Monster): return monster.s_defense(),
+		"key": "def",
+		"label": "STAT_DEF",
+		"value": func(monster:Monster): return monster.defense(),
 	},
 	{
 		"key": "speed",
@@ -249,7 +243,7 @@ func _with_trophy_bonus(value_label: Label, key: String, monster, hidden: Array)
 	bonus_label.text = "(%d)" % bonus
 	bonus_label.add_theme_color_override("font_color", GAIN_COLOR)
 	var font_size := value_label.get_theme_font_size("font_size")
-	bonus_label.add_theme_font_size_override("font_size", roundi((font_size if font_size > 0 else DEFAULT_FONT_SIZE) * TROPHY_BONUS_FONT_SCALE))
+	bonus_label.add_theme_font_size_override("font_size", maxi(16, snappedi((font_size if font_size > 0 else DEFAULT_FONT_SIZE) * TROPHY_BONUS_FONT_SCALE, 8)))
 	bonus_label.tooltip_text = tr("STAT_TROPHY_BONUS_HINT").format({"bonus": bonus})
 	bonus_label.mouse_filter = Control.MOUSE_FILTER_PASS
 	cell.add_child(bonus_label)
@@ -275,7 +269,7 @@ func _trophy_cell(key: String, monster, hidden: Array) -> Control:
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	cell.add_child(icon)
 	var count_label := _horizontal_label("%dx" % count, GAIN_COLOR)
-	count_label.add_theme_font_size_override("font_size", roundi(font_size * TROPHY_BONUS_FONT_SCALE))
+	count_label.add_theme_font_size_override("font_size", maxi(16, snappedi(font_size * TROPHY_BONUS_FONT_SCALE, 8)))
 	count_label.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	cell.add_child(count_label)
 	cell.tooltip_text = TranslationServer.translate(gem_field.STATS[key].name)

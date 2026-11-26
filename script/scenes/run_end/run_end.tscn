@@ -7,7 +7,7 @@
 [ext_resource type="StyleBox" path="res://script/ui/materials/iron_inset_box.tres" id="4_inset"]
 [ext_resource type="Theme" uid="uid://b5pomesyumr6n" path="res://script/scenes/battle/flat_button_theme.tres" id="5_btn"]
 [ext_resource type="Script" path="res://script/scenes/selection/biome_path.gd" id="6_biome"]
-[ext_resource type="FontFile" uid="uid://cbavibkhidesl" path="res://script/ui/fonts/pxelfont/PixelifySans-VariableFont_wght.ttf" id="7_font"]
+[ext_resource type="FontFile" uid="uid://ywpbdhg1g3f3" path="res://script/ui/fonts/m5x7/m5x7.ttf" id="7_font"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_bg"]
 resource_local_to_scene = true
@@ -113,7 +113,7 @@ alignment = 1
 
 [node name="Title" type="Label" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 48
+theme_override_font_sizes/font_size = 72
 horizontal_alignment = 1
 
 [node name="Subtitle" type="Label" parent="MarginContainer/VBoxContainer"]
@@ -165,7 +165,7 @@ columns = 2
 custom_minimum_size = Vector2(360, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.86, 0.83, 0.72, 1)
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 24
 autowrap_mode = 2
 
 [node name="DeathScroll" type="ScrollContainer" parent="MarginContainer/VBoxContainer/Panels/StatsPanel/MarginContainer/VBoxContainer"]
@@ -182,14 +182,14 @@ theme_override_constants/separation = 12
 visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.55, 0.5, 1)
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 24
 autowrap_mode = 2
 
 [node name="FallenLabel" type="Label" parent="MarginContainer/VBoxContainer/Panels/StatsPanel/MarginContainer/VBoxContainer/DeathScroll/DeathLog"]
 visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(0.86, 0.83, 0.72, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 24
 autowrap_mode = 2
 
 [node name="SearchPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer/Panels"]
@@ -284,7 +284,7 @@ theme = ExtResource("5_btn")
 theme_override_colors/font_color = Color(0.86, 0.83, 0.72, 1)
 theme_override_colors/font_hover_color = Color(0.858824, 0.717647, 0.45098, 1)
 theme_override_colors/font_pressed_color = Color(0.858824, 0.717647, 0.45098, 1)
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 32
 theme_override_styles/normal = SubResource("StyleBoxEmpty_button")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_button")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_button")

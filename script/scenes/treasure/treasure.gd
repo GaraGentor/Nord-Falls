@@ -2,7 +2,8 @@ extends ChestRewardDialog
 
 ## Schatz: die Truhe öffnet sich nur mit einem Schlüssel. Darin liegen Häufchen Monster Essenz,
 ## die einzeln in die Tasche gezogen werden, manchmal auch ein Element-Trank. Der fällt nach der Kiste
-## aus der Tasche (potion_reward.gd) und wird dort einem Monster gegeben.
+## aus der Tasche (potion_reward.gd) und wird dort einem Monster gegeben. Dazu manchmal One-Way-Items (Items),
+## die direkt in die Tasche kommen.
 ## Ohne Schlüssel oder wenn man ihn behalten will, geht man weiter.
 ## Die Trank-Karte nutzen Shop und Trank-Belohnung.
 
@@ -19,6 +20,9 @@ const PILE_GOLD_PER_DEPTH := 5
 ## so oft liegt zusätzlich ein Element-Trank mit zufälligem Element darin (leicht gewichtet, siehe pick_potion_element).
 ## Gezielt ein bestimmtes Element gibt es nur im Shop.
 const POTION_CHANCE := 0.35
+## One-Way-Items: so viele Würfe mit der Trank-Chance, Seltenheit gleich verteilt (Items.TREASURE_RARITY_WEIGHTS).
+## Sie kommen zu Essenz und Trank dazu: höchstens PILES_MAX + 1 + ITEM_ROLLS = 7 Preise.
+const ITEM_ROLLS := 2
 
 const ELEMENTS := [Enums.MON_TYPES.EARTH, Enums.MON_TYPES.AIR, Enums.MON_TYPES.WATER, Enums.MON_TYPES.FIRE]
 
@@ -42,14 +46,28 @@ func _ready() -> void:
 	# nur Elemente, die noch jemand im Team trinken kann
 	var drinkable := ELEMENTS.filter(func(element): return not mons_without(element).is_empty())
 	var with_potion := not drinkable.is_empty() and randf() < POTION_CHANCE
-	# der Teppich hat höchstens PILES_MAX Liegeplätze, der Trank nimmt einen davon
-	for i in randi_range(PILES_MIN, PILES_MAX - (1 if with_potion else 0)):
+	# Tutorial (Feld 4): fester Inhalt, danach erklärt die Karte das Inventar (world_map.gd)
+	if Tutorial.run_active:
+		_add_tutorial_loot(drinkable)
+		_build_buttons()
+		play_chest_intro()
+		_buttons.add_to_group("tut_treasure_buttons")
+		Tutorial.trigger("treasure")
+		return
+	# auf dem Teppich nur Bild und Name, ohne Beschreibung
+	for i in randi_range(PILES_MIN, PILES_MAX):
 		var gold := randi_range(PILE_GOLD_MIN, PILE_GOLD_MAX) + State.map_level * PILE_GOLD_PER_DEPTH
-		add_bag_card(tr("TREASURE_GOLD"), Helper.me_text(gold), texture_icon(ESSENCE_ICON), _on_gold_taken.bind(gold))
+		add_bag_card(Helper.me_text(gold), "", texture_icon(ESSENCE_ICON), _on_gold_taken.bind(gold))
 	if with_potion:
 		var element: int = pick_potion_element(drinkable)
 		# nach der Kiste fällt er wie eine Trophäe aus der Tasche auf den Teppich (world_map.gd show_pending_rewards)
-		add_bag_card(potion_title(self, element), tr("TREASURE_POTION_BAG_DESC"), potion_art(element), func(): State.pending_potions.append(element))
+		var potion := add_bag_card(potion_title(self, element), "", potion_art(element), func(): State.pending_potions.append(element))
+		potion.tooltip_text = tr("TREASURE_POTION_BAG_DESC")
+	for i in ITEM_ROLLS:
+		if randf() < POTION_CHANCE:
+			_add_item_card(Items.roll_item(false, Items.TREASURE_RARITY_WEIGHTS))
+	if Relics.works("treasure_hunter"):
+		_add_treasure_hunter_cards()
 	_build_buttons()
 	play_chest_intro()
 	_buttons.add_to_group("tut_treasure_buttons")
@@ -64,7 +82,12 @@ func _build_buttons() -> void:
 	open_button.add_theme_constant_override("icon_max_width", 28)
 	open_button.disabled = State.keys <= 0
 	open_button.pressed.connect(_open)
+	open_button.add_to_group("tut_treasure_open")
 	_buttons.add_child(open_button)
+	# Tutorial (Feld 4): nur öffnen, Weiterziehen gibt es nicht
+	if Tutorial.run_active:
+		add_footer(_buttons)
+		return
 	var leave_button := plate_button(tr("TREASURE_LEAVE"))
 	leave_button.pressed.connect(close)
 	_buttons.add_child(leave_button)
@@ -83,6 +106,32 @@ func _wait_before_burst() -> void:
 	if not _is_open:
 		await _opened
 
+## Tutorial: ein riesiger Haufen Essenz (für Trainer und Laden), ein Element-Trank und ein Köder (Fangchance, Feld 8)
+const TUTORIAL_GOLD := 99999
+
+func _add_tutorial_loot(drinkable: Array) -> void:
+	add_bag_card(Helper.me_text(TUTORIAL_GOLD), "", texture_icon(ESSENCE_ICON), _on_gold_taken.bind(TUTORIAL_GOLD))
+	if not drinkable.is_empty():
+		var element: int = pick_potion_element(drinkable)
+		var potion := add_bag_card(potion_title(self, element), "", potion_art(element), func(): State.pending_potions.append(element))
+		potion.tooltip_text = tr("TREASURE_POTION_BAG_DESC")
+	_add_item_card(Items.make("bait"))
+
+## One-Way-Item: Name in der Farbe seiner Seltenheit, in die Tasche gezogen landet es im Inventar
+func _add_item_card(item: Dictionary) -> void:
+	var card := add_bag_card(Items.title(item), "", Items.icon(item), Items.add_to_bag.bind(item))
+	var name_label: Label = card.info.get_child(0)
+	name_label.add_theme_color_override("font_color", Items.rarity_color(item))
+	card.tooltip_text = "%s\n%s" % [Items.description(item), Items.use_hint(item)]
+
+## Schatzjäger (Relikt): je ein eigener Wurf mit der Schlüssel-Chance auf ein Fähigkeiten-Couvert und eine Trophäe.
+## Beide werden wie nach einem Kampf beim nächsten Betreten der Karte abgehandelt (world_map.gd show_pending_rewards).
+func _add_treasure_hunter_cards() -> void:
+	if randf() < Relics.TREASURE_HUNTER_CHANCE and not Skills.reward_offers().is_empty():
+		add_bag_card(tr("SKILL_ENVELOPE_LOOT"), "", texture_icon(ENVELOPE_TEXTURE), func(): State.pending_skill_reward = true)
+	if randf() < Relics.TREASURE_HUNTER_CHANCE:
+		add_bag_card(tr("GEM_LOOT_AMOUNT").format({"amount": 1}), "", texture_icon(BAG_TEXTURE), func(): State.pending_gem_rewards += 1)
+
 func _on_gold_taken(gold: int) -> void:
 	State.ep += gold
 
@@ -99,6 +148,12 @@ func _taken(card: RewardCard) -> void:
 ## Die Liste wird erst beim Ziehen bestimmt, damit sie im Shop nach jedem Kauf stimmt.
 ## Was aus dem Monster wird, zeigt der Typ am Ziel (RewardDialog.show_element_preview).
 static func add_potion_card(dialog: RewardDialog, element: int) -> RewardDialog.RewardCard:
+	var parts := potion_card_parts(dialog, element)
+	return dialog.add_mon_card(parts.title, parts.text, potion_art(element), dialog.tr("TREASURE_POTION_CHOOSE_MON"), parts.drag.mons, parts.drag.on_drop, Callable(), {"element": element})
+
+## Titel, Text und die Drag-Einträge (mons, on_drop, element) eines Tranks. Der Shop tauscht damit das Element
+## einer Karte aus, ohne sie neu anzulegen (wie bei den Trophäen).
+static func potion_card_parts(dialog: Node, element: int) -> Dictionary:
 	var element_name = dialog.tr(ColorMap.get_combo(element).label)
 	var text = dialog.tr("TREASURE_POTION_DESC").format({"element": element_name})
 	var give := func(mon: Monster):
@@ -108,7 +163,8 @@ static func add_potion_card(dialog: RewardDialog, element: int) -> RewardDialog.
 		# neues Element: das Monster darf den Aufstiegs-Skill oder einen Standard-Skill des Elements lernen
 		# (läuft für sich, auch wenn der Dialog schließt)
 		ElementGainOverlayScript.reward(mon, old_type)
-	return dialog.add_mon_card(potion_title(dialog, element), text, potion_art(element), dialog.tr("TREASURE_POTION_CHOOSE_MON"), func(): return mons_without(element), give, Callable(), {"element": element})
+	return {"title": potion_title(dialog, element), "text": text,
+		"drag": {"mons": func(): return mons_without(element), "on_drop": give, "element": element}}
 
 static func potion_title(dialog: Node, element: int) -> String:
 	return dialog.tr("TREASURE_POTION").format({"element": dialog.tr(ColorMap.get_combo(element).label)})
@@ -131,8 +187,9 @@ static func pick_potion_element(elements: Array) -> int:
 			return elements[i]
 	return elements.back()
 
+## Team-Monster, die das Element noch trinken können (fehlt ihnen und bleibt bei höchstens Monster.MAX_ELEMENTS)
 static func mons_without(element: int) -> Array:
-	return State.mons.filter(func(mon): return not ColorMap.has_element(mon._type, element))
+	return State.mons.filter(func(mon: Monster): return mon.can_gain_element(element))
 
 ## Flasche im Pixel-Look, die Flüssigkeit hat die Farbe des Elements. Glas und Korken bleiben ungefärbt.
 static func potion_art(element: int) -> Control:

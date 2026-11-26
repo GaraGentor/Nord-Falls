@@ -1,0 +1,189 @@
+TUTORIAL-UMBAU (Plan)
+=====================
+
+Kurz:
+	Das Tutorial wird ein eigener, fest geskripteter Lauf: Startabfrage beim ersten Spielstart, Auswahl mit
+	ausführlicher Erklärung, danach eine feste Tutorial-Karte mit 12 Feldern in einer Spur. Am Ende geht es
+	zurück zum Start, das Tutorial ist abgeschlossen und taucht nicht mehr auf. Neu starten nur über den
+	Button "Tutorial starten" in den Einstellungen.
+	Wunschliste und Feld-Reihenfolge: siehe todo.txt ("Tutorial Aktualisieren").
+
+
+1. WAS ES SCHON GIBT (wird weiterbenutzt)
+=========================================
+	> script/globals/tutorial.gd: Sequenzen (SEQUENCES), Schritte mit Ziel-Gruppen ("tut_<name>"), Warten auf
+	  Knopf / Signal, NPC-Sprecher. Szenen rufen Tutorial.trigger("<id>") beim ersten Besuch auf.
+	> script/ui/tutorial/tutorial_overlay.gd: Abdunkeln, Spotlight-Loch, Sprechblase, Weiter/Überspringen.
+	> Übungskampf (Tutorial.practice, battle.gd _generate_practice): ein Kampf vor der Karte, niemand geht K.O.,
+	  der Fang klappt sicher, danach wird der Stand zurückgesetzt. Wird durch die Tutorial-Kämpfe ERSETZT.
+	> Sequenzen für Laden, Trainer, Kerkermeister, Lager, Schatz, Trophäen, Couvert, Beute, Urteil, Karte.
+	  Die Texte bleiben, sie werden nur in die feste Reihenfolge der Tutorial-Karte eingehängt.
+	> Glücksrad (wheel_event.gd): Gewinn/Verlust-Hälften, Ergebnis wird vorher gewürfelt -> Basis für "Ewiges Pech".
+
+	Was sich grundsätzlich ändert:
+	> Heute: jede Sequenz kommt beim ersten Besuch einer Szene, auch mitten in echten Runs.
+	  Neu: Erklärungen gibt es NUR im Tutorial-Lauf. In echten Runs kommt nichts mehr.
+	> Heute: Schalter "Tutorial an/aus". Neu: Button "Tutorial starten".
+
+
+2. GRUNDGERÜST
+==============
+	2.1 Tutorial-Lauf als eigener Modus
+		> Tutorial.run_active: true vom Start des Tutorials bis zu seinem Ende.
+		> Tutorial.step: wo man gerade ist (Auswahl, Ei-Attacken, Feld 1-12). Danach richten sich Karte,
+		  Kämpfe und Sequenzen. Kein Zufall, wo das Tutorial etwas Bestimmtes zeigen will.
+		> Alle Tutorial.trigger()-Aufrufe in den Szenen bleiben, feuern aber nur bei run_active.
+
+	2.2 Spielstand schützen (WICHTIG, sonst Hack zum Neu-Würfeln)
+		> Beim Start: Kopie von SaveManager.save_data merken, dann SaveManager.suspended = true
+		  -> save_game() schreibt nichts mehr auf die Platte.
+		> Beim Ende ODER Abbruch: save_data aus der Kopie zurücksetzen, tutorial_done = true, State.reset(),
+		  dann erst wieder speichern. Starter-Eier, Biom-Pfad, Boss Tränen, Sammlung ... bleiben wie vorher.
+		> Spiel mitten im Tutorial beendet: Auf der Platte steht noch der alte Stand. Beim nächsten Start kommt
+		  wieder die Startabfrage (tutorial_done ist ja noch false).
+
+	2.3 Feste Inhalte als Daten (neue Datei script/globals/tutorial_run.gd)
+		> Starter-Eier: fest bzw. so gewürfelt, dass mindestens ein Starter stark gegen Biom 1 ist.
+		> Biom-Pfad fürs Tutorial (Biom 1 fest).
+		> Karte: 12 Felder, eine Spur in der Mitte (Map.path-Knoten, State.current_map), die Typen in der
+		  Reihenfolge von Abschnitt 4.
+		> Pro Kampf: Gegner (Art, Stufe, Skills), KP-Vorgaben (1 KP für Gegner oder eigene Monster),
+		  Ausgang (Sieg, Fang, eigener K.O.).
+
+	2.4 Haken in den Szenen (klein halten, alles fragt Tutorial ab)
+		> world_map.gd: im Tutorial die feste Karte statt Map.generate, nur das nächste Feld klickbar.
+		> battle.gd: Gegner und KP aus tutorial_run.gd, Gegner-KI spielt den festgelegten Skill.
+		  Der alte Übungskampf (practice) fällt weg.
+		> wheel_event.gd: Variante "Ewiges Pech" (riesige rote Fläche, winziger grüner Fleck, landet sicher
+		  auf grün, Gewinn = Schlüssel statt Gold).
+		> treasure.gd: feste Beute (99999 Gold, ein Trank, ein Item).
+		> Boss-Beute: Reliktkiste und Couvert werden immer geöffnet, das Ei wird nur gezeigt, nicht freigeschaltet.
+
+
+3. START UND EINSTELLUNGEN
+==========================
+	> Solange "tutorial_done" false ist (neuer Spielstand, oder das Tutorial wurde nie beendet), kommt in der
+	  Ei-Auswahl beim Start ein Modal:
+	  "Erstes Mal dabei? Spiele das erste Mal begleitet mit Hilfe oder überspringe die Hilfe.
+	   (In den Einstellungen kannst du das Tutorial jederzeit neu starten.)"
+	  [Mit Hilfe spielen]  [Überspringen]
+	  ACHTUNG: Der Text in todo.txt sagt "Hilfe wieder einschalten", es gibt aber nur noch den Button
+	  "Tutorial starten". Der Text wird daran angepasst.
+	> Überspringen: tutorial_done = true, nichts weiter.
+	> Einstellungen: Schalter SETTINGS_TUTORIAL_TOGGLE fliegt raus, dafür Button "Tutorial starten".
+	  Nur in der Ei-Auswahl klickbar, auf der Karte gesperrt (6.1). Dann Spielstand-Schutz (2.2) und
+	  die Ei-Auswahl startet neu im Tutorial-Modus.
+
+
+4. ABLAUF
+=========
+	A) Ei-Auswahl (Sequenz "selection" erweitern)
+		> Tipps erklären (Tips-Feld rechts)
+		> Biom-Pfad genau erklären: Klick auf ein Biom zeigt Stärken und Schwächen -> Vorteil verschaffen
+		> Ei werfen
+		> Sobald das erste Monster da ist:
+			- Fähigkeiten: Die sind jetzt da, weitere werden freigespielt
+			- Graph: Wachstum pro Stufe
+			- Werte (LP, Ang, SAng, Ver, Ini, Ges): Seltene Monster haben höhere Werte
+			- Wo man das Element des Monsters sieht
+		> Weitere Eier werfen bis alle da sind
+		> Monster aussuchen, mit Empfehlung: das, das stark gegen Biom 1 ist (Tutorial garantiert eins)
+
+	B) Ei-Attacken (Sequenz "egg_configurator" erweitern)
+		> Was die fliegenden Fähigkeiten sind und wie man sie freischaltet
+		> Karten auswählen
+		> Run starten
+
+	C) Tutorial-Karte (Sequenz "map" erweitern)
+		> Was die Karte ist und wo man hin muss, Team-Leben, Details, Legende, Pfad
+		> Klick aufs erste Feld
+
+	D) Die 12 Felder
+		 1  Kampf     Gegner mit dem Gegen-Grundelement des Starters. Erklärt: Initiative-Rad (gelber Pfeil, wer
+					  oben steht, ist dran), Absichten lesen, Fähigkeiten einsetzen, Zug beenden, Gegner-Werte und
+					  -Skills ansehen (und warum: Werte schwanken, starke Skills kann man übernehmen), Hypnose
+					  (100 % Fangchance). Danach das Urteil, nur eine Möglichkeit: Monster ins Team ziehen, bestätigen.
+		 2  Kampf     Gegner hat 1 KP. Erklärt: Element vom Partner leihen (Element-Kugeln) und den Vorteil,
+					  Tempo und "Auto".
+		 3  Ereignis  Glücksrad "Ewiges Pech" -> Schlüssel geschenkt (nur im Tutorial).
+		 4  Schatz    99999 Gold, ein Trank (wird sofort verarbeitet), ein Item. Nach dem Item geht es ins Inventar:
+					  Inventar erklären, Item auf ein Monster ziehen.
+		 5  Trainer   vorhandene Sequenz "trainer"
+		 6  Laden     vorhandene Sequenz "shop"
+		 7  Kerker    vorhandene Sequenz "jailer" + Betonung: extrem wichtig, dauerhaft
+		 8  Kampf     Eigene Monster 1 KP, Gegner hat nur einen Angriff. Hat ein Monster ein Item: Items im Kampf
+					  erklären. Ein eigenes Monster stirbt sofort, der Kampf endet mit Sieg und Fang eines
+					  zufälligen Monsters. Danach: zuerst Items aufdecken, dann Wiederbelebung / Letzter Wille mit
+					  dem neuen Fang.
+		 9  Trophäen  vorhandene Sequenz "gems"
+		10  Lager     vorhandene Sequenz "camp"
+		11  Rastlager vorhandene Sequenz "hub" + "Alles nur einmal besuchbar"
+		12  Boss      1 KP, greift nicht an (nur ein nutzloser Buff). Erklärt: Boss-Relikte, was Bosskämpfe besonders
+					  macht (seltenere Monster, Relikte mit Modifikatoren). Beute: Reliktkiste, Ei, Couvert. Die
+					  Kiste und das Couvert gehen immer auf, das Ei erklärt nur das dauerhafte Freischalten.
+
+	E) Ende
+		> Kurzer Abschluss-Satz vom Trainer, Spielstand zurücksetzen (2.2), tutorial_done = true, zurück zur Ei-Auswahl.
+
+
+5. REIHENFOLGE DER UMSETZUNG
+============================
+	Jeder Schritt ist für sich spielbar und testbar. (Größe: S klein, M mittel, L groß)
+
+	 1  Gerüst + Start (M)
+		Tutorial.run_active / step, Spielstand-Schutz, Startabfrage, Button in den
+		Einstellungen, echte Runs ohne Sequenzen. Der Übungskampf bleibt bis Schritt 4 im Tutorial-Lauf.
+	 2  Ei-Auswahl und Ei-Attacken (M)
+		Sequenzen A und B, garantierter passender Starter, Ziel-Gruppen an Graph, Werten, Element, Tipps.
+	 3  Tutorial-Karte (M)
+		Feste Karte mit 12 Feldern, Sequenz C, Feldtypen anklickbar in der festen Reihenfolge.
+	 4  Kampf-Gerüst (L)
+		Tutorial-Kämpfe aus Daten (Gegner, KP, festgelegte Gegner-Skills, Ausgang), alter Übungskampf raus.
+	 5  Feld 1 + Urteil (M)
+	 6  Feld 2: Element-Leihgabe, Tempo, Auto (S)
+	 7  Feld 3: Glücksrad "Ewiges Pech" (S)
+	 8  Feld 4: Schatz + Inventar (M)
+	 9  Felder 5-7: Trainer, Laden, Kerkermeister einhängen (S)
+	10  Feld 8: Items im Kampf, eigener K.O., Fang, Wiederbelebung (L)
+	11  Felder 9-11: Trophäen, Lager, Rastlager (S)
+	12  Feld 12: Boss + Beute + Ende (M)
+	13  Texte DE/EN, Durchspielen, Feinschliff (M)
+
+
+6. ENTSCHIEDEN
+=============
+	1. "Tutorial starten" geht NUR in der Ei-Auswahl, nicht mitten in einem Lauf. Auf der Karte ist der
+	   Button in den Einstellungen gesperrt (mit Hinweis).
+	2. Es spricht überall der Trainer, auch in Laden, Kerker, Lager und beim Trainer selbst. Die Sätze der
+	   NPCs (z. B. SHOP_SAY_*) sind in der Ich-Form der Kasse geschrieben und müssen dafür umgeschrieben werden
+	   -> passiert mit Schritt 9 (Felder 5-7) bzw. 11 (Lager, Rastlager).
+	3. Aus dem Tutorial bleibt nichts erhalten, alles wird auf den Stand davor zurückgesetzt.
+	4. Kerkermeister: Das Tutorial leiht eine Boss Träne, damit man eine Kette sprengen kann. Das zählt nicht
+	   dauerhaft (fällt mit dem Zurücksetzen weg).
+	5. Schatz (Feld 4): Das Item erhöht die Fangchance (Köder), es wird in Feld 8 im Kampf eingesetzt.
+	6. Starter-Eier: zufällig, aber immer mit einem Starter, der stark gegen Biom 1 ist.
+	7. Überspringen-Knopf: bei JEDER Sprechblase des Trainers, mit Rückfrage. Er beendet das Tutorial wie
+	   das normale Ende (2.2).
+
+
+7. STAND
+========
+	Alle Schritte 1-12 umgesetzt (Ende November 2026), im Spiel per Skript durchgespielt. Offen: Schritt 13 (von Hand
+	durchspielen, Texte feilen).
+
+	Wo was steht:
+	> script/globals/tutorial.gd: Tutorial-Lauf (start_run, end_run, finish, ask_skip), Sequenzen (SEQUENCES),
+	  feste Kämpfe (FIGHTS), Starter-Garantie (prepare_starters), Platzhalter {mon}/{biome} (text_values)
+	> SaveManager.suspended: während des Tutorials wird nichts gespeichert
+	> Map.generate_tutorial_map: eine Spur, Felder 1-11 (TUTORIAL_ROWS), Feld 12 = Biom-Boss
+	> battle.gd _setup_tutorial_fight, turn_wheel.gd (eigene Monster in Runde 1 zuerst), judgement.gd
+	  (judgement_join_only), wheel_event.gd ("Ewiges Pech"), treasure.gd (99999 ME, Trank, Köder),
+	  world_map.gd (_tutorial_after_rewards: Inventar nach dem Schatz, Ende nach dem Boss), jailer.gd (geliehene
+	  Tränen), last_will_screen.gd, level_up.gd (Boss-Beute: Ei immer, Kiste und Couvert gehen immer auf)
+	> ChoiceDialog (script/ui/choice_dialog): Startabfrage und Rückfrage beim Überspringen
+	> Der alte Übungskampf ist entfernt.
+
+	Bekannte Kleinigkeiten:
+	> Feld 1: Gegner ist das Grundelement, gegen das der Starter stark ist ("gegengesetzt" so gedeutet).
+	> Boss-Relikte bleiben im Tutorial aktiv (z. B. Bongos: Schild jede Runde), der Boss kann also kurz zäh sein.
+	> Die Beute nach Feld 8 kommt wie sonst erst nach dem Letzten Willen.

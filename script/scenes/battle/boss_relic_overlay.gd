@@ -16,9 +16,9 @@ const BACKDROP_COLOR := Color(0, 0, 0, 0.8)
 const GOLD := Color(0.858824, 0.717647, 0.45098)
 const TEXT_COLOR := Color(0.92, 0.9, 0.85)
 const FADE_SECONDS := 0.3
-const TITLE_FONT_SIZE := 40
-const NAME_FONT_SIZE := 26
-const TEXT_FONT_SIZE := 20
+const TITLE_FONT_SIZE := 64
+const NAME_FONT_SIZE := 40
+const TEXT_FONT_SIZE := 32
 
 ## Vorstellung
 const ENTRY_POP_SECONDS := 0.35

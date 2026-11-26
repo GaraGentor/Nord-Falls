@@ -8,11 +8,11 @@
 [ext_resource type="PackedScene" uid="uid://dp31mv1lmyood" path="res://script/scenes/battle/monster_scene.tscn" id="5_wskai"]
 [ext_resource type="PackedScene" path="res://script/scenes/battle/battle_info_panel.tscn" id="6_5lcde"]
 [ext_resource type="Theme" uid="uid://b5pomesyumr6n" path="res://script/scenes/battle/flat_button_theme.tres" id="7_uo6ii"]
-[ext_resource type="Texture2D" path="res://assets/ui/icons/battle/hypnosis_button.svg" id="11_uycmc"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/battle/hypnosis_button_rect.svg" id="11_uycmc"]
 [ext_resource type="Material" path="res://script/scenes/jailer/jailer_props_material.tres" id="11_props"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/battle/end_turn_button_rect.svg" id="13_lhy1u"]
 [ext_resource type="Shader" uid="uid://b072tfwp8m2f" path="res://script/scenes/battle/catch_anim.gdshader" id="13_3plyr"]
 [ext_resource type="Script" uid="uid://dgw3mowp6ys8c" path="res://script/scenes/battle/catch_anim.gd" id="13_lgcwj"]
-[ext_resource type="Texture2D" path="res://assets/ui/icons/battle/end_turn_button.svg" id="13_lhy1u"]
 [ext_resource type="PackedScene" path="res://script/scenes/battle/card_hand.tscn" id="14_hand"]
 [ext_resource type="Theme" path="res://script/ui/materials/pixel_font_theme.tres" id="99_font_theme"]
 
@@ -37,8 +37,6 @@ shader_parameter/outline_color = Color(1, 1, 0, 0)
 shader_parameter/outline_thickness = 4.0
 shader_parameter/tint_color = Color(1, 1, 1, 0)
 
-[sub_resource type="ImageTexture" id="ImageTexture_quuqv"]
-
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ycqul"]
 shader = ExtResource("13_3plyr")
 shader_parameter/center = Vector2(0.5, 0.5)
@@ -60,7 +58,7 @@ grow_vertical = 2
 theme = ExtResource("99_font_theme")
 script = ExtResource("1_08vc2")
 catch_anim = NodePath("Catch_anim")
-catch_button = NodePath("UI/HBoxContainer/TextureRect/Catch")
+catch_button = NodePath("UI/BottomBar/Hypnosis/Catch")
 battle_info = NodePath("UI/BattleInfoPanel")
 card_hand = NodePath("GameWindow/CardHand")
 
@@ -134,20 +132,11 @@ layout_mode = 2
 size_flags_horizontal = 3
 mon_slot = 2
 
-[node name="HandBackground" type="ColorRect" parent="GameWindow" unique_id=1565682947]
-layout_mode = 1
-anchors_preset = -1
-anchor_top = 0.7
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_right = 2.0
-mouse_filter = 2
-color = Color(0, 0, 0, 0.45)
-
 [node name="CardHand" parent="GameWindow" unique_id=1000149303 instance=ExtResource("14_hand")]
 layout_mode = 1
 anchors_preset = -1
-anchor_top = 0.7
+anchor_top = 1.0
+offset_top = -248.0
 offset_right = 2.0
 
 [node name="Phase" type="Control" parent="." unique_id=1459139747]
@@ -200,59 +189,58 @@ anchors_preset = -1
 anchor_bottom = 0.84
 offset_bottom = 11.2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="UI" unique_id=109800599]
+[node name="BottomBar" type="HBoxContainer" parent="UI" unique_id=109800599]
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.017
-anchor_top = 0.832
+anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -7.837
-offset_top = -0.0400391
-offset_bottom = 1.0
+offset_left = 12.0
+offset_top = -100.0
+offset_right = -12.0
+offset_bottom = -12.0
 grow_horizontal = 2
-grow_vertical = 2
+grow_vertical = 0
+theme_override_constants/separation = 10
+alignment = 2
 
-[node name="TextureRect" type="TextureRect" parent="UI/HBoxContainer" unique_id=781254773]
+[node name="Hypnosis" type="TextureRect" parent="UI/BottomBar" unique_id=781254773]
 material = ExtResource("11_props")
+custom_minimum_size = Vector2(170, 0)
 layout_mode = 2
-size_flags_horizontal = 3
 texture = ExtResource("11_uycmc")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Catch" type="Button" parent="UI/HBoxContainer/TextureRect" unique_id=905362931]
+[node name="Catch" type="Button" parent="UI/BottomBar/Hypnosis" unique_id=905362931]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-size_flags_horizontal = 3
 theme = ExtResource("7_uo6ii")
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 40
 text = "BATTLE_HYPNOSIS"
-icon = SubResource("ImageTexture_quuqv")
 flat = true
 
-[node name="TextureRect3" type="TextureRect" parent="UI/HBoxContainer" unique_id=1984233202]
+[node name="EndTurnFrame" type="TextureRect" parent="UI/BottomBar" unique_id=1984233202]
 material = ExtResource("11_props")
+custom_minimum_size = Vector2(170, 0)
 layout_mode = 2
-size_flags_horizontal = 3
 texture = ExtResource("13_lhy1u")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="EndTurn" type="Button" parent="UI/HBoxContainer/TextureRect3" unique_id=1939269431]
+[node name="EndTurn" type="Button" parent="UI/BottomBar/EndTurnFrame" unique_id=1939269431]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-size_flags_horizontal = 3
 theme = ExtResource("7_uo6ii")
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 40
 text = "BATTLE_END_TURN"
 flat = true
 
@@ -308,7 +296,7 @@ offset_left = -265.5
 offset_right = 265.5
 offset_bottom = 88.0
 grow_horizontal = 2
-theme_override_font_sizes/font_size = 64
+theme_override_font_sizes/font_size = 96
 horizontal_alignment = 1
 
 [node name="Label2" type="Label" parent="Catch_anim/TextureRect" unique_id=903598385]
@@ -324,9 +312,9 @@ offset_top = -88.0
 offset_right = 265.5
 grow_horizontal = 2
 grow_vertical = 0
-theme_override_font_sizes/font_size = 64
+theme_override_font_sizes/font_size = 96
 text = "BATTLE_CATCH_NOT_ON_SIDE"
 horizontal_alignment = 1
 
-[connection signal="pressed" from="UI/HBoxContainer/TextureRect/Catch" to="." method="_on_catch_pressed"]
-[connection signal="pressed" from="UI/HBoxContainer/TextureRect3/EndTurn" to="." method="_on_end_turn_pressed"]
+[connection signal="pressed" from="UI/BottomBar/Hypnosis/Catch" to="." method="_on_catch_pressed"]
+[connection signal="pressed" from="UI/BottomBar/EndTurnFrame/EndTurn" to="." method="_on_end_turn_pressed"]

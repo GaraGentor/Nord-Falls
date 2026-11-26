@@ -21,15 +21,16 @@ const LOSE_COLOR := Color(0.75, 0.22, 0.2, 1)
 @export var detail_box: VBoxContainer
 @export var biome_tabs: HBoxContainer
 
-const FLAT_BUTTON_THEME := preload("res://script/scenes/battle/flat_button_theme.tres")
+## Abstand des Wiederholen-Buttons zum Rand unten links
+const RETRY_MARGIN := 24.0
+const FLAT_BUTTON_THEME :=preload("res://script/scenes/battle/flat_button_theme.tres")
 
 # Basiswerte für die Monster-Suche: Anteil am Wachstum * BST, wie die Base Stats in Ironmon
 const SEARCH_STATS := [
 	["STAT_HP", "hp"],
 	["STAT_ATK", "atk"],
-	["STAT_DEF", "def"],
 	["STAT_SPA", "s_atk"],
-	["STAT_SPD", "s_def"],
+	["STAT_DEF", "def"],
 	["STAT_SPE", "speed"],
 ]
 
@@ -73,6 +74,29 @@ func _ready() -> void:
 	_init_search()
 
 	_show_unlocks(State.run_milestone_unlocks)
+	_add_retry_button()
+
+## Einstellung "Kampf wiederholen": nach einer Niederlage unten links, startet den verlorenen Kampf neu (BattleRetry)
+func _add_retry_button() -> void:
+	if State.run_won or not BattleRetry.available():
+		return
+	var button := RewardDialog.plate_button(tr("RUN_END_RETRY"))
+	button.tooltip_text = tr("RUN_END_RETRY_TOOLTIP")
+	button.focus_mode = Control.FOCUS_NONE
+	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	add_child(button)
+	button.anchor_left = 0.0
+	button.anchor_right = 0.0
+	button.anchor_top = 1.0
+	button.anchor_bottom = 1.0
+	button.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	button.offset_left = RETRY_MARGIN
+	button.offset_right = RETRY_MARGIN
+	button.offset_bottom = -RETRY_MARGIN
+	button.offset_top = -RETRY_MARGIN
+	button.pressed.connect(func():
+		button.disabled = true
+		BattleRetry.retry())
 
 # ─────────────────────────
 # K.O.s eigener Monster (State.run_deaths), bei einer Niederlage ist der letzte der Run-beendende Treffer
@@ -135,7 +159,7 @@ func _build_biome_tabs() -> void:
 		button.toggle_mode = true
 		button.button_group = group
 		_style_toggle(button)
-		button.add_theme_font_size_override("font_size", 14)
+		button.add_theme_font_size_override("font_size", 24)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		if depth == -1:
 			button.text = tr("RUN_END_SEARCH_ALL")
@@ -217,7 +241,7 @@ func _clear_detail() -> void:
 
 func _show_locked() -> void:
 	_clear_detail()
-	var hint = _label(tr("RUN_END_SEARCH_LOCKED"), 14)
+	var hint = _label(tr("RUN_END_SEARCH_LOCKED"), 24)
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint.add_theme_color_override("font_color", Color(TEXT_COLOR, 0.6))
 	detail_box.add_child(hint)
@@ -238,15 +262,15 @@ func _show_mon(mon_name: String) -> void:
 	header.add_child(portrait)
 	var info = VBoxContainer.new()
 	info.add_theme_constant_override("separation", 0)
-	var mon_title = _label(Helper.mon_display_name(mon_name), 20)
+	var mon_title = _label(Helper.mon_display_name(mon_name), 32)
 	mon_title.add_theme_color_override("font_color", GOLD)
 	info.add_child(mon_title)
 	# gesehene Monster hatten zusätzlich Elemente des Bioms
 	var type = sighting.get("type", meta_data.initial_type)
-	var element = _label(tr(ColorMap.get_combo(type).label), 14)
+	var element = _label(tr(ColorMap.get_combo(type).label), 24)
 	element.add_theme_color_override("font_color", Helper.color_by_type(type).lightened(0.25))
 	info.add_child(element)
-	info.add_child(_label("%s %d" % [tr("STAT_BST"), State.get_mon_stats(mon_name).best_points], 14))
+	info.add_child(_label("%s %d" % [tr("STAT_BST"), State.get_mon_stats(mon_name).best_points], 24))
 	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(info)
 	header.add_child(_view_toggle())
@@ -268,7 +292,7 @@ func _view_toggle() -> VBoxContainer:
 		button.button_group = group
 		_style_toggle(button)
 		button.text = tr(view[1])
-		button.add_theme_font_size_override("font_size", 12)
+		button.add_theme_font_size_override("font_size", 16)
 		button.button_pressed = _detail_view == view[0]
 		button.pressed.connect(func():
 			_detail_view = view[0]
@@ -284,21 +308,21 @@ func _show_stats(mon_name: String, sighting: Dictionary) -> void:
 	grid.add_theme_constant_override("h_separation", 8)
 	grid.add_theme_constant_override("v_separation", 2)
 	for text in ["", "", tr("RUN_END_SEARCH_BASE"), "Lv. %d" % sighting.level if not sighting.is_empty() else ""]:
-		var head = _label(text, 12)
+		var head = _label(text, 16)
 		head.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		head.add_theme_color_override("font_color", GOLD)
 		grid.add_child(head)
 	for stat in SEARCH_STATS:
 		var share: float = stats.growth[stat[1]]
 		var value = share * stats.best_points
-		var stat_name = _label(tr(stat[0]), 14)
+		var stat_name = _label(tr(stat[0]), 24)
 		stat_name.add_theme_color_override("font_color", GOLD)
 		grid.add_child(stat_name)
 		grid.add_child(_stat_bar(value))
-		var value_label = _label("%d (%d%%)" % [roundi(value), roundi(share * 100)], 14)
+		var value_label = _label("%d (%d%%)" % [roundi(value), roundi(share * 100)], 24)
 		value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		grid.add_child(value_label)
-		var seen_label = _label(str(roundi(sighting.stats[stat[1]])) if not sighting.is_empty() else "", 14)
+		var seen_label = _label(str(roundi(sighting.stats[stat[1]])) if not sighting.is_empty() else "", 24)
 		seen_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		grid.add_child(seen_label)
 	detail_box.add_child(grid)
@@ -315,7 +339,7 @@ func _show_stats(mon_name: String, sighting: Dictionary) -> void:
 	if not kills.is_empty():
 		var hardest = kills.reduce(func(a, b): return a if a.damage >= b.damage else b)
 		notes.append(tr("RUN_END_SEARCH_KILLS").format({"count": kills.size(), "skill": tr(hardest.skill), "damage": roundi(hardest.damage)}))
-	var note = _label("\n".join(PackedStringArray(notes)), 13)
+	var note = _label("\n".join(PackedStringArray(notes)), 24)
 	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	note.add_theme_color_override("font_color", Color(1, 0.55, 0.5, 1) if not kills.is_empty() else TEXT_COLOR)
 	detail_box.add_child(note)
@@ -352,7 +376,7 @@ func _show_skills(mon_name: String, sighting: Dictionary) -> void:
 	text.bbcode_enabled = true
 	text.fit_content = true
 	text.scroll_active = false
-	text.add_theme_font_size_override("normal_font_size", 13)
+	text.add_theme_font_size_override("normal_font_size", 24)
 	text.add_theme_color_override("default_color", TEXT_COLOR)
 	text.text = "\n".join(PackedStringArray(lines))
 	detail_box.add_child(text)
@@ -396,11 +420,11 @@ func _add_stat(key: String, value: String) -> void:
 	var name_label = Label.new()
 	name_label.text = tr(key)
 	name_label.add_theme_color_override("font_color", GOLD)
-	name_label.add_theme_font_size_override("font_size", 18)
+	name_label.add_theme_font_size_override("font_size", 24)
 	stats_grid.add_child(name_label)
 	var value_label = Label.new()
 	value_label.text = value
-	value_label.add_theme_font_size_override("font_size", 18)
+	value_label.add_theme_font_size_override("font_size", 24)
 	value_label.add_theme_color_override("font_color", TEXT_COLOR)
 	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	stats_grid.add_child(value_label)
@@ -416,6 +440,10 @@ func _show_unlocks(skill_names: Array) -> void:
 	unlock_label.visible = true
 
 func _on_new_run_pressed() -> void:
+	# Tutorial-Lauf vorbei: Spielstand von vorher zurück, dann zur Ei-Auswahl
+	if Tutorial.run_active:
+		Tutorial.end_run()
+		return
 	State.reset()
 	get_tree().change_scene_to_file("res://script/scenes/selection/selection.tscn")
 

@@ -10,10 +10,10 @@ const EGG_TEXTURE = preload("res://assets/ui/eggs/common_1.png")
 const GOLD := SkillDetailPopup.GOLD
 const ICON_SIZE := Vector2(56, 56)
 const SMALL_ICON_SIZE := Vector2(34, 34)
-const HEADER_FONT_SIZE := 24
-const TITLE_FONT_SIZE := 19
-const TEXT_FONT_SIZE := 15
-const SMALL_FONT_SIZE := 13
+const HEADER_FONT_SIZE := 40
+const TITLE_FONT_SIZE := 32
+const TEXT_FONT_SIZE := 24
+const SMALL_FONT_SIZE := 24
 
 ## Reihenfolge der Abschnitte; icon "egg" ist ein gewöhnliches Ei
 const SECTIONS := [

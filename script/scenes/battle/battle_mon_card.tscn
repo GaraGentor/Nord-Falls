@@ -67,7 +67,7 @@ alignment = 1
 custom_minimum_size = Vector2(40, 0)
 layout_mode = 2
 mouse_filter = 2
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 24
 text = "[NAME]"
 text_overrun_behavior = 3
 
@@ -79,7 +79,7 @@ theme_override_constants/separation = 4
 [node name="Level" type="Label" parent="Margin/Box/Top/Text/Info"]
 layout_mode = 2
 mouse_filter = 2
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 24
 text = "Lv 1"
 
 [node name="RarityStar" type="TextureRect" parent="Margin/Box/Top/Text/Info"]
@@ -101,7 +101,7 @@ size_flags_vertical = 4
 
 [node name="Label" parent="Margin/Box/Top/Text/Info/MovesBadge"]
 theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 24
 
 [node name="HpBar" type="Control" parent="Margin/Box"]
 custom_minimum_size = Vector2(0, 14)
@@ -138,6 +138,6 @@ grow_vertical = 2
 mouse_filter = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 16
 horizontal_alignment = 1
 vertical_alignment = 1

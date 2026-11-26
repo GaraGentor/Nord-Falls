@@ -37,3 +37,18 @@ Tipps
 - Wenn Gemini die Mitte trotzdem füllt: "leave the center empty" ans Ende hängen oder "negative space in the center" dazuschreiben.
 - Für einheitliche Bilder alle vier im selben Chat erzeugen und beim zweiten bis vierten Bild "in the same style as the previous image" dazuschreiben.
 - Zu den Wellen: ja, ruhige Bilder mit freier Mitte passen besser, weil sie zeigen, wo man gerade ist. Wichtig ist nur, dass sie gedämpft bleiben, sonst wird der Laden mit seinen vielen Regalen schnell unruhig.
+
+
+5) Letzter Wille (Trauerfeld)
+-----------------------------
+Monster, Erbstücke und Knochenhaufen setzt das Spiel selbst ins Bild. Der Hintergrund liefert nur die Stimmung und freie Flächen:
+links für das Team, in der Mitte für das gefallene Monster samt Beute, rechts für die neuen Fänge.
+
+A somber, quiet battlefield aftermath as a 2D game background, 16:9 landscape, eye-level view slightly from above, same northern fantasy world as a pixel-art landscape with misty mountains. A wide, flat clearing of trampled, muddy grass under a heavy overcast dusk sky, cold blue-grey light with one thin warm strip of fading sunset on the horizon. In the exact center of the ground a slightly sunken, darker patch of churned earth, about a third of the image wide, with a few scattered old bones, broken ribs, a cracked skull half buried in the mud and some dried dark-red blood stains soaking into the soil, like the place where a creature has just fallen. The patch itself stays fairly flat and uncluttered so a fallen monster and a pile of loot can be placed on it later. To the left and the right of the center, two open, even areas of grass, each wide enough for three to four creatures to stand on, completely empty. At the outer edges only: a few broken spears and a torn banner stuck in the ground, crooked dead trees, some ravens perched on a branch, drifting fog close to the ground. Sad, mournful, quiet mood, grief rather than horror, not gory. Muted desaturated colors, low contrast so UI, cards and monsters in front stay readable, painterly pixel-art concept-art style with subtle grain, matching the previous backgrounds. No people, no creatures, no monsters, no items, no text, no UI. Leave the center and both sides empty.
+
+5b) Knochenhaufen zum Durchwühlen (einzelnes Sprite, optional)
+--------------------------------------------------------------
+Liegt über den Erbstücken. Beim Antippen werden die Knochen zur Seite geschoben und das Teil darunter erscheint.
+Gemini kann keine echte Transparenz, darum auf einfarbigem Hintergrund erzeugen und den Hintergrund danach freistellen.
+
+A single small pile of old bones as a 2D game sprite, side view slightly from above: a few long bones, ribs, a small cracked skull, some pebbles and a bit of dark dirt and dried blood at the base, loosely heaped so it looks like something could be hidden underneath. Painterly pixel-art style with subtle grain, muted bone-white, brown and dark red, soft shadow below. Centered, isolated on a plain flat pure magenta (#FF00FF) background, nothing else in the image, no text.

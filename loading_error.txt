@@ -1,0 +1,32 @@
+Intro-Ladebildschirm fror ein - BEHOBEN am 2026-11-20
+=====================================================
+
+Symptom:
+Das Intro blieb beim Vorladen stehen, das ganze Spiel reagierte nicht mehr (auch nicht auf den Debugger),
+keine Fehlermeldung im Log. Passierte nur manchmal. Der Klick / das Verschieben des Fensters war NICHT der Auslöser.
+
+Ursache (mit Protokoll nachgewiesen):
+1. Deadlock zwischen Lade-Threads: SceneLoader lud bis zu 8 Dateien gleichzeitig. Die Kampf-Szenen
+   (battle.tscn, battle_info_panel.tscn, battle_mon_card.tscn, card_hand.tscn, monster_scene.tscn,
+   monster_switcher.tscn) binden sich gegenseitig per preload ein. Laden zwei Threads je eine davon,
+   wartet jeder auf die Datei des anderen -> beide werden nie fertig.
+2. Darum fror das ganze Fenster ein: lag eine dieser halb geladenen Dateien schon im Cache, rief der
+   Haupt-Thread load(path) auf und wartete für immer mit (scene_loader.gd, alter Zweig has_cached -> load).
+
+Lösung (script/globals/scene_loader.gd):
+- Haupt-Thread wartet nie: statt load() nur ResourceLoader.get_cached_ref().
+- Szenen und Ressourcen werden nacheinander geladen (immer nur eine), nur Bilder parallel (IMAGE_PARALLEL = 4),
+  die hängen von nichts ab.
+- use_sub_threads = false, .gd-Dateien werden nicht mehr einzeln angefragt (kommen mit den Szenen).
+- Sicherheitsnetz: hängt das Vorladen STALL_SECONDS (8 s) ohne Fortschritt, geht es ohne die hängenden Dateien
+  weiter, mit push_warning.
+- Getestet: 6 Starts hintereinander ohne Hänger, Vorladen ca. 3,2 s.
+
+Falls es doch wieder hängt:
+- In scene_loader.gd DEBUG_LOG auf true setzen. Jeder Ladeschritt landet sofort in
+  %APPDATA%\Godot\app_userdata\To the north\scene_loader_debug.log - die letzten Zeilen zeigen die hängende Datei.
+
+Nebenbei gefunden (kaputte Dateien, die das Vorladen mitlädt, schon vorher so):
+- script/scenes/battle/selected_mon_table_material.tres verweist auf fehlendes monster_card.gdshader
+- script/scenes/jailer/monster_scene.tscn und upgrade_infos.tscn verweisen auf fehlende .gd-Dateien
+- script/scenes/test/mon_stat_test.gd: Parse-Fehler ("Mons" nicht deklariert)

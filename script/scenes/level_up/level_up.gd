@@ -12,7 +12,7 @@ const COUPON_ICON = preload("res://assets/ui/icons/coupon.svg")
 const BOSS_SHARD_ICON = preload("res://assets/ui/jailer/boss_tear.svg")
 const EGG_ICON = preload("res://assets/ui/eggs/common_1.png")
 const BAG_SIZE := Vector2(208, 196)
-const BAG_FONT_SIZE := 19
+const BAG_FONT_SIZE := 32
 const FIELD_MARGIN := 16
 ## so weit bleibt die Beute vom Bildrand weg, dort liegt der Wolkenrand
 const LOOT_EDGE_MARGIN := 60.0
@@ -22,7 +22,7 @@ const LOOT_GAP := 16.0
 ## Stück Beute auf dem Schlachtfeld, lässt sich in die Tasche ziehen
 class LootIcon extends VBoxContainer:
 	const ICON_SIZE := Vector2(84, 84)
-	const FONT_SIZE := 20
+	const FONT_SIZE := 32
 
 	signal drag_started
 
@@ -87,6 +87,28 @@ class LootBag extends Control:
 		_pop = create_tween()
 		_pop.tween_property(self, "scale", Vector2.ONE, 0.35).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 
+## Boden des Schlachtfelds: fallen gelassene Beute bleibt dort liegen, wo sie losgelassen wird (frei verschiebbar,
+## auch übereinander). Liegt die Tasche unter dem Mauszeiger, landet sie dort. Nimmt nur während des Ziehens Mausereignisse an.
+class LootField extends Control:
+	var bag: LootBag
+
+	func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
+		return data is LootIcon
+
+	func _drop_data(at_position: Vector2, data: Variant) -> void:
+		if bag.get_global_rect().has_point(get_global_mouse_position()):
+			bag._drop_data(Vector2.ZERO, data)
+			return
+		var loot: LootIcon = data
+		var half := loot.size / 2
+		var center := at_position.clamp(half, (size - half).max(half))
+		# zuletzt abgelegt liegt obenauf
+		move_child(loot, -1)
+		for side in [SIDE_LEFT, SIDE_RIGHT]:
+			loot.set_anchor_and_offset(side, center.x / size.x, 0.0, true)
+		for side in [SIDE_TOP, SIDE_BOTTOM]:
+			loot.set_anchor_and_offset(side, center.y / size.y, 0.0, true)
+
 var debug=false
 var debug_mons=2
 
@@ -103,7 +125,7 @@ var debug_mons=2
 var _bag: LootBag
 var _hint_panel: PanelContainer
 ## freie Fläche über dem ganzen Bild, darauf liegt die Beute verstreut
-var _loot_field: Control
+var _loot_field: LootField
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -129,21 +151,26 @@ func _ready() -> void:
 	battlefield.add_to_group("tut_loot_field")
 	# die Sequenz erklärt vor allem die Beute, ohne Beute wartet sie auf den nächsten Kampf
 	if _loot_field.get_child_count() > 0:
-		Tutorial.trigger("loot")
+		Tutorial.trigger("boss_loot" if State.is_boss_fight and Tutorial.run_active else "loot")
 	_start()
 
 ## Der Wolkenrand rechnet in Pixeln und braucht dafür die Größe des Bildes
 func _update_cloud_size() -> void:
 	battlefield_image.material.set_shader_parameter("rect_size", battlefield_image.size)
 
+## Beide Monster spielen ihre Level-Ups gleichzeitig ab. Weiter geht es jederzeit:
+## der OK-Knopf verbucht, was noch nicht animiert wurde (_on_button_pressed).
 func _start() -> void:
-	for killed in State.killed_monsters:
-		State.killed_monsters -= 1
-		if monster_scene1.mon:
-			await monster_scene1._play()
-		if monster_scene2.mon:
-			await monster_scene2._play()
+	var kills := State.killed_monsters
+	var boss_kills := State.killed_bosses
+	State.killed_monsters = 0
+	State.killed_bosses = 0
 	go_button.disabled = false
+	for scene in _monster_scenes():
+		scene.play_kills(kills, boss_kills)
+
+func _monster_scenes() -> Array:
+	return [monster_scene1, monster_scene2].filter(func(scene): return scene.mon != null)
 
 ## Oben der Hinweis, unten die Tasche, darüber die verstreute Beute
 func _build_battlefield() -> void:
@@ -162,18 +189,19 @@ func _build_battlefield() -> void:
 	_hint_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var hint := Label.new()
 	hint.text = tr("LEVEL_UP_LOOT_HINT")
-	hint.add_theme_font_size_override("font_size", 18)
+	hint.add_theme_font_size_override("font_size", 24)
 	hint.add_theme_color_override("font_color", IronPlate.TEXT_COLOR)
 	IronPlate.frame(_hint_panel, hint, 12, 8)
 	column.add_child(_hint_panel)
 
-	_loot_field = Control.new()
+	_loot_field = LootField.new()
 	_loot_field.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_loot_field.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	battlefield.add_child(_loot_field)
 
 	_bag = LootBag.new()
 	column.add_child(_bag)
+	_loot_field.bag = _bag
 	State.ep_changed.connect(_show_money)
 	_show_money(State.ep)
 
@@ -186,14 +214,17 @@ func _build_battlefield() -> void:
 	if State.pending_coupons > 0:
 		_add_loot(COUPON_ICON, tr("COUPON_LOOT_AMOUNT").format({"amount": State.pending_coupons}), _take_coupons)
 	if State.pending_relic_chest:
-		_add_loot(BOX_ICON, tr("RELIC_CHEST_LOOT"), _take_relic_chest)
+		_add_loot(BOX_ICON, tr("RELIC_CHEST_LOOT"), _take_relic_chest).add_to_group("tut_loot_chest")
 	if State.pending_skill_envelope:
-		_add_loot(ENVELOPE_ICON, tr("SKILL_ENVELOPE_LOOT"), _take_skill_envelope)
+		_add_loot(ENVELOPE_ICON, tr("SKILL_ENVELOPE_LOOT"), _take_skill_envelope).add_to_group("tut_loot_envelope")
 	if State.pending_boss_shards > 0:
 		var shard_text := "JAILER_TEAR_COUNT_ONE" if State.pending_boss_shards == 1 else "JAILER_TEAR_COUNT_MANY"
 		_add_loot(BOSS_SHARD_ICON, "+" + tr(shard_text).format({"amount": State.pending_boss_shards}), _take_boss_shards)
 	if State.is_boss_fight:
 		_add_egg_loot()
+	# One-Way-Items: Beute und die Items gefallener Monster, jedes einzeln
+	for item in State.pending_items.duplicate():
+		_add_item_loot(item)
 	_hint_panel.visible = _loot_field.get_child_count() > 0
 	_scatter_loot()
 
@@ -204,6 +235,9 @@ func _add_egg_loot() -> void:
 	unlocked.append_array(State.INITIAL_MONS)
 	# ein gerade gefangener Boss bringt nicht direkt sein eigenes Ei, das fühlt sich geschenkt an
 	var missing := State.mons.filter(func(mon: Monster): return not unlocked.has(mon._name) and not mon._is_boss)
+	# Tutorial: immer ein Ei, es erklärt nur das Freischalten (der Spielstand kommt am Ende zurück)
+	if missing.is_empty() and Tutorial.run_active:
+		missing = State.mons.duplicate()
 	# ab jetzt zählt er als normales Team-Monster: sein Ei kann ein späterer Boss-Kampf bringen
 	for mon: Monster in State.mons:
 		mon._is_boss = false
@@ -212,6 +246,18 @@ func _add_egg_loot() -> void:
 	var mon_name: String = missing.pick_random()._name
 	var loot := _add_loot(EGG_ICON, tr("EGG_LOOT"), SaveManager.add_catched_monster_mon.bind(mon_name), Monmap.egg_material(Monmap.rarity_of(mon_name)))
 	loot.tooltip_text = tr("EGG_LOOT_DESC")
+	loot.add_to_group("tut_loot_egg")
+
+## One-Way-Item in der Farbe seiner Seltenheit, in die Tasche gezogen landet es im Inventar
+func _add_item_loot(item: Dictionary) -> void:
+	var art := Items.icon(item)
+	var loot := _add_loot(art.texture, Items.title(item), _take_item.bind(item), art.material)
+	loot.tooltip_text = "%s (%s)\n%s\n%s" % [Items.title(item), tr(Items.RARITY_LABELS[Items.rarity_of(item)]), Items.description(item), Items.use_hint(item)]
+	art.free()
+
+func _take_item(item: Dictionary) -> void:
+	State.pending_items.erase(item)
+	Items.add_to_bag(item)
 
 func _add_loot(texture: Texture2D, text: String, on_taken: Callable, art_material: ShaderMaterial = RewardDialog.ICON_BUTTON_MATERIAL) -> LootIcon:
 	var loot := LootIcon.new(texture, text, art_material)
@@ -224,9 +270,10 @@ func _add_loot(texture: Texture2D, text: String, on_taken: Callable, art_materia
 	_loot_field.add_child(loot)
 	return loot
 
-## Während des Ziehens fängt keine Beute den Drop ab, auch wenn sie über der Tasche liegt
+## Während des Ziehens fängt keine Beute den Drop ab, auch wenn sie über der Tasche liegt: der Boden nimmt ihn an
 func _on_loot_drag_started() -> void:
 	_bag.art.set_gold(true)
+	_loot_field.mouse_filter = Control.MOUSE_FILTER_STOP
 	for loot: Control in _loot_field.get_children():
 		loot.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
@@ -320,11 +367,21 @@ func _show_money(ep: int) -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_DRAG_END and _bag != null:
 		_bag.art.set_gold(false)
+		_loot_field.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		for loot in _loot_field.get_children():
 			loot.modulate.a = 1.0
 			loot.mouse_filter = Control.MOUSE_FILTER_STOP
 
 func _on_button_pressed() -> void:
+	# noch laufende Level-Ups sofort verbuchen
+	for scene in _monster_scenes():
+		scene.finish_now()
+	# Tutorial: Reliktkiste und Couvert gehen in jedem Fall auf
+	if Tutorial.run_active:
+		if State.pending_relic_chest:
+			_take_relic_chest()
+		if State.pending_skill_envelope:
+			_take_skill_envelope()
 	# was nicht in der Tasche liegt, bleibt auf dem Schlachtfeld
 	State.clear_pending_loot()
 	get_tree().change_scene_to_file("res://script/scenes/world_map/world_map.tscn")
