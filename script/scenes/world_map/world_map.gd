@@ -666,6 +666,10 @@ func _point_to_next(walkable: Array, pos: Vector3) -> void:
 		target = boss_button
 	if target:
 		_pointer = TutorialPointerScript.new()
+		# Shop, Lager, Schatz, Inventar & Co. liegen im view_container über der Karte
+		_pointer.covered = func() -> bool:
+			return view_container.get_children().any(
+				func(child): return not child.is_queued_for_deletion() and child.visible)
 		target.add_child(_pointer)
 
 ## Kommt der Fliegende Teppich auf der Karte dazu oder geht er (Shop, Void), ändern sich die begehbaren Felder.

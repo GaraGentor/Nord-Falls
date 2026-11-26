@@ -16,6 +16,9 @@ const OUTLINE := Color(0.08, 0.05, 0.02)
 const OUTLINE_WIDTH := 4.0
 
 var _time := 0.0
+## true = gerade liegt etwas über dem Ziel (z. B. Shop über der Karte): der Pfeil bleibt so lange unsichtbar,
+## sonst schiene er wegen z_index durch
+var covered := Callable()
 
 func _init() -> void:
 	mouse_filter = MOUSE_FILTER_IGNORE
@@ -23,6 +26,9 @@ func _init() -> void:
 	z_index = 20
 
 func _process(delta: float) -> void:
+	visible = not (covered.is_valid() and covered.call())
+	if not visible:
+		return
 	_time += delta
 	var parent := get_parent() as Control
 	if parent == null:

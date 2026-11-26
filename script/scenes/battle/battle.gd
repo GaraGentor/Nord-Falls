@@ -307,6 +307,8 @@ func _is_own_turn() -> bool:
 func _on_turn_for(mon: Monster) -> void:
 	active_mon = mon
 	_turn_serial += 1
+	if Tutorial.is_fight() and turn_wheel.round_number == 1 and turn_wheel.current_index == 0:
+		_give_tutorial_items_to(mon)
 	if State.enemy_mons.has(mon):
 		Events.enemy_turn_started.emit()
 	# Element-Leihgabe erst, wenn der eigene Zug wirklich losgeht (unten)
@@ -734,6 +736,28 @@ func _add_tutorial_attacks(mon: Monster) -> void:
 		if not skill.is_empty() and not mon._skills.any(func(own): return own.name == skill.name):
 			attacks.append(skill)
 	mon._skills = attacks + mon._skills.filter(Skills.is_damage_skill)
+
+## Tutorial-Kämpfe: Items lassen sich nur im Zug ihres Trägers einsetzen. Trägt sie ein später dranes Monster,
+## kommt der Item-Schritt (Feld 8) durcheinander, also wandern zu Beginn der ersten Runde alle Items der eigenen
+## Monster auf das, das als erstes am Zug ist (auf freie Plätze, sonst getauscht)
+func _give_tutorial_items_to(first: Monster) -> void:
+	if not State.mons.has(first):
+		return
+	for mon: Monster in State.mons:
+		if mon == first:
+			continue
+		for i in mon._items.size():
+			if mon._items[i] == null:
+				continue
+			var target := -1
+			for j in Items.SLOTS_PER_MON:
+				if Items.get_at({"mon": first, "index": j}) == null:
+					target = j
+					break
+			if target == -1:
+				# kein freier Platz mehr: tauschen, damit das Item in diesem Kampf wenigstens beim Ersten liegt
+				target = Items.SLOTS_PER_MON - 1
+			Items.swap({"mon": mon, "index": i}, {"mon": first, "index": target})
 
 func _restore_tutorial_skills() -> void:
 	for mon: Monster in _tutorial_skills:
