@@ -31,6 +31,7 @@ const FAILURES_BOTTOM := 24
 const NAME_FONT_SIZE := 48
 const RADAR_MIN_HEIGHT := 250.0
 const FADE_SECONDS := 0.3
+const MAP_SCENE := "res://script/scenes/world_map/world_map.tscn"
 
 @export var stage: EggStage
 @export var biome_path: Control
@@ -55,11 +56,17 @@ var _stats: VBoxContainer
 var _throw_button: Button
 var _go_button: Button
 var _reroll_button: Button
+## sucht eins der drei Monster zufällig aus (erscheint mit "Reise beginnen")
+var _random_button: Button
 
 func _ready() -> void:
 	_add_corner_buttons()
 	_build_side()
 	_add_failures()
+	# gespeicherter Run (RunSave): nur "Weiter", kein Biom-Pfad, keine Eier, kein Tutorial
+	if RunSave.has_pending():
+		_show_continue()
+		return
 	load_eggs()
 	biome_path.show_path(Map.load_biome_path())
 	stage.front_changed.connect(_on_front_changed)
@@ -69,6 +76,20 @@ func _ready() -> void:
 		_ask_for_tutorial.call_deferred()
 	else:
 		Tutorial.trigger("selection")
+
+## Statt "Ei werfen" steht "Weiter" da, der Biom-Pfad ist ausgeblendet
+func _show_continue() -> void:
+	biome_path.visible = false
+	_throw_button.text = tr("SELECTION_CONTINUE")
+	_throw_button.pressed.disconnect(_on_throw_pressed)
+	_throw_button.pressed.connect(_on_continue_pressed)
+
+func _on_continue_pressed() -> void:
+	_throw_button.disabled = true
+	if not RunSave.restore():
+		get_tree().reload_current_scene.call_deferred()
+		return
+	get_tree().change_scene_to_file(MAP_SCENE)
 
 ## Neuer Spielstand: mit Hilfe spielen (Tutorial-Lauf, die Ei-Auswahl startet neu) oder überspringen.
 ## Man muss sich entscheiden, ein Klick daneben zählt nicht. Darüber gleich die Sprachwahl (erster Spielstart);
@@ -184,6 +205,7 @@ func _on_throw_finished() -> void:
 		return
 	stage.speed_scale = 1.0
 	_fade(_go_button, true)
+	_fade(_random_button, true)
 	# im Tutorial nicht: die Ladungen gehören zum echten Spielstand
 	_reroll_button.visible = SaveManager.has_full_reroll_charges() and not Tutorial.run_active
 
@@ -218,6 +240,12 @@ func _on_go_pressed() -> void:
 	Tips.advance()
 	get_tree().change_scene_to_file("res://script/scenes/egg_configurator/egg_configurator.tscn")
 
+## Zufällig: eins der drei Monster kommt nach vorne, aufbrechen muss man dann selbst
+func _on_random_pressed() -> void:
+	if stage.is_busy() or mons.is_empty():
+		return
+	stage.bring_to_front(randi() % mons.size())
+
 ## Faule Eier: neue würfeln, alle drei fliegen gleichzeitig herein
 func _on_reroll_pressed() -> void:
 	if stage.is_busy():
@@ -225,6 +253,7 @@ func _on_reroll_pressed() -> void:
 	SaveManager.save_data["eggs_rerolled"] = true
 	_reroll_button.visible = false
 	_go_button.visible = false
+	_random_button.visible = false
 	roll_eggs()
 	stage.clear()
 	stage.speed_scale = REROLL_SPEED
@@ -274,6 +303,9 @@ func _build_side() -> void:
 	_go_button = _menu_button(tr("SELECTION_BEGIN_JOURNEY"), _on_go_pressed, ACTION_FONT_SIZE)
 	_go_button.visible = false
 	actions.add_child(_go_button)
+	_random_button = _menu_button(tr("SELECTION_RANDOM_EGG"), _on_random_pressed, MENU_FONT_SIZE)
+	_random_button.visible = false
+	actions.add_child(_random_button)
 	_reroll_button = _menu_button(tr("SELECTION_REROLL_EGGS"), _on_reroll_pressed, MENU_FONT_SIZE)
 	_reroll_button.visible = false
 	actions.add_child(_reroll_button)

@@ -14,14 +14,12 @@ var fullscreen := false
 var card_effects := true
 ## großes Art-Symbol als Wasserzeichen auf den Skill-Karten (SkillCardPaper)
 var card_watermark := true
-## Hard Mode aus (Standard) = Easy Mode: die Relikte aus Relics.EASY_MODE_RELICS (alle Werte und Fähigkeiten der Gegner)
+## Hard Mode aus (Standard) = Easy Mode: die Relikte aus Relics.EASY_MODE_RELICS (alle Werte, Fähigkeiten und HP der Gegner)
 ## gelten in jedem Run als gesammelt und werden deshalb nirgends mehr angeboten. Im Hard Mode muss man sie finden.
 var hard_mode := false
 var easy_mode: bool:
 	get:
 		return not hard_mode
-## Das Relikt Relics.ENEMY_HP_RELIC (genaue HP der Gegner) gilt in jedem Run als gesammelt, unabhängig vom Easy Mode
-var show_enemy_hp := false
 ## Das Relikt Relics.CARPET_RELIC (jede Lane der nächsten Reihe) gilt in jedem Run als gesammelt. Es ist für normale
 ## Runs zu stark und kommt deshalb nur noch über diese Einstellung ins Spiel (Relics.SETTINGS_ONLY_RELICS).
 var flying_carpet := false
@@ -83,14 +81,6 @@ func set_hard_mode(on: bool) -> void:
 	if hard_mode == on:
 		return
 	hard_mode = on
-	_save()
-	changed.emit()
-	Relics.relics_changed.emit()
-
-func set_show_enemy_hp(on: bool) -> void:
-	if show_enemy_hp == on:
-		return
-	show_enemy_hp = on
 	_save()
 	changed.emit()
 	Relics.relics_changed.emit()
@@ -181,7 +171,6 @@ func _load() -> void:
 	card_effects = config.get_value("display", "card_effects", true)
 	card_watermark = config.get_value("display", "card_watermark", true)
 	hard_mode = config.get_value("gameplay", "hard_mode", false)
-	show_enemy_hp = config.get_value("gameplay", "show_enemy_hp", false)
 	# Test-Schalter: fertige Builds ignorieren sie und lassen sie aus (has_test_settings)
 	if has_test_settings():
 		flying_carpet = config.get_value("gameplay", "flying_carpet", false)
@@ -198,7 +187,6 @@ func _save() -> void:
 	config.set_value("display", "card_effects", card_effects)
 	config.set_value("display", "card_watermark", card_watermark)
 	config.set_value("gameplay", "hard_mode", hard_mode)
-	config.set_value("gameplay", "show_enemy_hp", show_enemy_hp)
 	config.set_value("gameplay", "flying_carpet", flying_carpet)
 	config.set_value("gameplay", "retry_battle", retry_battle)
 	config.set_value("gameplay", "dormant_skills", dormant_skills)

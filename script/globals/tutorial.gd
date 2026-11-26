@@ -264,7 +264,8 @@ func needs_start_question() -> bool:
 ## Einstellungen: starten nur in der Ei-Auswahl, nie mitten in einem Lauf
 func can_start() -> bool:
 	var scene := get_tree().current_scene
-	return not run_active and scene != null and scene.scene_file_path == SELECTION_SCENE
+	# nicht, solange ein gespeicherter Run auf "Weiter" wartet (RunSave)
+	return not run_active and not RunSave.has_pending() and scene != null and scene.scene_file_path == SELECTION_SCENE
 
 ## Startabfrage abgelehnt: kein Tutorial, die Frage kommt nicht wieder
 func decline() -> void:

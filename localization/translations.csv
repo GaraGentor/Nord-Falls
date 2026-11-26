@@ -8,6 +8,8 @@ SELECTION_PICK_WARRIOR,Now select your preferred warrior...,Wähle jetzt deinen 
 SELECTION_TIME_TO_GO,... it's time to go ...,... es ist Zeit aufzubrechen ...
 SELECTION_NO_MORE_EGGS,... no more eggs... Go! ...,... keine Eier mehr... Los! ...
 SELECTION_REROLL_EGGS,Rotten Eggs,Faule Eier
+SELECTION_RANDOM_EGG,Random,Zufällig
+SELECTION_CONTINUE,Continue,Weiter
 BIOME_DEPTH,Depth {depth},Tiefe {depth}
 CONFIGURATOR_GO,Set off...,Aufbrechen...
 CONFIGURATOR_COUNTER,{count}/{max} selected,{count}/{max} gewählt
@@ -664,6 +666,11 @@ MAP_TEAM_ENTRY,{name}  Lv {level},{name}  Lv {level}
 MAP_TEAM_HP,{hp} / {max} HP,{hp} / {max} LP
 MAP_LEGEND,Legend,Legende
 MAP_LEGEND_HINT,Click an entry for details.,Klicke auf einen Eintrag für Details.
+MAP_SAVE_QUIT,Save and quit,Speichern und Beenden
+MAP_SAVE_QUIT_TITLE,Save and quit?,Speichern und Beenden?
+MAP_SAVE_QUIT_TEXT,"Your run is saved and the game closes. Next time you start, you continue right here. Never surrender: the save only lasts until you continue.","Dein Run wird gespeichert und das Spiel beendet. Beim nächsten Start geht es genau hier weiter. Never surrender: der Spielstand gilt nur bis zum Weiterspielen."
+MAP_SAVE_QUIT_YES,Save and quit,Speichern und Beenden
+MAP_SAVE_QUIT_NO,Cancel,Abbrechen
 MAP_NODE_COMBAT_DESC,"A fight against wild monsters of the current biome. Wins pay Monster Essence and experience, and weakened enemies can be caught. Every fight in a biome makes the next enemies a bit stronger.","Ein Kampf gegen wilde Monster aus dem aktuellen Biom. Siege bringen Monster Essenz und Erfahrung, geschwächte Gegner kannst du fangen. Mit jedem Kampf im Biom werden die nächsten Gegner etwas stärker."
 MAP_NODE_BOSS_DESC,"A fight with boss strength in the middle of the map: more and tougher enemies than usual. It does not end the biome, that only happens with the boss at the top.","Ein Kampf in Boss-Stärke mitten auf der Karte: mehr und zähere Gegner als sonst. Er beendet das Biom nicht, das passiert erst beim Boss ganz oben."
 MAP_NODE_CAMP_DESC,"A place to rest: feed Monster Essence to the fire and it heals your monsters.","Ein Rastplatz: füttere das Feuer mit Monster Essenz und es heilt deine Monster."
@@ -971,9 +978,7 @@ SETTINGS_CARD_WATERMARK,Card symbol,Karten-Symbol
 SETTINGS_CARD_WATERMARK_HINT,Large symbol of the skill type in the background of the skill cards.,Großes Symbol der Skill-Art im Hintergrund der Skill-Karten.
 SETTINGS_GAMEPLAY,Gameplay,Spiel
 SETTINGS_HARD_MODE,Hard Mode,Hard Mode
-SETTINGS_HARD_MODE_HINT,"Without Hard Mode every run starts with the All-Seeing Eye and the Battle Codex: all enemy stats and attacks are visible. In Hard Mode you have to find them in the shop first.","Ohne Hard Mode beginnt jeder Run mit dem Allsehenden Auge und dem Kampf-Kodex: alle Werte und Attacken der Gegner sind sichtbar. Im Hard Mode musst du sie erst im Shop finden."
-SETTINGS_ENEMY_HP,Show enemy HP,Gegner-HP anzeigen
-SETTINGS_ENEMY_HP_HINT,"Every run starts with the Stethoscope: the HP bars in battle show the exact HP of enemies too. It is then no longer offered in the shop.","Jeder Run beginnt mit dem Stethoskop: die HP-Balken im Kampf zeigen auch bei Gegnern die genauen HP. Im Shop wird es dann nicht mehr angeboten."
+SETTINGS_HARD_MODE_HINT,"Without Hard Mode every run starts with the All-Seeing Eye, the Battle Codex and the Stethoscope: all enemy stats, attacks and HP are visible. In Hard Mode you have to find them in the shop first.","Ohne Hard Mode beginnt jeder Run mit dem Allsehenden Auge, dem Kampf-Kodex und dem Stethoskop: alle Werte, Attacken und HP der Gegner sind sichtbar. Im Hard Mode musst du sie erst im Shop finden."
 SETTINGS_FLYING_CARPET,Flying Carpet,Fliegender Teppich
 SETTINGS_FLYING_CARPET_HINT,"Every run starts with the Flying Carpet: on the map you can move to any field in the next row. Without this setting it can no longer be found.","Jeder Run beginnt mit dem Fliegenden Teppich: auf der Karte kannst du zu jedem Feld der nächsten Reihe. Ohne diese Einstellung lässt er sich nicht mehr finden."
 SETTINGS_DORMANT_SKILLS,Slumbering Skills,Schlummernde Skills
@@ -1355,12 +1360,28 @@ TIPS_TITLE,Tip,Tipp
 TIP_JAILER,You can permanently upgrade your monsters at the Jailer.,Beim Kerkermeister kannst du permanent deine Monster aufwerten.
 TIP_LOOT_BAG,"Loot after a battle only becomes yours once you drag it into the bag. Whatever is left behind is gone when you move on.","Beute nach dem Kampf gehört dir erst, wenn du sie in die Tasche ziehst. Was liegen bleibt, ist beim Weitergehen weg."
 TIP_NEW_BADGE,"Enemies of a species you don't own yet are marked NEW in battle. If you already own the species, arrows behind the star show how many actions it has per turn.","Gegner einer Art, die du noch nicht besitzt, sind im Kampf mit NEU markiert. Besitzt du die Art schon, zeigen Pfeile hinter dem Stern, wie viele Aktionen sie pro Zug hat."
-TIP_BATTLE_SPEED,"In the top right of a battle you can change the speed (right click: slower) and turn on the automatic end of turn.","Rechts oben im Kampf stellst du die Geschwindigkeit um (Rechtsklick: langsamer) und schaltest das automatische Zugende ein."
-TIP_ENEMY_HP,"If you have a species in your team or caught it this run, you see the exact HP of enemies of that species.","Hast du eine Art im Team oder in diesem Run gefangen, siehst du die genauen LP der Gegner dieser Art."
 TIP_BOSS_EGG,"After a boss battle, the egg of a team monster can be among the loot. It unlocks the species permanently.","Nach einem Boss-Kampf kann das Ei eines Team-Monsters in der Beute liegen. Damit schaltest du die Art dauerhaft frei."
 TIP_POISON,Poison takes effect at the start of the turn and goes through all shields.,Gift wirkt zu Beginn des Zuges und geht durch alle Schilde.
 TIP_COLLECTION,"In the bottom left you'll find the collection: it shows every species you have discovered so far.","Unten links findest du die Sammlung: Dort siehst du alle Arten, die du schon entdeckt hast."
-TIP_FLYING_CARPET,The Flying Carpet lets you switch lanes on the map.,Mit dem Fliegenden Teppich darfst du auf der Karte die Spur wechseln.
+TIP_TAKE_A_MON,"A rule of thumb: always take one of the monsters you are offered.","Eine Faustregel: Nimm immer eins der Monster mit, die dir angeboten werden."
+TIP_PATH_ELEMENTS,"Look at the elements on the path and think about which ones you will need in a later biome.","Schau dir im Pfad die Elemente an und überlege, welche du in einem späteren Biom brauchst."
+TIP_AUTO_END,"Turn on ""Auto"" in battle and your turns end automatically.","Stelle im Kampf ""Auto"" ein, dann beendest du deine Züge automatisch."
+TIP_BATTLE_SPEED,"Animations too slow? Turn up the speed in battle.","Langsame Animationen? Stelle im Kampf die Geschwindigkeit höher."
+TIP_ELEMENT_LOAN,"Temporarily boost the element of one of your monsters by dragging the element orb of its partner onto it.","Verbessere vorübergehend das Element eines deiner Monster, indem du die Element-Kugel seines Partners auf es ziehst."
+TIP_SORT_TEAM,"Sort your team in the monster details on the map by rearranging them with drag and drop.","Sortiere dein Team in den Monster-Details auf der Karte, indem du die Monster per Drag and Drop neu anordnest."
+TIP_INVENTORY,"Check your inventory every now and then ;)","Schau ab und zu in dein Inventar ;)"
+TIP_ABSORB_SKILLS,"Absorbing the abilities of monsters is very useful!","Fähigkeiten von Monstern einzuverleiben ist sehr nützlich!"
+TIP_ACTION_POINTS,"Your monsters' action points are shown on the turn wheel in battle!","Die Aktionspunkte deiner Monster stehen im Kampf am Zugrad!"
+TIP_BOSS_TEARS,"Boss Tears are very, very, very valuable!","Boss Tränen sind sehr, sehr, sehr wertvoll!"
+TIP_RARE_MONS,"Unlocking rare monsters instead of finishing a run can pay off big time.","Seltene Monster freizuschalten, statt einen Run zu beenden, kann große Vorteile bringen."
+TIP_EGG_SKILLS,"Unlocking egg attacks can give you a huge advantage.","Ei-Attacken freizuschalten kann dir sehr große Vorteile bringen."
+TIP_ELEMENT_EFFECTS,"Check the element effects of two combined elements now and then, they can unlock enormous advantages.","Schau dir ab und zu die Element-Effekte zweier Kombinationen an, sie können ungeheure Vorteile freischalten."
+TIP_ENEMY_SKILLS,"Check your enemies' attacks in battle now and then, they can be pretty strong!","Schau dir im Kampf ab und zu die Attacken deiner Gegner an, sie können ziemlich stark sein!"
+TIP_TREASURE,"Treasure chests bring you loooots of luck and belongings.","Schatzkisten bringen dir vieeeel Glück und Habseligkeiten."
+TIP_SWAP_TEAM,"Swapping team members isn't bad, it's good. Get used to it!","Teammitglieder auszutauschen ist nicht schlimm, sondern gut. Gewöhn dich dran!"
+TIP_KEEP_GOING,"Lost a lot? Keep at it, upgrade, unlock. It gets easier!","Oft verloren? Dranbleiben, aufwerten, freischalten. Dann wird's leichter!"
+TIP_DRAG_AND_DROP,"A lot happens through drag and drop and swiping. Give it a try!","Vieles passiert über Drag and Drop und Wischen. Probier's mal!"
+TIP_CLICKABLE,"Some elements are more clickable than you think.","Manche Elemente sind klickbarer, als du denkst."
 BATTLE_MON_CHAINS_SOME,"Jailer: {broken} of {max} chains broken for this species","Kerkermeister: {broken} von {max} Ketten dieser Art gesprengt"
 BATTLE_MON_CHAINS_MAX,"Jailer: all {max} chains broken, this species is fully upgraded","Kerkermeister: alle {max} Ketten gesprengt, diese Art ist voll verbessert"
 BATTLE_MON_NEW,NEW,NEU

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <!-- Holztür mit Messingbeschlägen für "Speichern und Beenden": harte Kanten, Licht von oben links wie das Zahnrad -->
+  <!-- Umriss: Rahmen mit dicker dunkler Kontur -->
+  <path d="M26 118 V62 A38 38 0 0 1 102 62 V118 Z" fill="#06080c" stroke="#06080c" stroke-width="10" stroke-linejoin="bevel" />
+  <!-- Steinrahmen, Licht oben links -->
+  <path d="M26 118 V62 A38 38 0 0 1 102 62 V118 Z" fill="#5c5a55" />
+  <path d="M26 118 V62 A38 38 0 0 1 64 24 V36 A26 26 0 0 0 38 62 V118 Z" fill="#7d7a73" />
+  <!-- Türblatt -->
+  <path d="M38 118 V62 A26 26 0 0 1 90 62 V118 Z" fill="#06080c" />
+  <path d="M42 118 V62 A22 22 0 0 1 86 62 V118 Z" fill="#7a4a26" />
+  <!-- Bretter: Licht links, Schatten rechts -->
+  <rect x="42" y="56" width="8" height="62" fill="#9a6234" />
+  <rect x="62" y="40" width="4" height="78" fill="#5a3418" />
+  <rect x="78" y="56" width="8" height="62" fill="#5a3418" />
+  <!-- Beschläge -->
+  <rect x="42" y="64" width="44" height="8" fill="#06080c" />
+  <rect x="42" y="64" width="44" height="5" fill="#9a7d48" />
+  <rect x="42" y="98" width="44" height="8" fill="#06080c" />
+  <rect x="42" y="98" width="44" height="5" fill="#9a7d48" />
+  <!-- Türring -->
+  <rect x="70" y="78" width="12" height="12" fill="#06080c" />
+  <rect x="72" y="80" width="8" height="8" fill="#c9ab6c" />
+  <rect x="76" y="84" width="4" height="4" fill="#6f5630" />
+  <!-- Schwelle -->
+  <rect x="18" y="112" width="92" height="12" fill="#06080c" />
+  <rect x="20" y="114" width="88" height="8" fill="#7d7a73" />
+</svg>

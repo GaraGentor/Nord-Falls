@@ -97,7 +97,6 @@ func _build(content: VBoxContainer) -> void:
 	content.add_child(_section(tr("SETTINGS_GAMEPLAY")))
 	# Hard Mode: ohne die Relikte des Easy Mode, der sonst immer gilt (GameSettings.hard_mode)
 	_add_check(content, "SETTINGS_HARD_MODE", GameSettings.hard_mode, GameSettings.set_hard_mode)
-	_add_check(content, "SETTINGS_ENEMY_HP", GameSettings.show_enemy_hp, GameSettings.set_show_enemy_hp)
 	# Test-Schalter nur in Debug-Builds, im fertigen Spiel bleiben sie aus (GameSettings.has_test_settings)
 	if GameSettings.has_test_settings():
 		_add_check(content, "SETTINGS_ENEMY_LOANS", GameSettings.enemy_loans, GameSettings.set_enemy_loans)

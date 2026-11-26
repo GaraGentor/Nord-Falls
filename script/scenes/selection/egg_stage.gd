@@ -240,6 +240,19 @@ func _on_figure_clicked(figure: Dictionary) -> void:
 		_spin(-angle)
 	front_changed.emit(figure.index, true)
 
+## Dreht das Monster mit dem Wurf-Index nach vorne, wie ein Klick darauf (aber clicked = false)
+func bring_to_front(index: int) -> void:
+	if _busy:
+		return
+	for figure in _figures:
+		if figure.index != index:
+			continue
+		var angle: float = figure.angle
+		if not is_zero_approx(angle):
+			_spin(-angle)
+		front_changed.emit(index, false)
+		return
+
 ## Dreht das Karussell um turn Grad
 func _spin(turn: float) -> void:
 	if _spin_tween and _spin_tween.is_running():

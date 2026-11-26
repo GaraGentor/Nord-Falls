@@ -1,9 +1,0 @@
-1. Beim Initialen Tutorial Modal (erster Spiel Start) auch die Sprache initial anbieten
-2. Beim Level Up, vill kann man die Liste weg nehmen und die dort platzieren wo auch die Symbole sind. Sodass die Icons mit dem Inhalt der einzelnen Listen ersetzt wird. Dann bricht auch nix aus dem Grid und der Platz ist gut investert. Die Bes: Punkte sollten dann unter dem Diagramm stehen.
-
-Einstellungen:
-	> Fliegender Teppich verstecken (wird nicht gebraucht im release build)
-	> Kampf wiederholen verstecken (wird nicht gebraucht im release build)
-	> Schlummernde Fähigkeiten verstecken (wird nicht gebraucht im release build)
-	> Gegner leihen ELemente verstecken (wird nicht gebraucht im release build)
-	> Easy Mode umbenennen zu Hard Mode und den Easy Mode Standard mäßig drin lassen

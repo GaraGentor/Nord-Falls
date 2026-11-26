@@ -47,6 +47,9 @@ var suspended := false
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	load_game()
+	# gespeicherter Run (Speichern und Beenden): gleich beim Start lesen und löschen, damit die Ei-Auswahl
+	# von Anfang an "Weiter" zeigt und der Run nur ein einziges Mal fortgesetzt werden kann
+	RunSave.take_on_boot()
 
 func save_game():
 	if suspended:

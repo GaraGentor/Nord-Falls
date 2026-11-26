@@ -157,6 +157,7 @@ func _ready() -> void:
 		change_position(State.current_map_position)
 	change_ep_text(State.ep)
 	add_settings_button()
+	add_save_quit_button()
 	# die Boss-Relikte stehen seit dem Betreten des Bioms fest und kreisen um den Boss
 	if not Map.boss_relics.is_empty():
 		boss_button.add_child(BossRelicOrbit.new(Map.boss_relics))
@@ -258,14 +259,42 @@ func add_settings_button() -> void:
 	button.offset_bottom = -16.0
 	$HBoxContainer/Panel.add_child(button)
 
-# Nur in Debug-Builds: links neben dem Einstellungen-Button im Header
+const DOOR_ICON := preload("res://assets/ui/icons/door.svg")
+
+# Tür im Header links neben dem Zahnrad, gleich groß: Speichern und Beenden (RunSave). Nicht im Tutorial-Lauf.
+func add_save_quit_button() -> void:
+	if not RunSave.can_save():
+		return
+	var button := SettingsDialog.make_button(self)
+	button.icon = DOOR_ICON
+	button.tooltip_text = "MAP_SAVE_QUIT"
+	# make_button öffnet die Einstellungen: diese Verbindung durch die Abfrage ersetzen
+	for connection in button.pressed.get_connections():
+		button.pressed.disconnect(connection.callable)
+	button.pressed.connect(_ask_save_quit)
+	button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	button.offset_left = -200.0
+	button.offset_top = -72.0
+	button.offset_right = -144.0
+	button.offset_bottom = -16.0
+	$HBoxContainer/Panel.add_child(button)
+
+## Speichern und Beenden oder Abbrechen
+func _ask_save_quit() -> void:
+	var dialog := ChoiceDialog.ask(self, "MAP_SAVE_QUIT_TITLE", "MAP_SAVE_QUIT_TEXT", "MAP_SAVE_QUIT_YES", "MAP_SAVE_QUIT_NO")
+	if not await dialog.chosen:
+		return
+	if RunSave.save():
+		get_tree().quit()
+
+# Nur in Debug-Builds: links neben der Tür im Header
 func add_debug_button() -> void:
 	var button := RewardDialog.plate_button("DEBUG")
 	button.add_theme_font_size_override("font_size", 24)
 	button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-	button.offset_left = -236.0
+	button.offset_left = -300.0
 	button.offset_top = -60.0
-	button.offset_right = -144.0
+	button.offset_right = -208.0
 	button.offset_bottom = -16.0
 	button.pressed.connect(func():
 		var menu = DEBUG_MENU.new()

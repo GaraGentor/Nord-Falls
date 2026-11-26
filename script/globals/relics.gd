@@ -213,7 +213,7 @@ func get_relic(id: String) -> Dictionary:
 func has_relic(id: String) -> bool:
 	return State.relics.has(id) or is_easy_mode_relic(id)
 
-## Kommt aus den Einstellungen (Easy Mode oder Gegner-HP), nicht aus dem Run (lässt sich z. B. im Void nicht tauschen)
+## Kommt aus den Einstellungen (Easy Mode oder Fliegender Teppich), nicht aus dem Run (lässt sich z. B. im Void nicht tauschen)
 func is_easy_mode_relic(id: String) -> bool:
 	return settings_relics().has(id)
 
@@ -222,8 +222,6 @@ func settings_relics() -> Array[String]:
 	var ids: Array[String] = []
 	if GameSettings.easy_mode:
 		ids.append_array(EASY_MODE_RELICS)
-	if GameSettings.show_enemy_hp:
-		ids.append(ENEMY_HP_RELIC)
 	if GameSettings.flying_carpet:
 		ids.append(CARPET_RELIC)
 	return ids
@@ -244,9 +242,7 @@ func is_active(id: String) -> bool:
 const SHOP_RELICS := ["spyglass", "super_catcher", "all_stats", "all_skills", "enemy_hp"]
 
 ## Im Easy Mode (GameSettings.easy_mode) gelten diese Relikte in jedem Run als gesammelt
-const EASY_MODE_RELICS := ["all_stats", "all_skills"]
-## Mit GameSettings.show_enemy_hp gilt dieses Relikt in jedem Run als gesammelt
-const ENEMY_HP_RELIC := "enemy_hp"
+const EASY_MODE_RELICS := ["all_stats", "all_skills", "enemy_hp"]
 ## Mit GameSettings.flying_carpet gilt dieses Relikt in jedem Run als gesammelt
 const CARPET_RELIC := "flying_carpet"
 ## Diese Relikte gibt es nur über die Einstellungen, sie werden nirgends angeboten (zu stark für normale Runs)
