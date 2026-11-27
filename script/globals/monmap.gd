@@ -148,16 +148,17 @@ var mons = [
 		# schreibt tools/skill_verteilung.js nach den Regeln in skill_verteilung.txt (Kategorien nach preferred_stats,
 		# Gleichstand: Ang. vor Sp. Ang. vor Vert.). Nicht von Hand ändern, sondern das Skript neu laufen lassen:
 		#   node tools/skill_verteilung.js
-		# Gewöhnliche Arten starten nach ihrem höchsten Kampfwert:
-		#   Ang.: Leichter Stoß, Leichter Schlag, Nutzloser Schild
-		#   Sp. Ang.: dasselbe magisch, Nutzloser Schild
-		#   Vert.: Nutzloser Stoß, Leichter Schild, Nutzloser Stoß der anderen Angriffsart
-		#   Der erste Nutzlose Stoß ist magisch, wenn Sp. Ang. höher als Ang. ist.
+		# Gewöhnliche Arten starten wie die Starter nach ihrem höchsten Kampfwert, der Skill auf dem besten Wert ist so
+		# stark wie die Starter-Kopfgeld-Attacken (7 + 0,3, CD 0):
+		#   Ang.: Hieb 7 + 0,3, Leichter Schlag 8 + 0,3, Schild 7 + 0,2
+		#   Sp. Ang.: dasselbe magisch (Schuss), Schild 7 + 0,2
+		#   Vert.: Stoß 7 + 0,2, Wehr 7 + 0,3, Stoß bzw. Puls 7 + 0,2 der anderen Angriffsart
+		#   Der erste Stoß ist magisch (Puls), wenn Sp. Ang. höher als Ang. ist.
 		# Ab Selten: "affinity" = Neben-Element (Zweier-Kombi), ab Legendär "affinity_triple" (Dreier-Kombi).
 		# "skills_manual": true = Skills von Hand gepflegt, das Skript lässt die Art aus.
 		# Optional: bounty_egg_skills (Skills.BOUNTIES), von Hand
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_MAG_LIGHT_STRIKE", "SKILL_AIR_ARMOR_WEAK"],
+		"default_egg_skills": ["SKILL_AIR_MAG_SHOT", "SKILL_AIR_MAG_LIGHT_STRIKE", "SKILL_AIR_ARMOR_GUARD"],
 		"unlockable_egg_skills": ["SKILL_AIR_ARMOR_PLAIN", "SKILL_AIR_ARMOR_DRAFT_GUARD", "SKILL_AIR_MAG_WIND_BLADE"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_AIR_PHYS_GUST_KICK",
@@ -192,12 +193,12 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 12, "atk": 8, "def": 12, "s_atk": 27, "speed": 20},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_FIRE_MAG_CANNON", "SKILL_FIRE_MAG_LIGHT_THRUST", "SKILL_FIRE_ARMOR_LIGHT"],
-		"unlockable_egg_skills": ["SKILL_FIRE_PHYS_BACKHAND", "SKILL_FIRE_ARMOR_CINDER_PLATE", "SKILL_FIRE_MAG_FIREBALL", "SKILL_FIRE_BUFF_S_ATK"],
+		"default_egg_skills": ["SKILL_FIRE_MAG_CANNON", "SKILL_FIRE_MAG_SHOT", "SKILL_FIRE_ARMOR_WARD"],
+		"unlockable_egg_skills": ["SKILL_FIRE_PHYS_BACKHAND", "SKILL_FIRE_ARMOR_CINDER_PLATE", "SKILL_FIRE_ARMOR_FLAME_WALL", "SKILL_FIRE_BUFF_S_ATK"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_FIRE_BUFF_FIGHTING_SPIRIT",
 			"kills_10": "SKILL_FIRE_MAG_SPARK_SHOT",
-			"triple": "SKILL_FIRE_ARMOR_FLAME_WALL",
+			"triple": "SKILL_FIRE_MAG_FIREBALL",
 		},
 		"bounty_egg_skills": {"alpha_3": "SKILL_FIRE_PHYS_BLAZE_RUSH"},
 	},
@@ -246,7 +247,7 @@ var mons = [
 		"stats": [215, 235],
 		"preferred_stats": {"hp": 19, "atk": 28, "def": 20, "s_atk": 7, "speed": 12},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_EARTH_PHYS_BOULDER_BASH", "SKILL_EARTH_ARMOR_LIGHT", "SKILL_EARTH_PHYS_SMALL_PUNCH"],
+		"default_egg_skills": ["SKILL_EARTH_PHYS_BOULDER_BASH", "SKILL_EARTH_ARMOR_WARD", "SKILL_EARTH_PHYS_CHOP"],
 		"unlockable_egg_skills": ["SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_BUFF_BATTLE_FRENZY", "SKILL_EARTH_BUFF_ATK"],
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_EARTH_ARMOR_STONE_SKIN",
@@ -264,7 +265,7 @@ var mons = [
 		"stats": [230, 250],
 		"preferred_stats": {"hp": 17, "atk": 8, "def": 14, "s_atk": 25, "speed": 12},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_EARTH_MAG_GEO_PULSE", "SKILL_EARTH_ARMOR_STONE_SKIN", "SKILL_EARTH_MAG_SMALL_CANNON"],
+		"default_egg_skills": ["SKILL_EARTH_MAG_GEO_PULSE", "SKILL_EARTH_ARMOR_STONE_SKIN", "SKILL_EARTH_MAG_SHOT"],
 		"unlockable_egg_skills": ["SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_MAG_GEO_PULSE_SWIFT", "SKILL_EARTH_BUFF_EXTRA_CLUB", "SKILL_EARTH_BUFF_TEAM_S_ATK"],
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_MUD_ARMOR_MUD_COAT",
@@ -281,12 +282,12 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 17, "atk": 16, "def": 15, "s_atk": 24, "speed": 14},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_FIRE_MAG_CANNON", "SKILL_FIRE_MAG_LIGHT_THRUST", "SKILL_FIRE_PHYS_LIGHT_STRIKE"],
-		"unlockable_egg_skills": ["SKILL_FIRE_ARMOR_PLAIN", "SKILL_FIRE_PHYS_FLAME_FIST", "SKILL_FIRE_MAG_FIREBALL", "SKILL_FIRE_BUFF_S_ATK"],
+		"default_egg_skills": ["SKILL_FIRE_MAG_CANNON", "SKILL_FIRE_MAG_SHOT", "SKILL_FIRE_PHYS_LIGHT_STRIKE"],
+		"unlockable_egg_skills": ["SKILL_FIRE_ARMOR_PLAIN", "SKILL_FIRE_PHYS_FLAME_FIST", "SKILL_FIRE_PHYS_BLAZE_RUSH", "SKILL_FIRE_BUFF_S_ATK"],
 		"milestone_egg_skills": {
 			"kills_5": "SKILL_FIRE_BUFF_SPARK_STRIKE",
 			"new_element": "SKILL_FIRE_MAG_SPARK_SHOT",
-			"boss_3": "SKILL_FIRE_PHYS_BLAZE_RUSH",
+			"boss_3": "SKILL_FIRE_MAG_FIREBALL",
 		},
 		"bounty_egg_skills": {"alpha_8": "SKILL_FIRE_ARMOR_FLAME_WALL"},
 	},
@@ -298,12 +299,12 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 24, "atk": 10, "def": 14, "s_atk": 20, "speed": 10},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_WATER_MAG_CANNON", "SKILL_WATER_MAG_LIGHT_THRUST", "SKILL_WATER_ARMOR_LIGHT"],
-		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BACKHAND", "SKILL_WATER_ARMOR_SHELL", "SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_BUFF_S_ATK"],
+		"default_egg_skills": ["SKILL_WATER_MAG_CANNON", "SKILL_WATER_MAG_SHOT", "SKILL_WATER_ARMOR_WARD"],
+		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BACKHAND", "SKILL_WATER_ARMOR_SHELL", "SKILL_WATER_ARMOR_CORAL_WALL", "SKILL_WATER_BUFF_S_ATK"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_WATER_BUFF_FIGHTING_SPIRIT",
 			"new_element": "SKILL_WATER_MAG_BUBBLE_BEAM",
-			"boss_3": "SKILL_WATER_ARMOR_CORAL_WALL",
+			"boss_3": "SKILL_WATER_MAG_HYDRO_LANCE",
 		},
 		"bounty_egg_skills": {"alpha_9": "SKILL_WATER_PHYS_BREAKER"},
 	},
@@ -316,7 +317,7 @@ var mons = [
 		"stats": [215, 235],
 		"preferred_stats": {"hp": 24, "atk": 26, "def": 24, "s_atk": 8, "speed": 8},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_FIRE_PHYS_FLAME_FIST", "SKILL_FIRE_ARMOR_LIGHT", "SKILL_FIRE_PHYS_SMALL_PUNCH"],
+		"default_egg_skills": ["SKILL_FIRE_PHYS_FLAME_FIST", "SKILL_FIRE_ARMOR_WARD", "SKILL_FIRE_PHYS_CHOP"],
 		"unlockable_egg_skills": ["SKILL_FIRE_PHYS_BLAZE_RUSH", "SKILL_FIRE_ARMOR_FLAME_WALL", "SKILL_FIRE_BUFF_BATTLE_FRENZY", "SKILL_FIRE_BUFF_ATK"],
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_FIRE_ARMOR_CINDER_PLATE",
@@ -333,7 +334,7 @@ var mons = [
 		"stats": [190, 210],
 		"preferred_stats": {"hp": 15, "atk": 10, "def": 12, "s_atk": 24, "speed": 20},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_MAG_LIGHT_STRIKE", "SKILL_AIR_ARMOR_WEAK"],
+		"default_egg_skills": ["SKILL_AIR_MAG_SHOT", "SKILL_AIR_MAG_LIGHT_STRIKE", "SKILL_AIR_ARMOR_GUARD"],
 		"unlockable_egg_skills": ["SKILL_AIR_PHYS_BACKHAND", "SKILL_AIR_PHYS_GUST_KICK", "SKILL_AIR_MAG_WIND_BLADE"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_AIR_ARMOR_DRAFT_GUARD",
@@ -351,7 +352,7 @@ var mons = [
 		"stats": [230, 250],
 		"preferred_stats": {"hp": 15, "atk": 22, "def": 12, "s_atk": 22, "speed": 19},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_AIR_PHYS_CYCLONE_CLAW", "SKILL_AIR_MAG_WIND_BLADE", "SKILL_AIR_PHYS_SMALL_PUNCH"],
+		"default_egg_skills": ["SKILL_AIR_PHYS_CYCLONE_CLAW", "SKILL_AIR_MAG_WIND_BLADE", "SKILL_AIR_PHYS_CHOP"],
 		"unlockable_egg_skills": ["SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_PHYS_CYCLONE_CLAW_SWIFT", "SKILL_AIR_BUFF_TAILWIND", "SKILL_CHAOS_BOON_COURAGE"],
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_LIGHTNING_MAG_SPARK_BOLT",
@@ -369,7 +370,7 @@ var mons = [
 		"stats": [215, 235],
 		"preferred_stats": {"hp": 22, "atk": 22, "def": 27, "s_atk": 6, "speed": 8},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_EARTH_ARMOR_STONE_SKIN", "SKILL_EARTH_PHYS_PUNCH", "SKILL_EARTH_PHYS_SMALL_PUNCH"],
+		"default_egg_skills": ["SKILL_EARTH_ARMOR_STONE_SKIN", "SKILL_EARTH_PHYS_PUNCH", "SKILL_EARTH_PHYS_CHOP"],
 		"unlockable_egg_skills": ["SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_BUFF_EXTRA_SHIELD", "SKILL_PASSIVE_EARTH_POWER"],
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_EARTH_PHYS_BOULDER_BASH",
@@ -387,7 +388,7 @@ var mons = [
 		"stats": [215, 235],
 		"preferred_stats": {"hp": 14, "atk": 20, "def": 12, "s_atk": 20, "speed": 20},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_WATER_PHYS_TIDE_SLAP", "SKILL_WATER_MAG_CANNON", "SKILL_WATER_PHYS_SMALL_PUNCH"],
+		"default_egg_skills": ["SKILL_WATER_PHYS_TIDE_SLAP", "SKILL_WATER_MAG_CANNON", "SKILL_WATER_PHYS_CHOP"],
 		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BREAKER", "SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_BUFF_BATTLE_FRENZY", "SKILL_WATER_BUFF_ATK"],
 		"milestone_egg_skills": {
 			"finisher_2": "SKILL_WATER_MAG_BUBBLE_BEAM",
@@ -404,12 +405,12 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 14, "atk": 6, "def": 14, "s_atk": 26, "speed": 16},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_AIR_MAG_CANNON", "SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_ARMOR_LIGHT"],
-		"unlockable_egg_skills": ["SKILL_AIR_PHYS_BACKHAND", "SKILL_AIR_ARMOR_DRAFT_GUARD", "SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_BUFF_S_ATK"],
+		"default_egg_skills": ["SKILL_AIR_MAG_CANNON", "SKILL_AIR_MAG_SHOT", "SKILL_AIR_ARMOR_WARD"],
+		"unlockable_egg_skills": ["SKILL_AIR_PHYS_BACKHAND", "SKILL_AIR_ARMOR_DRAFT_GUARD", "SKILL_AIR_ARMOR_GALE_WALL", "SKILL_AIR_BUFF_S_ATK"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_AIR_BUFF_FIGHTING_SPIRIT",
 			"finisher_2": "SKILL_AIR_MAG_WIND_BLADE",
-			"triple": "SKILL_AIR_ARMOR_GALE_WALL",
+			"triple": "SKILL_AIR_MAG_TEMPEST_RAY",
 		},
 		"bounty_egg_skills": {"alpha_15": "SKILL_AIR_PHYS_CYCLONE_CLAW"},
 	},
@@ -421,7 +422,7 @@ var mons = [
 		"stats": [190, 210],
 		"preferred_stats": {"hp": 14, "atk": 14, "def": 22, "s_atk": 22, "speed": 18},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_FIRE_MAG_LIGHT_THRUST", "SKILL_FIRE_MAG_LIGHT_STRIKE", "SKILL_FIRE_ARMOR_WEAK"],
+		"default_egg_skills": ["SKILL_FIRE_MAG_SHOT", "SKILL_FIRE_MAG_LIGHT_STRIKE", "SKILL_FIRE_ARMOR_GUARD"],
 		"unlockable_egg_skills": ["SKILL_FIRE_PHYS_BACKHAND", "SKILL_FIRE_PHYS_FLAME_FIST", "SKILL_FIRE_MAG_SPARK_SHOT"],
 		"milestone_egg_skills": {
 			"finisher_1": "SKILL_FIRE_ARMOR_CINDER_PLATE",
@@ -438,12 +439,12 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 16, "atk": 24, "def": 22, "s_atk": 14, "speed": 12},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_FIRE_PHYS_PUNCH", "SKILL_FIRE_PHYS_LIGHT_THRUST", "SKILL_FIRE_ARMOR_LIGHT"],
-		"unlockable_egg_skills": ["SKILL_FIRE_MAG_LIGHT_CANNON", "SKILL_FIRE_ARMOR_CINDER_PLATE", "SKILL_FIRE_PHYS_BLAZE_RUSH", "SKILL_FIRE_BUFF_ATK"],
+		"default_egg_skills": ["SKILL_FIRE_PHYS_PUNCH", "SKILL_FIRE_PHYS_CHOP", "SKILL_FIRE_ARMOR_WARD"],
+		"unlockable_egg_skills": ["SKILL_FIRE_MAG_LIGHT_CANNON", "SKILL_FIRE_ARMOR_CINDER_PLATE", "SKILL_FIRE_ARMOR_FLAME_WALL", "SKILL_FIRE_BUFF_ATK"],
 		"milestone_egg_skills": {
 			"kills_5": "SKILL_FIRE_BUFF_FIGHTING_SPIRIT",
 			"new_element": "SKILL_FIRE_PHYS_FLAME_FIST",
-			"flawless_2": "SKILL_FIRE_ARMOR_FLAME_WALL",
+			"flawless_2": "SKILL_FIRE_PHYS_BLAZE_RUSH",
 		},
 		"bounty_egg_skills": {"alpha_17": "SKILL_FIRE_MAG_FIREBALL"},
 	},
@@ -456,7 +457,7 @@ var mons = [
 		"stats": [215, 235],
 		"preferred_stats": {"hp": 15, "atk": 22, "def": 18, "s_atk": 10, "speed": 22},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_AIR_PHYS_GUST_KICK", "SKILL_AIR_ARMOR_LIGHT", "SKILL_AIR_PHYS_SMALL_PUNCH"],
+		"default_egg_skills": ["SKILL_AIR_PHYS_GUST_KICK", "SKILL_AIR_ARMOR_WARD", "SKILL_AIR_PHYS_CHOP"],
 		"unlockable_egg_skills": ["SKILL_AIR_PHYS_CYCLONE_CLAW", "SKILL_AIR_ARMOR_GALE_WALL", "SKILL_AIR_BUFF_BATTLE_FRENZY", "SKILL_AIR_BUFF_ATK"],
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_AIR_ARMOR_DRAFT_GUARD",
@@ -474,7 +475,7 @@ var mons = [
 		"stats": [215, 235],
 		"preferred_stats": {"hp": 14, "atk": 24, "def": 12, "s_atk": 18, "speed": 20},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_WATER_PHYS_TIDE_SLAP", "SKILL_WATER_MAG_CANNON", "SKILL_WATER_PHYS_SMALL_PUNCH"],
+		"default_egg_skills": ["SKILL_WATER_PHYS_TIDE_SLAP", "SKILL_WATER_MAG_CANNON", "SKILL_WATER_PHYS_CHOP"],
 		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BREAKER", "SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_BUFF_BATTLE_FRENZY", "SKILL_WATER_BUFF_ATK"],
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_WATER_MAG_BUBBLE_BEAM",
@@ -491,12 +492,12 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 22, "atk": 14, "def": 22, "s_atk": 18, "speed": 8},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_WATER_ARMOR_LIGHT", "SKILL_WATER_MAG_LIGHT_THRUST", "SKILL_WATER_MAG_LIGHT_STRIKE"],
-		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BACKHAND", "SKILL_WATER_MAG_BUBBLE_BEAM", "SKILL_WATER_ARMOR_CORAL_WALL", "SKILL_WATER_BUFF_DEF"],
+		"default_egg_skills": ["SKILL_WATER_ARMOR_WARD", "SKILL_WATER_MAG_SHOT", "SKILL_WATER_MAG_LIGHT_STRIKE"],
+		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BACKHAND", "SKILL_WATER_MAG_BUBBLE_BEAM", "SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_BUFF_DEF"],
 		"milestone_egg_skills": {
 			"finisher_1": "SKILL_WATER_BUFF_WAVE_SHIELD",
 			"new_element": "SKILL_WATER_ARMOR_SHELL",
-			"finisher_2": "SKILL_WATER_MAG_HYDRO_LANCE",
+			"finisher_2": "SKILL_WATER_ARMOR_CORAL_WALL",
 		},
 		"bounty_egg_skills": {"alpha_20": "SKILL_WATER_PHYS_BREAKER"},
 	},
@@ -508,7 +509,7 @@ var mons = [
 		"stats": [190, 210],
 		"preferred_stats": {"hp": 14, "atk": 26, "def": 16, "s_atk": 8, "speed": 24},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_EARTH_PHYS_LIGHT_THRUST", "SKILL_EARTH_PHYS_LIGHT_STRIKE", "SKILL_EARTH_ARMOR_WEAK"],
+		"default_egg_skills": ["SKILL_EARTH_PHYS_CHOP", "SKILL_EARTH_PHYS_LIGHT_STRIKE", "SKILL_EARTH_ARMOR_GUARD"],
 		"unlockable_egg_skills": ["SKILL_EARTH_MAG_LIGHT_CANNON", "SKILL_EARTH_MAG_PEBBLE_STORM", "SKILL_EARTH_PHYS_BOULDER_BASH"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_EARTH_ARMOR_STONE_SKIN",
@@ -525,7 +526,7 @@ var mons = [
 		"stats": [190, 210],
 		"preferred_stats": {"hp": 24, "atk": 18, "def": 18, "s_atk": 12, "speed": 10},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_EARTH_PHYS_LIGHT_THRUST", "SKILL_EARTH_PHYS_LIGHT_STRIKE", "SKILL_EARTH_ARMOR_WEAK"],
+		"default_egg_skills": ["SKILL_EARTH_PHYS_CHOP", "SKILL_EARTH_PHYS_LIGHT_STRIKE", "SKILL_EARTH_ARMOR_GUARD"],
 		"unlockable_egg_skills": ["SKILL_EARTH_MAG_LIGHT_CANNON", "SKILL_EARTH_MAG_PEBBLE_STORM", "SKILL_EARTH_PHYS_BOULDER_BASH"],
 		"milestone_egg_skills": {
 			"finisher_1": "SKILL_EARTH_ARMOR_STONE_SKIN",
@@ -543,7 +544,7 @@ var mons = [
 		"stats": [215, 235],
 		"preferred_stats": {"hp": 20, "atk": 26, "def": 22, "s_atk": 12, "speed": 8},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_FIRE_PHYS_FLAME_FIST", "SKILL_FIRE_ARMOR_LIGHT", "SKILL_FIRE_PHYS_SMALL_PUNCH"],
+		"default_egg_skills": ["SKILL_FIRE_PHYS_FLAME_FIST", "SKILL_FIRE_ARMOR_WARD", "SKILL_FIRE_PHYS_CHOP"],
 		"unlockable_egg_skills": ["SKILL_FIRE_PHYS_BLAZE_RUSH", "SKILL_FIRE_ARMOR_FLAME_WALL", "SKILL_FIRE_BUFF_BATTLE_FRENZY", "SKILL_FIRE_BUFF_ATK"],
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_FIRE_ARMOR_CINDER_PLATE",
@@ -560,12 +561,12 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 14, "atk": 22, "def": 24, "s_atk": 14, "speed": 14},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_AIR_ARMOR_LIGHT", "SKILL_AIR_PHYS_LIGHT_THRUST", "SKILL_AIR_PHYS_LIGHT_STRIKE"],
-		"unlockable_egg_skills": ["SKILL_AIR_MAG_LIGHT_CANNON", "SKILL_AIR_PHYS_GUST_KICK", "SKILL_AIR_ARMOR_GALE_WALL", "SKILL_AIR_BUFF_DEF"],
+		"default_egg_skills": ["SKILL_AIR_ARMOR_WARD", "SKILL_AIR_PHYS_CHOP", "SKILL_AIR_PHYS_LIGHT_STRIKE"],
+		"unlockable_egg_skills": ["SKILL_AIR_MAG_LIGHT_CANNON", "SKILL_AIR_PHYS_GUST_KICK", "SKILL_AIR_PHYS_CYCLONE_CLAW", "SKILL_AIR_BUFF_DEF"],
 		"milestone_egg_skills": {
 			"kills_5": "SKILL_AIR_BUFF_WIND_MANTLE",
 			"new_element": "SKILL_AIR_ARMOR_DRAFT_GUARD",
-			"bounty": "SKILL_AIR_PHYS_CYCLONE_CLAW",
+			"bounty": "SKILL_AIR_ARMOR_GALE_WALL",
 		},
 		"bounty_egg_skills": {"alpha_24": "SKILL_AIR_MAG_TEMPEST_RAY"},
 	},
@@ -578,7 +579,7 @@ var mons = [
 		"stats": [230, 250],
 		"preferred_stats": {"hp": 26, "atk": 14, "def": 26, "s_atk": 12, "speed": 6},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_PHYS_BOULDER_BASH", "SKILL_EARTH_PHYS_SMALL_PUNCH"],
+		"default_egg_skills": ["SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_PHYS_BOULDER_BASH", "SKILL_EARTH_PHYS_CHOP"],
 		"unlockable_egg_skills": ["SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_ARMOR_GRANITE_BASTION_SWIFT", "SKILL_EARTH_BUFF_EXTRA_CLUB", "SKILL_EARTH_BUFF_TEAM_DEF"],
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_MUD_PHYS_MUD_PUNCH",
@@ -595,12 +596,12 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 12, "atk": 10, "def": 12, "s_atk": 26, "speed": 22},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_FIRE_MAG_CANNON", "SKILL_FIRE_MAG_LIGHT_THRUST", "SKILL_FIRE_ARMOR_LIGHT"],
-		"unlockable_egg_skills": ["SKILL_FIRE_PHYS_BACKHAND", "SKILL_FIRE_ARMOR_CINDER_PLATE", "SKILL_FIRE_MAG_FIREBALL", "SKILL_FIRE_BUFF_S_ATK"],
+		"default_egg_skills": ["SKILL_FIRE_MAG_CANNON", "SKILL_FIRE_MAG_SHOT", "SKILL_FIRE_ARMOR_WARD"],
+		"unlockable_egg_skills": ["SKILL_FIRE_PHYS_BACKHAND", "SKILL_FIRE_ARMOR_CINDER_PLATE", "SKILL_FIRE_ARMOR_FLAME_WALL", "SKILL_FIRE_BUFF_S_ATK"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_FIRE_BUFF_SPARK_STRIKE",
 			"new_element": "SKILL_FIRE_MAG_SPARK_SHOT",
-			"flawless_2": "SKILL_FIRE_ARMOR_FLAME_WALL",
+			"flawless_2": "SKILL_FIRE_MAG_FIREBALL",
 		},
 		"bounty_egg_skills": {"alpha_26": "SKILL_FIRE_PHYS_BLAZE_RUSH"},
 	},
@@ -613,7 +614,7 @@ var mons = [
 		"stats": [215, 235],
 		"preferred_stats": {"hp": 16, "atk": 12, "def": 14, "s_atk": 26, "speed": 14},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_AIR_MAG_WIND_BLADE", "SKILL_AIR_ARMOR_LIGHT", "SKILL_AIR_MAG_SMALL_CANNON"],
+		"default_egg_skills": ["SKILL_AIR_MAG_WIND_BLADE", "SKILL_AIR_ARMOR_WARD", "SKILL_AIR_MAG_SHOT"],
 		"unlockable_egg_skills": ["SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_ARMOR_GALE_WALL", "SKILL_AIR_BUFF_BATTLE_FRENZY", "SKILL_AIR_BUFF_S_ATK"],
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_AIR_ARMOR_DRAFT_GUARD",
@@ -631,7 +632,7 @@ var mons = [
 		"stats": [230, 250],
 		"preferred_stats": {"hp": 20, "atk": 28, "def": 24, "s_atk": 6, "speed": 10},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_FIRE_PHYS_BLAZE_RUSH", "SKILL_FIRE_ARMOR_CINDER_PLATE", "SKILL_FIRE_PHYS_SMALL_PUNCH"],
+		"default_egg_skills": ["SKILL_FIRE_PHYS_BLAZE_RUSH", "SKILL_FIRE_ARMOR_CINDER_PLATE", "SKILL_FIRE_PHYS_CHOP"],
 		"unlockable_egg_skills": ["SKILL_FIRE_ARMOR_FLAME_WALL", "SKILL_FIRE_PHYS_BLAZE_RUSH_SWIFT", "SKILL_FIRE_BUFF_EMBER_HEAT", "SKILL_CHAOS_BOON_COURAGE"],
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_MAGMA_ARMOR_PUMICE_SKIN",
@@ -724,12 +725,12 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 12, "atk": 22, "def": 12, "s_atk": 16, "speed": 24},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_EARTH_PHYS_PUNCH", "SKILL_EARTH_PHYS_LIGHT_THRUST", "SKILL_EARTH_MAG_LIGHT_STRIKE"],
-		"unlockable_egg_skills": ["SKILL_EARTH_ARMOR_PLAIN", "SKILL_EARTH_MAG_PEBBLE_STORM", "SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_BUFF_ATK"],
+		"default_egg_skills": ["SKILL_EARTH_PHYS_PUNCH", "SKILL_EARTH_PHYS_CHOP", "SKILL_EARTH_MAG_LIGHT_STRIKE"],
+		"unlockable_egg_skills": ["SKILL_EARTH_ARMOR_PLAIN", "SKILL_EARTH_MAG_PEBBLE_STORM", "SKILL_EARTH_MAG_GEO_PULSE", "SKILL_EARTH_BUFF_ATK"],
 		"milestone_egg_skills": {
 			"kills_5": "SKILL_EARTH_BUFF_FIGHTING_SPIRIT",
 			"new_element": "SKILL_EARTH_PHYS_BOULDER_BASH",
-			"flawless_2": "SKILL_EARTH_MAG_GEO_PULSE",
+			"flawless_2": "SKILL_EARTH_PHYS_QUAKE_STOMP",
 		},
 		"bounty_egg_skills": {"alpha_36": "SKILL_EARTH_ARMOR_GRANITE_BASTION"},
 	},
@@ -742,7 +743,7 @@ var mons = [
 		"stats": [230, 250],
 		"preferred_stats": {"hp": 24, "atk": 16, "def": 18, "s_atk": 18, "speed": 8},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_EARTH_MAG_GEO_PULSE", "SKILL_EARTH_ARMOR_STONE_SKIN", "SKILL_EARTH_MAG_SMALL_CANNON"],
+		"default_egg_skills": ["SKILL_EARTH_MAG_GEO_PULSE", "SKILL_EARTH_ARMOR_STONE_SKIN", "SKILL_EARTH_MAG_SHOT"],
 		"unlockable_egg_skills": ["SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_MAG_GEO_PULSE_SWIFT", "SKILL_EARTH_BUFF_EXTRA_CLUB", "SKILL_EARTH_BUFF_TEAM_S_ATK"],
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_MUD_ARMOR_MUD_COAT",
@@ -779,7 +780,7 @@ var mons = [
 		"stats": [215, 235],
 		"preferred_stats": {"hp": 20, "atk": 20, "def": 28, "s_atk": 8, "speed": 8},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_WATER_ARMOR_SHELL", "SKILL_WATER_PHYS_PUNCH", "SKILL_WATER_PHYS_SMALL_PUNCH"],
+		"default_egg_skills": ["SKILL_WATER_ARMOR_SHELL", "SKILL_WATER_PHYS_PUNCH", "SKILL_WATER_PHYS_CHOP"],
 		"unlockable_egg_skills": ["SKILL_WATER_ARMOR_CORAL_WALL", "SKILL_WATER_PHYS_BREAKER", "SKILL_WATER_BUFF_EXTRA_SHIELD", "SKILL_PASSIVE_WATER_POWER"],
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_WATER_PHYS_TIDE_SLAP",
@@ -797,7 +798,7 @@ var mons = [
 		"stats": [230, 250],
 		"preferred_stats": {"hp": 16, "atk": 22, "def": 22, "s_atk": 14, "speed": 12},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_AIR_PHYS_CYCLONE_CLAW", "SKILL_AIR_ARMOR_DRAFT_GUARD", "SKILL_AIR_PHYS_SMALL_PUNCH"],
+		"default_egg_skills": ["SKILL_AIR_PHYS_CYCLONE_CLAW", "SKILL_AIR_ARMOR_DRAFT_GUARD", "SKILL_AIR_PHYS_CHOP"],
 		"unlockable_egg_skills": ["SKILL_AIR_ARMOR_GALE_WALL", "SKILL_AIR_PHYS_CYCLONE_CLAW_SWIFT", "SKILL_AIR_BUFF_TAILWIND", "SKILL_CHAOS_BOON_COURAGE"],
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_DUST_ARMOR_SANDSTONE_SKIN",
@@ -814,7 +815,7 @@ var mons = [
 		"stats": [190, 210],
 		"preferred_stats": {"hp": 18, "atk": 20, "def": 22, "s_atk": 14, "speed": 12},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_FIRE_PHYS_WEAK_THRUST", "SKILL_FIRE_ARMOR_LIGHT", "SKILL_FIRE_MAG_WEAK_THRUST"],
+		"default_egg_skills": ["SKILL_FIRE_PHYS_JAB", "SKILL_FIRE_ARMOR_WARD", "SKILL_FIRE_MAG_PULSE"],
 		"unlockable_egg_skills": ["SKILL_FIRE_MAG_LIGHT_CANNON", "SKILL_FIRE_MAG_SPARK_SHOT", "SKILL_FIRE_ARMOR_CINDER_PLATE"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_FIRE_PHYS_FLAME_FIST",
@@ -831,12 +832,12 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 16, "atk": 24, "def": 14, "s_atk": 16, "speed": 16},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_AIR_PHYS_PUNCH", "SKILL_AIR_PHYS_LIGHT_THRUST", "SKILL_AIR_MAG_LIGHT_STRIKE"],
-		"unlockable_egg_skills": ["SKILL_AIR_ARMOR_PLAIN", "SKILL_AIR_MAG_WIND_BLADE", "SKILL_AIR_PHYS_CYCLONE_CLAW", "SKILL_AIR_BUFF_ATK"],
+		"default_egg_skills": ["SKILL_AIR_PHYS_PUNCH", "SKILL_AIR_PHYS_CHOP", "SKILL_AIR_MAG_LIGHT_STRIKE"],
+		"unlockable_egg_skills": ["SKILL_AIR_ARMOR_PLAIN", "SKILL_AIR_MAG_WIND_BLADE", "SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_BUFF_ATK"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_AIR_BUFF_GUST",
 			"boss_3": "SKILL_AIR_PHYS_GUST_KICK",
-			"triple": "SKILL_AIR_MAG_TEMPEST_RAY",
+			"triple": "SKILL_AIR_PHYS_CYCLONE_CLAW",
 		},
 		"bounty_egg_skills": {"alpha_42": "SKILL_AIR_ARMOR_GALE_WALL"},
 	},
@@ -849,7 +850,7 @@ var mons = [
 		"stats": [215, 235],
 		"preferred_stats": {"hp": 13, "atk": 27, "def": 12, "s_atk": 14, "speed": 22},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_FIRE_PHYS_FLAME_FIST", "SKILL_FIRE_MAG_CANNON", "SKILL_FIRE_PHYS_SMALL_PUNCH"],
+		"default_egg_skills": ["SKILL_FIRE_PHYS_FLAME_FIST", "SKILL_FIRE_MAG_CANNON", "SKILL_FIRE_PHYS_CHOP"],
 		"unlockable_egg_skills": ["SKILL_FIRE_PHYS_BLAZE_RUSH", "SKILL_FIRE_MAG_FIREBALL", "SKILL_FIRE_BUFF_BATTLE_FRENZY", "SKILL_FIRE_BUFF_ATK"],
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_FIRE_MAG_SPARK_SHOT",
@@ -885,7 +886,7 @@ var mons = [
 		"stats": [190, 210],
 		"preferred_stats": {"hp": 18, "atk": 24, "def": 22, "s_atk": 12, "speed": 12},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_FIRE_PHYS_LIGHT_THRUST", "SKILL_FIRE_PHYS_LIGHT_STRIKE", "SKILL_FIRE_ARMOR_WEAK"],
+		"default_egg_skills": ["SKILL_FIRE_PHYS_CHOP", "SKILL_FIRE_PHYS_LIGHT_STRIKE", "SKILL_FIRE_ARMOR_GUARD"],
 		"unlockable_egg_skills": ["SKILL_FIRE_MAG_LIGHT_CANNON", "SKILL_FIRE_MAG_SPARK_SHOT", "SKILL_FIRE_PHYS_FLAME_FIST"],
 		"milestone_egg_skills": {
 			"kills_5": "SKILL_FIRE_ARMOR_CINDER_PLATE",
@@ -902,12 +903,12 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 13, "atk": 27, "def": 12, "s_atk": 14, "speed": 22},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_WATER_PHYS_PUNCH", "SKILL_WATER_PHYS_LIGHT_THRUST", "SKILL_WATER_MAG_LIGHT_STRIKE"],
-		"unlockable_egg_skills": ["SKILL_WATER_ARMOR_PLAIN", "SKILL_WATER_MAG_BUBBLE_BEAM", "SKILL_WATER_PHYS_BREAKER", "SKILL_WATER_BUFF_ATK"],
+		"default_egg_skills": ["SKILL_WATER_PHYS_PUNCH", "SKILL_WATER_PHYS_CHOP", "SKILL_WATER_MAG_LIGHT_STRIKE"],
+		"unlockable_egg_skills": ["SKILL_WATER_ARMOR_PLAIN", "SKILL_WATER_MAG_BUBBLE_BEAM", "SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_BUFF_ATK"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_WATER_BUFF_CURRENT",
 			"boss_3": "SKILL_WATER_PHYS_TIDE_SLAP",
-			"triple": "SKILL_WATER_MAG_HYDRO_LANCE",
+			"triple": "SKILL_WATER_PHYS_BREAKER",
 		},
 		"bounty_egg_skills": {"alpha_47": "SKILL_WATER_ARMOR_CORAL_WALL"},
 	},
@@ -920,7 +921,7 @@ var mons = [
 		"stats": [190, 210],
 		"preferred_stats": {"hp": 24, "atk": 10, "def": 16, "s_atk": 20, "speed": 8},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_WATER_MAG_LIGHT_THRUST", "SKILL_WATER_MAG_LIGHT_STRIKE", "SKILL_WATER_ARMOR_WEAK"],
+		"default_egg_skills": ["SKILL_WATER_MAG_SHOT", "SKILL_WATER_MAG_LIGHT_STRIKE", "SKILL_WATER_ARMOR_GUARD"],
 		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BACKHAND", "SKILL_WATER_PHYS_TIDE_SLAP", "SKILL_WATER_MAG_BUBBLE_BEAM"],
 		"milestone_egg_skills": {
 			"finisher_1": "SKILL_WATER_ARMOR_SHELL",
@@ -938,7 +939,7 @@ var mons = [
 		"stats": [230, 250],
 		"preferred_stats": {"hp": 14, "atk": 22, "def": 12, "s_atk": 26, "speed": 14},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_FIRE_MAG_FIREBALL", "SKILL_FIRE_PHYS_FLAME_FIST", "SKILL_FIRE_MAG_SMALL_CANNON"],
+		"default_egg_skills": ["SKILL_FIRE_MAG_FIREBALL", "SKILL_FIRE_PHYS_FLAME_FIST", "SKILL_FIRE_MAG_SHOT"],
 		"unlockable_egg_skills": ["SKILL_FIRE_PHYS_BLAZE_RUSH", "SKILL_FIRE_MAG_FIREBALL_SWIFT", "SKILL_FIRE_BUFF_EMBER_HEAT", "SKILL_FIRE_BUFF_TEAM_S_ATK"],
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_MAGMA_PHYS_EMBER_KNUCKLE",
@@ -955,12 +956,12 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 22, "atk": 22, "def": 28, "s_atk": 6, "speed": 8},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_EARTH_ARMOR_LIGHT", "SKILL_EARTH_PHYS_LIGHT_THRUST", "SKILL_EARTH_PHYS_LIGHT_STRIKE"],
-		"unlockable_egg_skills": ["SKILL_EARTH_MAG_LIGHT_CANNON", "SKILL_EARTH_PHYS_BOULDER_BASH", "SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_BUFF_DEF"],
+		"default_egg_skills": ["SKILL_EARTH_ARMOR_WARD", "SKILL_EARTH_PHYS_CHOP", "SKILL_EARTH_PHYS_LIGHT_STRIKE"],
+		"unlockable_egg_skills": ["SKILL_EARTH_MAG_LIGHT_CANNON", "SKILL_EARTH_PHYS_BOULDER_BASH", "SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_BUFF_DEF"],
 		"milestone_egg_skills": {
 			"kills_5": "SKILL_EARTH_BUFF_STONE_SKIN",
 			"kills_10": "SKILL_EARTH_ARMOR_STONE_SKIN",
-			"triple": "SKILL_EARTH_PHYS_QUAKE_STOMP",
+			"triple": "SKILL_EARTH_ARMOR_GRANITE_BASTION",
 		},
 		"bounty_egg_skills": {"alpha_50": "SKILL_EARTH_MAG_GEO_PULSE"},
 	},
@@ -992,7 +993,7 @@ var mons = [
 		"stats": [230, 250],
 		"preferred_stats": {"hp": 18, "atk": 16, "def": 14, "s_atk": 24, "speed": 12},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_PHYS_TIDE_SLAP", "SKILL_WATER_MAG_SMALL_CANNON"],
+		"default_egg_skills": ["SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_PHYS_TIDE_SLAP", "SKILL_WATER_MAG_SHOT"],
 		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BREAKER", "SKILL_WATER_MAG_HYDRO_LANCE_SWIFT", "SKILL_WATER_BUFF_BATTLE_FRENZY", "SKILL_CHAOS_BOON_COURAGE"],
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_ICE_PHYS_FROST_BITE",
@@ -1010,7 +1011,7 @@ var mons = [
 		"stats": [230, 250],
 		"preferred_stats": {"hp": 14, "atk": 12, "def": 12, "s_atk": 26, "speed": 18},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_PHYS_GUST_KICK", "SKILL_AIR_MAG_SMALL_CANNON"],
+		"default_egg_skills": ["SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_PHYS_GUST_KICK", "SKILL_AIR_MAG_SHOT"],
 		"unlockable_egg_skills": ["SKILL_AIR_PHYS_CYCLONE_CLAW", "SKILL_AIR_MAG_TEMPEST_RAY_SWIFT", "SKILL_AIR_BUFF_TAILWIND", "SKILL_CHAOS_BOON_COURAGE"],
 		"milestone_egg_skills": {
 			"finisher_2": "SKILL_ICE_PHYS_FROST_BITE",
@@ -1028,7 +1029,7 @@ var mons = [
 		"stats": [215, 235],
 		"preferred_stats": {"hp": 22, "atk": 18, "def": 24, "s_atk": 16, "speed": 6},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_EARTH_ARMOR_STONE_SKIN", "SKILL_EARTH_PHYS_PUNCH", "SKILL_EARTH_PHYS_SMALL_PUNCH"],
+		"default_egg_skills": ["SKILL_EARTH_ARMOR_STONE_SKIN", "SKILL_EARTH_PHYS_PUNCH", "SKILL_EARTH_PHYS_CHOP"],
 		"unlockable_egg_skills": ["SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_BUFF_EXTRA_SHIELD", "SKILL_PASSIVE_EARTH_POWER"],
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_EARTH_PHYS_BOULDER_BASH",
@@ -1046,7 +1047,7 @@ var mons = [
 		"stats": [215, 235],
 		"preferred_stats": {"hp": 16, "atk": 26, "def": 24, "s_atk": 10, "speed": 12},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_WATER_PHYS_TIDE_SLAP", "SKILL_WATER_ARMOR_LIGHT", "SKILL_WATER_PHYS_SMALL_PUNCH"],
+		"default_egg_skills": ["SKILL_WATER_PHYS_TIDE_SLAP", "SKILL_WATER_ARMOR_WARD", "SKILL_WATER_PHYS_CHOP"],
 		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BREAKER", "SKILL_WATER_ARMOR_CORAL_WALL", "SKILL_WATER_BUFF_BATTLE_FRENZY", "SKILL_WATER_BUFF_ATK"],
 		"milestone_egg_skills": {
 			"finisher_2": "SKILL_WATER_ARMOR_SHELL",
@@ -1064,7 +1065,7 @@ var mons = [
 		"stats": [215, 235],
 		"preferred_stats": {"hp": 14, "atk": 26, "def": 12, "s_atk": 16, "speed": 20},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_WATER_PHYS_TIDE_SLAP", "SKILL_WATER_MAG_CANNON", "SKILL_WATER_PHYS_SMALL_PUNCH"],
+		"default_egg_skills": ["SKILL_WATER_PHYS_TIDE_SLAP", "SKILL_WATER_MAG_CANNON", "SKILL_WATER_PHYS_CHOP"],
 		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BREAKER", "SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_BUFF_BATTLE_FRENZY", "SKILL_WATER_BUFF_ATK"],
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_WATER_MAG_BUBBLE_BEAM",
@@ -1081,12 +1082,12 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 20, "atk": 14, "def": 16, "s_atk": 26, "speed": 10},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_EARTH_MAG_CANNON", "SKILL_EARTH_MAG_LIGHT_THRUST", "SKILL_EARTH_ARMOR_LIGHT"],
-		"unlockable_egg_skills": ["SKILL_EARTH_PHYS_BACKHAND", "SKILL_EARTH_ARMOR_STONE_SKIN", "SKILL_EARTH_MAG_GEO_PULSE", "SKILL_EARTH_BUFF_S_ATK"],
+		"default_egg_skills": ["SKILL_EARTH_MAG_CANNON", "SKILL_EARTH_MAG_SHOT", "SKILL_EARTH_ARMOR_WARD"],
+		"unlockable_egg_skills": ["SKILL_EARTH_PHYS_BACKHAND", "SKILL_EARTH_ARMOR_STONE_SKIN", "SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_BUFF_S_ATK"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_EARTH_BUFF_MOMENTUM",
 			"finisher_2": "SKILL_EARTH_MAG_PEBBLE_STORM",
-			"triple": "SKILL_EARTH_ARMOR_GRANITE_BASTION",
+			"triple": "SKILL_EARTH_MAG_GEO_PULSE",
 		},
 		"bounty_egg_skills": {"alpha_59": "SKILL_EARTH_PHYS_QUAKE_STOMP"},
 	},
@@ -1099,7 +1100,7 @@ var mons = [
 		"stats": [230, 250],
 		"preferred_stats": {"hp": 14, "atk": 10, "def": 12, "s_atk": 28, "speed": 16},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_ARMOR_SHELL", "SKILL_WATER_MAG_SMALL_CANNON"],
+		"default_egg_skills": ["SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_ARMOR_SHELL", "SKILL_WATER_MAG_SHOT"],
 		"unlockable_egg_skills": ["SKILL_WATER_ARMOR_CORAL_WALL", "SKILL_WATER_MAG_HYDRO_LANCE_SWIFT", "SKILL_WATER_BUFF_BATTLE_FRENZY", "SKILL_CHAOS_BOON_COURAGE"],
 		"milestone_egg_skills": {
 			"flawless_1": "SKILL_MUD_ARMOR_MUD_COAT",
@@ -1117,7 +1118,7 @@ var mons = [
 		"stats": [230, 250],
 		"preferred_stats": {"hp": 20, "atk": 26, "def": 18, "s_atk": 14, "speed": 10},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_ARMOR_STONE_SKIN", "SKILL_EARTH_PHYS_SMALL_PUNCH"],
+		"default_egg_skills": ["SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_ARMOR_STONE_SKIN", "SKILL_EARTH_PHYS_CHOP"],
 		"unlockable_egg_skills": ["SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_PHYS_QUAKE_STOMP_SWIFT", "SKILL_EARTH_BUFF_EXTRA_CLUB", "SKILL_EARTH_BUFF_TEAM_ATK"],
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_MUD_ARMOR_MUD_COAT",
@@ -1153,12 +1154,12 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 14, "atk": 14, "def": 12, "s_atk": 24, "speed": 18},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_AIR_MAG_CANNON", "SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_PHYS_LIGHT_STRIKE"],
-		"unlockable_egg_skills": ["SKILL_AIR_ARMOR_PLAIN", "SKILL_AIR_PHYS_GUST_KICK", "SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_BUFF_S_ATK"],
+		"default_egg_skills": ["SKILL_AIR_MAG_CANNON", "SKILL_AIR_MAG_SHOT", "SKILL_AIR_PHYS_LIGHT_STRIKE"],
+		"unlockable_egg_skills": ["SKILL_AIR_ARMOR_PLAIN", "SKILL_AIR_PHYS_GUST_KICK", "SKILL_AIR_PHYS_CYCLONE_CLAW", "SKILL_AIR_BUFF_S_ATK"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_AIR_BUFF_UPDRAFT",
 			"flawless_2": "SKILL_AIR_MAG_WIND_BLADE",
-			"triple": "SKILL_AIR_PHYS_CYCLONE_CLAW",
+			"triple": "SKILL_AIR_MAG_TEMPEST_RAY",
 		},
 		"bounty_egg_skills": {"alpha_63": "SKILL_AIR_ARMOR_GALE_WALL"},
 	},
@@ -1170,7 +1171,7 @@ var mons = [
 		"stats": [190, 210],
 		"preferred_stats": {"hp": 20, "atk": 12, "def": 18, "s_atk": 22, "speed": 12},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_WATER_MAG_LIGHT_THRUST", "SKILL_WATER_MAG_LIGHT_STRIKE", "SKILL_WATER_ARMOR_WEAK"],
+		"default_egg_skills": ["SKILL_WATER_MAG_SHOT", "SKILL_WATER_MAG_LIGHT_STRIKE", "SKILL_WATER_ARMOR_GUARD"],
 		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BACKHAND", "SKILL_WATER_PHYS_TIDE_SLAP", "SKILL_WATER_MAG_BUBBLE_BEAM"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_WATER_ARMOR_SHELL",
@@ -1188,7 +1189,7 @@ var mons = [
 		"stats": [215, 235],
 		"preferred_stats": {"hp": 20, "atk": 26, "def": 24, "s_atk": 10, "speed": 8},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_EARTH_PHYS_BOULDER_BASH", "SKILL_EARTH_ARMOR_LIGHT", "SKILL_EARTH_PHYS_SMALL_PUNCH"],
+		"default_egg_skills": ["SKILL_EARTH_PHYS_BOULDER_BASH", "SKILL_EARTH_ARMOR_WARD", "SKILL_EARTH_PHYS_CHOP"],
 		"unlockable_egg_skills": ["SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_BUFF_BATTLE_FRENZY", "SKILL_EARTH_BUFF_ATK"],
 		"milestone_egg_skills": {
 			"boss_2": "SKILL_EARTH_ARMOR_STONE_SKIN",
@@ -1205,7 +1206,7 @@ var mons = [
 		"stats": [190, 210],
 		"preferred_stats": {"hp": 22, "atk": 22, "def": 26, "s_atk": 8, "speed": 10},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_EARTH_PHYS_WEAK_THRUST", "SKILL_EARTH_ARMOR_LIGHT", "SKILL_EARTH_MAG_WEAK_THRUST"],
+		"default_egg_skills": ["SKILL_EARTH_PHYS_JAB", "SKILL_EARTH_ARMOR_WARD", "SKILL_EARTH_MAG_PULSE"],
 		"unlockable_egg_skills": ["SKILL_EARTH_MAG_LIGHT_CANNON", "SKILL_EARTH_MAG_PEBBLE_STORM", "SKILL_EARTH_ARMOR_STONE_SKIN"],
 		"milestone_egg_skills": {
 			"finisher_1": "SKILL_EARTH_PHYS_BOULDER_BASH",
@@ -1223,7 +1224,7 @@ var mons = [
 		"stats": [230, 250],
 		"preferred_stats": {"hp": 18, "atk": 16, "def": 22, "s_atk": 26, "speed": 6},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_FIRE_MAG_FIREBALL", "SKILL_FIRE_ARMOR_CINDER_PLATE", "SKILL_FIRE_MAG_SMALL_CANNON"],
+		"default_egg_skills": ["SKILL_FIRE_MAG_FIREBALL", "SKILL_FIRE_ARMOR_CINDER_PLATE", "SKILL_FIRE_MAG_SHOT"],
 		"unlockable_egg_skills": ["SKILL_FIRE_ARMOR_FLAME_WALL", "SKILL_FIRE_MAG_FIREBALL_SWIFT", "SKILL_FIRE_BUFF_EMBER_HEAT", "SKILL_FIRE_BUFF_TEAM_S_ATK"],
 		"milestone_egg_skills": {
 			"flawless_1": "SKILL_MAGMA_ARMOR_PUMICE_SKIN",
@@ -1259,12 +1260,12 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 18, "atk": 26, "def": 22, "s_atk": 10, "speed": 12},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_EARTH_PHYS_PUNCH", "SKILL_EARTH_PHYS_LIGHT_THRUST", "SKILL_EARTH_ARMOR_LIGHT"],
-		"unlockable_egg_skills": ["SKILL_EARTH_MAG_LIGHT_CANNON", "SKILL_EARTH_ARMOR_STONE_SKIN", "SKILL_EARTH_PHYS_QUAKE_STOMP", "SKILL_EARTH_BUFF_ATK"],
+		"default_egg_skills": ["SKILL_EARTH_PHYS_PUNCH", "SKILL_EARTH_PHYS_CHOP", "SKILL_EARTH_ARMOR_WARD"],
+		"unlockable_egg_skills": ["SKILL_EARTH_MAG_LIGHT_CANNON", "SKILL_EARTH_ARMOR_STONE_SKIN", "SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_BUFF_ATK"],
 		"milestone_egg_skills": {
 			"kills_5": "SKILL_EARTH_BUFF_FIGHTING_SPIRIT",
 			"flawless_2": "SKILL_EARTH_PHYS_BOULDER_BASH",
-			"triple": "SKILL_EARTH_ARMOR_GRANITE_BASTION",
+			"triple": "SKILL_EARTH_PHYS_QUAKE_STOMP",
 		},
 		"bounty_egg_skills": {"alpha_70": "SKILL_EARTH_MAG_GEO_PULSE"},
 	},
@@ -1296,7 +1297,7 @@ var mons = [
 		"stats": [215, 235],
 		"preferred_stats": {"hp": 18, "atk": 18, "def": 14, "s_atk": 20, "speed": 16},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_AIR_MAG_WIND_BLADE", "SKILL_AIR_PHYS_PUNCH", "SKILL_AIR_MAG_SMALL_CANNON"],
+		"default_egg_skills": ["SKILL_AIR_MAG_WIND_BLADE", "SKILL_AIR_PHYS_PUNCH", "SKILL_AIR_MAG_SHOT"],
 		"unlockable_egg_skills": ["SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_PHYS_CYCLONE_CLAW", "SKILL_AIR_BUFF_BATTLE_FRENZY", "SKILL_AIR_BUFF_S_ATK"],
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_AIR_PHYS_GUST_KICK",
@@ -1332,7 +1333,7 @@ var mons = [
 		"stats": [190, 210],
 		"preferred_stats": {"hp": 14, "atk": 10, "def": 12, "s_atk": 24, "speed": 20},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_MAG_LIGHT_STRIKE", "SKILL_AIR_ARMOR_WEAK"],
+		"default_egg_skills": ["SKILL_AIR_MAG_SHOT", "SKILL_AIR_MAG_LIGHT_STRIKE", "SKILL_AIR_ARMOR_GUARD"],
 		"unlockable_egg_skills": ["SKILL_AIR_PHYS_BACKHAND", "SKILL_AIR_PHYS_GUST_KICK", "SKILL_AIR_MAG_WIND_BLADE"],
 		"milestone_egg_skills": {
 			"kills_5": "SKILL_AIR_ARMOR_DRAFT_GUARD",
@@ -1349,7 +1350,7 @@ var mons = [
 		"stats": [190, 210],
 		"preferred_stats": {"hp": 14, "atk": 10, "def": 10, "s_atk": 26, "speed": 22},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_FIRE_MAG_LIGHT_THRUST", "SKILL_FIRE_MAG_LIGHT_STRIKE", "SKILL_FIRE_ARMOR_WEAK"],
+		"default_egg_skills": ["SKILL_FIRE_MAG_SHOT", "SKILL_FIRE_MAG_LIGHT_STRIKE", "SKILL_FIRE_ARMOR_GUARD"],
 		"unlockable_egg_skills": ["SKILL_FIRE_ARMOR_PLAIN", "SKILL_FIRE_ARMOR_CINDER_PLATE", "SKILL_FIRE_MAG_SPARK_SHOT"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_FIRE_PHYS_FLAME_FIST",
@@ -1366,12 +1367,12 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 14, "atk": 12, "def": 12, "s_atk": 22, "speed": 22},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_AIR_MAG_CANNON", "SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_PHYS_LIGHT_STRIKE"],
-		"unlockable_egg_skills": ["SKILL_AIR_ARMOR_PLAIN", "SKILL_AIR_PHYS_GUST_KICK", "SKILL_AIR_MAG_TEMPEST_RAY", "SKILL_AIR_BUFF_S_ATK"],
+		"default_egg_skills": ["SKILL_AIR_MAG_CANNON", "SKILL_AIR_MAG_SHOT", "SKILL_AIR_PHYS_LIGHT_STRIKE"],
+		"unlockable_egg_skills": ["SKILL_AIR_ARMOR_PLAIN", "SKILL_AIR_PHYS_GUST_KICK", "SKILL_AIR_PHYS_CYCLONE_CLAW", "SKILL_AIR_BUFF_S_ATK"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_AIR_BUFF_FIGHTING_SPIRIT",
 			"new_element": "SKILL_AIR_MAG_WIND_BLADE",
-			"finisher_2": "SKILL_AIR_PHYS_CYCLONE_CLAW",
+			"finisher_2": "SKILL_AIR_MAG_TEMPEST_RAY",
 		},
 		"bounty_egg_skills": {"alpha_76": "SKILL_AIR_ARMOR_GALE_WALL"},
 	},
@@ -1384,7 +1385,7 @@ var mons = [
 		"stats": [230, 250],
 		"preferred_stats": {"hp": 14, "atk": 12, "def": 10, "s_atk": 28, "speed": 22},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_FIRE_MAG_FIREBALL", "SKILL_FIRE_PHYS_FLAME_FIST", "SKILL_FIRE_MAG_SMALL_CANNON"],
+		"default_egg_skills": ["SKILL_FIRE_MAG_FIREBALL", "SKILL_FIRE_PHYS_FLAME_FIST", "SKILL_FIRE_MAG_SHOT"],
 		"unlockable_egg_skills": ["SKILL_FIRE_PHYS_BLAZE_RUSH", "SKILL_FIRE_MAG_FIREBALL_SWIFT", "SKILL_FIRE_BUFF_EMBER_HEAT", "SKILL_FIRE_BUFF_TEAM_S_ATK"],
 		"milestone_egg_skills": {
 			"flawless_1": "SKILL_LIGHTNING_PHYS_SHOCK_TAP",
@@ -1402,7 +1403,7 @@ var mons = [
 		"stats": [215, 235],
 		"preferred_stats": {"hp": 20, "atk": 6, "def": 16, "s_atk": 28, "speed": 8},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_EARTH_MAG_PEBBLE_STORM", "SKILL_EARTH_ARMOR_LIGHT", "SKILL_EARTH_MAG_SMALL_CANNON"],
+		"default_egg_skills": ["SKILL_EARTH_MAG_PEBBLE_STORM", "SKILL_EARTH_ARMOR_WARD", "SKILL_EARTH_MAG_SHOT"],
 		"unlockable_egg_skills": ["SKILL_EARTH_MAG_GEO_PULSE", "SKILL_EARTH_ARMOR_GRANITE_BASTION", "SKILL_EARTH_BUFF_BATTLE_FRENZY", "SKILL_EARTH_BUFF_S_ATK"],
 		"milestone_egg_skills": {
 			"kills_8": "SKILL_EARTH_ARMOR_STONE_SKIN",
@@ -1458,12 +1459,12 @@ var mons = [
 		"stats": [200, 220],
 		"preferred_stats": {"hp": 16, "atk": 10, "def": 14, "s_atk": 24, "speed": 16},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_WATER_MAG_CANNON", "SKILL_WATER_MAG_LIGHT_THRUST", "SKILL_WATER_ARMOR_LIGHT"],
-		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BACKHAND", "SKILL_WATER_ARMOR_SHELL", "SKILL_WATER_MAG_HYDRO_LANCE", "SKILL_WATER_BUFF_S_ATK"],
+		"default_egg_skills": ["SKILL_WATER_MAG_CANNON", "SKILL_WATER_MAG_SHOT", "SKILL_WATER_ARMOR_WARD"],
+		"unlockable_egg_skills": ["SKILL_WATER_PHYS_BACKHAND", "SKILL_WATER_ARMOR_SHELL", "SKILL_WATER_ARMOR_CORAL_WALL", "SKILL_WATER_BUFF_S_ATK"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_WATER_BUFF_FIGHTING_SPIRIT",
 			"boss_3": "SKILL_WATER_MAG_BUBBLE_BEAM",
-			"triple": "SKILL_WATER_ARMOR_CORAL_WALL",
+			"triple": "SKILL_WATER_MAG_HYDRO_LANCE",
 		},
 		"bounty_egg_skills": {"alpha_80": "SKILL_WATER_PHYS_BREAKER"},
 	},
@@ -1475,7 +1476,7 @@ var mons = [
 		"stats": [190, 210],
 		"preferred_stats": {"hp": 16, "atk": 24, "def": 26, "s_atk": 10, "speed": 12},
 		"max_upgrades": 2,
-		"default_egg_skills": ["SKILL_WATER_PHYS_WEAK_THRUST", "SKILL_WATER_ARMOR_LIGHT", "SKILL_WATER_MAG_WEAK_THRUST"],
+		"default_egg_skills": ["SKILL_WATER_PHYS_JAB", "SKILL_WATER_ARMOR_WARD", "SKILL_WATER_MAG_PULSE"],
 		"unlockable_egg_skills": ["SKILL_WATER_MAG_LIGHT_CANNON", "SKILL_WATER_MAG_BUBBLE_BEAM", "SKILL_WATER_ARMOR_SHELL"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_WATER_PHYS_TIDE_SLAP",

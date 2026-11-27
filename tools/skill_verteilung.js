@@ -238,13 +238,25 @@ const epicPassive = (el, co, cs) => {
 
 const categories = ps => [...ORDER].sort((a, b) => (ps[b] - ps[a]) || (ORDER.indexOf(a) - ORDER.indexOf(b)));
 
-// Start-Skills gewöhnlicher Arten (Schema aus dem Kommentar in monmap.gd, nach dem höchsten Kampfwert)
+// Start-Skills gewöhnlicher Arten (Schema aus dem Kommentar in monmap.gd, nach dem höchsten Kampfwert).
+// Muster wie bei den Startern: statt der Nutzlosen (2 + 0,2) Stoß / Puls / Schild mit 7 + 0,2 (CD 0). Dazu ist der
+// Skill auf dem besten Wert (K1) so stark wie die Starter-Kopfgeld-Attacken (Leuchtzwicker, Schuppenwehr, Glotzschirm,
+// Moosschuss): 7 + 0,3, CD 0 (Hieb / Schuss / Wehr). Er ersetzt den schwächsten K1-Skill (Leichter Stoß bzw. Leichter
+// Schild). Ein Fang ist damit am Start ein kleines Stück besser als das Start-Monster derselben Rolle.
+const common = {
+  jab: (el, c) => planned(c === 'atk' ? `SKILL_${el}_PHYS_JAB` : `SKILL_${el}_MAG_PULSE`,
+    `Stufe 1, Start-Skill gewöhnlicher Arten: ${c === 'atk' ? 'physischer Stoß' : 'magischer Puls'} 7 + 0,2, CD 0`, t1.weakThrust(el, c)),
+  guard: el => planned(`SKILL_${el}_ARMOR_GUARD`, 'Stufe 1, Start-Skill gewöhnlicher Arten: Schild 7 + 0,2, CD 0', t1.weakShield(el, 'def')),
+  best: (el, c) => planned({ atk: `SKILL_${el}_PHYS_CHOP`, s_atk: `SKILL_${el}_MAG_SHOT`, def: `SKILL_${el}_ARMOR_WARD` }[c],
+    `Stufe 1, Start-Skill (Gewöhnlich auf K1, ab Ungewöhnlich Angriff ohne Abklingzeit / Schild, wie Starter-Kopfgeld): ${{ atk: 'physischer Hieb', s_atk: 'magischer Schuss', def: 'Schild' }[c]} 7 + 0,3, CD 0`,
+    isAtk(c) ? t1.thrust(el, c) : t1.shield(el, c)),
+};
 function commonDefault(el, cs, ps) {
   const k1 = cs[0];
-  if (isAtk(k1)) return [t1.thrust(el, k1), t1.strike(el, k1), t1.weakShield(el, 'def')];
-  // Verteidiger: Schild plus je ein schwacher Stoß beider Angriffsarten (der stärkere zuerst)
-  const weakAtk = ps.s_atk > ps.atk ? 's_atk' : 'atk';
-  return [t1.weakThrust(el, weakAtk), t1.shield(el, k1), t1.weakThrust(el, weakAtk === 'atk' ? 's_atk' : 'atk')];
+  if (isAtk(k1)) return [common.best(el, k1), t1.strike(el, k1), common.guard(el)];
+  // Verteidiger: starker Schild plus je ein Stoß beider Angriffsarten (der stärkere zuerst)
+  const firstAtk = ps.s_atk > ps.atk ? 's_atk' : 'atk';
+  return [common.jab(el, firstAtk), common.best(el, k1), common.jab(el, firstAtk === 'atk' ? 's_atk' : 'atk')];
 }
 
 // ─────────────────────────
@@ -266,18 +278,20 @@ function plan(mon) {
       p.ms = [base(el, k2, 2), base(el, k1, 3), base(el, k2, 3)];
       break;
     case 'UNCOMMON':
-      if (isAtk(k1)) p.def = [t1.strong(el, k1), t1.thrust(el, k1), lightOf(el, k2)];
-      else p.def = [t1.shield(el, k1), t1.thrust(el, ba), k2 === ba ? t1.strike(el, k2) : lightOf(el, k2)];
-      p.egg = [weakOf(el, k3), base(el, k2, 2), base(el, k1, 3), buffT2(el, k1)];
-      p.ms = [weakBuff(mon, el, k1), base(el, k1, 2), base(el, k2, 3)];
+      // Angriff ohne Abklingzeit und Schild mindestens so stark wie bei den Gewöhnlichen (Hieb / Schuss / Wehr 7 + 0,3)
+      if (isAtk(k1)) p.def = [t1.strong(el, k1), common.best(el, k1), isAtk(k2) ? t1.strike(el, k2) : common.best(el, k2)];
+      else p.def = [common.best(el, k1), common.best(el, ba), t1.strike(el, k2)];
+      // Stufe 3 auf K1 ist Meilenstein (wie bei den Gewöhnlichen), dafür Stufe 3 auf K2 als Ei-Attacke
+      p.egg = [weakOf(el, k3), base(el, k2, 2), base(el, k2, 3), buffT2(el, k1)];
+      p.ms = [weakBuff(mon, el, k1), base(el, k1, 2), base(el, k1, 3)];
       break;
     case 'RARE':
-      p.def = [base(el, k1, 2), isAtk(k2) ? t1.strong(el, k2) : t1.shield(el, k2), t1.small(el, ba)];
+      p.def = [base(el, k1, 2), isAtk(k2) ? t1.strong(el, k2) : common.best(el, k2), common.best(el, ba)];
       p.egg = [base(el, k1, 3), base(el, k2, 3), fixedT2(el, k1), isAtk(k1) ? buffT2(el, k1) : passiveT3(el)];
       p.ms = [base(el, k2, 2), combo(co, k2, 0), combo(co, k1, 0)];
       break;
     case 'EPIC':
-      p.def = [base(el, k1, 3), base(el, k2, 2), t1.small(el, ba)];
+      p.def = [base(el, k1, 3), base(el, k2, 2), common.best(el, ba)];
       p.egg = [base(el, k2, 3), swift(el, k1), allyBuff(el, k1), buffT3(el, k1)];
       p.ms = [combo(co, k2, 0), combo(co, k1, 0), epicPassive(el, co, cs)];
       break;
@@ -481,6 +495,10 @@ function sortSkillLists() {
     real(Object.values(p.ms)).forEach(s => ms.add(s));
     if (p.bounty) bs.add(p.bounty);
   }
+  // Starter-Kopfgelder (STARTER_BOUNTIES, von Hand) bleiben in bounty_skills
+  const sb = text.indexOf('const STARTER_BOUNTIES = [');
+  if (sb >= 0) (text.slice(sb, matching(text, text.indexOf('[', sb)) + 1).match(/"skill": "(SKILL_\w+)"/g) || [])
+    .forEach(m => bs.add(m.match(/SKILL_\w+/)[0]));
   const target = s => pool.has(s.name) ? s.pool : ms.has(s.name) ? 'milestone_skills' : bs.has(s.name) ? 'bounty_skills'
     : s.tier >= 2 ? 'reward_skills' : 'draft_skills';
   const elemIndex = s => { const i = ELEM_ORDER.indexOf(s.nature); return i < 0 ? ELEM_ORDER.length : i; };

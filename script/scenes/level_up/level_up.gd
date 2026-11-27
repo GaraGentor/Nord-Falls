@@ -285,49 +285,64 @@ func _scatter_loot() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	var area := Rect2(Vector2.ZERO, _loot_field.size).grow(-LOOT_EDGE_MARGIN)
+	var bag_rect := _local_rect(_bag).grow(LOOT_GAP)
+	var hint_rect := _local_rect(_hint_panel).grow(LOOT_GAP)
+	var placed: Array[Rect2] = []
 	var icons := _loot_field.get_children()
-	var biggest := Vector2.ZERO
+	icons.shuffle()
 	for loot: LootIcon in icons:
-		biggest = biggest.max(loot.get_combined_minimum_size())
-	var cells := _free_cells(area, biggest + Vector2.ONE * LOOT_GAP)
-	for i in icons.size():
-		var loot: LootIcon = icons[i]
-		var cell: Rect2 = cells[i % cells.size()]
-		var loot_size := loot.get_combined_minimum_size()
-		var room := (cell.size - loot_size) / 2
-		var center := cell.get_center() + Vector2(randf_range(-room.x, room.x), randf_range(-room.y, room.y))
+		var rect := _pick_loot_rect(area, loot.get_combined_minimum_size(), placed, bag_rect, hint_rect)
+		placed.append(rect)
 		# Anteil statt Pixel: bleibt passend, wenn sich die Fläche ändert
-		center /= _loot_field.size
+		var center := rect.get_center() / _loot_field.size
 		for side in [SIDE_LEFT, SIDE_RIGHT]:
 			loot.set_anchor_and_offset(side, center.x, 0.0, true)
 		for side in [SIDE_TOP, SIDE_BOTTOM]:
 			loot.set_anchor_and_offset(side, center.y, 0.0, true)
 	_loot_field.modulate.a = 1.0
 
-## Raster über der Fläche, zufällig sortiert: nur Zellen, die weder Hinweis noch Tasche berühren.
-## Reichen sie nicht, liegt Beute eher übereinander als auf der Tasche (dann ginge nichts mehr hinein).
-## Nur wenn gar keine Zelle frei ist, kommen die übrigen dazu.
-func _free_cells(area: Rect2, min_cell: Vector2) -> Array[Rect2]:
-	var columns := maxi(floori(area.size.x / min_cell.x), 1)
-	var rows := maxi(floori(area.size.y / min_cell.y), 1)
-	var cell_size := area.size / Vector2(columns, rows)
-	var blockers: Array[Rect2] = []
-	for blocker: Control in [_hint_panel, _bag]:
-		blockers.append(Rect2(blocker.global_position - _loot_field.global_position, blocker.size).grow(LOOT_GAP))
-	var free: Array[Rect2] = []
-	var blocked: Array[Rect2] = []
-	for row in rows:
-		for column in columns:
-			var cell := Rect2(area.position + cell_size * Vector2(column, row), cell_size)
-			if blockers.any(func(other: Rect2): return other.intersects(cell)):
-				blocked.append(cell)
-			else:
-				free.append(cell)
-	free.shuffle()
-	if free.is_empty():
-		blocked.shuffle()
-		return blocked
-	return free
+## Rechteck eines Controls in Koordinaten der Beutefläche
+func _local_rect(control: Control) -> Rect2:
+	return Rect2(control.global_position - _loot_field.global_position, control.size)
+
+## Best-Candidate-Verfahren: viele zufällige Plätze probieren, der mit dem größten Abstand zur schon
+## liegenden Beute gewinnt. Das streut gleichmäßig, ohne nach Raster auszusehen. Auf der Tasche landet nie
+## etwas (dann ginge nichts mehr hinein); Überlappen mit Hinweis oder anderer Beute wird nur bestraft.
+func _pick_loot_rect(area: Rect2, loot_size: Vector2, placed: Array[Rect2], bag_rect: Rect2, hint_rect: Rect2) -> Rect2:
+	const CANDIDATES := 60
+	var span := (area.size - loot_size).max(Vector2.ZERO)
+	var best := Rect2()
+	var best_score := -INF
+	for i in CANDIDATES:
+		var pos := area.position + Vector2(randf() * span.x, randf() * span.y)
+		var rect := Rect2(pos, loot_size)
+		if rect.intersects(bag_rect):
+			continue
+		var score := _loot_spacing(rect, placed)
+		if rect.intersects(hint_rect):
+			score -= 10000.0
+		if score > best_score:
+			best_score = score
+			best = rect
+	if best_score == -INF:
+		# kein freier Platz neben der Tasche gefunden: links oder rechts daneben
+		var x := bag_rect.position.x - loot_size.x if bag_rect.position.x - loot_size.x >= area.position.x else bag_rect.end.x
+		best = Rect2(Vector2(x, bag_rect.get_center().y - loot_size.y / 2), loot_size)
+	return best
+
+## Abstand zur nächsten liegenden Beute (Rand zu Rand), Überlappen zählt negativ
+func _loot_spacing(rect: Rect2, placed: Array[Rect2]) -> float:
+	if placed.is_empty():
+		return 0.0
+	var nearest := INF
+	for other in placed:
+		var gap := Vector2(
+			maxf(other.position.x - rect.end.x, rect.position.x - other.end.x),
+			maxf(other.position.y - rect.end.y, rect.position.y - other.end.y))
+		# beide negativ: Überlappung, je tiefer desto schlechter
+		var distance := gap.length() if gap.x > 0 and gap.y > 0 else maxf(gap.x, gap.y)
+		nearest = minf(nearest, distance)
+	return nearest
 
 func _take_essence() -> void:
 	State.ep += State.pending_ep

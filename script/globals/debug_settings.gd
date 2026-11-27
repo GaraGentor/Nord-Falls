@@ -57,6 +57,10 @@ var _win_button := false
 var _catch_button := false
 ## Karte: jedes Feld betretbar (Schalter im Debug-Menü, gespeichert)
 var _free_walk := false
+## Karte: Gegner jedes Kampf- und Boss-Felds unter dem Feld anzeigen (Art, Stufe, Seltenheit, Klick = Attacken)
+var _fight_preview := false
+## Karte: Knopf neben DEBUG, der die Karte des Bioms neu würfelt
+var _reroll_button := false
 ## Fangchance gerade auf 100 % (Knopf im Kampf). Gilt nur, solange der Fang-Knopf im Debug-Menü an ist, nicht gespeichert.
 var sure_catch := false
 
@@ -82,6 +86,8 @@ func _ready() -> void:
 		_win_button = bool(parsed.get("battle_win_button", false))
 		_catch_button = bool(parsed.get("battle_catch_button", false))
 		_free_walk = bool(parsed.get("map_free_walk", false))
+		_fight_preview = bool(parsed.get("map_fight_preview", false))
+		_reroll_button = bool(parsed.get("map_reroll_button", false))
 
 func save() -> void:
 	var file := FileAccess.open(PATH, FileAccess.WRITE)
@@ -90,7 +96,8 @@ func save() -> void:
 		var data := _other.duplicate()
 		data.merge({"reserved_stats": _reserved, "growth_per_level": _growth, "damage_formula": _damage, "disabled_relics": _disabled_relics,
 			"trophy_bonus": _trophy_bonus, "boss_trophies": _boss_trophies,
-			"battle_win_button": _win_button, "battle_catch_button": _catch_button, "map_free_walk": _free_walk}, true)
+			"battle_win_button": _win_button, "battle_catch_button": _catch_button, "map_free_walk": _free_walk,
+			"map_fight_preview": _fight_preview, "map_reroll_button": _reroll_button}, true)
 		file.store_string(JSON.stringify(data))
 
 func is_relic_disabled(id: String) -> bool:
@@ -148,6 +155,22 @@ func free_walk_enabled() -> bool:
 
 func set_free_walk_enabled(on: bool) -> void:
 	_free_walk = on
+	save()
+
+## Karte: Gegner-Vorschau unter den Kampf- und Boss-Feldern (nur Debug-Builds, gespeichert)
+func fight_preview_enabled() -> bool:
+	return OS.is_debug_build() and _fight_preview
+
+func set_fight_preview_enabled(on: bool) -> void:
+	_fight_preview = on
+	save()
+
+## Karte: Knopf "KARTE NEU" neben dem Debug-Knopf (nur Debug-Builds, gespeichert)
+func reroll_button_enabled() -> bool:
+	return OS.is_debug_build() and _reroll_button
+
+func set_reroll_button_enabled(on: bool) -> void:
+	_reroll_button = on
 	save()
 
 func catch_button_enabled() -> bool:

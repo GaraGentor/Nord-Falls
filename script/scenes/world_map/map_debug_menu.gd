@@ -205,6 +205,16 @@ func _build_main() -> void:
 			DebugSettings.set_free_walk_enabled(on)
 			map.refresh_walkable_nodes(),
 		"Jedes Feld der Karte (und der Biom-Boss) lässt sich betreten, egal ob ein Weg dorthin führt"))
+	walk.add_child(_make_setting_toggle("KÄMPFE ZEIGEN", DebugSettings.fight_preview_enabled(),
+		func(on: bool):
+			DebugSettings.set_fight_preview_enabled(on)
+			map.refresh_debug_fight_info(),
+		"Unter jedem Kampf- und Boss-Feld stehen die gewürfelten Gegner (Art, Stufe, Seltenheit). Klick auf einen Gegner zeigt seine Attacken"))
+	walk.add_child(_make_setting_toggle("KARTE NEU", DebugSettings.reroll_button_enabled(),
+		func(on: bool):
+			DebugSettings.set_reroll_button_enabled(on)
+			map.refresh_reroll_button(),
+		"Knopf neben DEBUG: jeder Klick würfelt die Karte dieses Bioms samt Gegnern neu (Position zurück auf den Start)"))
 
 	var fields := []
 	for type in [Map.PATH_TYPE.CAMP, Map.PATH_TYPE.HUB, Map.PATH_TYPE.SHOP, Map.PATH_TYPE.TRAINER, Map.PATH_TYPE.JAILER, Map.PATH_TYPE.GEM, Map.PATH_TYPE.TREASURE]:

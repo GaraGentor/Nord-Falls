@@ -105,7 +105,8 @@ func generate_mons(props: Dictionary = {
 	var species: Array = props.get("species", [])
 	# Das erste wilde Monster würfelt seine Seltenheit (Map.RARITY_SPAWN_WEIGHTS), die Begleiter sind nie seltener.
 	# So ist ein seltenes Monster ein Ereignis des Kampfs und nicht in jedem zweiten Kampf irgendwo dabei.
-	var max_rarity: int = Enums.MON_RARITY.LEGENDARY
+	# props.max_rarity: höchstens so selten (Einstiegskämpfe: Map.EASY_START_MAX_RARITY)
+	var max_rarity: int = props.get("max_rarity", Enums.MON_RARITY.LEGENDARY)
 	for i in default_props.count:
 		var species_name: String = species[i] if i < species.size() else Map.pick_wild_species(mons_to_pick, max_rarity)
 		if i >= species.size() and i == 0:

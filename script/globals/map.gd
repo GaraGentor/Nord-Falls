@@ -524,6 +524,9 @@ func _fights_before(grid: Array, node: path) -> int:
 ## Zwei gewonnene Einzelkämpfe sind eine ganze Stufe. Die Referenzstufe ändert sich dadurch nicht. Nicht im Tutorial.
 const EASY_START_FIGHTS := 2
 const EASY_START_LEVEL := 3
+## In den Einstiegskämpfen höchstens ungewöhnliche Arten: ein seltenes oder noch selteneres Monster wäre dort fast
+## geschenkt (ein Gegner, Stufe 3) und gleich für den Rest des Spiels als Ei freigeschaltet
+const EASY_START_MAX_RARITY := Enums.MON_RARITY.UNCOMMON
 
 func is_easy_start(fight_index: int) -> bool:
 	return not Tutorial.run_active and State.map_level == 0 and fight_index < EASY_START_FIGHTS
@@ -572,7 +575,7 @@ func roll_boss_enemies(forced_count := 0, final := false) -> Array[Monster]:
 	return bosses
 
 func _roll_easy_start_enemies(fight_index: int, forced_count: int) -> Array[Monster]:
-	var props := {"count": maxi(forced_count, 1), "easy_start": true}
+	var props := {"count": maxi(forced_count, 1), "easy_start": true, "max_rarity": EASY_START_MAX_RARITY}
 	if fight_index == EASY_START_FIGHTS - 1:
 		var starter_bounties = Skills.get_open_bounties(State.mons, encounter_depth()).filter(func(entry): return entry.has("chance"))
 		if not starter_bounties.is_empty():

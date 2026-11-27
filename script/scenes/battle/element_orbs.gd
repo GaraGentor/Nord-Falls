@@ -33,7 +33,7 @@ const FLY_TIME := 0.45
 const FLY_OUT_TIME := 0.35
 const FLY_STAGGER := 0.07
 ## Schweben Kugeln über dem Monster, wird es durchsichtiger, damit man sie besser sieht (Deckkraft, Tempo pro Sekunde)
-const BODY_ALPHA_WITH_ORBS := 0.5
+const BODY_ALPHA_WITH_ORBS := 0.8
 const BODY_FADE_SPEED := 3.0
 
 var _scene: Control
@@ -197,7 +197,7 @@ func _process(_delta: float) -> void:
 	global_position = _scene.global_position + image.position + image.size * Vector2(0.5, CLUSTER_HEIGHT)
 
 
-## Monsterbild halb durchsichtig, solange Kugeln über ihm schweben (nicht beim Ausfliegen)
+## Monsterbild leicht durchsichtig, solange Kugeln über ihm schweben (nicht beim Ausfliegen)
 func _fade_body(delta: float) -> void:
 	var body: TextureRect = _scene.texture_rect
 	if body == null:

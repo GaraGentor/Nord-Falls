@@ -1412,6 +1412,32 @@ var starter_skills = [
 	_flat_attack_skill("SKILL_EARTH_PHYS_STARTER_JAB", EARTH, 7.0, 0.2, PHYS, 0),
 	_flat_shield_skill("SKILL_FIRE_ARMOR_STARTER", FIRE, 8.0, 0.2, 0),
 	_flat_shield_skill("SKILL_AIR_ARMOR_STARTER", AIR, 7.0, 0.2, 0),
+	# Start-Skills gewöhnlicher Arten (tools/skill_verteilung.js, wie bei den Startern statt der Nutzlosen):
+	#   Stoß / Puls / Schild 7 + 0,2 (CD 0), auf dem besten Kampfwert (K1) so stark wie die Starter-Kopfgeld-Attacken:
+	#   Hieb / Schuss / Wehr 7 + 0,3 (CD 0), ab Ungewöhnlich als Angriff ohne Abklingzeit bzw. Schild. Wie alle Start-Skills nicht im gemeinsamen Pool (nie wild gewürfelt, nie beim
+	#   Trainer, nie im Couvert), nur über die Start-Skills der Arten.
+	_flat_attack_skill("SKILL_FIRE_PHYS_JAB", FIRE, 7.0, 0.2, PHYS, 0),
+	_flat_attack_skill("SKILL_FIRE_MAG_PULSE", FIRE, 7.0, 0.2, MAG, 0),
+	_flat_shield_skill("SKILL_FIRE_ARMOR_GUARD", FIRE, 7.0, 0.2, 0),
+	_flat_attack_skill("SKILL_FIRE_PHYS_CHOP", FIRE, 7.0, 0.3, PHYS, 0),
+	_flat_attack_skill("SKILL_FIRE_MAG_SHOT", FIRE, 7.0, 0.3, MAG, 0),
+	_flat_shield_skill("SKILL_FIRE_ARMOR_WARD", FIRE, 7.0, 0.3, 0),
+	_flat_attack_skill("SKILL_WATER_PHYS_JAB", WATER, 7.0, 0.2, PHYS, 0),
+	_flat_attack_skill("SKILL_WATER_MAG_PULSE", WATER, 7.0, 0.2, MAG, 0),
+	_flat_shield_skill("SKILL_WATER_ARMOR_GUARD", WATER, 7.0, 0.2, 0),
+	_flat_attack_skill("SKILL_WATER_MAG_SHOT", WATER, 7.0, 0.3, MAG, 0),
+	_flat_shield_skill("SKILL_WATER_ARMOR_WARD", WATER, 7.0, 0.3, 0),
+	_flat_attack_skill("SKILL_EARTH_PHYS_JAB", EARTH, 7.0, 0.2, PHYS, 0),
+	_flat_attack_skill("SKILL_EARTH_MAG_PULSE", EARTH, 7.0, 0.2, MAG, 0),
+	_flat_shield_skill("SKILL_EARTH_ARMOR_GUARD", EARTH, 7.0, 0.2, 0),
+	_flat_attack_skill("SKILL_EARTH_PHYS_CHOP", EARTH, 7.0, 0.3, PHYS, 0),
+	_flat_shield_skill("SKILL_EARTH_ARMOR_WARD", EARTH, 7.0, 0.3, 0),
+	_flat_shield_skill("SKILL_AIR_ARMOR_GUARD", AIR, 7.0, 0.2, 0),
+	_flat_attack_skill("SKILL_AIR_MAG_SHOT", AIR, 7.0, 0.3, MAG, 0),
+	_flat_attack_skill("SKILL_AIR_PHYS_CHOP", AIR, 7.0, 0.3, PHYS, 0),
+	_flat_shield_skill("SKILL_AIR_ARMOR_WARD", AIR, 7.0, 0.3, 0),
+	_flat_attack_skill("SKILL_EARTH_MAG_SHOT", EARTH, 7.0, 0.3, MAG, 0),
+	_flat_attack_skill("SKILL_WATER_PHYS_CHOP", WATER, 7.0, 0.3, PHYS, 0),
 ]
 
 # Standard-Skills: ein Trank mit neuem Grundelement bietet sie zum Lernen an (ElementGainOverlay). Vorerst leer.
@@ -1660,11 +1686,14 @@ var milestone_skills = [
 ]
 # Kopfgeld-Ei-Attacken (Skills.BOUNTIES)
 var bounty_skills = [
-	# Starter-Kopfgelder (STARTER_BOUNTIES)
-	_flat_attack_skill("SKILL_WATER_PHYS_BEACON_PINCH", WATER, 7.0, 0.3, PHYS, 0),
+	# Feuer
 	_flat_shield_skill("SKILL_FIRE_ARMOR_SCALE_GUARD", FIRE, 7.0, 0.3, 0),
-	_flat_shield_skill("SKILL_AIR_ARMOR_GOGGLE_GUARD", AIR, 7.0, 0.3, 0),
+	# Wasser
+	_flat_attack_skill("SKILL_WATER_PHYS_BEACON_PINCH", WATER, 7.0, 0.3, PHYS, 0),
+	# Erde
 	_flat_attack_skill("SKILL_EARTH_MAG_MOSS_SHOT", EARTH, 8.0, 0.3, MAG, 0),
+	# Luft
+	_flat_shield_skill("SKILL_AIR_ARMOR_GOGGLE_GUARD", AIR, 7.0, 0.3, 0),
 	# Staub
 	_attack_skill("SKILL_DUST_MAG_DUST_SHOT", DUST, 20.0, 0.4, MAG, 2, 1, 1),
 	# Gewitter
@@ -1685,11 +1714,11 @@ var reward_skills = [
 	# Dampf
 	_with(_attack_skill("SKILL_STEAM_PHYS_SCALD_FLURRY", STEAM, 10.0, 0.2, PHYS, 2, 1, 1), {"hits": 2, "description": "SKILL_DAMAGE_PHYSICAL_MULTI_DESC"}),
 	# Blitz
-	_with(_attack_skill("SKILL_LIGHTNING_PHYS_SPARK_HAIL", LIGHTNING, 0.0, 0.0, PHYS, 3, 2, 1), {"hits": 5, "description": "SKILL_EFFECT_MULTI_DESC"}),
 	_with(_attack_skill("SKILL_LIGHTNING_MAG_TWIN_SPARK", LIGHTNING, 10.0, 0.2, MAG, 2, 1, 1), {"hits": 2, "description": "SKILL_DAMAGE_ABILITY_MULTI_DESC"}),
+	_with(_attack_skill("SKILL_LIGHTNING_PHYS_SPARK_HAIL", LIGHTNING, 0.0, 0.0, PHYS, 3, 2, 1), {"hits": 5, "description": "SKILL_EFFECT_MULTI_DESC"}),
 	# Magma
-	_attack_skill("SKILL_MAGMA_MAG_MAGMA_BURST", MAGMA, 30.0, 0.5, MAG, 3, 2, 2),
 	_with(_attack_skill("SKILL_MAGMA_PHYS_CINDER_JABS", MAGMA, 10.0, 0.2, PHYS, 2, 1, 1), {"hits": 2, "description": "SKILL_DAMAGE_PHYSICAL_MULTI_DESC"}),
+	_attack_skill("SKILL_MAGMA_MAG_MAGMA_BURST", MAGMA, 30.0, 0.5, MAG, 3, 2, 2),
 	# Eis
 	_with(_attack_skill("SKILL_ICE_MAG_HAILSTONES", ICE, 10.0, 0.2, MAG, 2, 1, 1), {"hits": 2, "description": "SKILL_DAMAGE_ABILITY_MULTI_DESC"}),
 	# Staub

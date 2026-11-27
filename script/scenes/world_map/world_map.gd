@@ -306,6 +306,125 @@ func add_debug_button() -> void:
 		menu.map = self
 		view_container.add_child(menu))
 	$HBoxContainer/Panel.add_child(button)
+	refresh_reroll_button()
+
+# ─────────────────────────
+# Debug-Werkzeuge der Karte (Schalter im Debug-Menü, Abschnitt "Karte"), nur in Debug-Builds
+
+const DEBUG_REROLL_NAME := "DebugRerollButton"
+const DEBUG_FIGHT_INFO_NAME := "DebugFightInfo"
+const DEBUG_FIGHT_FONT_SIZE := 16
+const DEBUG_FIGHT_INFO_WIDTH := 190.0
+## Monster-Details eines Gegners aus der Vorschau
+var _debug_dialog: Control
+
+## "KARTE NEU": Knopf links neben DEBUG, würfelt die Karte des Bioms samt Gegnern neu
+func refresh_reroll_button() -> void:
+	var panel := $HBoxContainer/Panel
+	var old := panel.get_node_or_null(DEBUG_REROLL_NAME)
+	if old != null:
+		old.queue_free()
+	if not DebugSettings.reroll_button_enabled() or Tutorial.run_active:
+		return
+	var button := RewardDialog.plate_button("KARTE NEU")
+	button.name = DEBUG_REROLL_NAME
+	button.add_theme_font_size_override("font_size", 24)
+	button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	button.offset_left = -488.0
+	button.offset_top = -60.0
+	button.offset_right = -308.0
+	button.offset_bottom = -16.0
+	button.tooltip_text = "Würfelt die Karte dieses Bioms samt Gegnern neu, die Position geht zurück auf den Start"
+	button.pressed.connect(debug_reroll_map)
+	panel.add_child(button)
+
+func debug_reroll_map() -> void:
+	if Tutorial.run_active:
+		return
+	State.current_map_position = State.NO_MAP_POSITION
+	State.biome_fight_index = 0
+	Map.generate_starting_points()
+	get_tree().change_scene_to_file("res://script/scenes/world_map/world_map.tscn")
+
+## "KÄMPFE ZEIGEN": unter jedem Kampf- und Boss-Feld (und dem Biom-Boss) die gewürfelten Gegner mit Stufe und
+## Seltenheit. Die Stufe steht erst beim Betreten fest (battle.gd _generate_battle: Referenz des Felds ± 1),
+## darum die Spanne. Klick auf einen Gegner öffnet seine Details mit allen Attacken.
+func refresh_debug_fight_info() -> void:
+	if State.current_map.is_empty():
+		return
+	var depth := Map.encounter_depth()
+	var boss_bonus: int = Map.BOSS_ENCOUNTERS[depth].level_bonus
+	var none: Array[Monster] = []
+	for column in State.current_map:
+		for node in column:
+			if node == null or node._ui_item == null:
+				continue
+			var passed: bool = State.current_map_position != State.NO_MAP_POSITION and State.current_map_position.y >= node._pos.y
+			var level: int = Map.ref_level(Map.ref_half_for_row(int(node._pos.y)))
+			if node._type == Map.PATH_TYPE.BOSS:
+				level += boss_bonus
+			_show_debug_fight_info(node._ui_item, none if passed else node._enemies, level)
+	_show_debug_fight_info(boss_button, Map.boss_enemies, Map.ref_level(Map.boss_ref_half) + boss_bonus)
+
+func _show_debug_fight_info(button: Control, enemies: Array[Monster], level: int) -> void:
+	var old := button.get_node_or_null(DEBUG_FIGHT_INFO_NAME)
+	if old != null:
+		button.remove_child(old)
+		old.queue_free()
+	if not DebugSettings.fight_preview_enabled() or enemies.is_empty():
+		return
+	var panel := PanelContainer.new()
+	panel.name = DEBUG_FIGHT_INFO_NAME
+	panel.z_index = 5
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0, 0, 0, 0.75)
+	style.set_corner_radius_all(6)
+	style.set_content_margin_all(4)
+	panel.add_theme_stylebox_override("panel", style)
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 0)
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.add_child(box)
+	for mon in enemies:
+		box.add_child(_debug_enemy_button(mon, level))
+	button.add_child(panel)
+	panel.custom_minimum_size.x = DEBUG_FIGHT_INFO_WIDTH
+	# mittig unter das Feld, erst wenn das Feld seine Größe hat
+	(func():
+		if is_instance_valid(panel) and is_instance_valid(button):
+			panel.position = Vector2((button.size.x - panel.size.x) / 2.0, button.size.y + 2.0)).call_deferred()
+
+func _debug_enemy_button(mon: Monster, level: int) -> Button:
+	var rarity := Monmap.rarity_of(mon._name)
+	var low := level + Map.LEVEL_OFFSET[0]
+	var high := level + Map.LEVEL_OFFSET[1]
+	if mon._bounty != "":
+		low += Skills.get_bounty(mon._bounty).level_bonus
+		high += Skills.get_bounty(mon._bounty).level_bonus
+	var level_text := "St. %d" % Map.EASY_START_LEVEL if mon._easy_start else "St. %d-%d" % [maxi(State.INITIAL_LEVEL, low), maxi(State.INITIAL_LEVEL, high)]
+	var button := Button.new()
+	button.flat = true
+	button.focus_mode = Control.FOCUS_NONE
+	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	button.theme = RewardDialog.FONT_THEME
+	button.add_theme_font_size_override("font_size", DEBUG_FIGHT_FONT_SIZE)
+	for state in ["font_color", "font_hover_color", "font_pressed_color"]:
+		button.add_theme_color_override(state, Monmap.RARITY_COLORS[rarity])
+	button.add_theme_color_override("font_outline_color", Color.BLACK)
+	button.add_theme_constant_override("outline_size", 4)
+	button.text = "%s%s  %s  %s" % ["$ " if mon._bounty != "" else "", Helper.mon_display_name(mon._name), level_text, tr(Monmap.RARITY_LABELS[rarity])]
+	button.tooltip_text = "Klick: Attacken und Werte (Werte auf St. %d)" % maxi(State.INITIAL_LEVEL, level)
+	button.pressed.connect(func(): _open_debug_enemy(mon, level))
+	return button
+
+func _open_debug_enemy(mon: Monster, level: int) -> void:
+	if _debug_dialog != null and is_instance_valid(_debug_dialog):
+		_debug_dialog.queue_free()
+	# nur für die Werte im Dialog: beim Betreten setzt battle.gd die Stufe ohnehin neu
+	mon._level = Map.EASY_START_LEVEL if mon._easy_start else maxi(State.INITIAL_LEVEL, level)
+	_debug_dialog = MonsterInfoDialog.new(mon)
+	view_container.add_child(_debug_dialog)
 
 #func _enter_tree() -> void:
 #	Events.map_event_pressed.disconnect(_call_map_event)
@@ -383,6 +502,8 @@ func refresh_encounter_info() -> void:
 			if node != null and node._ui_item != null:
 				show_encounter_info(node._ui_item, tr(Map.type_label(node._type)), node._enemies)
 	show_encounter_info(boss_button, tr("WORLDMAP_BOSS"), Map.boss_enemies, false)
+	if OS.is_debug_build():
+		refresh_debug_fight_info()
 
 # Spyglass: Anzahl der Gegner direkt auf dem Feld. Super Catcher: "?" bei Arten, die du noch nicht besitzt (Start-Monster und
 # catched_monsters im Spielstand). Mit beiden Relikten steht dort z. B. "2?". Der Biom-Boss bekommt kein Badge.

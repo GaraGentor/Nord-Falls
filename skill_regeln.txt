@@ -31,6 +31,8 @@ Die Liste pro Art steht in skill_verteilung.txt Teil D.
 
   Grundelement   Stufe 1 Start      Leichter Stoß 5 + 0,2 (CD 0), Leichter Schlag 8 + 0,3 (CD 1), Nutzloser Stoß 2 + 0,2,
 									Leichter Schild 5 + 0,3, Nutzloser Schild 2 + 0,2
+				 Stufe 1 Gewöhnlich Stoß / Puls / Schild 7 + 0,2 (CD 0) statt der Nutzlosen (wie die Starter),
+									auf K1 Hieb / Schuss / Wehr 7 + 0,3 (CD 0) = Stärke der Starter-Kopfgelder
 				 Stufe 1 verstärkt  Punch / Kanone 12 + 0,4 (CD 1), Kleiner Punch / Kleine Kanone 5 + 0,3 (CD 0),
 									Rückhand / Leichte Kanone 8 + 0,3 (CD 1, "schwache Form")
 				 Stufe 2 (CD 1, 1)  Angriff 12 + 0,30 (+ 13 + 0,33)   Schild 12 + 0,30 (+ 14 + 0,33)
@@ -61,18 +63,26 @@ Meilensteine: drei pro Art, alle innerhalb EINES Runs mit der Art als Start-Mons
   Die drei Skills unten (schwach -> stark) gehen nach MILESTONE_DIFFICULTY an die leichteste bis schwerste Bedingung.
   Bedingungen und Zähler: Skills.MILESTONES und Skills.milestone_progress in skills.gd.
 "Schwach" = Nutzlos-/WEAK-Skills und Stufe-1-Standards. Jede Art ab Ungewöhnlich hat einen Angriff ohne Abklingzeit.
+Gewöhnliche Arten (nicht Start-Monster) starten wie die Starter, aber der Skill auf dem besten Wert (K1) ist so stark
+  wie die Starter-Kopfgeld-Attacken (Leuchtzwicker, Schuppenwehr, Glotzschirm, Moosschuss: 7 + 0,3, CD 0). Er ersetzt den
+  schwächsten K1-Skill. So ist ein Fang am Start ein kleines Stück besser als das Start-Monster derselben Rolle:
+	Angreifer (K1 Ang./Sp. Ang.): K1 Hieb/Schuss 7 + 0,3 (CD 0), K1 Leichter Schlag 8 + 0,3 (CD 1), Schild 7 + 0,2 (CD 0)
+	Verteidiger (K1 Vert.):       Stoß 7 + 0,2 des höheren Angriffs, Wehr 7 + 0,3 (CD 0), Stoß/Puls 7 + 0,2 des anderen
 Startmonster (State.INITIAL_MONS) behalten Start-Skills und Ei-Attacken, bekommen nur Meilensteine.
 "skills_manual": true = die Art wird von Hand gepflegt (Endboss Weltenfresser).
 
 				Start (3)                          Ei-Attacken (Fangen & Opfern)                 Meilensteine leicht / mittel / schwer
-  Gewöhnlich    Standard nach dem höchsten Wert     K4 schwache Form, K3 St.2, K1 St.2           K2 St.2 / K1 St.3 / K2 St.3
+  Gewöhnlich    Starter-Muster nach dem höchsten    K4 schwache Form, K3 St.2, K1 St.2           K2 St.2 / K1 St.3 / K2 St.3
+				Wert, K1-Skill 7 + 0,3 (siehe unten)
 													(keine Kombis, keine Buffs, höchstens 2x St.3)
-  Ungewöhnlich  K1 verstärkt (Punch/Kanone, nur     K4 schwache Form, K2 St.2, K1 St.3,          fester Buff St.1 / K1 St.2 / K2 St.3
-				wenn Angriff), Stoß CD 0, K2        Buff St.2 auf den K1-Wert
-  Selten        K1 St.2, K2 verstärkt, Kleiner      K1 St.3, K2 St.3, fester Buff St.2,          K2 St.2 / Kombi leicht K2 / Kombi leicht K1
-				Punch/Kanone (CD 0)                 Buff St.2 (Angreifer) oder Passiv St.3 (Tank)
-  Episch        K1 St.3, K2 St.2, Kleiner           K2 St.3, K1 St.3 schnell (CD 0),             Kombi leicht K2 / Kombi leicht K1 / Passiv St.3
-				Punch/Kanone (CD 0)                 Element-Buff für Verbündete, Buff St.3
+  Ungewöhnlich  K1 verstärkt (Punch/Kanone, nur     K4 schwache Form, K2 St.2, K2 St.3,          fester Buff St.1 / K1 St.2 / K1 St.3
+				wenn Angriff, sonst Wehr), Hieb/    Buff St.2 auf den K1-Wert
+				Schuss 7 + 0,3 (CD 0), K2 (Schild:
+				Wehr 7 + 0,3)
+  Selten        K1 St.2, K2 verstärkt (bzw. Wehr),  K1 St.3, K2 St.3, fester Buff St.2,          K2 St.2 / Kombi leicht K2 / Kombi leicht K1
+				Hieb/Schuss 7 + 0,3 (CD 0)          Buff St.2 (Angreifer) oder Passiv St.3 (Tank)
+  Episch        K1 St.3, K2 St.2, Hieb/Schuss       K2 St.3, K1 St.3 schnell (CD 0),             Kombi leicht K2 / Kombi leicht K1 / Passiv St.3
+				7 + 0,3 (CD 0)                      Element-Buff für Verbündete, Buff St.3
   Legendär      K1 St.3, K2 St.3, St.3 schnell      Kombi stark K1, Kombi stark K2,              Dreier leicht K1 / Dreier stark K1 / Passiv St.4
 				(beste Angriffskategorie)           Kombi-Top St.4, universeller Buff St.4
   Mythisch      wie Legendär                        wie Legendär, aber Dreier-Top St.4           Dreier stark K1 / Kombi-Top St.4 / Dreier-Passiv St.4
