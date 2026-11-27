@@ -55,7 +55,19 @@ func _init() -> void:
 
 ## Skills (Autoload vor Monmap) ist hier schon geladen.
 func _ready() -> void:
+	_add_starter_bounties()
 	_drop_missing_egg_skills()
+
+## Starter-Kopfgelder (Skills.STARTER_BOUNTIES) stehen nicht in den Arten selbst (tools/skill_verteilung.js schreibt
+## bounty_egg_skills neu), sie kommen hier dazu
+func _add_starter_bounties() -> void:
+	for bounty in Skills.STARTER_BOUNTIES:
+		if not has_mon(bounty.owner):
+			continue
+		var meta := mon_metainfos_by_name(bounty.owner)
+		if not meta.has("bounty_egg_skills"):
+			meta["bounty_egg_skills"] = {}
+		meta.bounty_egg_skills[bounty.key] = bounty.skill
 
 ## Sicherheitsnetz: Ei-Attacken, die es in Skills nicht (mehr) gibt, fliegen aus den Listen der Arten.
 ## Sonst liefert Skills.get_skill {} und Konfigurator, Start-Vorschlag, wilde Monster usw. stürzen ab.

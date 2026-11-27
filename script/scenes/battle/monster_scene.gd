@@ -23,7 +23,7 @@ func _ready() -> void:
 	Events.monster_hit_with_element.connect(_show_hit_text)
 	Events.monster_status_changed.connect(_on_status_changed)
 	Events.monster_effect_text.connect(_show_effect_text)
-	Events.monster_faints.connect(_remove_mon)
+	Events.monster_faints.connect(_on_faint)
 	Events.mon_is_catched.connect(_remove_mon)
 	Events.monster_revived.connect(_on_revived)
 	Events.intents_changed.connect(_refresh_intent)
@@ -268,6 +268,12 @@ func printStuff() -> void:
 		if get_tree():
 			await get_tree().create_timer(BattleMonCard.HP_TWEEN_TIME).timeout
 		Events.damage_animation_done.emit(mon)
+
+## Gefallen: die Seele verlässt den Körper und steigt auf (FallenSoul), dann ist der Platz leer
+func _on_faint(_mon) -> void:
+	if _mon == mon and visible:
+		FallenSoul.spawn(self, get_tree().current_scene)
+	_remove_mon(_mon)
 
 func _remove_mon(_mon) -> void:
 	if _mon == mon:

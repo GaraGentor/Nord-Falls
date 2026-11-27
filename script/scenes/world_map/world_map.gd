@@ -245,8 +245,13 @@ func toggle_inventory() -> void:
 		_inventory = null
 		RewardDialog.set_outline(bag_icon.material, false))
 	view_container.add_child(_inventory)
-	# offene Monster-Details bleiben obenauf
-	view_container.move_child(_inventory, 0)
+	# offene Monster-Details bleiben obenauf. Im Rastlager liegt das Inventar über ihm (Items und Monster prüfen),
+	# eine offene Station (Laden, Lager, Trainer) bleibt darüber
+	var above := 0
+	for child in view_container.get_children():
+		if child.get_script() == HUB_CAMP and not child.is_queued_for_deletion():
+			above = child.get_index() + 1
+	view_container.move_child(_inventory, above)
 	RewardDialog.set_outline(bag_icon.material, true)
 
 # Zahnrad im Header direkt links neben dem Legenden-Button, gleich groß wie dieser

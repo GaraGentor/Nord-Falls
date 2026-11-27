@@ -26,6 +26,11 @@ RARITY_RARE,Rare,Selten
 RARITY_EPIC,Epic,Episch
 RARITY_LEGENDARY,Legendary,Legendär
 RARITY_MYTHIC,Mythic,Mythisch
+BATTLE_SURRENDER_TOOLTIP,Surrender,Aufgeben
+BATTLE_SURRENDER_TITLE,Give up?,Aufgeben?
+BATTLE_SURRENDER_TEXT,Are you really sure? The run ends immediately and counts as lost.,Bist du dir wirklich sicher? Der Lauf endet sofort und gilt als verloren.
+BATTLE_SURRENDER_YES,Give up,Aufgeben
+BATTLE_SURRENDER_NO,Keep fighting,Weiterkämpfen
 BATTLE_PHASE,Battle Phase,Kampfphase
 BATTLE_HYPNOSIS,"
 
@@ -105,6 +110,7 @@ LAST_WILL_SOUL_DRAG_VESSEL,Yes... that vessel will do!,Ja ... dieses Gefäß neh
 LAST_WILL_SOUL_THANKS,Take good care of it...,Pass gut darauf auf ...
 LAST_WILL_SOUL_REVIVED,I'm back!,Ich bin zurück!
 LAST_WILL_SOUL_FAREWELL,Then everything fades with me...,Dann vergeht alles mit mir ...
+LAST_WILL_TUT_REVIVE_FIRST,"First give me a new vessel: drag your new catch to me!","Gib mir zuerst ein neues Gefäß: Zieh deinen neuen Fang zu mir!"
 LAST_WILL_REVIVE_DROP,Revive ({hp}% HP),Wiederbeleben ({hp} % LP)
 LAST_WILL_REPLACES,Must forget a move,Muss eine Attacke vergessen
 SKILL_NEEDS_ELEMENTS,Needs: {elements},Benötigt: {elements}
@@ -474,6 +480,11 @@ CONFIGURATOR_LOCKED_BOUNTY,Locked (bounty hunter),Gesperrt (Bounty Hunter)
 BOUNTY_ALPHA,Alpha {mon},Alpha {mon}
 BOUNTY_UNLOCKED,Bounty claimed! New egg move for {mon}: {skill},Kopfgeld kassiert! Neue Ei-Attacke für {mon}: {skill}
 BOUNTY_HINT,"Bounty hunter: defeat {mon} (from biome {biome}) with this monster (last hit). Catching it or a knockout by a teammate does not count","Bounty Hunter: Besiege {mon} (ab Biom {biome}) mit diesem Monster (letzter Treffer). Fangen oder ein K.O. durch ein Team-Mitglied zählt nicht"
+BOUNTY_HINT_STARTER,"Bounty hunter: defeat {mon} (only in biome {biome}, appears often) with this monster (last hit). Catching it or a knockout by a teammate does not count","Bounty Hunter: Besiege {mon} (nur in Biom {biome}, taucht oft auf) mit diesem Monster (letzter Treffer). Fangen oder ein K.O. durch ein Team-Mitglied zählt nicht"
+SKILL_WATER_PHYS_BEACON_PINCH,Beacon Pinch,Leuchtzwicker
+SKILL_FIRE_ARMOR_SCALE_GUARD,Scale Guard,Schuppenwehr
+SKILL_AIR_ARMOR_GOGGLE_GUARD,Goggle Guard,Glotzschirm
+SKILL_EARTH_MAG_MOSS_SHOT,Moss Shot,Moosschuss
 BOUNTY_SOURCE,"Bounty hunter: you defeated {mon} with this monster (last hit)","Bounty Hunter: Du hast {mon} mit diesem Monster besiegt (letzter Treffer)"
 JUDGEMENT_RELEASE_CONFIRM,Release anyway,Trotzdem freilassen
 JUDGEMENT_STARTER_WARNING,"If you release {mon}, your starter won't collect any milestone progress for the rest of this run.","Wenn du {mon} freilässt, sammelt dein Start-Monster in diesem Run keinen Meilenstein-Fortschritt mehr."
@@ -1387,6 +1398,8 @@ BATTLE_MON_CHAINS_MAX,"Jailer: all {max} chains broken, this species is fully up
 BATTLE_MON_NEW,NEW,NEU
 BATTLE_MON_NEW_HINT,You do not own this species yet,Diese Art besitzt du noch nicht
 BATTLE_CATCH_NEW,New!,Neu!
+LOAN_PREVIEW_TITLE,{element} for {mon}: this is how the moves change,{element} für {mon}: So verändern sich die Fähigkeiten
+LOAN_PREVIEW_UNCHANGED,Stays unchanged,Bleibt unverändert
 LOAN_ORB_TOOLTIP,"{element}: drag onto your partner while it is their turn. Their moves gain this element's combo effect (guaranteed) for the next move it changes. Costs this monster 1 action next turn.","{element}: auf den Partner ziehen, wenn er am Zug ist. Seine Fähigkeiten bekommen für die nächste veränderte Fähigkeit den Kombi-Effekt dieses Elements (sicher). Kostet dieses Monster 1 Aktion im nächsten Zug."
 LOAN_BORROWED_TOOLTIP,"Borrowed: {element}. Click to give it back (the partner gets its action back).","Geliehen: {element}. Klicken, um es zurückzugeben (der Partner bekommt seine Aktion zurück)."
 LOAN_LENT_TOOLTIP,{element} is lent to your partner right now.,{element} ist gerade an den Partner verliehen.

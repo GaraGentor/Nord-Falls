@@ -150,10 +150,11 @@ func _start_round() -> void:
 		return a.speed() > b.speed())
 	if round_number == 1:
 		order = Relics.modify("first_round_order", order)
-		# Tutorial-Kämpfe: in der ersten Runde sind die eigenen Monster zuerst dran, damit erklärt werden kann
-		if Tutorial.is_fight():
-			order = order.filter(is_own) + order.filter(func(mon: Monster): return not is_own(mon))
 	order = BossRelics.order_for_round(order, round_number)
+	# Tutorial-Kämpfe: in der ersten Runde sind die eigenen Monster zuerst dran, damit erklärt werden kann
+	# (auch gegen das Flinke Wiesel des Tutorial-Bosses)
+	if round_number == 1 and Tutorial.is_fight():
+		order = order.filter(is_own) + order.filter(func(mon: Monster): return not is_own(mon))
 	# Sanduhr: gilt nur für diese eine Runde
 	for i in range(_first_next_round.size() - 1, -1, -1):
 		var mon: Monster = _first_next_round[i]

@@ -493,6 +493,9 @@ func generate_encounters(grid: Array) -> void:
 	# der Biom-Boss wählt zuerst, die Boss-Felder bekommen bevorzugt andere, sonst Wiederholungen (BossRelics.random_relics).
 	# Der Endboss im letzten Biom zieht aus dem eigenen Endboss-Pool, die Boss-Felder dort haben dann freie Wahl.
 	boss_relics = BossRelics.random_final_relics() if is_last_biome() else BossRelics.random_relics()
+	# Tutorial: der Biom-Boss hat feste Relikte (Tutorial.FIGHTS), die Vorschau auf der Karte zeigt dieselben
+	if Tutorial.run_active:
+		boss_relics = Tutorial.FIGHTS.boss.get("boss_relics", boss_relics).duplicate()
 	var taken: Array = boss_relics.duplicate()
 	for column in grid:
 		for node in column:
@@ -559,6 +562,11 @@ func roll_boss_enemies(forced_count := 0, final := false) -> Array[Monster]:
 ## Nur solange ein Team-Monster mit dem Kopfgeld noch etwas freischalten kann (sonst kommen sie nur noch von selbst).
 func _roll_bounty() -> Dictionary:
 	var open = Skills.get_open_bounties(State.mons, encounter_depth())
+	# Starter-Kopfgelder (eigene, hohe Chance) zuerst
+	for bounty in open.filter(func(entry): return entry.has("chance")):
+		if randf() < bounty.chance:
+			return bounty
+	open = open.filter(func(entry): return not entry.has("chance"))
 	if open.is_empty() or randf() > Skills.BOUNTY_CHANCE:
 		return {}
 	return open.pick_random()

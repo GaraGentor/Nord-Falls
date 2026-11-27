@@ -9,7 +9,8 @@ extends Control
 ##   > geliehene Elemente des Partners: mit weißem Ring, anklicken gibt sie zurück (Aktion kommt zurück)
 ##   > "-N": so viele Aktionen fehlen diesem Monster im nächsten Zug
 
-const ORB_SIZE := 34.0
+## groß genug, um sie auch am Handy sicher zu treffen und zu ziehen
+const ORB_SIZE := 50.0
 ## Höhe einer Kugel im Verhältnis zur Breite (Platz für den Schweif)
 const ORB_HEIGHT := 1.75
 ## Radius des Körpers im Verhältnis zur Breite
@@ -22,7 +23,7 @@ const DEBT_COLOR := Color(1.0, 0.45, 0.4)
 const DEBT_BADGE_SIZE := Vector2(36, 33)
 
 ## Abstand der Kugeln von der Mitte des Dreiecks (dort steht die "-N"-Raute)
-const CLUSTER_RADIUS := 40.0
+const CLUSTER_RADIUS := 56.0
 ## Mitte des Dreiecks auf dem Monster: Anteil der Bildhöhe von oben (die Kugeln landen auf dem Rücken,
 ## darüber bleibt Platz)
 const CLUSTER_HEIGHT := 0.32
@@ -31,6 +32,9 @@ const FLY_DISTANCE := 420.0
 const FLY_TIME := 0.45
 const FLY_OUT_TIME := 0.35
 const FLY_STAGGER := 0.07
+## Schweben Kugeln über dem Monster, wird es durchsichtiger, damit man sie besser sieht (Deckkraft, Tempo pro Sekunde)
+const BODY_ALPHA_WITH_ORBS := 0.5
+const BODY_FADE_SPEED := 3.0
 
 var _scene: Control
 ## Kugeln und Raute, mittig im Dreieck (Position = Mitte des Dreiecks)
@@ -186,11 +190,21 @@ func _process(_delta: float) -> void:
 	# neues Monster auf dem Platz (Endboss-Relikt Buddy), K.O. oder Zugwechsel: baut nur neu, wenn sich etwas ändert
 	_rebuild()
 	visible = _scene.is_visible_in_tree()
+	_fade_body(_delta)
 	var image: Rect2 = _scene.drawn_image_rect()
 	if image.size == Vector2.ZERO:
 		return
 	global_position = _scene.global_position + image.position + image.size * Vector2(0.5, CLUSTER_HEIGHT)
 
+
+## Monsterbild halb durchsichtig, solange Kugeln über ihm schweben (nicht beim Ausfliegen)
+func _fade_body(delta: float) -> void:
+	var body: TextureRect = _scene.texture_rect
+	if body == null:
+		return
+	var has_orbs := _cluster != null and _cluster.get_children().any(func(child): return child is Orb and not child.fading)
+	var target := BODY_ALPHA_WITH_ORBS if has_orbs else 1.0
+	body.self_modulate.a = move_toward(body.self_modulate.a, target, BODY_FADE_SPEED * delta)
 
 ## Eine Kugel: Grundelement in seiner Farbe mit kleiner Flamme, schwebt leicht auf und ab
 class Orb extends Control:

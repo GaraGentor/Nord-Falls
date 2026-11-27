@@ -894,7 +894,7 @@ func get_egg_skill_source(mon_name: String, skill_name: String) -> Array:
 	for milestone in MILESTONES:
 		if meta.get("milestone_egg_skills", {}).get(milestone.key, "") == skill_name:
 			return ["EGG_SOURCE_MILESTONE", milestone.source_hint]
-	for bounty in BOUNTIES:
+	for bounty in all_bounties():
 		if meta.get("bounty_egg_skills", {}).get(bounty.key, "") == skill_name:
 			return ["EGG_SOURCE_BOUNTY", bounty_text(bounty, bounty.source_hint)]
 	return []
@@ -1200,6 +1200,29 @@ const BOUNTIES = [
 # Ein ganzer Run hat rund 26 normale Kämpfe: 1 - 0.985^26 ≈ 33 %, also etwa jeder dritte Run.
 const BOUNTY_CHANCE := 0.015
 
+# Starter-Kopfgelder (von Hand, nicht von tools/skill_verteilung.js): die Start-Monster sind anfangs schwach, darum
+# hat jedes ein eigenes Kopfgeld, das nur im ersten Biom (max_depth) und dort sehr oft auftaucht (chance pro normalem
+# Kampf, solange es noch etwas freischaltet). So hat jeder Starter spätestens im zweiten Run seine neue Fähigkeit.
+# owner: Art, die die Ei-Attacke bekommt, skill: die Ei-Attacke (Monmap trägt sie beim Start in bounty_egg_skills ein).
+const STARTER_BOUNTIES = [
+	# Leuchtkrabbe: physische Attacke
+	{"key": "starter_2", "owner": "2", "skill": "SKILL_WATER_PHYS_BEACON_PINCH", "mon": "81", "level_bonus": 1,
+		"min_depth": 0, "max_depth": 0, "chance": 0.3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT_STARTER", "source_hint": "BOUNTY_SOURCE"},
+	# Hackschupp: Schild
+	{"key": "starter_4", "owner": "4", "skill": "SKILL_FIRE_ARMOR_SCALE_GUARD", "mon": "16", "level_bonus": 1,
+		"min_depth": 0, "max_depth": 0, "chance": 0.3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT_STARTER", "source_hint": "BOUNTY_SOURCE"},
+	# Glotzlibelle: Schild
+	{"key": "starter_5", "owner": "5", "skill": "SKILL_AIR_ARMOR_GOGGLE_GUARD", "mon": "46", "level_bonus": 1,
+		"min_depth": 0, "max_depth": 0, "chance": 0.3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT_STARTER", "source_hint": "BOUNTY_SOURCE"},
+	# Mooswürfel: magische Attacke
+	{"key": "starter_82", "owner": "82", "skill": "SKILL_EARTH_MAG_MOSS_SHOT", "mon": "21", "level_bonus": 1,
+		"min_depth": 0, "max_depth": 0, "chance": 0.3, "label": "BOUNTY_ALPHA", "hint": "BOUNTY_HINT_STARTER", "source_hint": "BOUNTY_SOURCE"},
+]
+
+## Alle Kopfgelder: die gewürfelten (BOUNTIES) und die Starter-Kopfgelder
+func all_bounties() -> Array:
+	return BOUNTIES + STARTER_BOUNTIES
+
 ## Zielart eines Kopfgelds. Gibt es die eingetragene Art nicht mehr (aus Monmap.mons entfernt), springt eine
 ## feste wilde Art ein (gleiche Wahl über den Key, also auch über Neustarts gleich): so stürzt der Kampf nicht ab,
 ## der Hinweis nennt das richtige Monster und die Ei-Attacke bleibt freischaltbar.
@@ -1214,7 +1237,7 @@ func bounty_mon(bounty: Dictionary) -> String:
 	return substitute
 
 func get_bounty(key: String) -> Dictionary:
-	for bounty in BOUNTIES:
+	for bounty in all_bounties():
 		if bounty.key == key:
 			return bounty
 	return {}
@@ -1223,7 +1246,7 @@ func get_bounty(key: String) -> Dictionary:
 func get_locked_bounties(mon_name: String) -> Array:
 	var skills_by_key = Monmap.mon_metainfos_by_name(mon_name).get("bounty_egg_skills", {})
 	var locked = []
-	for bounty in BOUNTIES:
+	for bounty in all_bounties():
 		var skill_name = skills_by_key.get(bounty.key, "")
 		if skill_name != "" and not SaveManager.is_egg_skill_unlocked(mon_name, skill_name):
 			var entry = bounty.duplicate()
@@ -1239,6 +1262,10 @@ func bounty_text(bounty: Dictionary, key: String) -> String:
 		"biome": bounty.min_depth + 1,
 	})
 
+## Taucht das Kopfgeld in dieser Biom-Tiefe auf? (Starter-Kopfgelder nur bis max_depth)
+func bounty_in_depth(bounty: Dictionary, depth: int) -> bool:
+	return bounty.min_depth <= depth and depth <= bounty.get("max_depth", depth)
+
 # Kopfgelder, die für mindestens ein Team-Monster noch etwas freischalten und in dieser Biom-Tiefe auftauchen.
 # Hat das Start-Monster den Meilenstein "bounty" offen, zählt jedes Kopfgeld dieser Tiefe.
 func get_open_bounties(team: Array, depth: int) -> Array:
@@ -1252,7 +1279,7 @@ func get_open_bounties(team: Array, depth: int) -> Array:
 		if not can_unlock_egg_skills(mon._name):
 			continue
 		for bounty in get_locked_bounties(mon._name):
-			if bounty.min_depth <= depth and not keys.has(bounty.key):
+			if bounty_in_depth(bounty, depth) and not keys.has(bounty.key):
 				keys.append(bounty.key)
 	return keys.map(func(key): return get_bounty(key))
 
@@ -1625,6 +1652,11 @@ var milestone_skills = [
 ]
 # Kopfgeld-Ei-Attacken (Skills.BOUNTIES)
 var bounty_skills = [
+	# Starter-Kopfgelder (STARTER_BOUNTIES)
+	_flat_attack_skill("SKILL_WATER_PHYS_BEACON_PINCH", WATER, 7.0, 0.3, PHYS, 0),
+	_flat_shield_skill("SKILL_FIRE_ARMOR_SCALE_GUARD", FIRE, 7.0, 0.3, 0),
+	_flat_shield_skill("SKILL_AIR_ARMOR_GOGGLE_GUARD", AIR, 7.0, 0.3, 0),
+	_flat_attack_skill("SKILL_EARTH_MAG_MOSS_SHOT", EARTH, 8.0, 0.3, MAG, 0),
 	# Staub
 	_attack_skill("SKILL_DUST_MAG_DUST_SHOT", DUST, 20.0, 0.4, MAG, 2, 1, 1),
 	# Gewitter

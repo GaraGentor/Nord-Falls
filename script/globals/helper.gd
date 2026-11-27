@@ -173,12 +173,12 @@ func roll_wild_skills(mon: Monster, mon_meta_data: Dictionary) -> void:
 			mon._skills.append(skill)
 
 ## Ab dieser Seltenheit trägt ein wildes Monster immer mindestens eine Attacke (nicht nur Buffs und Schilde)
-const WILD_ATTACK_MIN_RARITY := Enums.MON_RARITY.EPIC
+const WILD_ATTACK_MIN_RARITY := Enums.MON_RARITY.UNCOMMON
 
 ## Hat ein wildes Monster ab WILD_ATTACK_MIN_RARITY keine Attacke, tauscht es einen Skill gegen eine:
 ## bevorzugt eine Attacke seiner Art, sonst aus dem Biom-Pool. Ei-Attacken (egg_skill) bleiben.
 func ensure_wild_attack(mon: Monster, mon_meta_data: Dictionary) -> void:
-	if mon_meta_data.get("rarity", 0) < WILD_ATTACK_MIN_RARITY or mon._skills.is_empty():
+	if mon_meta_data.get("rarity", 0) < WILD_ATTACK_MIN_RARITY:
 		return
 	if mon._skills.any(func(skill): return Skills.is_damage_skill(skill)):
 		return

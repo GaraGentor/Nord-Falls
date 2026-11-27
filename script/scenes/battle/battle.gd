@@ -181,6 +181,8 @@ func _ready() -> void:
 	_apply_start_items()
 	_relic_overlay = BossRelicOverlayScript.new()
 	add_child(_relic_overlay)
+	# Vorschau beim Ziehen einer Element-Kugel über der oberen Bildschirmhälfte
+	add_child(ElementLoanPreview.new())
 	# Boss-Relikte stellen sich vor, bevor die erste Runde beginnt
 	if not BossRelics.active.is_empty():
 		await _relic_overlay.play_intro(BossRelics.active)
@@ -223,6 +225,11 @@ func _build_bottom_bar() -> void:
 	var controls := BattleControls.new()
 	row.add_child(controls)
 	controls.auto_end_toggled.connect(func(_enabled): _try_auto_end())
+	# Aufgeben (nicht im Übungskampf des Tutorials): beendet den Run als verloren, nach einer Sicherheitsabfrage
+	if not Tutorial.is_fight():
+		var flag := SurrenderFlag.new()
+		row.add_child(flag)
+		flag.pressed.connect(_ask_surrender)
 	# Kampf-Cheats aus dem Debug-Menü, nicht im Übungskampf
 	if BattleDebugButtons.wanted() and not Tutorial.is_fight():
 		var debug_buttons := BattleDebugButtons.new()
@@ -703,6 +710,8 @@ func _setup_tutorial_fight(setup: Dictionary) -> void:
 		enemy._level = State.INITIAL_LEVEL
 		var ms: Array[Monster] = [enemy]
 		State.enemy_mons = ms
+	if setup.has("boss_relics"):
+		BossRelics.active = setup.boss_relics.duplicate()
 	# Tutorial-Kämpfe haben immer genau einen Gegner
 	State.enemy_mons = State.enemy_mons.slice(0, 1)
 	for emon: Monster in State.enemy_mons:
@@ -887,6 +896,10 @@ func _check_game_over(last_fainted:Monster) -> void:
 			return not mon.is_alive() and not _pending_revives.has(mon)
 			):
 		_battle_over = true
+		# erst die Seele des letzten Gefallenen aufsteigen lassen (FallenSoul), dann ist der Run vorbei
+		await get_tree().create_timer(FallenSoul.DURATION).timeout
+		if not is_inside_tree():
+			return
 		State.end_run(false)
 		_clear_fainted_mons()
 		# statt eines grauen Bildes beim Laden: Lade-Bildschirm mit den Wellen
@@ -898,6 +911,11 @@ func _check_game_over(last_fainted:Monster) -> void:
 			return
 		_battle_over = true
 		print("will close battle")
+		# die Seele des letzten Gegners steigt noch auf (FallenSoul), gefangene haben keine
+		if not last_fainted.is_alive() and not State.catched_mons.has(last_fainted):
+			await get_tree().create_timer(FallenSoul.DURATION).timeout
+			if not is_inside_tree():
+				return
 		_revive_pending()
 		State.stage_clear()
 		_add_boss_loot()
@@ -917,6 +935,24 @@ func _check_game_over(last_fainted:Monster) -> void:
 			get_tree().change_scene_to_file("res://script/scenes/judgment/judgement.tscn")
 			return
 		get_tree().change_scene_to_file("res://script/scenes/world_map/world_map.tscn")
+
+## Weiße Flagge: nach der Sicherheitsabfrage ist der Run verloren, wie wenn das ganze Team gefallen wäre
+var _surrender_asked := false
+
+func _ask_surrender() -> void:
+	if _battle_over or _surrender_asked:
+		return
+	_surrender_asked = true
+	var dialog := ChoiceDialog.ask(self, tr("BATTLE_SURRENDER_TITLE"), tr("BATTLE_SURRENDER_TEXT"),
+		tr("BATTLE_SURRENDER_YES"), tr("BATTLE_SURRENDER_NO"))
+	var sure: bool = await dialog.chosen
+	_surrender_asked = false
+	if not sure or _battle_over or not is_inside_tree():
+		return
+	_battle_over = true
+	State.end_run(false)
+	_clear_fainted_mons()
+	SceneLoader.change_scene("res://script/scenes/run_end/run_end.tscn")
 
 ## Sofortsieg (Debug-Menü): alle Gegner fallen, danach geht es weiter wie nach einem normalen Sieg (_check_game_over).
 ## Ohne letzten Treffer eines eigenen Monsters gibt es dabei keine Kopfgelder und keine Meilensteine.
@@ -1463,9 +1499,9 @@ func _revive_pending() -> void:
 	_item_postits.refresh()
 
 func _on_catch_pressed() -> void:
-	# Events.mouse_event.emit({"action": Enums.MOUSE_ACTION.CATCH_MONSTER})
-	print(currently_selected_enemy_mon)
-	print(State.enemy_mons)
+	# Tutorial: Fangen nur, wenn der Schritt es freigibt (in Feld 2 übersprang man sonst beim Leihen das Looten)
+	if not Tutorial.allows("bat_catch"):
+		return
 	var already_catched = State.catched_mons.find(currently_selected_enemy_mon)
 	if currently_selected_enemy_mon and currently_selected_enemy_mon.is_alive() and already_catched == -1 \
 			and not currently_selected_enemy_mon._minion:

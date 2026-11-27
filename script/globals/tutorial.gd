@@ -376,12 +376,14 @@ func text_values() -> Dictionary:
 #  catch_sure    der Fang klappt sicher
 #  faint_wins    fällt ein eigenes Monster, endet der Kampf mit Sieg und alle Gegner sind gefangen
 #  no_catch      keine Hypnose (sonst ginge der Gegner vor dem lehrreichen K.O. ins Netz)
+#  boss_relics   feste Boss-Relikte statt der gewürfelten (Flinkes Wiesel: wirft die Zugreihenfolge durcheinander)
 # Alle Tutorial-Kämpfe haben genau einen Gegner, und die eigenen Monster sind in der ersten Runde zuerst dran (TurnWheel).
 const FIGHTS := {
 	0: {"sequence": "battle", "enemy_weak": true, "enemy_moves": 1, "attacks": true, "no_ko": true, "catch_sure": true},
 	1: {"sequence": "fight_2", "enemy_hp": 1, "enemy_moves": 1, "attacks": true},
 	7: {"sequence": "fight_8", "own_hp": 1, "enemy_moves": 1, "enemy_attack": true, "faint_wins": true, "no_catch": true},
-	"boss": {"sequence": "fight_boss", "enemy_hp": 1, "enemy_moves": 1, "enemy_useless": true, "attacks": true},
+	"boss": {"sequence": "fight_boss", "enemy_hp": 1, "enemy_moves": 1, "enemy_useless": true, "attacks": true,
+		"boss_relics": ["swift_weasel"]},
 }
 ## Grundelement -> Namensteil der Starter-Skills (Skills.starter_skills: *_LIGHT_THRUST, *_ARMOR_WEAK)
 const ELEMENT_KEYS := {

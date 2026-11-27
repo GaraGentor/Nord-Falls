@@ -460,7 +460,16 @@ func _select(entry: Dictionary) -> void:
 	_show_detail(entry.gift if not entry.is_empty() else {})
 	_refresh_previews()
 
+## Tutorial (Feld 8): erst wiederbeleben, Vererben oder Ablehnen würden die Wiederbelebung überspringen
+func _revive_required() -> bool:
+	if Tutorial.run_active and _can_revive:
+		_say(tr("LAST_WILL_TUT_REVIVE_FIRST"))
+		return true
+	return false
+
 func _give(entry: Dictionary, heir: Dictionary) -> void:
+	if _revive_required():
+		return
 	var reason := gift_reason(entry.gift, heir.mon)
 	if reason != "":
 		Helper.show_unlock_message(reason)
@@ -540,7 +549,7 @@ func _revive(heir: Dictionary, ghost: Control) -> void:
 	_finish({"revive": heir.mon})
 
 func _on_button_pressed() -> void:
-	if _busy:
+	if _busy or _revive_required():
 		return
 	if _can_inherit:
 		_busy = true

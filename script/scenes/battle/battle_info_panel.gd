@@ -31,6 +31,47 @@ const MON_CARD := preload("res://script/scenes/battle/battle_mon_card.tscn")
 ## die konkreten Attacken wählt man danach im Ei-Konfigurator)
 @export var egg_skill_overview := false
 
+## Fähigkeiten als Karten ohne Rahmen (SkillCarousel) statt der Tabelle, oben links dahinter die Silhouette des
+## Monsters (dort ist Platz, die erste Karte steht in der Mitte), die Werte darunter. Nicht in der Ei-Auswahl (egg_skill_overview).
+const SILHOUETTE_SIZE := 150.0
+const SILHOUETTE_COLOR := Color(0.858824, 0.717647, 0.45098, 0.34)
+const SILHOUETTE_SHADER := "shader_type canvas_item;\nuniform vec4 tint : source_color;\n" \
+	+ "void fragment() { COLOR = vec4(tint.rgb, texture(TEXTURE, UV).a * tint.a); }"
+
+var _carousel: SkillCarousel
+var _silhouette: TextureRect
+
+func _ready() -> void:
+	if egg_skill_overview:
+		return
+	# SkillPanel: Platte und Tabelle weg, das Info-Fenster (SkillInfo) bleibt obenauf
+	var skill_panel: Control = skill_info_container.get_parent()
+	for child in skill_panel.get_children():
+		if child != skill_info_container and child is CanvasItem:
+			child.visible = false
+	_silhouette = TextureRect.new()
+	_silhouette.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_silhouette.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_silhouette.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	var shader := Shader.new()
+	shader.code = SILHOUETTE_SHADER
+	var sil_material := ShaderMaterial.new()
+	sil_material.shader = shader
+	sil_material.set_shader_parameter("tint", SILHOUETTE_COLOR)
+	_silhouette.material = sil_material
+	skill_panel.add_child(_silhouette)
+	_silhouette.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+	_silhouette.offset_right = SILHOUETTE_SIZE
+	_silhouette.offset_bottom = SILHOUETTE_SIZE
+	_carousel = SkillCarousel.new()
+	skill_panel.add_child(_carousel)
+	_carousel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_carousel.card_pressed.connect(_show_skill_info)
+	skill_panel.move_child(skill_info_container, -1)
+	# Werte unter die Karten
+	var stats_panel: Control = stats_grid.get_parent().get_parent()
+	stats_panel.get_parent().move_child(stats_panel, skill_panel.get_index())
+
 var monster: Monster:
 	set(mon):
 		monster = mon
@@ -236,6 +277,11 @@ func _popup() -> SkillDetailPopup:
 	return _detail_popup
 
 func _build_skill_list() -> void:
+	if _carousel:
+		var known_all := reveal_all or State.mons.has(monster)
+		_carousel.show_skills(monster, monster._skills, func(skill): return known_all or skill.scouted)
+		_silhouette.texture = Monmap.texture(monster._name, Monmap.MEDIUM)
+		return
 	_clear_skill_grid(SKILL_COLUMNS.size() + 1)
 	skill_grid.add_child(Control.new())
 	for header in SKILL_COLUMNS:
