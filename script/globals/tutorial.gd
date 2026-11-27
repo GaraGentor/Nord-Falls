@@ -21,6 +21,7 @@ extends Node
 ##  if_present  der Schritt entfällt, wenn sein (erstes) Ziel gerade nicht zu sehen ist
 ##  dismiss  der Schritt wartet auf eine Aktion, zeigt aber auch Weiter: das beendet die Sequenz (Trainer verschwindet)
 ##  bubble   "right" / "left": Trainer und Sprechblase bleiben auf dieser Bildschirmseite
+##  hide     Name(n) ohne "tut_"-Präfix, die die Szene während des Schritts ausblendet (fragt Tutorial.hides ab)
 
 const SELECTION_SCENE := "res://script/scenes/selection/selection.tscn"
 
@@ -51,7 +52,8 @@ const SEQUENCES := {
 		{"text": "TUT_SEL_GO", "target": ["eggs", "begin_journey"], "wait": "pressed:begin_journey", "dismiss": true},
 	]},
 	"egg_configurator": {"speaker": "trainer", "steps": [
-		{"text": "TUT_CFG_MON", "target": "cfg_mon"},
+		# erst nur das Monster: Tisch und Plätze kommen mit dem nächsten Schritt dazu
+		{"text": "TUT_CFG_MON", "target": "cfg_mon", "hide": "cfg_table"},
 		{"text": "TUT_CFG_SLOTS", "target": "cfg_slots"},
 		{"text": "TUT_CFG_ARC", "target": "cfg_grid"},
 		{"text": "TUT_CFG_UNLOCK", "target": "cfg_grid"},
@@ -64,6 +66,8 @@ const SEQUENCES := {
 	"battle": {"speaker": "trainer", "steps": [
 		{"text": "TUT_BAT_INTRO"},
 		{"text": "TUT_BAT_WHEEL", "target": "bat_wheel"},
+		# rechts die Fähigkeiten des ausgewählten Monsters: nach einem Fang kann das Team sie sich einverleiben
+		{"text": "TUT_BAT_SKILLS", "target": "bat_skills"},
 		{"text": "TUT_BAT_INTENT", "target": "bat_intent"},
 		{"text": "TUT_BAT_SCOUT", "target": "bat_enemies"},
 		{"text": "TUT_BAT_CARD", "target": ["bat_hand", "bat_enemies"], "wait": "signal:call_skill_card"},
@@ -78,12 +82,14 @@ const SEQUENCES := {
 		{"text": "TUT_BAT_MOVES", "target": ["bat_moves", "bat_end_turn"], "wait": "signal:enemy_turn_started"},
 		{"text": "TUT_BAT_CATCH", "target": ["bat_catch", "bat_catch_chance"], "wait": "pressed:bat_catch"},
 	]},
-	# Feld 2: Element vom Partner leihen, Tempo und Auto. Der Gegner hat nur 1 LP.
+	# Feld 2: Element vom Partner leihen, Tempo und Auto. Der Gegner hat nur 1 LP und nur einen nutzlosen Schild.
 	"fight_2": {"speaker": "trainer", "steps": [
 		{"text": "TUT_F2_INTRO"},
 		{"text": "TUT_F2_CONTROLS", "target": "bat_controls"},
 		# die Kugel wird auf das eigene Monster am Zug gezogen: beide eigenen Monster sind hell und nehmen sie an
-		{"text": "TUT_F2_LOAN", "target": ["bat_orbs", "bat_own_0", "bat_own_1"], "wait": "signal:element_borrowed"},
+		# ohne die Karten-Vorschau oben (ElementLoanPreview), sie verdeckt sonst die Erklärung
+		{"text": "TUT_F2_LOAN", "target": ["bat_orbs", "bat_own_0", "bat_own_1"], "wait": "signal:element_borrowed",
+			"hide": "bat_loan_preview"},
 		{"text": "TUT_F2_PLAY", "target": ["bat_hand", "bat_enemies"], "wait": "signal:call_skill_card", "dismiss": true},
 	]},
 	# Feld 8: Items im Kampf, dann fällt ein eigenes Monster (eigene 1 LP, FIGHTS[7] faint_wins)
@@ -245,6 +251,10 @@ func is_running() -> bool:
 func allows(group: String) -> bool:
 	return not is_running() or _overlay.step_allows(group)
 
+## Blendet der aktuelle Schritt "tut_<group>" aus? (Schritt-Schlüssel "hide")
+func hides(group: String) -> bool:
+	return is_running() and _overlay.step_hides(group)
+
 ## Für Szenen, die Mausklicks selbst in _input auswerten: true, solange das Tutorial den Klick an dieser Stelle abfängt
 func blocks_input(point: Vector2) -> bool:
 	return is_running() and not _overlay.lets_through(point)
@@ -368,19 +378,20 @@ func text_values() -> Dictionary:
 #  enemy_hp      Gegner haben nur so viele LP
 #  own_hp        eigene Monster haben nur so viele LP
 #  enemy_moves   Aktionen der Gegner pro Zug
-#  enemy_attack  Gegner können nur einen leichten Angriff ihres Elements
-#  enemy_useless Gegner können nur einen nutzlosen Schild ihres Elements
+#  enemy_attack  Gegner können nur einen leichten Angriff ihres Elements (ohne Grundelement: ihre eigenen Skills)
+#  enemy_useless Gegner können nur einen nutzlosen Schild ihres Elements (ohne Grundelement: gar nichts, sie setzen aus)
 #  attacks       eigene Monster haben in diesem Kampf nur Angriffe: vorn je einen physischen und magischen ihres
 #                Elements, dazu ihre eigenen Angriffe (keine Schilde oder Buffs, die eigenen Skills kommen danach zurück)
 #  no_ko         niemand geht K.O., jeder behält mindestens 1 LP
 #  catch_sure    der Fang klappt sicher
 #  faint_wins    fällt ein eigenes Monster, endet der Kampf mit Sieg und alle Gegner sind gefangen
-#  no_catch      keine Hypnose (sonst ginge der Gegner vor dem lehrreichen K.O. ins Netz)
+#  no_catch      keine Hypnose (sonst ginge der Gegner vor dem lehrreichen K.O. ins Netz, Feld 2: vor dem Looten)
 #  boss_relics   feste Boss-Relikte statt der gewürfelten (Flinkes Wiesel: wirft die Zugreihenfolge durcheinander)
 # Alle Tutorial-Kämpfe haben genau einen Gegner, und die eigenen Monster sind in der ersten Runde zuerst dran (TurnWheel).
 const FIGHTS := {
 	0: {"sequence": "battle", "enemy_weak": true, "enemy_moves": 1, "attacks": true, "no_ko": true, "catch_sure": true},
-	1: {"sequence": "fight_2", "enemy_hp": 1, "enemy_moves": 1, "attacks": true},
+	# Feld 2: man darf beliebig Züge beenden (Element leihen), der Gegner kann einen also nicht besiegen
+	1: {"sequence": "fight_2", "enemy_hp": 1, "enemy_moves": 1, "enemy_useless": true, "attacks": true, "no_catch": true},
 	7: {"sequence": "fight_8", "own_hp": 1, "enemy_moves": 1, "enemy_attack": true, "faint_wins": true, "no_catch": true},
 	"boss": {"sequence": "fight_boss", "enemy_hp": 1, "enemy_moves": 1, "enemy_useless": true, "attacks": true,
 		"boss_relics": ["swift_weasel"]},

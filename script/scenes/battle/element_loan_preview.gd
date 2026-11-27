@@ -61,7 +61,8 @@ func _ready() -> void:
 func _refresh() -> void:
 	var element := ElementLoan.preview_element
 	var mon := ElementLoan.active
-	if element == 0 or mon == null:
+	# Tutorial (Feld 2, Leih-Schritt): die Vorschau bleibt weg
+	if element == 0 or mon == null or Tutorial.hides("bat_loan_preview"):
 		_shown_element = 0
 		if visible:
 			var tween := create_tween()

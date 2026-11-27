@@ -129,7 +129,7 @@ func _ready() -> void:
 		$GameWindow/HBoxContainer2/MonsterScene1.visible = true
 	if State.is_final_boss or Tutorial.fight.get("no_catch", false):
 		catch_button.visible = false
-	# Tutorial (Feld 8): auch der Rahmen mit der Spirale verschwindet, die Leiste behält ihre Aufteilung
+	# Tutorial (Feld 2 und 8): auch der Rahmen mit der Spirale verschwindet, die Leiste behält ihre Aufteilung
 	if Tutorial.fight.get("no_catch", false):
 		catch_button.get_parent().modulate.a = 0.0
 
@@ -245,6 +245,8 @@ func _add_tutorial_targets() -> void:
 	_relic_bar.add_to_group("tut_bat_relics")
 	# übrige Aktionen in der Mitte des Zugrads (funkelnde Raute)
 	turn_wheel.moves_badge.add_to_group("tut_bat_moves")
+	# rechts die Fähigkeiten des ausgewählten Monsters (SkillPanel mit dem Karussell)
+	battle_info.skill_info_container.get_parent().add_to_group("tut_bat_skills")
 	# die Element-Kugeln tragen ihre Gruppe selbst (ElementOrbs), die Fangchance über dem Gegner auch (MonsterScene)
 	for node in find_children("*", "", true, false):
 		if node is BattleControls:
@@ -688,10 +690,14 @@ func _generate_battle():
 	# nie unter der Startstufe des eigenen Teams
 	for mon in ms:
 		mon._is_boss = is_boss_battle
-		mon._level = maxi(State.INITIAL_LEVEL, level + randi_range(Map.LEVEL_OFFSET[0], Map.LEVEL_OFFSET[1]))
-		if mon._bounty != "":
-			mon._level += Skills.get_bounty(mon._bounty).level_bonus
-		mon._initial_moves = maxi(Map.roll_weighted(encounter.moves, t), min_moves)
+		# Einstiegskämpfe (Map.is_easy_start): feste niedrige Stufe, auch für das Starter-Kopfgeld kein Bonus
+		if mon._easy_start:
+			mon._level = Map.EASY_START_LEVEL
+		else:
+			mon._level = maxi(State.INITIAL_LEVEL, level + randi_range(Map.LEVEL_OFFSET[0], Map.LEVEL_OFFSET[1]))
+			if mon._bounty != "":
+				mon._level += Skills.get_bounty(mon._bounty).level_bonus
+		mon._initial_moves = 1 if mon._easy_start else maxi(Map.roll_weighted(encounter.moves, t), min_moves)
 		State.record_sighting(mon, depth)
 	# Boss-Relikte gehören zum Kampf, nicht zu einem Boss: alle Bosse teilen sie. Gewürfelt mit den Gegnern (Map.generate_encounters)
 	var relics := Map.take_pending_relics()
@@ -717,13 +723,15 @@ func _setup_tutorial_fight(setup: Dictionary) -> void:
 	for emon: Monster in State.enemy_mons:
 		if setup.has("enemy_moves"):
 			emon._initial_moves = setup.enemy_moves
-		var only := {}
+		# ohne passenden Angriff (kein Grundelement) behält er seine eigenen, Feld 8 braucht den Treffer
 		if setup.get("enemy_attack", false):
-			only = Tutorial.element_skill(emon, "SKILL_%s_PHYS_LIGHT_THRUST")
+			var attack := Tutorial.element_skill(emon, "SKILL_%s_PHYS_LIGHT_THRUST")
+			if not attack.is_empty():
+				emon._skills = [attack]
+		# ohne passenden Schild bekommt er gar keinen Skill und setzt jeden Zug aus, er darf nie gefährlich werden
 		elif setup.get("enemy_useless", false):
-			only = Tutorial.element_skill(emon, "SKILL_%s_ARMOR_WEAK")
-		if not only.is_empty():
-			emon._skills = [only]
+			var shield := Tutorial.element_skill(emon, "SKILL_%s_ARMOR_WEAK")
+			emon._skills = [] if shield.is_empty() else [shield]
 		if setup.has("enemy_hp"):
 			emon._lost_hp = maxf(emon.hp() - setup.enemy_hp, 0.0)
 	for mon: Monster in State.mons:
@@ -848,7 +856,7 @@ func _credit_enemy_kill(defeated: Monster) -> void:
 	_roll_kill_loot()
 	var bounty_skill = Skills.claim_bounty(defeated)
 	if bounty_skill != "":
-		Helper.show_unlock_message(tr("BOUNTY_UNLOCKED").format({"skill": tr(bounty_skill), "mon": Helper.mon_display_name(defeated._last_hit_by._name)}))
+		EggUnlockDialog.announce(get_tree(), "BOUNTY_UNLOCK_TITLE", defeated._last_hit_by._name, [bounty_skill])
 	_count_starter_kill(defeated)
 
 func _check_game_over(last_fainted:Monster) -> void:

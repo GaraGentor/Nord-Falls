@@ -6,12 +6,10 @@ Ideen:
 	> Abklingzeit verringern
 > Endless Run nach Finishen des Games 1x.?
 > Randomizer Mod?
-> Run Speichern und am nächsten Tag weiter machen?
 > Shop mit Flohmarkt kiste ersetzen wo man sich durchsuchen muss? xD
 > Klon Maschine - gegner zum Fangen
 
 Todos:
-> Tutorial besser machen...
 > Zweites Biom beim ersten Boss die monster schwächer machen
 
 > Map Balancen...
@@ -25,13 +23,9 @@ Konzept durchgehen:
 	- Attacke vill nochmal auf nur einen typ Beschränken?
 	- Attacken weaker machen als fähigkeiten skills!
 	- Bisschen neu Balancen
-	- Neue Fähigkeiten mit 0 SP aber CD (eher für schwachte buffs)
 
 Nach Game Finish:
 - Tutorial Final Testen wenn Game Fertig ist
 - Tutorial Text bei Monster Auswahl updaten
 
-
-
-PT: 
-> Wenn ich mir die Elemente angucke, check ich da noch nicht sooo viel. Es wird kompliziert, wenn ich Aschesturm besitze und schauen will, wer hiergegen viel schaden macht, dann klick ich mich überall durch. D.h. hier müssen auch die ELement Kombinationen angezeigt werden, die Hart treffen und Weniger schaden machen (nicht nur die Basis elemente)
+WIKI Checken, ob die schwachen nutzlosen dinger bei allen monstern vorhanden sind.. Das wäre Übel lol...

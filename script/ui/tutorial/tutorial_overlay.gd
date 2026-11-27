@@ -472,6 +472,15 @@ func step_allows(group: String) -> bool:
 		targets = [targets]
 	return _blocker.hole_clickable and targets.has(group)
 
+## Soll die Szene "tut_<group>" während des aktuellen Schritts ausblenden ("hide" des Schritts)?
+func step_hides(group: String) -> bool:
+	if _index < 0 or _index >= _steps.size():
+		return false
+	var hidden = _steps[_index].get("hide", [])
+	if hidden is String:
+		hidden = [hidden]
+	return hidden.has(group)
+
 ## "bubble" des aktuellen Schritts: "right" / "left" hält Trainer und Blase auf dieser Seite, sonst leer
 func _forced_side() -> String:
 	if _index < 0 or _index >= _steps.size():

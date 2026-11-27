@@ -175,7 +175,7 @@ var mons = [
 		"preferred_stats": {"hp": 18, "atk": 14, "def": 25, "s_atk": 14, "speed": 10},
 		"max_upgrades": 2,
 		# Startmonster (Tank), durch Fangen & Opfern: Leichter Schild und Leichte Rückhand
-		"default_egg_skills": ["SKILL_WATER_PHYS_WEAK_THRUST", "SKILL_WATER_ARMOR_LIGHT", "SKILL_WATER_MAG_WEAK_THRUST"],
+		"default_egg_skills": ["SKILL_WATER_PHYS_STARTER_JAB", "SKILL_WATER_ARMOR_LIGHT", "SKILL_WATER_MAG_STARTER_PULSE"],
 		"unlockable_egg_skills": ["SKILL_WATER_ARMOR_PLAIN", "SKILL_WATER_PHYS_BACKHAND"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_WATER_PHYS_TIDE_SLAP",
@@ -210,7 +210,7 @@ var mons = [
 		"preferred_stats": {"hp": 16, "atk": 27, "def": 22, "s_atk": 8, "speed": 15},
 		"max_upgrades": 2,
 		# Startmonster (Angreifer), durch Fangen & Opfern: Kleiner Punch und Punch
-		"default_egg_skills": ["SKILL_FIRE_PHYS_LIGHT_THRUST", "SKILL_FIRE_PHYS_LIGHT_STRIKE", "SKILL_FIRE_ARMOR_WEAK"],
+		"default_egg_skills": ["SKILL_FIRE_PHYS_LIGHT_THRUST", "SKILL_FIRE_PHYS_LIGHT_STRIKE", "SKILL_FIRE_ARMOR_STARTER"],
 		"unlockable_egg_skills": ["SKILL_FIRE_PHYS_SMALL_PUNCH", "SKILL_FIRE_PHYS_PUNCH"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_FIRE_ARMOR_CINDER_PLATE",
@@ -228,7 +228,7 @@ var mons = [
 		"preferred_stats": {"hp": 13, "atk": 18, "def": 11, "s_atk": 20, "speed": 24},
 		"max_upgrades": 2,
 		# Startmonster (Angreifer), durch Fangen & Opfern: Kleine Windkanone und Windkanone
-		"default_egg_skills": ["SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_MAG_LIGHT_STRIKE", "SKILL_AIR_ARMOR_WEAK"],
+		"default_egg_skills": ["SKILL_AIR_MAG_LIGHT_THRUST", "SKILL_AIR_MAG_LIGHT_STRIKE", "SKILL_AIR_ARMOR_STARTER"],
 		"unlockable_egg_skills": ["SKILL_AIR_MAG_SMALL_CANNON", "SKILL_AIR_MAG_CANNON"],
 		"milestone_egg_skills": {
 			"boss_1": "SKILL_AIR_PHYS_GUST_KICK",
@@ -1492,9 +1492,9 @@ var mons = [
 		"stats": [190, 210],
 		"preferred_stats": {"hp": 22, "atk": 8, "def": 20, "s_atk": 14, "speed": 8},
 		"max_upgrades": 2,
-		# Vert. am höchsten: Nutzloser Erdstoß (magisch), Leichter Schild, Nutzloser Stoß (physisch),
+		# Eigene Start-Skills: Moospuls (magisch), Leichter Steinschild, Moosstoß (physisch),
 		# als Startmonster durch Fangen & Opfern: Schild (Vert.) und Leichte Erdkanone
-		"default_egg_skills": ["SKILL_EARTH_MAG_WEAK_THRUST", "SKILL_EARTH_ARMOR_LIGHT", "SKILL_EARTH_PHYS_WEAK_THRUST"],
+		"default_egg_skills": ["SKILL_EARTH_MAG_STARTER_PULSE", "SKILL_EARTH_ARMOR_LIGHT", "SKILL_EARTH_PHYS_STARTER_JAB"],
 		"unlockable_egg_skills": ["SKILL_EARTH_ARMOR_PLAIN", "SKILL_EARTH_MAG_LIGHT_CANNON"],
 		"milestone_egg_skills": {
 			"kills_5": "SKILL_EARTH_MAG_PEBBLE_STORM",

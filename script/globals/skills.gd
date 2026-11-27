@@ -1090,8 +1090,9 @@ func starter_wants(stat: String) -> bool:
 
 # Prüft nach jedem Fortschritt alle offenen Meilensteine des Start-Monsters, schaltet erreichte frei und meldet sie.
 # Liefert die Namen der neu freigeschalteten Skills (stehen auch in State.run_milestone_unlocks fürs Run-Ende).
+# Im Tutorial-Lauf nie: der Spielstand kommt danach ohnehin zurück, und die Meldung zerschießt die Tutorial-Ansicht.
 func check_milestones() -> Array:
-	if State.starter_name == "" or not State.is_starter_in_team():
+	if Tutorial.run_active or State.starter_name == "" or not State.is_starter_in_team():
 		return []
 	var unlocked = []
 	for milestone in get_locked_milestones(State.starter_name):
@@ -1100,10 +1101,7 @@ func check_milestones() -> Array:
 			unlocked.append(milestone.skill)
 	if not unlocked.is_empty():
 		State.run_milestone_unlocks.append_array(unlocked)
-		Helper.show_unlock_message(tr("MILESTONE_UNLOCKED").format({
-			"mon": Helper.mon_display_name(State.starter_name),
-			"skills": ", ".join(PackedStringArray(unlocked.map(func(skill_name): return tr(skill_name)))),
-		}))
+		EggUnlockDialog.announce(get_tree(), "MILESTONE_UNLOCK_TITLE", State.starter_name, unlocked)
 	return unlocked
 
 # ─────────────────────────
@@ -1404,6 +1402,16 @@ var starter_skills = [
 	_flat_attack_skill("SKILL_AIR_PHYS_BACKHAND", AIR, 8.0, 0.3, PHYS, 1),
 	_flat_attack_skill("SKILL_AIR_MAG_LIGHT_CANNON", AIR, 8.0, 0.3, MAG, 1),
 	_flat_shield_skill("SKILL_AIR_ARMOR_PLAIN", AIR, 5.0, 0.3, 0),
+	# Eigene Start-Skills der Startmonster (statt der Nutzlosen Stöße bzw. Schilde, die sich andere Arten teilen):
+	#   Leuchtkrabbe: Krabbenstoß (physisch) und Leuchtstoß (magisch) je 7 + 0,2
+	#   Mooswürfel: Moospuls (magisch) 8 + 0,2, Moosstoß (physisch) 7 + 0,2
+	#   Hackschupp: Schuppenschild 8 + 0,2, Glotzlibelle: Flügelschild 7 + 0,2
+	_flat_attack_skill("SKILL_WATER_PHYS_STARTER_JAB", WATER, 7.0, 0.2, PHYS, 0),
+	_flat_attack_skill("SKILL_WATER_MAG_STARTER_PULSE", WATER, 7.0, 0.2, MAG, 0),
+	_flat_attack_skill("SKILL_EARTH_MAG_STARTER_PULSE", EARTH, 8.0, 0.2, MAG, 0),
+	_flat_attack_skill("SKILL_EARTH_PHYS_STARTER_JAB", EARTH, 7.0, 0.2, PHYS, 0),
+	_flat_shield_skill("SKILL_FIRE_ARMOR_STARTER", FIRE, 8.0, 0.2, 0),
+	_flat_shield_skill("SKILL_AIR_ARMOR_STARTER", AIR, 7.0, 0.2, 0),
 ]
 
 # Standard-Skills: ein Trank mit neuem Grundelement bietet sie zum Lernen an (ElementGainOverlay). Vorerst leer.

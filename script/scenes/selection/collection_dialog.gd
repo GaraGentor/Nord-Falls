@@ -156,6 +156,7 @@ static func on_click(control: Control, action: Callable) -> void:
 ## Alle Ei-Attacken einer Art: oben die freigeschalteten (darunter, woher sie kommen),
 ## darunter die gesperrten unter Ketten mit dem Hinweis, wie man sie freischaltet (wie im Konfigurator).
 ## Klick auf eine gesperrte Karte nimmt Ketten und Hinweis weg, bis man woanders hinklickt (_reveal).
+## Klick auf eine freigeschaltete Karte zeigt darunter, wodurch genau sie freigeschaltet wurde (_show_source).
 class SpeciesSkillsDialog extends InfoDialog:
 	const LIST_SIZE := Vector2(760, 420)
 	const COLUMNS := 3
@@ -166,6 +167,10 @@ class SpeciesSkillsDialog extends InfoDialog:
 	var _locked_cards: Array[EggSkillCard] = []
 	## Gerade aufgedeckte gesperrte Karte (null = keine)
 	var _revealed: EggSkillCard
+	## Freigeschaltete Karten -> Label mit der genauen Herkunft (Skills.get_egg_skill_source), erst nach Klick sichtbar
+	var _source_details := {}
+	## Freigeschaltete Karte, deren Herkunft gerade offen ist (null = keine)
+	var _source_shown: EggSkillCard
 
 	func _init(mon_name: String) -> void:
 		super()
@@ -212,7 +217,15 @@ class SpeciesSkillsDialog extends InfoDialog:
 				if skill.is_empty():
 					continue
 				var source := Skills.get_egg_skill_source(_mon_name, skill_name)
-				_add_card(grid, EggSkillCard.create(skill, mon), tr(source[0]) if not source.is_empty() else "")
+				var card := EggSkillCard.create(skill, mon)
+				var box := _add_card(grid, card, tr(source[0]) if not source.is_empty() else "")
+				if not source.is_empty():
+					var detail := _text(tr(source[1]), SkillDetailPopup.GOLD, SOURCE_FONT_SIZE)
+					detail.custom_minimum_size.x = CARD_SIZE.x
+					detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+					detail.visible = false
+					box.add_child(detail)
+					_source_details[card] = detail
 		if not egg_skills.locked.is_empty():
 			var heading := _section(tr("COLLECTION_SKILLS_LOCKED"))
 			heading.add_theme_color_override("font_color", UNKNOWN_COLOR)
@@ -232,6 +245,28 @@ class SpeciesSkillsDialog extends InfoDialog:
 		for card in _locked_cards:
 			card.mouse_default_cursor_shape = CURSOR_POINTING_HAND
 			CollectionDialog.on_click(card, _reveal.bind(card))
+		# freigeschaltete Karten: Klick zeigt die Herkunft
+		for card: EggSkillCard in _source_details:
+			card.mouse_default_cursor_shape = CURSOR_POINTING_HAND
+			card.tooltip_text = tr("COLLECTION_SOURCE_CLICK")
+			CollectionDialog.on_click(card, _show_source.bind(card))
+
+	## Zeigt unter der freigeschalteten Karte, wodurch sie freigeschaltet wurde; nochmal klicken blendet es aus
+	func _show_source(card: EggSkillCard) -> void:
+		var previous := _source_shown
+		_hide_source()
+		if previous == card:
+			return
+		_source_shown = card
+		_source_details[card].visible = true
+		card.set_selected(true)
+
+	func _hide_source() -> void:
+		if _source_shown == null:
+			return
+		_source_details[_source_shown].visible = false
+		_source_shown.set_selected(false)
+		_source_shown = null
 
 	## Deckt die gesperrte Karte auf, eine vorher aufgedeckte geht wieder unter die Ketten
 	func _reveal(card: EggSkillCard) -> void:
@@ -244,7 +279,12 @@ class SpeciesSkillsDialog extends InfoDialog:
 
 	## Klick neben die aufgedeckte Karte: Ketten und Hinweis kommen zurück
 	func _input(event: InputEvent) -> void:
-		if _revealed == null or not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
+		if not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
+			return
+		# Klick neben die Karte mit offener Herkunft: wieder zu
+		if _source_shown != null and not _source_shown.get_global_rect().has_point(event.global_position):
+			_hide_source()
+		if _revealed == null:
 			return
 		if not _revealed.get_global_rect().has_point(event.global_position):
 			_revealed.set_revealed(false)
@@ -261,7 +301,7 @@ class SpeciesSkillsDialog extends InfoDialog:
 		margin.add_child(grid)
 		return grid
 
-	func _add_card(grid: GridContainer, card: EggSkillCard, note: String) -> void:
+	func _add_card(grid: GridContainer, card: EggSkillCard, note: String) -> VBoxContainer:
 		var box := VBoxContainer.new()
 		box.add_theme_constant_override("separation", 4)
 		grid.add_child(box)
@@ -274,3 +314,4 @@ class SpeciesSkillsDialog extends InfoDialog:
 			label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			label.modulate.a = 0.8
 			box.add_child(label)
+		return box

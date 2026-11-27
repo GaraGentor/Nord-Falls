@@ -16,6 +16,8 @@ var _ep: int = 5
 var _upgrades: int = 0
 # Key aus Skills.BOUNTIES, wenn dieses wilde Monster ein Kopfgeld-Monster ist, sonst ""
 var _bounty: String = ""
+# Gegner aus einem der ersten Kämpfe des Runs (Map.is_easy_start): niedrige Stufe, nur Start-Attacken
+var _easy_start: bool = false
 # Gegner aus einem Boss-Kampf (Biom-Boss oder Boss-Feld)
 var _is_boss: bool = false
 # Helfer des Endboss-Relikts Buddy: nur für einen Kampf, nicht fangbar, keine Beute

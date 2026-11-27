@@ -430,6 +430,10 @@ func _arc_angle(t: float) -> float:
 
 func _process(delta: float) -> void:
 	_time += delta
+	# Tutorial: beim ersten Schritt steht nur das Monster da, Tisch und Plätze kommen danach
+	var table_shown := not Tutorial.hides("cfg_table")
+	_table.visible = table_shown
+	_slot_marks.visible = table_shown
 	if _mode != "swipe":
 		_scroll = lerpf(_scroll, _scroll_target, 1.0 - exp(-SCROLL_SPEED * delta))
 	var follow := 1.0 - exp(-FOLLOW_SPEED * delta)

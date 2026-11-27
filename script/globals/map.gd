@@ -518,8 +518,20 @@ func _fights_before(grid: Array, node: path) -> int:
 			fights += 1
 	return fights
 
+## Einstiegskämpfe: die ersten normalen Kämpfe des ersten Bioms sind für das Start-Monster allein zu schaffen.
+## Ein einzelner Gegner auf EASY_START_LEVEL mit Start-Attacken (Helper.roll_easy_start_skills), im letzten davon
+## kommt das Starter-Kopfgeld fest (Skills.STARTER_BOUNTIES, solange es noch etwas freischaltet, ohne level_bonus).
+## Zwei gewonnene Einzelkämpfe sind eine ganze Stufe. Die Referenzstufe ändert sich dadurch nicht. Nicht im Tutorial.
+const EASY_START_FIGHTS := 2
+const EASY_START_LEVEL := 3
+
+func is_easy_start(fight_index: int) -> bool:
+	return not Tutorial.run_active and State.map_level == 0 and fight_index < EASY_START_FIGHTS
+
 # forced_count > 0 legt die Anzahl fest (Debug-Menü)
 func roll_fight_enemies(fight_index: int, forced_count := 0) -> Array[Monster]:
+	if is_easy_start(fight_index):
+		return _roll_easy_start_enemies(fight_index, forced_count)
 	var count := forced_count if forced_count > 0 else roll_weighted(ENCOUNTERS[encounter_depth()].counts, fight_progress(fight_index))
 	var enemies := Helper.generate_mons({"count": count})
 	# kam kein Kopfgeld-Monster von selbst, wird in normalen Kämpfen selten eins eingestreut
@@ -558,6 +570,14 @@ func roll_boss_enemies(forced_count := 0, final := false) -> Array[Monster]:
 		if DebugSettings.boss_trophies_enabled():
 			BossRelics.add_trophies(boss, BossRelics.default_trophies(depth))
 	return bosses
+
+func _roll_easy_start_enemies(fight_index: int, forced_count: int) -> Array[Monster]:
+	var props := {"count": maxi(forced_count, 1), "easy_start": true}
+	if fight_index == EASY_START_FIGHTS - 1:
+		var starter_bounties = Skills.get_open_bounties(State.mons, encounter_depth()).filter(func(entry): return entry.has("chance"))
+		if not starter_bounties.is_empty():
+			props.bounty = starter_bounties.pick_random()
+	return Helper.generate_mons(props)
 
 ## Nur solange ein Team-Monster mit dem Kopfgeld noch etwas freischalten kann (sonst kommen sie nur noch von selbst).
 func _roll_bounty() -> Dictionary:

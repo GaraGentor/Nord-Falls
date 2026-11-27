@@ -1,0 +1,4 @@
+- Die Start Fähigkeiten bei der Leuchtkrabbe. Beide Attacken auf 7 +0,2 atk machen
+- Die Start Fähigkeiten bei Mooswürfel M-angriff auf 8 +0,2  machen und normale attacke auf 7 akt +0,2 
+- Die Start fähigkeit bei bei hackschupp für den schild auf 8 + 0,2 machen
+- Die Start fähigkeit bei bei glotzlibelle für den schild auf 7 + 0,2 machen

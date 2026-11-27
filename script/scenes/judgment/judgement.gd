@@ -339,7 +339,7 @@ func _sacrifice(mon: Monster) -> void:
 	var egg_skill = mon.get_unlockable_egg_skill()
 	SaveManager.unlock_egg_skill(mon._name, egg_skill.name)
 	_eggs_unlocked += 1
-	Helper.show_unlock_message(tr("EGG_SKILL_UNLOCKED").format({"skill": tr(egg_skill.name), "mon": Helper.mon_display_name(mon._name)}))
+	EggUnlockDialog.announce(get_tree(), "EGG_UNLOCK_TITLE", mon._name, [egg_skill.name])
 	_remove(mon)
 
 # Das Start-Monster mit offenen Meilensteinen geht nur nach Rückfrage

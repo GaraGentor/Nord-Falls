@@ -317,7 +317,7 @@ func _drop_data(_at_position: Vector2, data) -> void:
 		ElementLoan.set_preview(0)
 		ElementLoan.borrow(mon, data.lender, data.element)
 		return
-	Events.mouse_event.emit({"action": Enums.MOUSE_ACTION.SELECT_MONSTER, "mon": mon})
+	# die Auswahl bleibt, wie der Spieler sie gesetzt hat; das Ziel reist mit dem Event
 	Events.mouse_event.emit({"action": Enums.MOUSE_ACTION.PLAY_CARD, "skill": data.skill, "mon": mon})
 
 ## Pfeil rechts neben dem Monster, das gerade am Zug ist; zeigt nach links auf das Monster und wippt leicht

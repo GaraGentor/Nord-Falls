@@ -247,6 +247,12 @@ SKILL_AIR_MAG_CANNON,Wind Cannon,Windkanone
 SKILL_AIR_PHYS_BACKHAND,Light Backhand,Leichte Rückhand
 SKILL_AIR_MAG_LIGHT_CANNON,Light Wind Cannon,Leichte Windkanone
 SKILL_AIR_ARMOR_PLAIN,Light Shield,Leichter Schild
+SKILL_WATER_PHYS_STARTER_JAB,Crab Jab,Krabbenstoß
+SKILL_WATER_MAG_STARTER_PULSE,Beacon Pulse,Leuchtstoß
+SKILL_EARTH_MAG_STARTER_PULSE,Moss Pulse,Moospuls
+SKILL_EARTH_PHYS_STARTER_JAB,Moss Jab,Moosstoß
+SKILL_FIRE_ARMOR_STARTER,Scale Shield,Schuppenschild
+SKILL_AIR_ARMOR_STARTER,Wing Shield,Flügelschild
 SKILL_STONE_GUARD,Stone Guard,Felsenpanzer
 SKILL_MIST_VEIL,Mist Veil,Nebelschleier
 SKILL_SHIELD_DESC,Shields an ally with [hl]{value} shield + ({scaling}*DEF)[/hl] against [hl]physical and magical damage[/hl] until your next turn,Schützt ein eigenes Monster mit [hl]{value} Schild + ({scaling}*VER)[/hl] vor [hl]physischem und magischem Schaden[/hl] bis zu deinem nächsten Zug
@@ -842,6 +848,7 @@ TUT_BOSS_GO,"Lucky you, this one is exhausted: 1 HP left. Finish it!","Glück ge
 TUT_JUD_JOIN,"This is your team, two monsters at most. Drag your catch onto the free spot!","Das ist dein Team, höchstens zwei Monster. Zieh deinen Fang auf den freien Platz!"
 TUT_JUD_JOIN_FIRST,First drag your catch into your team!,Zieh zuerst deinen Fang in dein Team!
 TUT_BAT_WHEEL,"The turn wheel shows the order. The yellow arrow shows when a new round begins. The monster at the top is next. After every turn the wheel turns on counterclockwise. Higher speed means an earlier turn.","Das Zugrad zeigt die Reihenfolge. Der gelbe Pfeil zeigt, wann eine neue Runde beginnt. Das Monster, das gerade oben steht, ist als Nächstes dran. Nach jedem Zug dreht sich das Rad gegen den Uhrzeigersinn weiter. Wer mehr Initiative hat, ist früher dran."
+TUT_BAT_SKILLS,"On the right you always see the skills of the selected monster, whether it's yours or an enemy. Tap a monster and browse its skills: once you catch it, your team can absorb them. So it's always worth a look!","Rechts siehst du immer die Fähigkeiten des ausgewählten Monsters, egal ob deins oder ein Gegner. Tipp ein Monster an und schau dir seine Fähigkeiten durch: Fängst du es, kann sich dein Team diese einverleiben. Ein Blick lohnt sich also immer!"
 TUT_BAT_INTENT,"Here you can read what the enemy plans on its turn: skill, target and damage. Use it to prepare.","Hier steht, was der Gegner in seinem Zug vorhat: Skill, Ziel und Schaden. So kannst du dich darauf einstellen."
 TUT_BAT_CARD,"On your monster's turn you play its skill cards. Drag a card onto the enemy!","Ist dein Monster am Zug, spielst du seine Skill-Karten. Zieh eine Karte auf den Gegner!"
 TUT_BAT_END,"Every skill costs actions. Afterwards it can be played again or has a cooldown. Out of actions? End your turn.","Jeder Skill kostet Aktionen. Danach kann er wieder gespielt werden oder hat eine Abklingzeit. Keine Aktionen mehr? Beende deinen Zug."
@@ -1496,3 +1503,9 @@ JUDGEMENT_ALREADY_HAS_SKILL,{mon} already has {skill} and therefore can't learn 
 JUDGEMENT_LEARN_KNOWN_LONG,"Already has this move, so it can't learn it again",Besitzt die Attacke schon und kann sie deshalb nicht mehr lernen
 MAP_PATH_TITLE,Path of this run,Pfad dieses Runs
 MAP_PATH_HINT,Click: show the whole path,Klicken: ganzen Pfad anzeigen
+EGG_UNLOCK_TITLE,New egg move!,Neue Ei-Attacke!
+MILESTONE_UNLOCK_TITLE,Milestone reached!,Meilenstein erreicht!
+BOUNTY_UNLOCK_TITLE,Bounty claimed!,Kopfgeld kassiert!
+EGG_UNLOCK_TEXT,{mon} unlocked:,{mon} hat freigeschaltet:
+EGG_UNLOCK_NOTE,"From now on you can take it along at the start of a run (egg selection).","Ab jetzt kannst du sie zu Beginn eines Runs mitnehmen (Ei-Auswahl)."
+COLLECTION_SOURCE_CLICK,Click: how it was unlocked,Klicken: wodurch freigeschaltet

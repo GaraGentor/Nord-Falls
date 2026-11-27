@@ -117,8 +117,11 @@ func generate_mons(props: Dictionary = {
 		# Auseinandersetzung (Map.roll_confrontation_enemies): Gegner behalten ihr eigenes Element
 		if props.get("biome_element", true):
 			add_biome_element(newMon)
-		roll_wild_skills(newMon, mon_meta_data)
-		roll_egg_skill(newMon)
+		# Einstiegskämpfe (Map.is_easy_start): nur Start-Attacken wie das eigene Start-Monster, keine Ei-Attacke
+		newMon._easy_start = props.get("easy_start", false)
+		if not newMon._easy_start or not roll_easy_start_skills(newMon, mon_meta_data):
+			roll_wild_skills(newMon, mon_meta_data)
+			roll_egg_skill(newMon)
 		ensure_wild_attack(newMon, mon_meta_data)
 		if mon_meta_data.get("final_boss", false):
 			add_final_boss_skills(newMon)
@@ -171,6 +174,24 @@ func roll_wild_skills(mon: Monster, mon_meta_data: Dictionary) -> void:
 		var skill = Skills.get_skill(skill_name)
 		if not skill.is_empty():
 			mon._skills.append(skill)
+
+## Gegner der Einstiegskämpfe bekommen dasselbe Werkzeug wie ein Start-Monster (Skills.starter_skills):
+## leichter Stoß, leichter Schlag (physisch oder magisch nach dem höheren Angriffswert der Art) und leichter Schild,
+## jeweils in einem Element, das das Monster wach einsetzen kann. false = kein passender Skill (dann normal würfeln).
+func roll_easy_start_skills(mon: Monster, mon_meta_data: Dictionary) -> bool:
+	var stats: Dictionary = mon_meta_data.get("preferred_stats", {})
+	var damage_type := Skills.MAG if stats.get("s_atk", 0) > stats.get("atk", 0) else Skills.PHYS
+	var picked := []
+	for suffix in ["_LIGHT_THRUST", "_LIGHT_STRIKE", "_ARMOR_LIGHT"]:
+		var options = Skills.starter_skills.filter(func(skill): return skill.name.ends_with(suffix) \
+			and Skills.is_awake(mon, skill) and (not Skills.is_damage_skill(skill) or skill.damage_type == damage_type))
+		if not options.is_empty():
+			picked.append(options.pick_random().name)
+	if not picked.any(func(skill_name): return Skills.is_damage_skill(Skills.get_skill(skill_name))):
+		return false
+	for skill_name in picked:
+		mon._skills.append(Skills.get_skill(skill_name))
+	return true
 
 ## Ab dieser Seltenheit trägt ein wildes Monster immer mindestens eine Attacke (nicht nur Buffs und Schilde)
 const WILD_ATTACK_MIN_RARITY := Enums.MON_RARITY.UNCOMMON
